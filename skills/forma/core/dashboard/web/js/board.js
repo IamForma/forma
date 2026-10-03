@@ -4,29 +4,40 @@
 
 // --- Подписи доски: коды (route-N, backlog, stage, why) не переводятся, переводится только их показ ---
 const BOARD_T = {
-  card: n => 'карта ' + n, noGoal: 'без цели', route: n => 'маршрут ' + n, over: n => 'наложение ' + n, seg: n => 'сегмент ' + n, wave: n => 'волна ' + n, trial: 'пробная',
-  status: { backlog: 'бэклог', todo: 'к работе', 'in-progress': 'в работе', review: 'проверка', done: 'готово' },
-  stage: { card: 'карточка пишется', approve: 'ждёт одобрения', kit: 'снаряжение', exec: 'исполнение', check: 'проверка Intent', accept: 'приёмка человеком', close: 'ждёт Core', closed: 'круг закрыт' },
-  why: { human: 'выбрал человек — так быстрее', ready: 'задача укомплектована — сразу к исполнителю', scale: 'экономика на масштабе', risk: 'дорогая ошибка или новый стек', decision: 'вопрос, а не поставка', tooling: 'оснастка или разведка' },
+  card: n => t('board.card', {n}), route: n => t('board.route', {n}), over: n => t('board.over', {n}), seg: n => t('board.seg', {n}), wave: n => t('board.wave', {n}),
+  get noGoal() { return t('board.noGoal'); }, get trial() { return t('board.trial'); },
+  get status() { return bdKeyed('board.status.', ['backlog', 'todo', 'in-progress', 'review', 'done']); },
+  get stage() { return bdKeyed('board.stage.', ['card', 'approve', 'kit', 'exec', 'check', 'accept', 'close', 'closed']); },
+  get why() { return bdKeyed('board.why.', ['human', 'ready', 'scale', 'risk', 'decision', 'tooling']); },
 };
-const BOARD_STATUSES = [['backlog','Бэклог','--st-backlog'],['todo','К работе','--st-todo'],['in-progress','В работе','--st-progress'],['review','Проверка','--st-review'],['done','Готово','--st-done']];
+const bdKeyed = (prefix, keys) => Object.fromEntries(keys.map(k => [k, t(prefix + k)]));
+const bdStatuses = () => STATUS_ORDER.map(s => [s, t('board.col.' + s), STATUS_VAR[s]]);
 const BOARD_ACTIVE = new Set(['todo','in-progress','review']);
 const BOARD_DONE_LIMIT = 5;
-const BOARD_UNIT_HINT = { 'Роль': 'кто исполняет — файл роли узла', 'Скилл': 'умения, которые узел читает перед работой', 'Инструмент': 'чем действует: CLI, MCP, скрипты',
-  'Доступ': 'учётные данные — по имени и статусу, без значения (запрет 15)', 'Данные': 'что берёт на вход', 'Модель': 'на какой модели идёт вызов' };
+// Единицы снаряжения: ключ — как в карточке (язык проекта), показ — из словаря.
+const BOARD_UNITS = [['Роль', 'role'], ['Скилл', 'skill'], ['Инструмент', 'tool'], ['Доступ', 'access'], ['Данные', 'data'], ['Модель', 'model']]; // i18n-keep: имена полей из карточки
 const BOARD_NODE_C = { Intent: '--accent', Spec: '--st-backlog', Kit: '--st-todo', Run: '--st-progress', Core: '--st-review' };
-// Маршруты (.forma/manual/…/ROUTES.md): этапы с ключом, по которому статус карточки ставит флажок «вы здесь».
-const BOARD_ROUTES = {
-  'route-0': ['Intent сам — правка короче карточки', [['card','Intent','карточка'],['approve','человек','одобряет пять полей'],['exec','Intent','исполняет сам'],['check','Intent','сверка по факту'],['accept','человек','принимает'],['close','Core','закрывает круг']]],
-  'route-1': ['копия Intent в чистом контексте', [['card','Intent','карточка'],['approve','человек','одобряет'],['exec','копия Intent','исполняет'],['check','Intent','проверка'],['accept','человек','принимает'],['close','Core','закрывает круг']]],
-  'route-2': ['Intent → Run: ясное задание, типовое снаряжение', [['card','Intent','карточка + снаряжение'],['approve','человек','одобряет'],['exec','Run','исполняет'],['check','Intent','проверка'],['accept','человек','принимает'],['close','Core','закрывает круг']]],
-  'route-3': ['решение без исполнения', [['card','Intent','вопрос'],['approve','человек','одобряет'],['exec','Kit','собирает основания'],['check','Intent','сводит решение'],['accept','человек','принимает решение'],['close','Core','закрывает круг']]],
-  'route-4': ['Kit исполняет сам — оснастка, разведка', [['card','Intent','карточка'],['approve','человек','одобряет'],['exec','Kit','снаряжает и исполняет'],['check','Intent','проверка'],['accept','человек','принимает'],['close','Core','закрывает круг']]],
-  'route-5': ['Intent → Kit → Run: нужна особая роль', [['card','Intent','карточка'],['approve','человек','одобряет'],['kit','Kit','снаряжение'],['exec','Run','исполняет'],['check','Intent','проверка'],['accept','человек','принимает'],['close','Core','закрывает круг']]],
-  'route-6': ['Spec → Run со снаряжением из библиотеки', [['card','Spec','нарезка'],['exec','Run','исполняет'],['check','Intent','проверка'],['accept','человек','принимает'],['close','Core','закрывает круг']]],
-  'route-7': ['полный круг: дорогая ошибка, новый стек', [['card','Spec','нарезка'],['kit','Kit','снаряжение'],['exec','Run','исполняет'],['check','Intent','проверка'],['accept','человек','принимает'],['close','Core','закрывает круг']]],
-  'route-8': ['масштаб: сегменты × волны', [['card','Spec','нарезка сегмента'],['kit','Kit','снаряжение волны'],['exec','Run','исполняет'],['check','Intent','проверка'],['accept','человек','принимает'],['close','Core','закрывает круг']]],
+// Маршруты (.forma/manual/…/ROUTES.md): этапы с ключом, по которому статус карточки ставит флажок «вы здесь». Тексты — из словаря.
+const BOARD_ROUTE_DEF = {
+  'route-0': ['route0', [['card','Intent','card'],['approve','@human','approve5'],['exec','Intent','execSelf'],['check','Intent','checkFact'],['accept','@human','accept'],['close','Core','closeCycle']]],
+  'route-1': ['route1', [['card','Intent','card'],['approve','@human','approve'],['exec','@copy','exec'],['check','Intent','check'],['accept','@human','accept'],['close','Core','closeCycle']]],
+  'route-2': ['route2', [['card','Intent','cardKit'],['approve','@human','approve'],['exec','Run','exec'],['check','Intent','check'],['accept','@human','accept'],['close','Core','closeCycle']]],
+  'route-3': ['route3', [['card','Intent','question'],['approve','@human','approve'],['exec','Kit','gather'],['check','Intent','sumDecision'],['accept','@human','acceptDecision'],['close','Core','closeCycle']]],
+  'route-4': ['route4', [['card','Intent','card'],['approve','@human','approve'],['exec','Kit','kitExec'],['check','Intent','check'],['accept','@human','accept'],['close','Core','closeCycle']]],
+  'route-5': ['route5', [['card','Intent','card'],['approve','@human','approve'],['kit','Kit','kit'],['exec','Run','exec'],['check','Intent','check'],['accept','@human','accept'],['close','Core','closeCycle']]],
+  'route-6': ['route6', [['card','Spec','slice'],['exec','Run','exec'],['check','Intent','check'],['accept','@human','accept'],['close','Core','closeCycle']]],
+  'route-7': ['route7', [['card','Spec','slice'],['kit','Kit','kit'],['exec','Run','exec'],['check','Intent','check'],['accept','@human','accept'],['close','Core','closeCycle']]],
+  'route-8': ['route8', [['card','Spec','sliceSeg'],['kit','Kit','kitWave'],['exec','Run','exec'],['check','Intent','check'],['accept','@human','accept'],['close','Core','closeCycle']]],
 };
+let bdRoutesMemo = null;
+function boardRoutes() {
+  const lang = curLang();
+  if (!bdRoutesMemo || bdRoutesMemo.lang !== lang) {
+    const actor = a => a === '@human' ? t('board.actor.human') : a === '@copy' ? t('board.actor.copy') : a;
+    bdRoutesMemo = { lang, map: Object.fromEntries(Object.entries(BOARD_ROUTE_DEF).map(([k, [d, steps]]) => [k, [t('board.rt.' + d), steps.map(([st, a, x]) => [st, actor(a), t('board.step.' + x)])]])) };
+  }
+  return bdRoutesMemo.map;
+}
 
 // Код карточки и цели в данных прежний (card-NNN, goal-<код>); на доске — подпись.
 const bdCl = code => String(code).replace(/^card-(\d+)$/, (_, n) => BOARD_T.card(n));
@@ -35,15 +46,15 @@ const bdLbl = l => { if (!l) return '—'; const m = l.match(/^(route|over|seg|w
 // Этап и причина — из строк истории (AGENTS.md §6): последняя «stage <ключ>», все «route … (why: <код>)».
 const bdStageLine = c => { let k = null; c.history.forEach(l => { const m = l.match(/:\s*stage\s+(\w+)/); if (m) k = m[1]; }); return k; };
 const bdWhyCodes = c => c.history.map(l => l.match(/:\s*route (route-\d[^(—]*)\(why:\s*(\w+)\)/)).filter(Boolean).map(m => [m[1].trim(), m[2]]);
-const bdGoalName = (B, g) => g ? (B.DATA.goals[g] ? `${g} · ${B.DATA.goals[g].split('·').pop().trim()}` : g) : 'без цели';
-const bdFmtTok = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',') + ' млн' : n >= 1e3 ? Math.round(n / 1e3) + ' тыс' : String(n);
-const bdFmtSec = s => s >= 3600 ? `${Math.floor(s / 3600)} ч ${Math.round(s % 3600 / 60)} мин` : `${Math.round(s / 60)} мин`;
+const bdGoalName = (B, g) => g ? (B.DATA.goals[g] ? `${g} · ${B.DATA.goals[g].split('·').pop().trim()}` : g) : t('board.noGoal');
+const bdFmtTok = n => new Intl.NumberFormat(curLang(), { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+const bdFmtSec = s => s >= 3600 ? hhmm(s) : t('time.m', { m: Math.round(s / 60) });
 const bdWho = l => (l.match(/^`?(\w+)`?,/) || [, ''])[1];
 
 // --- Выбор на доске: читается из localStorage, пишется при каждой перерисовке ---
 function bdLoadState() {
   const S = {group:'status', state:'active', goal:null, epic:null, assignee:null, route:null, q:'', openDone:{}, view:'.forma/board'};
-  try { Object.assign(S, JSON.parse(localStorage.getItem('boardDemo') || '{}'), {openDone:{}}); } catch { /* выбор не сохранялся или localStorage закрыт — остаются значения по умолчанию */ }
+  try { Object.assign(S, JSON.parse(localStorage.getItem('boardDemo') || '{}'), {openDone:{}}); if (!['ready', 'notReady'].includes(S.rdy)) delete S.rdy; } catch { /* выбор не сохранялся или localStorage закрыт — остаются значения по умолчанию */ }
   return S;
 }
 function bdSave(B) { try { localStorage.setItem('boardDemo', JSON.stringify({...B.S, openDone:undefined})); } catch { /* localStorage закрыт — выбор не запомнится */ } }
@@ -63,7 +74,7 @@ function bdApply(B, list, skip) {
     (skip === 'epic' || !S.epic || c.epic === S.epic) &&
     (skip === 'assignee' || !S.assignee || String(c.assignee) === S.assignee) &&
     (skip === 'route' || !S.route || (c.route || '—') === S.route) &&
-    (skip === 'rdy' || !S.rdy || (bdIsReady(c) ? 'готова' : 'не готова') === S.rdy));
+    (skip === 'rdy' || !S.rdy || (bdIsReady(c) ? 'ready' : 'notReady') === S.rdy));
 }
 // Ряд чипов одного фильтра. o: { el, label, key, getter, fmt } — элемент, подпись, ключ в S, значение у карточки, показ значения.
 function bdChips(B, o) {
@@ -71,7 +82,7 @@ function bdChips(B, o) {
   const counts = {};
   bdApply(B, bdBase(B), key).forEach(c => { const v = getter(c); counts[v] = (counts[v] || 0) + 1; });
   const keys = Object.keys(counts).sort();
-  el.innerHTML = `<b>${label}</b>` + [`<span class="chip ${!S[key]?'on':''}" data-v="">все</span>`, ...keys.map(k =>
+  el.innerHTML = `<b>${label}</b>` + [`<span class="chip ${!S[key]?'on':''}" data-v="">${t('board.all')}</span>`, ...keys.map(k =>
     `<span class="chip ${S[key]===k?'on':''}" data-v="${esc(k)}">${esc(fmt(k))}<span class="n">${counts[k]}</span></span>`)].join('');
   el.onclick = e => { const ch = e.target.closest('.chip'); if (!ch) return; S[key] = ch.dataset.v || null; bdRender(B); };
 }
@@ -114,11 +125,11 @@ function bdDepLines(B, uniq, g) {
 }
 function bdDepNodes(B, code, g) {
   const { pos, W, H } = g;
-  const stColor = s => `var(${(BOARD_STATUSES.find(x => x[0] === s) || BOARD_STATUSES[0])[2]})`;
+  const stColor = s => `var(${(bdStatuses().find(x => x[0] === s) || bdStatuses()[0])[2]})`;
   return Object.keys(pos).map(k => {
     const c = B.byCode[k], P = pos[k], me = k === code;
-    const t = c ? c.title : 'карточка не найдена';
-    const short = t.length > 48 ? t.slice(0, 46) + '…' : t;
+    const title = c ? c.title : t('board.cardNotFound');
+    const short = title.length > 48 ? title.slice(0, 46) + '…' : title;
     return `<g class="gnode" data-code="${k}" transform="translate(${P.x},${P.y})">
       <rect width="${W}" height="${H}" rx="8" fill="var(--surface)" stroke="${me ? 'var(--accent)' : 'var(--border)'}" stroke-width="${me ? 2 : 1}"/>
       <rect width="4" height="${H}" rx="2" fill="${c ? stColor(c.status) : '#C0392B'}"/>
@@ -140,45 +151,45 @@ function bdOpenDeps(B, code) {
   d.dataset.code = code;
   if (d.open) d.close();
   const related = [...new Set([...(c.ready.deps || []), ...(B.dependents[code] || [])])];
-  const row = k => { const x = B.byCode[k]; if (!x) return `<li>${k} — не найдена на доске</li>`;
-    const role = c.ready.deps.includes(k) ? 'ждём её' : 'ждёт нас';
+  const row = k => { const x = B.byCode[k]; if (!x) return `<li>${k} — ${t('board.notOnBoard')}</li>`;
+    const role = t(c.ready.deps.includes(k) ? 'board.waitingForIt' : 'board.waitsForUs');
     return `<li><a href="#" data-open="${k}">${k}</a> · <b>${esc(x.status)}</b> · ${role} — ${esc(x.title)}<br><small>${esc((x.delivers || '').slice(0, 180))}</small></li>`; };
-  d.innerHTML = `<button onclick="this.closest('dialog').close()">✕</button><div class="code">зависимости · ${bdCl(code)}</div><h2>${esc(c.title)}</h2>
-    <p class="meta">Слева — чего ждёт карточка, справа — кто ждёт её. Сплошная зелёная стрелка — предшественник принят, пунктир — ещё нет. Клик по блоку открывает карточку.</p>
+  d.innerHTML = `<button onclick="this.closest('dialog').close()">✕</button><div class="code">${t('board.dlg.deps')} · ${bdCl(code)}</div><h2>${esc(c.title)}</h2>
+    <p class="meta">${t('board.depsMeta')}</p>
     <div class="graph">${bdDepGraph(B, code)}</div><ul class="rel">${related.map(row).join('')}</ul>`;
   d.showModal();
 }
 function bdOpenKit(B, code) {
   const c = B.byCode[code], d = document.getElementById('dlg');
   d.dataset.code = code; if (d.open) d.close();
-  const rows = ['Роль','Скилл','Инструмент','Доступ','Данные','Модель'].map(u => {
+  const rows = BOARD_UNITS.map(([u, id]) => {
     const v = c.kitParts[u];
     let extra = '';
-    if (u === 'Скилл' && c.kitSkills.length) extra = '<ul class="rel">' + c.kitSkills.map(s =>
+    if (u === 'Скилл' /* i18n-keep */ && c.kitSkills.length) extra = '<ul class="rel">' + c.kitSkills.map(s =>
       `<li><b>${esc(s)}</b> — <small>${esc(B.DATA.skills[s] || '')}</small></li>`).join('') + '</ul>';
-    return `<tr><th>${u}<br><small>${BOARD_UNIT_HINT[u]}</small></th><td>${v ? esc(v) : '<span class="miss">не указано</span>'}${extra}</td></tr>`;
+    return `<tr><th>${t('board.unit.' + id)}<br><small>${t('board.unit.' + id + '.hint')}</small></th><td>${v ? esc(v) : `<span class="miss">${t('board.notSet')}</span>`}${extra}</td></tr>`;
   }).join('');
-  d.innerHTML = `<button onclick="this.closest('dialog').close()">✕</button><div class="code">снаряжение · ${bdCl(code)}</div><h2>${esc(c.title)}</h2>
-    <p class="meta">Шесть единиц, которые Kit выдаёт исполнителю (kit.md). «6/6» — названы все шесть; это наличие, а не проверка качества.</p>
+  d.innerHTML = `<button onclick="this.closest('dialog').close()">✕</button><div class="code">${t('board.dlg.kit')} · ${bdCl(code)}</div><h2>${esc(c.title)}</h2>
+    <p class="meta">${t('board.kitMeta')}</p>
     <table class="kitt">${rows}</table>`;
   d.showModal();
 }
 function bdSpendEngineRows(s) {
-  return Object.entries(s.byEngine || {}).map(([k, E]) => `<tr><th>Токены · ${esc(engineLabel(k))}</th><td>${E.tokens.toLocaleString('ru')} <small class="dim">(${E.lines} попыт.${E.unknown ? `, без числа ${E.unknown}` : ''})</small></td></tr>
-    <tr><th>из них cache-read · ${esc(engineLabel(k))}</th><td>${E.cache.toLocaleString('ru')}${E.mixed ? '' : ` (${E.tokens ? Math.round(E.cache / E.tokens * 100) : 0}%)`} — повторное чтение правил и контекста</td></tr>
-    ${E.mixed ? `<tr><th>Внимание · ${esc(engineLabel(k))}</th><td class="miss">строки записаны по-разному: в части из них N — без кэша (cache-read больше N), сумма неточна</td></tr>`
-      : `<tr><th>Работа без кэша · ${esc(engineLabel(k))}</th><td>${Math.max(0, E.tokens - E.cache).toLocaleString('ru')}</td></tr>`}`).join('');
+  return Object.entries(s.byEngine || {}).map(([k, E]) => `<tr><th>${t('board.sp.tokens', { e: esc(engineLabel(k)) })}</th><td>${E.tokens.toLocaleString(curLang())} <small class="dim">${t('board.sp.attempts', { n: E.lines })}${E.unknown ? t('board.sp.noNumber', { n: E.unknown }) : ''}</small></td></tr>
+    <tr><th>${t('board.sp.cache', { e: esc(engineLabel(k)) })}</th><td>${E.cache.toLocaleString(curLang())}${E.mixed ? '' : ` (${E.tokens ? Math.round(E.cache / E.tokens * 100) : 0}%)`} — ${t('board.sp.cacheNote')}</td></tr>
+    ${E.mixed ? `<tr><th>${t('board.sp.warn', { e: esc(engineLabel(k)) })}</th><td class="miss">${t('board.sp.mixed')}</td></tr>`
+      : `<tr><th>${t('board.sp.work', { e: esc(engineLabel(k)) })}</th><td>${Math.max(0, E.tokens - E.cache).toLocaleString(curLang())}</td></tr>`}`).join('');
 }
 function bdOpenSpend(B, code) {
   const c = B.byCode[code], d = document.getElementById('dlg'), s = c.spend;
   d.dataset.code = code; if (d.open) d.close();
   const lines = (c.historySpend || []).map(l => `<li><small>${esc(l)}</small></li>`).join('');
-  d.innerHTML = `<button onclick="this.closest('dialog').close()">✕</button><div class="code">расход · ${bdCl(code)}</div><h2>${esc(c.title)}</h2>
-    <table class="kitt"><tr><th>Попыток записано</th><td>${s.lines}${s.unknown ? ` (из них без числа: ${s.unknown})` : ''}</td></tr>
+  d.innerHTML = `<button onclick="this.closest('dialog').close()">✕</button><div class="code">${t('board.dlg.spend')} · ${bdCl(code)}</div><h2>${esc(c.title)}</h2>
+    <table class="kitt"><tr><th>${t('board.sp.recorded')}</th><td>${s.lines}${s.unknown ? t('board.sp.ofUnnumbered', { n: s.unknown }) : ''}</td></tr>
     ${bdSpendEngineRows(s)}
-    ${Object.keys(s.byEngine || {}).length > 1 ? '<tr><th>Движков</th><td class="dim">токены разных движков не складываются — по строке на тег</td></tr>' : ''}
-    ${s.unknown ? `<tr><th>Без числа</th><td class="miss">${s.unknown} попыт. записаны как «0 tokens» или без числа — расход не учтён</td></tr>` : ''}
-    <tr><th>Время</th><td>${bdFmtSec(s.sec)}</td></tr></table><ul class="rel">${lines}</ul>`;
+    ${Object.keys(s.byEngine || {}).length > 1 ? `<tr><th>${t('board.sp.engines')}</th><td class="dim">${t('board.sp.enginesNote')}</td></tr>` : ''}
+    ${s.unknown ? `<tr><th>${t('board.sp.unnumbered')}</th><td class="miss">${t('board.sp.unnumberedNote', { n: s.unknown })}</td></tr>` : ''}
+    <tr><th>${t('board.sp.time')}</th><td>${bdFmtSec(s.sec)}</td></tr></table><ul class="rel">${lines}</ul>`;
   d.showModal();
 }
 
@@ -189,21 +200,21 @@ const bdIsReady = c => { const r = c.ready; return r.goal && r.task && r.kit && 
   r.access !== false && r.access !== 'unknown' && !r.depsOpen.length && !bdBudgetOut(c); };
 function bdPips(B, c) {
   const r = c.ready, k = r.kitUnits.length, dependents = B.dependents;
-  const p = (ok, t, title) => `<span class="pip ${ok}" title="${esc(title)}">${t}</span>`;
-  return `<div class="pips">${p(r.goal?'ok':'no','Цель','ровно одна метка goal-*')}${p(r.task?'ok':'no','Задача','пять полей заполнены')}` +
-    `${p((k===6?'ok':k?'half':'no')+' kitp',`Снаряж. ${k}/6`,'единиц снаряжения из шести: '+(r.kitUnits.join(', ')||'нет')+' — нажмите, чтобы раскрыть')}${p(r.route?'ok':'no','Маршрут','метка route-N')}` +
-    (r.approval === null ? '' : p(r.approval?'ok':'no','Одобр.','route-0…5 открывается одобрением пяти полей человеком')) +
-    (r.access === null ? '' : p(r.access===true?'ok':r.access==='unknown'?'half':'no',r.access==='unknown'?'Доступ ?':'Доступ',
-      r.access==='unknown'?'доступ назван, статус «подтверждён / не подтверждён» не записан':'строка «Доступ» в снаряжении: подтверждён / не подтверждён')) +
-    (r.budgetLeft === null ? '' : p(bdBudgetOut(c)?'no':'ok',r.budgetLeft < 0 ? `Попытки +${-r.budgetLeft}` : `Попытки ${r.budgetLeft}`,
-      r.budgetLeft < 0 ? `бюджет превышен на ${-r.budgetLeft}` : 'осталось попыток из бюджета; 0 — не исполнять, а резать заново (Spec)')) +
-    (r.deps.length ? p(r.depsOpen.length?'no dep':'ok dep',`Зав. ${r.deps.length-r.depsOpen.length}/${r.deps.length}`,
-      (r.depsOpen.length ? 'ждёт приёмки: '+r.depsOpen.join(', ') : 'все зависимости приняты') + ' — нажмите, чтобы увидеть схему')
-      : dependents[c.code] ? p('half dep',`Ждут ${dependents[c.code].length}`,'от этой карточки зависят: '+dependents[c.code].join(', ')+' — нажмите, чтобы увидеть схему') : '') +
-    (c.spend.lines ? p('cost spendp',`Расход ${Object.entries(c.spend.byEngine || {}).map(([k, E]) => bdFmtTok(E.tokens) + (Object.keys(c.spend.byEngine).length > 1 ? ' ' + engineLabel(k) : '')).join(' · ')}`,`по строкам истории: ${c.spend.lines} попыток — нажмите для разбивки`) : '') + '</div>';
+  const p = (ok, txt, title) => `<span class="pip ${ok}" title="${esc(title)}">${txt}</span>`;
+  return `<div class="pips">${p(r.goal?'ok':'no',t('board.pip.goal'),t('board.pip.goalTip'))}${p(r.task?'ok':'no',t('board.pip.task'),t('board.pip.taskTip'))}` +
+    `${p((k===6?'ok':k?'half':'no')+' kitp',t('board.pip.kit',{k}),t('board.pip.kitTip',{units: r.kitUnits.join(', ') || t('board.none')}))}${p(r.route?'ok':'no',t('board.pip.route'),t('board.pip.routeTip'))}` +
+    (r.approval === null ? '' : p(r.approval?'ok':'no',t('board.pip.approval'),t('board.pip.approvalTip'))) +
+    (r.access === null ? '' : p(r.access===true?'ok':r.access==='unknown'?'half':'no',r.access==='unknown'?t('board.pip.accessUnk'):t('board.pip.access'),
+      r.access==='unknown'?t('board.pip.accessUnkTip'):t('board.pip.accessTip'))) +
+    (r.budgetLeft === null ? '' : p(bdBudgetOut(c)?'no':'ok',r.budgetLeft < 0 ? t('board.pip.attemptsOver',{n:-r.budgetLeft}) : t('board.pip.attempts',{n:r.budgetLeft}),
+      r.budgetLeft < 0 ? t('board.pip.overTip',{n:-r.budgetLeft}) : t('board.pip.leftTip'))) +
+    (r.deps.length ? p(r.depsOpen.length?'no dep':'ok dep',t('board.pip.deps',{a:r.deps.length-r.depsOpen.length,b:r.deps.length}),
+      (r.depsOpen.length ? t('board.pip.depsWait',{list:r.depsOpen.join(', ')}) : t('board.pip.depsOk')) + ' — ' + t('board.pip.schemeHint'))
+      : dependents[c.code] ? p('half dep',t('board.pip.waiters',{n:dependents[c.code].length}),t('board.pip.waitersTip',{list:dependents[c.code].join(', ')}) + ' — ' + t('board.pip.schemeHint')) : '') +
+    (c.spend.lines ? p('cost spendp',t('board.pip.spend',{v:Object.entries(c.spend.byEngine || {}).map(([k, E]) => bdFmtTok(E.tokens) + (Object.keys(c.spend.byEngine).length > 1 ? ' ' + engineLabel(k) : '')).join(' · ')}),t('board.pip.spendTip',{n:c.spend.lines})) : '') + '</div>';
 }
 function bdCardHtml(B, c) {
-  const st = BOARD_STATUSES.find(s => s[0] === c.status) || BOARD_STATUSES[0];
+  const st = bdStatuses().find(s => s[0] === c.status) || bdStatuses()[0];
   return `<div class="card" style="--c:var(${st[2]})" data-code="${c.code}">
     <div class="code" title="${c.code}">${bdCl(c.code)} · ${esc(c.kind)} · ${esc(c.assignee ?? '—')}</div>
     <div class="t">${esc(c.title)}</div>
@@ -213,35 +224,35 @@ function bdCardHtml(B, c) {
 }
 function bdColumns(B, list, laneKey) {
   const S = B.S;
-  const visible = BOARD_STATUSES.filter(([s]) => S.q.trim() ? true : S.state === 'all' || S.state === 'open' ? (S.state === 'all' || s !== 'done') : S.state === 'active' ? BOARD_ACTIVE.has(s) : s === S.state);
+  const visible = bdStatuses().filter(([s]) => S.q.trim() ? true : S.state === 'all' || S.state === 'open' ? (S.state === 'all' || s !== 'done') : S.state === 'active' ? BOARD_ACTIVE.has(s) : s === S.state);
   return `<div class="cols" style="grid-template-columns:repeat(${visible.length},minmax(200px,1fr))">` + visible.map(([s, name, v]) => {
     let items = list.filter(c => c.status === s);
     const total = items.length, dk = laneKey + s;
     if (s === 'done' && !S.openDone[dk] && total > BOARD_DONE_LIMIT) items = items.slice(0, BOARD_DONE_LIMIT);
     return `<div class="col" style="--c:var(${v})"><h3><span>${name}</span><span>${total}</span></h3><div class="col-list" data-sk="${esc(dk)}">` +
-      (items.map(c => bdCardHtml(B, c)).join('') || '<div class="empty">пусто</div>') +
-      (items.length < total ? `<div class="more" data-dk="${esc(dk)}">ещё ${total - items.length}</div>` : '') + '</div></div>';
+      (items.map(c => bdCardHtml(B, c)).join('') || `<div class="empty">${t('board.empty')}</div>`) +
+      (items.length < total ? `<div class="more" data-dk="${esc(dk)}">${t('board.more', { n: total - items.length })}</div>` : '') + '</div></div>';
   }).join('') + '</div>';
 }
 // Пилюли целей: всего карточек цели и разбивка по статусам (фильтры кроме цели и «Показа» учтены).
 function bdGoalPill(S, id, name, list) {
-  const n = BOARD_STATUSES.map(([s]) => list.filter(c => c.status === s).length), t = list.length;
-  return `<span class="gpill ${(id ? S.goal === id : !S.goal) ? 'on' : ''} ${t ? '' : 'zero'}" data-v="${esc(id)}" title="${esc(BOARD_STATUSES.map(([, nm], i) => nm + ': ' + n[i]).join(' · '))}">` +
+  const n = bdStatuses().map(([s]) => list.filter(c => c.status === s).length), t = list.length;
+  return `<span class="gpill ${(id ? S.goal === id : !S.goal) ? 'on' : ''} ${t ? '' : 'zero'}" data-v="${esc(id)}" title="${esc(bdStatuses().map(([, nm], i) => nm + ': ' + n[i]).join(' · '))}">` +
     `<span class="top"><span>${esc(name)}</span><b>${t}</b></span>` +
-    `<span class="gbar">${n.map((v, i) => v ? `<span style="width:${v / (t || 1) * 100}%;background:var(${BOARD_STATUSES[i][2]})"></span>` : '').join('')}</span>` +
-    `<span class="gnums">${n.map((v, i) => `<i class="${v ? '' : 'z'}" style="--c:var(${BOARD_STATUSES[i][2]})">${v}</i>`).join('')}</span></span>`;
+    `<span class="gbar">${n.map((v, i) => v ? `<span style="width:${v / (t || 1) * 100}%;background:var(${bdStatuses()[i][2]})"></span>` : '').join('')}</span>` +
+    `<span class="gnums">${n.map((v, i) => `<i class="${v ? '' : 'z'}" style="--c:var(${bdStatuses()[i][2]})">${v}</i>`).join('')}</span></span>`;
 }
 // Тумблер «Канбан ⇄ Цели» стоит на месте слова «Цель»: вид «Цели» — бывшая вкладка «Цепь» (chain.js).
-const bdKbToggle = (S) => `<span class="kb-toggle" role="group" aria-label="Канбан или Цели">
-  <button type="button" class="kb-opt ${(S.view||'.forma/board')==='.forma/board'?'on':''}" data-kb=".forma/board">Канбан</button>
-  <button type="button" class="kb-opt ${(S.view||'.forma/board')==='goals'?'on':''}" data-kb="goals">Цели</button>
+const bdKbToggle = (S) => `<span class="kb-toggle" role="group" aria-label="${t('board.kbAria')}">
+  <button type="button" class="kb-opt ${(S.view||'.forma/board')==='.forma/board'?'on':''}" data-kb=".forma/board">${t('board.kb')}</button>
+  <button type="button" class="kb-opt ${(S.view||'.forma/board')==='goals'?'on':''}" data-kb="goals">${t('board.goals')}</button>
 </span>`;
 function bdGoalPills(B, el) {
   const { DATA, S } = B, q = S.q.toLowerCase();
   const pool = bdApply(B, DATA.cards.filter(c => !q || (c.code + ' ' + c.title + ' ' + c.criterion + ' ' + c.delivers).toLowerCase().includes(q)), 'goal');
   const ids = [...new Set([...Object.keys(DATA.goals), ...pool.map(c => c.goal || '—')])].sort();
-  el.innerHTML = bdKbToggle(S) + bdGoalPill(S, '', 'Все', pool) + ids.map(id =>
-    bdGoalPill(S, id, id === '—' ? 'без цели' : (DATA.goals[id] || id).split('·').pop().trim(), pool.filter(c => (c.goal || '—') === id))).join('');
+  el.innerHTML = bdKbToggle(S) + bdGoalPill(S, '', t('board.allCap'), pool) + ids.map(id =>
+    bdGoalPill(S, id, id === '—' ? t('board.noGoal') : (DATA.goals[id] || id).split('·').pop().trim(), pool.filter(c => (c.goal || '—') === id))).join('');
   el.onclick = e => {
     const kb = e.target.closest('.kb-opt'); if (kb) { S.view = kb.dataset.kb; bdRender(B); return; }
     const p = e.target.closest('.gpill'); if (!p) return; S.goal = p.dataset.v || null; bdRender(B);
@@ -258,29 +269,29 @@ function bdApplyView(B) {
 // --- Перерисовка доски: фильтры, сводка, колонки или дорожки ---
 function bdRenderFilters(B) {
   const S = B.S, byId = id => document.getElementById(id);
-  byId('group').innerHTML = [['status','Статусы'],['goal','По целям'],['epic','По эпикам'],['assignee','По узлам']].map(([k, n]) =>
-    `<span class="chip ${S.group===k?'on':''}" data-g="${k}">${n}</span>`).join(' ');
+  byId('group').innerHTML = ['status','goal','epic','assignee'].map(k =>
+    `<span class="chip ${S.group===k?'on':''}" data-g="${k}">${t('board.g.' + k)}</span>`).join(' ');
   const st = byId('f-state');
-  st.innerHTML = '<b>Показ</b>' + [['all','Все'],['active','В работе (todo·in-progress·review)'],['open','Все незакрытые'],['backlog','Бэклог'],['done','Готово']].map(([k, n]) =>
-    `<span class="chip ${S.state===k?'on':''}" data-v="${k}">${n}</span>`).join('');
+  st.innerHTML = `<b>${t('board.show')}</b>` + ['all','active','open','backlog','done'].map(k =>
+    `<span class="chip ${S.state===k?'on':''}" data-v="${k}">${t('board.s.' + k)}</span>`).join('');
   st.onclick = e => { const ch = e.target.closest('.chip'); if (ch) { S.state = ch.dataset.v; bdRender(B); } };
   bdGoalPills(B, byId('f-goal'));
-  bdChips(B, { el: byId('f-epic'), label: 'Эпик', key: 'epic', getter: c => c.epic });
-  bdChips(B, { el: byId('f-assignee'), label: 'Узел', key: 'assignee', getter: c => String(c.assignee), fmt: x => x === 'null' ? 'закрыто' : x });
-  bdChips(B, { el: byId('f-route'), label: 'Маршрут', key: 'route', getter: c => c.route || '—', fmt: bdLbl });
-  bdChips(B, { el: byId('f-rdy'), label: 'Готовность', key: 'rdy', getter: c => bdIsReady(c) ? 'готова' : 'не готова' });
+  bdChips(B, { el: byId('f-epic'), label: t('board.f.epic'), key: 'epic', getter: c => c.epic });
+  bdChips(B, { el: byId('f-assignee'), label: t('board.f.node'), key: 'assignee', getter: c => String(c.assignee), fmt: x => x === 'null' ? t('board.closed') : x });
+  bdChips(B, { el: byId('f-route'), label: t('board.f.route'), key: 'route', getter: c => c.route || '—', fmt: bdLbl });
+  bdChips(B, { el: byId('f-rdy'), label: t('board.f.rdy'), key: 'rdy', getter: c => bdIsReady(c) ? 'ready' : 'notReady', fmt: x => t('board.rdy.' + x) });
 }
 function bdRenderSummary(B, list) {
   const S = B.S;
-  document.getElementById('qn').textContent = S.q ? `найдено: ${list.length}` : '';
-  document.getElementById('stats').innerHTML = BOARD_STATUSES.map(([s, n, v]) =>
+  document.getElementById('qn').textContent = S.q ? t('board.found', { n: list.length }) : '';
+  document.getElementById('stats').innerHTML = bdStatuses().map(([s, n, v]) =>
     `<div class="stat" style="--c:var(${v})"><strong>${bdApply(B, B.DATA.cards.filter(c => c.status === s))
       .filter(c => !S.q || (c.code + ' ' + c.title).toLowerCase().includes(S.q.toLowerCase())).length}</strong><span>${n}</span></div>`).join('');
 
-  const grpName = {status:'Статусы', goal:'По целям', epic:'По эпикам', assignee:'По узлам'}[S.group];
-  const stName = {all:'Все', active:'В работе', open:'Все незакрытые', backlog:'Бэклог', done:'Готово'}[S.state] || S.state;
-  const sum = [['Срез', grpName], ['Показ', stName], ['Эпик', S.epic || 'все'], ['Узел', S.assignee ? (S.assignee === 'null' ? 'закрыто' : S.assignee) : 'все'],
-    ['Маршрут', S.route ? bdLbl(S.route) : 'все'], ['Готовность', S.rdy || 'все']];
+  const grpName = t('board.g.' + S.group);
+  const stName = S.state === 'active' ? t('board.s.activeShort') : t('board.s.' + S.state);
+  const sum = [[t('board.slice'), grpName], [t('board.show'), stName], [t('board.f.epic'), S.epic || t('board.all')], [t('board.f.node'), S.assignee ? (S.assignee === 'null' ? t('board.closed') : S.assignee) : t('board.all')],
+    [t('board.f.route'), S.route ? bdLbl(S.route) : t('board.all')], [t('board.f.rdy'), S.rdy ? t('board.rdy.' + S.rdy) : t('board.all')]];
   const bs = document.getElementById('bar-sum');
   bs.innerHTML = sum.map(([k, v]) => `<span class="sel-k">${k}</span><span class="chip on" data-k="${k}">${esc(v)}</span>`).join('');
   bs.title = sum.map(([k, v]) => k + ': ' + v).join(' · ');
@@ -295,8 +306,8 @@ function bdRenderMain(B, list) {
   const lanes = {};
   list.forEach(c => (lanes[key(c)] ||= []).push(c));
   const names = Object.keys(lanes).sort();
-  main.innerHTML = names.map(n => `<section class="lane"><h2>${esc(S.group === 'goal' ? bdGoalName(B, n) : n === 'null' ? 'закрыто' : n)} <small>${lanes[n].length}</small></h2>${bdColumns(B, lanes[n], n)}</section>`).join('')
-    || '<p class="empty">Под фильтр ничего не попало.</p>';
+  main.innerHTML = names.map(n => `<section class="lane"><h2>${esc(S.group === 'goal' ? bdGoalName(B, n) : n === 'null' ? t('board.closed') : n)} <small>${lanes[n].length}</small></h2>${bdColumns(B, lanes[n], n)}</section>`).join('')
+    || `<p class="empty">${t('board.nothing')}</p>`;
   restore();
 }
 function bdRender(B) {
@@ -311,7 +322,7 @@ function bdRender(B) {
 // --- Этап и ожидание карточки ---
 function bdStageNow(c) {
   const w = bdStageLine(c); if (w && BOARD_T.stage[w]) return w === 'close' && c.assignee == null ? 'closed' : w;
-  const st = (BOARD_ROUTES[c.route] || [])[1] || [], has = k => st.some(s => s[0] === k);
+  const st = (boardRoutes()[c.route] || [])[1] || [], has = k => st.some(s => s[0] === k);
   if (c.status === 'backlog') return c.ready.approval === false ? 'approve' : c.ready.task ? (has('approve') ? (has('kit') ? 'kit' : 'exec') : has('kit') ? 'kit' : 'exec') : 'card';
   if (c.status === 'todo') return has('kit') ? 'kit' : 'exec';
   if (c.status === 'in-progress') return 'exec';
@@ -323,81 +334,81 @@ const bdAccepted = (B, epic) => B.DATA.cards.filter(c => c.epic === epic && c.st
 function bdWaiting(B, c) {
   const r = c.ready;
   if (c.status === 'done') return c.assignee === 'Core'
-    ? ['flow', `ждёт Core: принято в эпике ${bdAccepted(B, c.epic)}${B.DATA.thresholds.volume ? ' из ' + B.DATA.thresholds.volume : ''} до закрытия круга`] : null;
-  if (c.humanFlag) return ['human', 'ждёт решения человека'];
-  if (!r.task) return ['blocked', 'ждёт пять полей задачи'];
-  if (!r.goal) return ['human', 'ждёт метку цели — какой цели карточка'];
-  if (!r.route) return ['blocked', 'ждёт выбора маршрута'];
-  if (r.approval === false) return ['human', 'ждёт одобрения пяти полей человеком'];
-  if (r.depsOpen.length) return ['blocked', 'ждёт приёмки ' + r.depsOpen.join(', ')];
-  if (bdBudgetOut(c)) return ['blocked', 'бюджет попыток исчерпан — к Spec на перенарезку'];
-  if (c.status === 'review') return ['human', 'ждёт проверки Intent и приёмки человеком'];
-  if (r.access === false || r.access === 'unknown') return ['blocked', 'ждёт подтверждения доступа'];
-  if (!r.kit && c.status !== 'in-progress') return ['flow', `ждёт снаряжения Kit (${r.kitUnits.length}/6)`];
-  if (c.status === 'in-progress') return ['flow', 'в работе у ' + (c.assignee || '—')];
-  return ['flow', c.status === 'todo' ? 'готова — ждёт Kit' : 'готова — ждёт взятия в работу'];
+    ? ['flow', t('board.w.core', { acc: bdAccepted(B, c.epic), of: B.DATA.thresholds.volume ? t('board.w.of', { v: B.DATA.thresholds.volume }) : '' })] : null;
+  if (c.humanFlag) return ['human', t('board.w.human')];
+  if (!r.task) return ['blocked', t('board.w.task')];
+  if (!r.goal) return ['human', t('board.w.goal')];
+  if (!r.route) return ['blocked', t('board.w.route')];
+  if (r.approval === false) return ['human', t('board.w.approve')];
+  if (r.depsOpen.length) return ['blocked', t('board.w.deps', { list: r.depsOpen.join(', ') })];
+  if (bdBudgetOut(c)) return ['blocked', t('board.w.budget')];
+  if (c.status === 'review') return ['human', t('board.w.review')];
+  if (r.access === false || r.access === 'unknown') return ['blocked', t('board.w.access')];
+  if (!r.kit && c.status !== 'in-progress') return ['flow', t('board.w.kit', { k: r.kitUnits.length })];
+  if (c.status === 'in-progress') return ['flow', t('board.w.inWork', { who: c.assignee || '—' })];
+  return ['flow', t(c.status === 'todo' ? 'board.w.readyKit' : 'board.w.readyTake')];
 }
 const bdWaitHtml = (B, c) => { const w = bdWaiting(B, c); return w ? `<div class="wait ${w[0]}">⏳ ${esc(w[1])}</div>` : ''; };
 const bdDlgOpen = (B, code, html) => { const d = document.getElementById('dlg'); d.dataset.code = code || ''; if (d.open) d.close();
   d.innerHTML = `<button onclick="this.closest('dialog').close()">✕</button>` + B.linkLaw(html); d.showModal(); };
-const bdCardRow = o => `<li><a href="#" data-open="${o.code}" title="${o.code}">${bdCl(o.code)}</a> ${esc(o.title)} <small>· ${esc(BOARD_T.status[o.status] || o.status)} · ${esc(o.assignee ?? 'закрыто')}</small></li>`;
+const bdCardRow = o => `<li><a href="#" data-open="${o.code}" title="${o.code}">${bdCl(o.code)}</a> ${esc(o.title)} <small>· ${esc(BOARD_T.status[o.status] || o.status)} · ${esc(o.assignee ?? t('board.closed'))}</small></li>`;
 function bdRouteHtml(c) {
-  const R = BOARD_ROUTES[c.route]; if (!R) return '<p class="miss">Маршрут не выбран — нет метки route-N.</p>';
+  const R = boardRoutes()[c.route]; if (!R) return `<p class="miss">${t('board.routeNone')}</p>`;
   const now = bdStageNow(c), exact = !!bdStageLine(c), idx = R[1].findIndex(s => s[0] === now), all = now === 'closed';
-  const hist = k => ({ approve: /одобрил|approved/i, check: /провер|review/i, accept: /принят|accepted/i })[k];
+  const hist = k => ({ approve: /одобрил|approved/i, check: /провер|review/i, accept: /принят|accepted/i })[k]; // i18n-keep: слова из истории карточки
   const dateOf = k => { const re = hist(k); if (!re) return ''; const l = c.history.find(x => re.test(x)); const m = l && l.match(/\d{4}-\d{2}-\d{2}/); return m ? m[0] : ''; };
-  return `<div class="route">${R[1].map((s, i) => `${i ? '<span class="arrow">→</span>' : ''}<div class="stage ${all || i < idx ? 'done' : i === idx ? 'now' : ''}">${all || i < idx ? '✓ ' : ''}${esc(s[1])}<small>${esc(s[2])}${dateOf(s[0]) ? ' · ' + dateOf(s[0]) : ''}</small></div>`).join('')}</div>
-    <p class="meta">${bdLbl(c.route)} <small>(${c.route})</small> — ${esc(R[0])}. Сейчас: <b>${BOARD_T.stage[now] || now}</b> ${exact ? '<small>(записано в истории)</small>' : '<small class="miss">≈ по статусу «' + (BOARD_T.status[c.status] || c.status) + '», строки stage нет</small>'}</p>`;
+  return `<div class="route">${R[1].map((s, i) => `${i ? '<span class="arrow">→</span>' : ''}<div class="stage ${all || i < idx ? 'done' : i === idx ? 'now' : ''}"${i === idx && !all ? ` data-here="${esc(t('board.here'))}"` : ''}>${all || i < idx ? '✓ ' : ''}${esc(s[1])}<small>${esc(s[2])}${dateOf(s[0]) ? ' · ' + dateOf(s[0]) : ''}</small></div>`).join('')}</div>
+    <p class="meta">${bdLbl(c.route)} <small>(${c.route})</small> — ${esc(R[0])}. ${t('board.now')} <b>${BOARD_T.stage[now] || now}</b> ${exact ? `<small>${t('board.nowRecorded')}</small>` : `<small class="miss">${t('board.nowGuess', { s: BOARD_T.status[c.status] || c.status })}</small>`}</p>`;
 }
 function bdOpenRoute(B, code) {
   const c = B.byCode[code]; if (!c) return;
-  const why = c.history.filter(l => /route-\d|маршрут/i.test(l));
+  const why = c.history.filter(l => /route-\d|маршрут/i.test(l)); // i18n-keep
   const over = c.labels.filter(l => /^over-\d$/.test(l));
   const w = bdWaiting(B, c);
-  bdDlgOpen(B, code, `<div class="code">маршрут · ${bdCl(code)}</div><h2>${esc(c.title)}</h2>${bdRouteHtml(c)}
+  bdDlgOpen(B, code, `<div class="code">${t('board.dlg.route')} · ${bdCl(code)}</div><h2>${esc(c.title)}</h2>${bdRouteHtml(c)}
     ${w ? `<div class="wait ${w[0]}">⏳ ${esc(w[1])}</div>` : ''}
-    <dl>${over.length ? `<dt>Наложения</dt><dd>${over.join(', ')}</dd>` : ''}
-    <dt>Причина (код why)</dt><dd>${bdWhyCodes(c).length ? bdWhyCodes(c).map(([r, k]) => `${esc(bdLbl(r.split(' ')[0]))}${r.includes('→') ? ' → ' + esc(bdLbl(r.split('→')[1].trim())) : ''}: <b>${esc(BOARD_T.why[k] || k)}</b> <small>(${esc(k)})</small>`).join('<br>') : '<span class="miss">кода причины нет</span>'}</dd>
-    <dt>Строки маршрута в истории</dt><dd>${why.length ? '<ul class="rel">' + why.map(l => `<li><small>${esc(l)}</small></li>`).join('') + '</ul>' : '<span class="miss">причина не записана (§6)</span>'}</dd></dl>`);
+    <dl>${over.length ? `<dt>${t('board.overlays')}</dt><dd>${over.join(', ')}</dd>` : ''}
+    <dt>${t('board.whyCode')}</dt><dd>${bdWhyCodes(c).length ? bdWhyCodes(c).map(([r, k]) => `${esc(bdLbl(r.split(' ')[0]))}${r.includes('→') ? ' → ' + esc(bdLbl(r.split('→')[1].trim())) : ''}: <b>${esc(BOARD_T.why[k] || k)}</b> <small>(${esc(k)})</small>`).join('<br>') : `<span class="miss">${t('board.noWhy')}</span>`}</dd>
+    <dt>${t('board.routeLines')}</dt><dd>${why.length ? '<ul class="rel">' + why.map(l => `<li><small>${esc(l)}</small></li>`).join('') + '</ul>' : `<span class="miss">${t('board.whyMissing')}</span>`}</dd></dl>`);
 }
 function bdOpenGoal(B, g) {
   const DATA = B.DATA, gi = DATA.goalInfo[g] || {}, list = DATA.cards.filter(c => (c.goal || '—') === (g || '—'));
-  const n = BOARD_STATUSES.map(([s, nm]) => `${nm} ${list.filter(c => c.status === s).length}`).join(' · ');
-  bdDlgOpen(B, '', `<div class="code">цель · ${esc(g || 'без цели')}</div><h2>${esc(g ? bdGoalName(B, g) : 'Карточки без цели')}</h2>
-    <dl><dt>Образ</dt><dd>${gi.image ? esc(gi.image) : '—'}${gi.draft ? ' <span class="miss">(черновик)</span>' : ''}</dd>
-    <dt>Кто закрывает</dt><dd>${esc(gi.closer || '—')}</dd><dt>Карточки: ${list.length}</dt><dd>${n}</dd></dl>
-    <ul class="rel">${list.filter(c => c.status !== 'done').map(bdCardRow).join('') || '<li>открытых нет</li>'}</ul>`);
+  const n = bdStatuses().map(([s, nm]) => `${nm} ${list.filter(c => c.status === s).length}`).join(' · ');
+  bdDlgOpen(B, '', `<div class="code">${t('board.dlg.goal')} · ${esc(g || t('board.noGoal'))}</div><h2>${esc(g ? bdGoalName(B, g) : t('board.noGoalCards'))}</h2>
+    <dl><dt>${t('board.image')}</dt><dd>${gi.image ? esc(gi.image) : '—'}${gi.draft ? ` <span class="miss">${t('board.draft')}</span>` : ''}</dd>
+    <dt>${t('board.closer')}</dt><dd>${esc(gi.closer || '—')}</dd><dt>${t('board.cardsN', { n: list.length })}</dt><dd>${n}</dd></dl>
+    <ul class="rel">${list.filter(c => c.status !== 'done').map(bdCardRow).join('') || `<li>${t('board.noOpen')}</li>`}</ul>`);
 }
 function bdOpenEpic(B, e) {
   const list = B.DATA.cards.filter(c => c.epic === e), acc = bdAccepted(B, e), v = B.DATA.thresholds.volume;
-  bdDlgOpen(B, '', `<div class="code">эпик</div><h2>${esc(e)}</h2>
-    <dl><dt>Круг</dt><dd>принято и ждёт Core: <b>${acc}</b>${v ? ` из ${v} — порог объёма круга (PROJECT.md)` : ''}; закрыто: ${list.filter(c => c.status === 'done' && c.assignee == null).length}</dd>
-    <dt>Маршрут эпика</dt><dd>${/\/Intent\+Kit/.test(e) ? 'короткий: Intent → человек → Kit → Intent (route-4 по умолчанию)' : 'через Spec'}</dd>
-    <dt>По статусам</dt><dd>${BOARD_STATUSES.map(([s, nm]) => `${nm} ${list.filter(c => c.status === s).length}`).join(' · ')}</dd></dl>
-    <ul class="rel">${list.filter(c => c.status !== 'done').map(bdCardRow).join('') || '<li>открытых нет</li>'}</ul>`);
+  bdDlgOpen(B, '', `<div class="code">${t('board.dlg.epic')}</div><h2>${esc(e)}</h2>
+    <dl><dt>${t('board.cycle')}</dt><dd>${t('board.cycleText', { acc, of: v ? t('board.cycleOf', { v }) : '', closed: list.filter(c => c.status === 'done' && c.assignee == null).length })}</dd>
+    <dt>${t('board.epicRoute')}</dt><dd>${/\/Intent\+Kit/.test(e) ? t('board.epicShort') : t('board.epicSpec')}</dd>
+    <dt>${t('board.byStatus')}</dt><dd>${bdStatuses().map(([s, nm]) => `${nm} ${list.filter(c => c.status === s).length}`).join(' · ')}</dd></dl>
+    <ul class="rel">${list.filter(c => c.status !== 'done').map(bdCardRow).join('') || `<li>${t('board.noOpen')}</li>`}</ul>`);
 }
 function bdCardLinks(B, c) {
   return [
-    c.mentions.length ? `<dt>Упоминают эту карточку</dt><dd><ul class="rel">${c.mentions.map(m => B.byCode[m] ? bdCardRow(B.byCode[m]) : `<li>${m}</li>`).join('')}</ul></dd>` : '',
-    B.dependents[c.code] ? `<dt>Ждут её (after-card)</dt><dd>${B.dependents[c.code].map(x => `<a href="#" data-open="${x}">${x}</a>`).join(', ')}</dd>` : '',
+    c.mentions.length ? `<dt>${t('board.mentions')}</dt><dd><ul class="rel">${c.mentions.map(m => B.byCode[m] ? bdCardRow(B.byCode[m]) : `<li>${m}</li>`).join('')}</ul></dd>` : '',
+    B.dependents[c.code] ? `<dt>${t('board.waiters')}</dt><dd>${B.dependents[c.code].map(x => `<a href="#" data-open="${x}">${x}</a>`).join(', ')}</dd>` : '',
     c.adrs.length ? `<dt>ADR</dt><dd>${c.adrs.map(esc).join(', ')}</dd>` : '',
-    c.commits.length ? `<dt>Коммиты (${c.commits.length})</dt><dd><ul class="rel">${c.commits.map(([h, d, s]) => `<li><code>${esc(h)}</code> ${esc(d)} <small>${esc(s)}</small></li>`).join('')}</ul></dd>` : '',
-    c.materials.length ? `<dt>Материалы — project/cards/${c.code}/</dt><dd>${c.materials.map(esc).join(', ')}</dd>` : '',
+    c.commits.length ? `<dt>${t('board.commits', { n: c.commits.length })}</dt><dd><ul class="rel">${c.commits.map(([h, d, s]) => `<li><code>${esc(h)}</code> ${esc(d)} <small>${esc(s)}</small></li>`).join('')}</ul></dd>` : '',
+    c.materials.length ? `<dt>${t('board.materials', { code: c.code })}</dt><dd>${c.materials.map(esc).join(', ')}</dd>` : '',
   ].join('');
 }
 function bdOpenCard(B, code) {
   const c = B.byCode[code]; if (!c) return;
   const r = c.ready, w = bdWaiting(B, c), left = r.budgetLeft;
   const tl = c.history.map(l => `<li style="--c:var(${BOARD_NODE_C[bdWho(l)] || '--ink-faint'})"><small>${esc(l)}</small></li>`).join('');
-  bdDlgOpen(B, code, `<div class="code" title="${c.code}">${bdCl(c.code)} · ${esc(BOARD_T.status[c.status] || c.status)} · ${esc(c.assignee ?? 'закрыто')}</div><h2>${esc(c.title)}</h2>
+  bdDlgOpen(B, code, `<div class="code" title="${c.code}">${bdCl(c.code)} · ${esc(BOARD_T.status[c.status] || c.status)} · ${esc(c.assignee ?? t('board.closed'))}</div><h2>${esc(c.title)}</h2>
     ${w ? `<div class="wait ${w[0]}">⏳ ${esc(w[1])}</div>` : ''}
-    <dl><dt>Маршрут — <a href="#" data-route="${c.code}">подробнее</a></dt><dd>${bdRouteHtml(c)}</dd>
-    <dt>Готовность к запуску</dt><dd>${bdIsReady(c) ? 'готова' : 'не готова'}${bdPips(B, c)}</dd><dt>Вид</dt><dd>${esc(c.kind)}</dd><dt>Что даёт</dt><dd>${esc(c.delivers)}</dd><dt>Критерий готовности</dt><dd>${esc(c.criterion)}</dd>
-    <dt>Попытки</dt><dd>бюджет ${esc(c.budget)}, записано ${c.attempts}${left === null ? '' : left < 0 ? `, <span class="miss">сверх бюджета на ${-left}</span>` : `, осталось ${left}`}${B.DATA.thresholds.attempts ? ` · порог проекта ${B.DATA.thresholds.attempts}` : ''}</dd>
-    <dt>Куда дальше</dt><dd>${esc(c.next)}</dd>
-    <dt>Цель · эпик · метки</dt><dd><a href="#" data-goal="${esc(c.goal || '')}">${esc(bdGoalName(B, c.goal))}</a> · <a href="#" data-epic="${esc(c.epic)}">${esc(c.epic)}</a> · ${c.labels.map(esc).join(', ')}</dd>
+    <dl><dt>${t('board.routeMore', { code: c.code })}</dt><dd>${bdRouteHtml(c)}</dd>
+    <dt>${t('board.readiness')}</dt><dd>${t(bdIsReady(c) ? 'board.rdy.ready' : 'board.rdy.notReady')}${bdPips(B, c)}</dd><dt>${t('board.kind')}</dt><dd>${esc(c.kind)}</dd><dt>${t('board.delivers')}</dt><dd>${esc(c.delivers)}</dd><dt>${t('board.criterion')}</dt><dd>${esc(c.criterion)}</dd>
+    <dt>${t('board.attempts')}</dt><dd>${t('board.att.text', { b: esc(c.budget), n: c.attempts })}${left === null ? '' : left < 0 ? t('board.att.over', { n: -left }) : t('board.att.left', { n: left })}${B.DATA.thresholds.attempts ? t('board.att.cap', { n: B.DATA.thresholds.attempts }) : ''}</dd>
+    <dt>${t('board.next')}</dt><dd>${esc(c.next)}</dd>
+    <dt>${t('board.glm')}</dt><dd><a href="#" data-goal="${esc(c.goal || '')}">${esc(bdGoalName(B, c.goal))}</a> · <a href="#" data-epic="${esc(c.epic)}">${esc(c.epic)}</a> · ${c.labels.map(esc).join(', ')}</dd>
     ${bdCardLinks(B, c)}
-    <dt>История (${c.history.length})</dt><dd><ul class="tl">${tl || '<li>пусто</li>'}</ul></dd></dl>`);
+    <dt>${t('board.history', { n: c.history.length })}</dt><dd><ul class="tl">${tl || `<li>${t('board.empty')}</li>`}</ul></dd></dl>`);
 }
 
 // --- События: переключатель среза, поиск, клики по доске и по окну карточки ---
@@ -443,19 +454,19 @@ function boardInit(DATA) {
   const B = { DATA, S: bdLoadState(), byCode: Object.fromEntries(DATA.cards.map(c => [c.code, c])), dependents: {}, linkLaw: null };
   DATA.cards.forEach(c => c.ready.deps.forEach(d => (B.dependents[d] ||= []).push(c.code)));
   bdBindSearch(B); bdBindMain(B); bdBindDialog(B);
-  document.getElementById('proj').textContent = 'Проект ' + DATA.project;
-  document.title = DATA.project + ' · Доска';
+  document.getElementById('proj').textContent = t('board.project', { name: DATA.project });
+  document.title = t('board.docTitle', { name: DATA.project });
   document.getElementById('q').value = B.S.q;
-  document.getElementById('gen').textContent = `данные на ${new Date(DATA.generated).toLocaleString('ru')} · ${DATA.cards.length} карточек`;
+  document.getElementById('gen').textContent = t('board.generated', { d: new Date(DATA.generated).toLocaleString(curLang()), n: DATA.cards.length });
   bdRender(B);
-  B.linkLaw = lawInit({ DATA, esc, T: BOARD_T, lbl: bdLbl, ROUTES: BOARD_ROUTES }).linkLaw;
+  B.linkLaw = lawInit({ DATA, esc, T: BOARD_T, lbl: bdLbl, ROUTES: boardRoutes() }).linkLaw;
 }
 
 // Панель фильтров доски: выбор человека (открыта/свёрнута) — в localStorage; прокрутка вниз сворачивает, наверх — возвращает выбор.
 (function(){
   var bar=document.getElementById('bar'), btn=document.getElementById('bar-toggle'), K='boardBarOpen', open=false, auto=false;
   try{ open=localStorage.getItem(K)==='1'; }catch(e){ /* localStorage закрыт — панель открывается свёрнутой */ }
-  function show(){ var o=open&&!auto; bar.classList.toggle('collapsed',!o); btn.textContent=o?'Фильтры ▴':'Фильтры ▾'; btn.setAttribute('aria-expanded',o); }
+  function show(){ var o=open&&!auto; bar.classList.toggle('collapsed',!o); btn.textContent=t('board.filters')+(o?' ▴':' ▾'); btn.setAttribute('aria-expanded',o); }
   btn.onclick=function(){ if(auto){ auto=false; open=true; } else open=!open; try{ localStorage.setItem(K,open?'1':'0'); }catch(e){ /* localStorage закрыт — выбор не запомнится */ } show(); };
   // Страница доски не крутится — слушаем прокрутку любого списка карточек и самой доски (capture: scroll не всплывает).
   document.addEventListener('scroll',function(e){ var t=e.target, y=(t===document||t===document.documentElement)?scrollY:t.scrollTop; if(t!==document&&t!==document.documentElement&&!(t.id==='main'||t.classList&&t.classList.contains('col-list')))return; if(y>160&&!auto&&open){ auto=true; show(); } else if(y<20&&auto){ auto=false; show(); } },{passive:true,capture:true});

@@ -14,7 +14,8 @@
         { "title": { "en": "Economy contract", "ru": "Экономический контракт" }, "page": "03-forma/ECONOMY.md" },
         { "title": { "en": "Skills and plugins", "ru": "Скиллы и плагины" }, "page": "03-forma/SKILLS.md" },
         { "title": { "en": "Five zones of the «Form» .forma/protocol", "ru": "Пять зон протокола «Форма»" }, "page": "03-forma/ZONES.md" },
-        { "title": { "en": "Project kitting", "ru": "Комплектация проекта" }, "page": "03-forma/KITTING.md" }
+        { "title": { "en": "Project kitting", "ru": "Комплектация проекта" }, "page": "03-forma/KITTING.md" },
+        { "title": { "en": "Dashboard localization", "ru": "Локализация дашборда" }, "page": "03-forma/LOCALIZATION.md" }
       ]
     },
     { "title": { "en": "4. End-image/Intent", "ru": "4. Образ результата/Intent" }, "page": "04-result-image/README.md" },

@@ -12,11 +12,11 @@ const engines = require('./lib/engines.cjs');
 
 // Группы ядра; группы адаптеров (поле `structure`) встают между «Движком» и «Проектом».
 const CORE_GROUPS = [
-  { key: '.forma/protocol', title: 'Протокол · исходник плагина', note: 'отдельный репозиторий: из него ставится плагин в проекты',
+  { key: '.forma/protocol', title: 'Protocol · plugin source', note: 'a separate repository: the plugin is installed into projects from it',
     roots: ['.forma/protocol'] },
-  { key: 'engine', title: 'Движок', note: 'сама система в этом проекте — без исходника протокола',
+  { key: 'engine', title: 'Engine', note: 'the system itself in this project — without the protocol source',
     roots: ['AGENTS.md', '.forma/board', { p: '.devtool', dirs: true }, '.forma/skills', '.forma/manual', '.forma/dashboard', '.forma/living'] },
-  { key: 'project', title: 'Проект', note: 'из чего состоит проект — первый уровень, без рабочего содержимого',
+  { key: 'project', title: 'Project', note: 'what the project consists of — first level, without working content',
     roots: [{ p: 'project', max: 2 }] },
 ];
 
@@ -32,7 +32,7 @@ function groupsFor(root) {
 // динамика — то, что ведётся по ходу работы. mixed — в файле настроек пока ведётся динамика
 // (что именно — в why); разделение — отдельное решение.
 const PROJECT_KINDS = [
-  { key: 'static', title: 'Статика · настройки', note: 'правит человек; по ходу работы не меняется', items: [
+  { key: 'static', title: 'Static · settings', note: 'edited by a human; does not change during work', items: [
     { p: 'project/PROJECT.md', note: 'язык, пороги, эпики, маршруты, сервисы, оснастка, доступы',
       mixed: 'статус шаблона, «Версия на сегодня» справочников, реестр оформленных умений' },
     { p: 'project/CONFIG.md', note: 'структура разделов проекта и доски',
@@ -41,7 +41,7 @@ const PROJECT_KINDS = [
       mixed: '«Пройдено», «Точки выбора»' },
     { p: 'project/SETUP.md', note: 'порядок подготовки проекта' },
   ] },
-  { key: 'dynamic', title: 'Динамика · ведение проекта', note: 'статистика и состояние; пишут узлы по ходу работы', items: [
+  { key: 'dynamic', title: 'Dynamics · project keeping', note: 'statistics and state; written by the nodes during work', items: [
     { p: 'project/JOURNAL.md', note: 'журнал кругов' },
     { p: 'project/VALUE.md', note: 'статистика и ценность по закрытым целям' },
     { p: 'project/ROADMAP.md', note: 'карта целей и их состояние' },
@@ -50,13 +50,13 @@ const PROJECT_KINDS = [
     { p: 'project/experience', note: 'опыт: факты среды' },
     { p: '.devtool/features', note: 'доска: карточки' },
   ] },
-  { key: 'data', title: 'Постоянные данные', note: 'задаются один раз, дальше только читаются', items: [
+  { key: 'data', title: 'Permanent data', note: 'set once, then only read', items: [
     { p: 'project/brief', note: 'якорь: что сказал человек до первой цели' },
     { p: 'project/VARS', note: 'решённые величины и доступы' },
     { p: 'project/reference', note: 'справочные материалы' },
     { p: 'project/design-system', note: 'дизайн-система' },
   ] },
-  { key: 'free', title: 'Содержание проекта', note: 'сам продукт — своё у каждого проекта', items: [
+  { key: 'free', title: 'Project content', note: 'the product itself — different in every project', items: [
     { p: 'project/mockups', note: 'макеты и карта сайта (SITEMAP.md)' },
     { p: 'project/theme', note: 'тема сайта' },
     { p: 'project/prompts', note: 'промпты страниц' },
@@ -74,7 +74,7 @@ function projectKinds(root) {
   // всё в корне project/, что не разнесено по родам, — видно отдельно, а не пропадает
   let rest = [];
   try { rest = fs.readdirSync(path.join(root, 'project')).filter(n => !SKIP.has(n)).map(n => 'project/' + n).filter(p => !known.has(p)); } catch { /* нет каталога project/ — неразнесённого нет */ }
-  if (rest.length) kinds.push({ key: 'unsorted', title: 'Не разнесено', note: 'в корне project/, род не назначен',
+  if (rest.length) kinds.push({ key: 'unsorted', title: 'Not sorted', note: 'in the root of project/, no kind assigned',
     items: rest.map(p => { const n = node(root, p, MAX_DEPTH); return { name: p, note: null, mixed: null, dir: n.dir, files: n.files }; }) });
   return kinds;
 }
