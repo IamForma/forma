@@ -11,15 +11,15 @@ const { walk, readIfExists } = require('../lib/fs.cjs');
 const { boardDir, parseFrontmatter } = require('../lib/card.cjs');
 
 const SETUP_STEPS = [
-  { n: '1',   name: 'Бриф (интервью)',      file: 'project/brief/interview.md' },
-  { n: '1b',  name: 'Взгляд узлов',         file: 'project/brief/nodes-vision.md' },
-  { n: '2',   name: 'История',              file: 'project/brief/history.md' },
-  { n: '3',   name: 'Карта сайта',          file: 'project/mockups/sitemap.md' },
-  { n: '4',   name: 'Prompt лендинга',      file: 'project/brief/prompt.md' },
-  { n: '5',   name: 'Референсы',            file: 'project/brief/reference.md' },
-  { n: '6',   name: 'Дизайн-система',       file: 'project/reference/design-system.md' },
-  { n: '9',   name: 'Макап загружен',       dir:  'project/mockups', glob: /^v\d+$/ },
-  { n: '10b', name: 'Комплектация',         file: 'project/brief/kitting.md' },
+  { n: '1',   name: 'Brief (interview)',     file: 'project/brief/interview.md' },
+  { n: '1b',  name: 'Nodes view',            file: 'project/brief/nodes-vision.md' },
+  { n: '2',   name: 'History',              file: 'project/brief/history.md' },
+  { n: '3',   name: 'Site map',             file: 'project/mockups/sitemap.md' },
+  { n: '4',   name: 'Landing prompt',      file: 'project/brief/prompt.md' },
+  { n: '5',   name: 'References',            file: 'project/brief/reference.md' },
+  { n: '6',   name: 'Design system',        file: 'project/reference/design-system.md' },
+  { n: '9',   name: 'Mockup uploaded',       dir:  'project/mockups', glob: /^v\d+$/ },
+  { n: '10b', name: 'Kitting',                 file: 'project/brief/kitting.md' },
 ];
 
 const readOrNull = (p) => readIfExists(p, null);
@@ -128,18 +128,18 @@ function goalViolations(goal) {
   if (production && goal.cards > 0 && goal.draft) {
     out.push({
       kind: 'cards-without-image', goal: goal.id, count: goal.cards,
-      text: `${goal.id}: ${goal.cards} карточек нарезано под цель, у которой образ результата — черновик`,
+      vars: { goal: goal.id, count: goal.cards },
     });
   }
   if (/^goal-\d+$/.test(goal.id) && goal.epic && goal.roadmapName && !goal.roadmapName.startsWith(
     goal.epic.replace(/^goal-\d+\s+/, '').replace(/\/SKRIC$/, ''))) {
     out.push({
       kind: 'epic-name-drift', goal: goal.id,
-      text: `${goal.id}: имя эпика разошлось с ROADMAP.md — там «${goal.roadmapName}»`,
+      vars: { goal: goal.id, name: goal.roadmapName },
     });
   }
   if (!goal.hasGoalMd) {
-    out.push({ kind: 'no-goal-md', goal: goal.id, text: `${goal.id}: нет GOAL.md` });
+    out.push({ kind: 'no-goal-md', goal: goal.id, vars: { goal: goal.id } });
   }
   return out;
 }
@@ -151,14 +151,14 @@ function chainViolations(goals, orphanEpics, interviewDone) {
   for (const [epic, count] of orphanEpics) {
     violations.push({
       kind: 'epic-without-goal', goal: null, count,
-      text: `эпик «${epic}» (${count} карточек) не привязан ни к одной цели`,
+      vars: { epic, count },
     });
   }
   const withImage = [...goals.values()].filter((g) => !g.draft).length;
   if (!interviewDone && withImage) {
     violations.push({
       kind: 'image-without-interview', goal: null,
-      text: `${withImage} целей с заполненным образом, но брифа интервью нет (шаг 1)`,
+      vars: { n: withImage },
     });
   }
   return violations;

@@ -96,7 +96,7 @@ function readSpendCards(projectRoot) {
 function groupEpics(cards) {
   const epics = {};
   for (const c of cards) {
-    const key = c.epic || '(без эпика)';
+    const key = c.epic || '(no epic)';
     if (!epics[key]) {
       epics[key] = { epic: key, cardCount: 0, byStatus: {}, tokensByEngine: {}, costUsdTotal: 0, attemptCount: 0, cards: [] };
     }

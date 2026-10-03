@@ -5,7 +5,7 @@
 const docsState = { book: null, lang: 'ru', page: null, q: '' };
 
 function docsTitleText(title, lang) {
-  if (title && typeof title === 'object') return title[lang] || title.ru || title.en || '';
+  if (title && typeof title === 'object') return title.key ? t(title.key) : (title[lang] || title.ru || title.en || '');
   return title == null ? '' : String(title);
 }
 
@@ -45,16 +45,16 @@ function docsSearchResults(pages, q, lang) {
 
 function docsHtml(d) {
   const docs = d && d.docs;
-  if (!docs || !docs.books || !docs.books.length) return `<div class="chain-clean">Данных нет.</div>`;
+  if (!docs || !docs.books || !docs.books.length) return `<div class="chain-clean">${t('docs.noData')}</div>`;
   if (!docsState.book) docsState.book = docs.books[0].id;
   const book = docs.books.find((b) => b.id === docsState.book) || docs.books[0];
   const isManual = book.id === '.forma/manual';
   const lang = isManual ? docsState.lang : null;
 
-  const switcher = `<nav class="doc-books">${docs.books.map((b) => `<span class="tab ${b.id === book.id ? 'on' : ''}" data-doc-book="${b.id}">${esc(docsTitleText(b.title, 'ru'))}</span>`).join('')}
+  const switcher = `<nav class="doc-books">${docs.books.map((b) => `<span class="tab ${b.id === book.id ? 'on' : ''}" data-doc-book="${b.id}">${esc(docsTitleText(b.title, curLang()))}</span>`).join('')}
     ${isManual ? `<span class="doc-langs"><span class="tab ${lang === 'en' ? 'on' : ''}" data-doc-lang="en">EN</span><span class="tab ${lang === 'ru' ? 'on' : ''}" data-doc-lang="ru">RU</span></span>` : ''}</nav>`;
 
-  if (book.error) return `${switcher}<div class="chain-clean">Ошибка сборки книги: ${esc(book.error)}</div>`;
+  if (book.error) return `${switcher}<div class="chain-clean">${esc(t('docs.buildError', {err: book.error}))}</div>`;
 
   const pages = docsBookPages(book, lang);
   const unlisted = docsBookUnlisted(book, lang);
@@ -63,17 +63,17 @@ function docsHtml(d) {
 
   const results = docsSearchResults(pages, docsState.q, lang);
   const sidebar = `<aside class="doc-side">
-    <input type="search" class="doc-search" placeholder="Искать в книге…" value="${esc(docsState.q)}">
+    <input type="search" class="doc-search" placeholder="${esc(t('docs.search'))}" value="${esc(docsState.q)}">
     ${results
-      ? `<div class="doc-results">${results.length ? results.map((p) => `<a href="#" class="doc-link" data-page="${esc(p.page)}">${esc(docsTitleText(p.title, lang))}</a>`).join('') : '<div class="doc-empty">Ничего не найдено.</div>'}</div>`
+      ? `<div class="doc-results">${results.length ? results.map((p) => `<a href="#" class="doc-link" data-page="${esc(p.page)}">${esc(docsTitleText(p.title, lang))}</a>`).join('') : `<div class="doc-empty">${t('docs.notFound')}</div>`}</div>`
       : docsTocHtml((book.toc && book.toc.items) || [], lang, docsState.page)}
-    ${unlisted.length ? `<details class="doc-unlisted"><summary>Не включены в содержание (${unlisted.length})</summary><ul>${unlisted.map((p) => `<li>${esc(p)}</li>`).join('')}</ul></details>` : ''}
+    ${unlisted.length ? `<details class="doc-unlisted"><summary>${t('docs.unlisted', {n: unlisted.length})}</summary><ul>${unlisted.map((p) => `<li>${esc(p)}</li>`).join('')}</ul></details>` : ''}
   </aside>`;
 
   const crumbs = current ? `<nav class="doc-crumbs">${current.breadcrumbs.map((t) => esc(docsTitleText(t, lang))).join(' › ')}</nav>` : '';
   const body = current
     ? `${crumbs}<article class="doc-article md">${docsMd(current.text)}</article>`
-    : `<div class="chain-clean">В содержании этой книги пока нет пунктов.</div>`;
+    : `<div class="chain-clean">${t('docs.emptyToc')}</div>`;
 
   return `${switcher}<div class="doc-layout">${sidebar}<section class="doc-main">${body}</section></div>`;
 }
