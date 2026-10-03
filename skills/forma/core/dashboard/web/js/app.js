@@ -23,8 +23,10 @@ function renderPanels(d) {
   }
 }
 function renderAll(d) { renderPanels(d); boardInit(d.board); }
-fetch('./data.json').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(renderAll)
+i18nInit().then(() => fetch('./data.json')).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(renderAll)
   .catch(err => { document.getElementById('main').textContent = 'Не удалось получить данные (' + err + '). Дашборд открывается через свой сервер: node .forma/dashboard/serve.js'; });
+// Смена языка — перерисовка последнего среза данных на новом языке.
+document.addEventListener('i18n', () => { if (latestData) renderAll(latestData); });
 // Живое обновление: serve.js пушит полный срез при каждой правке карточки. Первое сообщение — те же данные, что дал fetch.
 if (window.EventSource) {
   let first = true;

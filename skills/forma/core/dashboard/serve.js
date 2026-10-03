@@ -19,6 +19,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync, spawn } = require('child_process');
 const { writeJsonAtomic } = require('./lib/fs.cjs');
+const i18n = require('./lib/i18n.cjs');
 const { DEFAULT_PORT } = require('./port.cjs');
 
 const ROOT = __dirname;
@@ -629,6 +630,9 @@ function handleStatic(req, res, urlPath) {
   });
 }
 
+// Языки интерфейса: по файлу на язык в locales/ (web/js/i18n.js).
+function handleLocales(req, res) { sendJson(res, 200, { default: i18n.FALLBACK, locales: i18n.listLocales() }); }
+
 // Таблица маршрутов: метод + путь → функция `(req, res)`. Нет строки — `handleStatic`.
 // ANY — маршрут, который не смотрел на метод и до таблицы; так и оставлен, чтобы разбор запроса не менял поведения.
 const ANY = '*';
@@ -638,6 +642,7 @@ const ROUTES = [
   { method: ANY, path: '/interview/open', handle: handleOpen },
   { method: 'POST', path: '/interview/answer', handle: handleAnswer },
   { method: ANY, path: '/data.json', handle: handleData },
+  { method: ANY, path: '/locales.json', handle: handleLocales },
 ];
 
 const findRoute = (method, urlPath) => ROUTES.find((r) => r.path === urlPath && (r.method === ANY || r.method === method));

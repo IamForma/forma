@@ -1,0 +1,12 @@
+{
+  "_meta.name": "Русский",
+  "app.title": "Канбан",
+  "lang.label": "Язык",
+  "tab.board": "Канбан",
+  "tab.interview": "Интервью",
+  "tab.nodes": "Форма",
+  "tab.docs": "Документация",
+  "tab.economy": "Экономика",
+  "tab.graphs": "Графы",
+  "tab.settings": "Настройки"
+}

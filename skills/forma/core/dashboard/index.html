@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Канбан</title>
+<title>Kanban</title>
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="web/css/base.css">
@@ -11,7 +11,8 @@
 </head>
 <body>
 <header>
-  <h1><span id="proj"></span></h1><nav class="tabs"><span class="tab on" data-view=".forma/board">Канбан</span><span class="tab" data-view="interview">Интервью</span><span class="tab" data-view="nodes">Форма</span><span class="tab" data-view="docs">Документация</span><span class="tab" data-view="economy">Экономика</span><span class="tab" data-view="graphs">Графы</span><span class="tab" data-view="settings">Настройки</span></nav>
+  <h1><span id="proj"></span></h1><nav class="tabs"><span class="tab on" data-view=".forma/board" data-i18n="tab.board">Kanban</span><span class="tab" data-view="interview" data-i18n="tab.interview">Interview</span><span class="tab" data-view="nodes" data-i18n="tab.nodes">Form</span><span class="tab" data-view="docs" data-i18n="tab.docs">Documentation</span><span class="tab" data-view="economy" data-i18n="tab.economy">Economy</span><span class="tab" data-view="graphs" data-i18n="tab.graphs">Graphs</span><span class="tab" data-view="settings" data-i18n="tab.settings">Settings</span></nav>
+  <select id="lang" class="lang" aria-label="Language"></select>
   <span class="meta" id="gen"></span>
 </header>
 <div id="view-board">
@@ -49,6 +50,7 @@
   <div id="view-structure" class="lx" hidden><div class="wrap"><div id="structure"></div></div></div>
 </div>
 <dialog id="dlg"></dialog>
+<script src="web/js/i18n.js"></script>
 <script src="web/js/common.js"></script>
 <script src="web/js/economy.js"></script>
 <script src="web/js/graphs.js"></script>

@@ -1,0 +1,12 @@
+{
+  "_meta.name": "English",
+  "app.title": "Kanban",
+  "lang.label": "Language",
+  "tab.board": "Kanban",
+  "tab.interview": "Interview",
+  "tab.nodes": "Form",
+  "tab.docs": "Documentation",
+  "tab.economy": "Economy",
+  "tab.graphs": "Graphs",
+  "tab.settings": "Settings"
+}
