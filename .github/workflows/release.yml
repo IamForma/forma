@@ -1,0 +1,45 @@
+name: release
+
+# Срабатывает при каждом пуше в main. Смотрит версию в .claude-plugin/plugin.json;
+# если тег с таким номером ещё не существует — создаёт git-тег и GitHub Release
+# с названием, равным ровно номеру версии, без дополнительного текста.
+# Ничего не публикует, если версия не изменилась с последнего релиза.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".claude-plugin/plugin.json"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from plugin.json
+        id: v
+        run: |
+          VERSION=$(node -p "require('./.claude-plugin/plugin.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if tag already exists
+        id: check
+        run: |
+          if git rev-parse "v${{ steps.v.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create release
+        if: steps.check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: ${{ steps.v.outputs.version }}
+          generate_release_notes: false
+          body: ""

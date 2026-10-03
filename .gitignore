@@ -1,0 +1,28 @@
+# Зависимости
+node_modules/
+
+# Логи и временные файлы
+*.log
+npm-debug.log*
+.cache/
+tmp/
+
+# Служебное окружение (запрет 15: доступы среды живут в .env, вне git)
+.env
+.env.*
+!.env.example
+
+# Мусор ОС и редакторов
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.idea/
+.vscode/
+
+# Рантайм компаньона forma-grilling (форк grill-with-ui)
+skills/forma-grill-with-ui/.sessions/
+
+# Точка отсчёта рефакторинга (test/baseline.cjs) — зависит от ОС и переводов строк
+test/.baseline/

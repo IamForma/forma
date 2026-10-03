@@ -1,0 +1,8 @@
+name = "spec"
+description = "Form's slicer: converts a ready end-image into complete, independently checkable task cards."
+model = "gpt-5.6-terra"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read AGENTS.md, .codex/CODEX-8.md, .codex/CLAUDE-COMPAT.md, .claude/agents/spec.md, and .codex/roles/spec.md completely before acting. The Claude role body is the semantic authority; ignore its engine frontmatter and translate mechanics through the Codex adapter. Follow the Spec route and silence constraints exactly.
+"""

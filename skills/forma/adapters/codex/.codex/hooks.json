@@ -1,0 +1,63 @@
+{
+  "SessionStart": [
+    {
+      "matcher": "startup",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/check-ready.ps1",
+          "timeout": 30
+        },
+        {
+          "type": "command",
+          "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/check-dashboard.ps1",
+          "timeout": 30
+        },
+        {
+          "type": "command",
+          "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/check-plugin-update.ps1",
+          "timeout": 30
+        },
+        {
+          "type": "command",
+          "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/intent-start.ps1",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "PreToolUse": [
+    {
+      "matcher": "^(Bash|apply_patch)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/guard-delete.ps1",
+          "timeout": 30
+        }
+      ]
+    },
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/tool-usage.ps1",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "^apply_patch$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/check-card.ps1",
+          "timeout": 30
+        }
+      ]
+    }
+  ]
+}

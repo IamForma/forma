@@ -1,0 +1,49 @@
+# sync-engines
+exit 1
+======================================================================
+  СВЕРКА: закон, ядро, адаптеры движков
+======================================================================
+
+Корневые правила: ✗ нарушена конструкция
+    — .forma/dashboard/probe.cjs:1: след проекта в чистой зоне — «card-007»; запрет 16: ссылка — в карточке, дата — в .forma/living/checks.json
+
+Ядро и адаптеры:
+    ✓ адаптер Claude Code: тест соответствия пройден
+
+Паритет ролей Claude↔Gemini — сведение, не нарушение (роли не копируются, адаптер Gemini не готов):
+| Компонент | Claude файл | Gemini файл | Статус |
+|---|---|---|---|
+| Agent: Core               | .claude/agents/core.md              | .agents/plugins/forma/agents/core.md          | ✗ Дрейф (missing_gemini) |
+| Agent: Intent             | .claude/agents/intent.md            | .agents/plugins/forma/agents/intent.md        | ✗ Дрейф (missing_gemini) |
+| Agent: Kit                | .claude/agents/kit.md               | .agents/plugins/forma/agents/kit.md           | ✗ Дрейф (missing_gemini) |
+| Agent: Run                | .claude/agents/run.md               | .agents/plugins/forma/agents/run.md           | ✗ Дрейф (missing_gemini) |
+| Agent: Spec               | .claude/agents/spec.md              | .agents/plugins/forma/agents/spec.md          | ✗ Дрейф (missing_gemini) |
+| Agent: Extractor          | .claude/agents/extractor.md         | .agents/plugins/forma/agents/extractor.md     | ✗ Дрейф (missing_gemini) |
+| On-Demand: Citing Schema To Human | .claude/agents/on-demand/citing-schema-to-human.md | .agents/plugins/forma/agents/on-demand/citing-schema-to-human.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Intent Cycle Closing | .claude/agents/on-demand/intent-cycle-closing.md | .agents/plugins/forma/agents/on-demand/intent-cycle-closing.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Intent Emergency | .claude/agents/on-demand/intent-emergency.md | .agents/plugins/forma/agents/on-demand/intent-emergency.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Intent Goal Opening | .claude/agents/on-demand/intent-goal-opening.md | .agents/plugins/forma/agents/on-demand/intent-goal-opening.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Intent Housekeeping | .claude/agents/on-demand/intent-housekeeping.md | .agents/plugins/forma/agents/on-demand/intent-housekeeping.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Intent Session Start | .claude/agents/on-demand/intent-session-start.md | .agents/plugins/forma/agents/on-demand/intent-session-start.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Intent Visual Check | .claude/agents/on-demand/intent-visual-check.md | .agents/plugins/forma/agents/on-demand/intent-visual-check.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Kit Arsenal    | .claude/agents/on-demand/kit-arsenal.md | .agents/plugins/forma/agents/on-demand/kit-arsenal.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Kit Experience | .claude/agents/on-demand/kit-experience.md | .agents/plugins/forma/agents/on-demand/kit-experience.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Kit Graphs     | .claude/agents/on-demand/kit-graphs.md | .agents/plugins/forma/agents/on-demand/kit-graphs.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Kit Limits     | .claude/agents/on-demand/kit-limits.md | .agents/plugins/forma/agents/on-demand/kit-limits.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Kit Project Kitting | .claude/agents/on-demand/kit-project-kitting.md | .agents/plugins/forma/agents/on-demand/kit-project-kitting.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Kit Recon      | .claude/agents/on-demand/kit-recon.md | .agents/plugins/forma/agents/on-demand/kit-recon.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Kit Route8     | .claude/agents/on-demand/kit-route8.md | .agents/plugins/forma/agents/on-demand/kit-route8.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Route Choice   | .claude/agents/on-demand/route-choice.md | .agents/plugins/forma/agents/on-demand/route-choice.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Run External Model | .claude/agents/on-demand/run-external-model.md | .agents/plugins/forma/agents/on-demand/run-external-model.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Spec Cycle Boundary | .claude/agents/on-demand/spec-cycle-boundary.md | .agents/plugins/forma/agents/on-demand/spec-cycle-boundary.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Spec Route8    | .claude/agents/on-demand/spec-route8.md | .agents/plugins/forma/agents/on-demand/spec-route8.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Spec Slicing Details | .claude/agents/on-demand/spec-slicing-details.md | .agents/plugins/forma/agents/on-demand/spec-slicing-details.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Spec Statistics | .claude/agents/on-demand/spec-statistics.md | .agents/plugins/forma/agents/on-demand/spec-statistics.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Spec Trial Pilot | .claude/agents/on-demand/spec-trial-pilot.md | .agents/plugins/forma/agents/on-demand/spec-trial-pilot.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Spec Unattainable Value | .claude/agents/on-demand/spec-unattainable-value.md | .agents/plugins/forma/agents/on-demand/spec-unattainable-value.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Spend Line     | .claude/agents/on-demand/spend-line.md | .agents/plugins/forma/agents/on-demand/spend-line.md | ✗ Дрейф (missing_gemini) |
+
+----------------------------------------------------------------------
+Сбой — в проверках выше (конструкция, ядро, адаптеры, доска, журнал).
+
+Для просмотра строк с расхождениями запустите с флагом --diff

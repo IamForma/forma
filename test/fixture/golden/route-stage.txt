@@ -1,0 +1,3 @@
+# check-board
+exit 1
+    — card-001-nastroit-sborku-primera.md: нет строки причины маршрута «route route-N (why: <код>)» в истории

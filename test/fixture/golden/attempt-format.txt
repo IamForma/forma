@@ -1,0 +1,4 @@
+# check-board
+exit 1
+    — строка захода неполна у 1 записей с 2030-01-01 (формат §3: N tokens (R cache-read), T s):
+      card-001-nastroit-sborku-primera.md: Kit 2031-01-05 — нет кэш-чтения

@@ -1,0 +1,13 @@
+{
+  "name": "forma",
+  "version": "0.1.1",
+  "description": "Пятиузловой протокол управления проектом для Gemini / Antigravity (Intent, Spec, Kit, Run, Core)",
+  "author": "IamForma",
+  "keywords": [
+    "forma",
+    "protocol",
+    "agents",
+    "gemini",
+    "antigravity"
+  ]
+}

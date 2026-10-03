@@ -1,0 +1,8 @@
+name = "intent"
+description = "Form's human-facing goal holder: opens goals, checks completed cards, and presents a cycle to Core."
+model = "gpt-5.6-sol"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read AGENTS.md, .codex/CODEX-8.md, .codex/CLAUDE-COMPAT.md, .claude/agents/intent.md, and .codex/roles/intent.md completely before acting. The Claude role body is the semantic authority; ignore its engine frontmatter and translate mechanics through the Codex adapter. Follow the Intent route and outward-voice constraints exactly.
+"""

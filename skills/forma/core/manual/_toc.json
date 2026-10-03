@@ -1,0 +1,27 @@
+{
+  "title": { "en": "Manual · Form", "ru": "Мануал · Форма" },
+  "items": [
+    { "title": { "en": "1. Economics/Intent+Kit", "ru": "1. Ценность/Intent+Kit" }, "page": "01-value/README.md" },
+    { "title": { "en": "2. Documentation/Intent", "ru": "2. Документация/Intent" }, "page": "02-docs/README.md" },
+    {
+      "title": { "en": "3. Form/Intent+Kit", "ru": "3. Форма/Intent+Kit" },
+      "items": [
+        { "title": { "en": "Overview", "ru": "Обзор" }, "page": "03-forma/README.md" },
+        { "title": { "en": "Blueprint of the five nodes", "ru": "Чертёж пяти узлов" }, "page": "03-forma/five-nodes.md" },
+        { "title": { "en": "The Protocol of the Five Nodes", "ru": "Протокол пяти узлов" }, "page": "03-forma/PROTOCOL.md" },
+        { "title": { "en": "Structure of the Schema", "ru": "Устройство схемы" }, "page": "03-forma/SCHEME.md" },
+        { "title": { "en": "Route choice", "ru": "Выбор маршрута" }, "page": "03-forma/ROUTES.md" },
+        { "title": { "en": "Economy contract", "ru": "Экономический контракт" }, "page": "03-forma/ECONOMY.md" },
+        { "title": { "en": "Skills and plugins", "ru": "Скиллы и плагины" }, "page": "03-forma/SKILLS.md" },
+        { "title": { "en": "Five zones of the «Form» .forma/protocol", "ru": "Пять зон протокола «Форма»" }, "page": "03-forma/ZONES.md" },
+        { "title": { "en": "Project kitting", "ru": "Комплектация проекта" }, "page": "03-forma/KITTING.md" }
+      ]
+    },
+    { "title": { "en": "4. End-image/Intent", "ru": "4. Образ результата/Intent" }, "page": "04-result-image/README.md" },
+    { "title": { "en": "5. Remarks of Core/Core+Intent", "ru": "5. Замечания Core/Core+Intent" }, "page": "05-core/README.md" },
+    { "title": { "en": "6. Incoming/Intent", "ru": "6. Входящие/Intent" }, "page": "06-incoming/README.md" },
+    { "title": { "en": "7. Production/SKRIC", "ru": "7. Производство/SKRIC" }, "page": "07-goal/README.md" },
+    { "title": { "en": "8. Experience/Intent+Kit", "ru": "8. Опыт/Intent+Kit" }, "page": "08-experience/README.md" },
+    { "title": { "en": "9. Review of image/Intent", "ru": "9. Ревью образа/Intent" }, "page": "09-review-image/README.md" }
+  ]
+}

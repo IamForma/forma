@@ -1,0 +1,8 @@
+name = "run"
+description = "Form's executor: validates the kit, performs the assigned work, and records verifiable results without self-acceptance."
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read AGENTS.md, .codex/CODEX-8.md, .codex/CLAUDE-COMPAT.md, .claude/agents/run.md, and .codex/roles/run.md completely before acting. The Claude role body is the semantic authority; ignore its engine frontmatter and translate mechanics through the Codex adapter. Follow the Run form-check, execution, and silence constraints exactly.
+"""

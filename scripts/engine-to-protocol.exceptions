@@ -1,0 +1,45 @@
+# Исключения для engine-to-protocol.cjs. Одна запись — одна строка; # — комментарий.
+#
+# skip <regex пути в проекте>        — файл не сравнивается и не переносится никогда (мусор, проектное).
+# mask <путь в проекте> <regex строки> — намеренное отличие обезличивания: такие строки маскируются
+#                                      с обеих сторон при сравнении, а при переносе в шаблон остаётся
+#                                      строка шаблона. Число маскированных строк в движке и шаблоне
+#                                      должно совпадать — иначе файл не переносится (показывается).
+
+skip (^|/)(\.cache|node_modules|graphify-out)(/|$)
+skip \.log$
+skip (^|/)data\.json$
+skip (^|/)\.tmp-
+skip -card-\d+\.sh$
+skip (^|/)\.plugin-check-stamp$
+skip (^|/)\.codex-verified\.json$
+
+# tools с MCP конкретного проекта
+mask .claude/agents/run.md ^tools:
+mask .claude/agents/kit.md ^tools:
+
+# Codex: MCP-серверы конкретного проекта — шаблон держит только общие настройки
+skip ^\.codex/config\.toml$
+skip ^\.codex/README\.md$
+skip ^\.codex/CLAUDE-COMPAT\.md$
+skip ^\.codex/tests/verify-config\.ps1$
+# производный манифест: собирается sync-codex --apply в каждом проекте
+skip ^\.codex/generated-skill-mirror\.json$
+# в проекте строка 44 зашивает MCP-серверы проекта-источника; пока она там — файл не переносится
+skip ^\.codex/scripts/sync-codex\.cjs$
+# Codex: строка о MCP-серверах в CODEX-8 — в проекте конкретные, в шаблоне нейтральная
+mask .codex/CODEX-8.md ^Project MCP servers
+# Gemini intent: строка о создании карточек — в проекте называет его эпик, в шаблоне нейтральная
+mask .agents/plugins/forma/agents/intent.md ^2\. \*\*Cards are created only
+# проверка паритета требует MCP-серверы проекта-источника; в шаблоне их нет — файл не переносится
+skip ^\.codex/tests/verify-parity\.ps1$
+# скрипты этого проекта (сайт, переводы) — в шаблон протокола не идут
+skip ^\.claude/scripts/site\.cjs$
+skip ^\.claude/scripts/site-php\.cjs$
+skip ^\.claude/scripts/loco-pipeline\.py$
+skip ^\.claude/scripts/po_shift_check\.py$
+skip ^\.claude/scripts/tokenator_translator\.py$
+
+# вендорный skill-creator (anthropics/skills) живёт в проекте, но шаблон его не поставляет —
+# подключается плагином (kit.md); без строки e2p предлагал бы вернуть копии
+skip ^\.(claude|agents)/skills/skill-creator(/|$)

@@ -1,0 +1,3 @@
+# check-board
+exit 1
+    — card-002-vopros-po-primeru.md: эпик "99. Чужой" не из девяти видов (PROJECT.md, «Эпики проекта»)

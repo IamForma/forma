@@ -1,0 +1,29 @@
+{
+  "name": "forma",
+  "version": "0.4.184-alpha",
+  "description": "Установщик протокола «Форма»: npx github:IamForma/forma init",
+  "license": "MIT",
+  "bin": {
+    "forma": "bin/forma.cjs"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.cjs\"",
+    "lint": "eslint .",
+    "baseline:save": "node test/baseline.cjs save",
+    "baseline:diff": "node test/baseline.cjs diff",
+    "check:release": "node scripts/check-release.cjs"
+  },
+  "files": [
+    "bin/",
+    "scripts/initialize-project-git.cjs",
+    "skills/",
+    "templates/"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "globals": "^17.12.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "moves": [
+    { "from": "board", "to": ".forma/board" },
+    { "from": "dashboard", "to": ".forma/dashboard" },
+    { "from": "living", "to": ".forma/living" },
+    { "from": "manual", "to": ".forma/manual" },
+    { "from": "protocol", "to": ".forma/protocol" },
+    { "from": "skills", "to": ".forma/skills" },
+    { "from": "templates", "to": ".forma/templates" }
+  ],
+  "exceptions": {
+    "files": [
+      ".devtool/features/",
+      "living/JOURNAL.md",
+      "living/CHANGELOG.md",
+      ".forma/living/JOURNAL.md",
+      ".forma/living/CHANGELOG.md",
+      ".codex/",
+      ".agents/",
+      "GEMINI.md"
+    ],
+    "dirs": [
+      ".claude/skills/",
+      ".agents/skills/"
+    ]
+  }
+}
