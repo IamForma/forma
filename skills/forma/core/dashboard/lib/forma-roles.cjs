@@ -136,7 +136,7 @@ function readMdCatalog(root, { title, rolesDir, mcpFiles }) {
     ? fs.readdirSync(runDir).filter((f) => f.endsWith('.md')).sort()
       .map((f) => mdRoleRow(root, path.join(runDir, f), null, '.forma/skills', configured))
     : [];
-  return { title, nodes, runRoles, runNote: runExists ? null : `каталога ${rolesDir}/run нет — роли Run не прочитаны`, rolesMissing: false };
+  return { title, nodes, runRoles, runNote: runExists ? null : { key: 'fm.runNote.noDir', vars: { dir: rolesDir } }, rolesMissing: false };
 }
 
 /**
@@ -155,7 +155,7 @@ function readTomlCatalog(root, { title, agentsDir }) {
     title,
     nodes: NODE_ORDER.map(row).filter(Boolean),
     runRoles: run ? [{ ...run, name: 'run' }] : [],
-    runNote: 'у движка нет каталога ролей Run — одна роль run на все предметы работы',
+    runNote: { key: 'fm.runNote.single' },
     rolesMissing: false,
   };
 }

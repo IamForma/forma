@@ -61,7 +61,7 @@ it('Codex: узлы из toml, у Run одна роль и пометка про
   assert.deepEqual(cat.nodes.map((n) => n.name), ['Kit']);
   assert.equal(cat.runRoles.length, 1);
   assert.equal(cat.runRoles[0].model, 'm-run');
-  assert.match(cat.runNote, /нет каталога ролей Run/);
+  assert.equal(cat.runNote.key, 'fm.runNote.single');
 });
 
 it('нет каталога ролей → rolesMissing, не падение', () => {

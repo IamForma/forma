@@ -49,9 +49,9 @@ test('установка кладёт все файлы, на которые с�
   assert.deepEqual(onDisk.sort(), [...assets].sort(), 'файлы web/ и ссылки index.html расходятся');
 });
 
-test('скрипты разбираются как классические (без модулей) и идут в порядке: common первым, app последним', () => {
+test('скрипты разбираются как классические (без модулей) и идут в порядке: i18n первым, common вторым, app последним', () => {
   const js = assets.filter((a) => a.endsWith('.js'));
-  assert.equal(path.basename(js[0]), 'common.js');
+  assert.deepEqual(js.slice(0, 2).map((a) => path.basename(a)), ['i18n.js', 'common.js']);
   assert.equal(path.basename(js[js.length - 1]), 'app.js');
   for (const a of js) assert.doesNotThrow(() => new vm.Script(fs.readFileSync(dash(a), 'utf8'), { filename: a }), a);
 });
@@ -64,4 +64,13 @@ test('сервер отдаёт стили и скрипты статикой с
     assert.equal(r.headers['cache-control'], 'no-store, must-revalidate', a);
     assert.equal(r.body, fs.readFileSync(dash(a), 'utf8'), a);
   }
+});
+
+test('сервер отдаёт список языков и словари en и ru', async () => {
+  const r = await request(server.port, 'GET', '/locales.json');
+  assert.equal(r.status, 200);
+  const j = JSON.parse(r.body);
+  assert.equal(j.default, 'en');
+  assert.deepEqual(j.locales.map((l) => l.code), ['en', 'ru']);
+  for (const code of ['en', 'ru']) assert.equal((await request(server.port, 'GET', `/locales/${code}.json`)).status, 200);
 });

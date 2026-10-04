@@ -60,7 +60,7 @@ test('sync-engines --check: чистая установка с фикстуро�
 });
 
 test('тесты экономики и соответствия адаптера — в установленном проекте', () => {
-  for (const file of ['.forma/dashboard/economy.test.cjs', '.claude/scripts/claude-economy.test.cjs', '.claude/scripts/forma-adapter.test.cjs']) {
+  for (const file of ['.forma/dashboard/economy.test.cjs', '.forma/dashboard/i18n.test.cjs', '.claude/scripts/claude-economy.test.cjs', '.claude/scripts/forma-adapter.test.cjs']) {
     const r = run(fx, [file]);
     assert.equal(r.status, 0, `${file}:\n${r.out.slice(-3000)}`);
   }

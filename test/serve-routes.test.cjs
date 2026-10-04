@@ -104,15 +104,15 @@ test('POST /interview/answer — ответы дописываются досл�
 
   const bad = await post('{нет');
   assert.equal(bad.status, 400);
-  assert.deepEqual(json(bad), { ok: false, error: 'плохой JSON' });
+  assert.deepEqual(json(bad), { ok: false, error: 'bad JSON' });
 
   const noFields = await post('{}');
   assert.equal(noFields.status, 400);
-  assert.deepEqual(json(noFields), { ok: false, error: 'нужны position и answers' });
+  assert.deepEqual(json(noFields), { ok: false, error: 'position and answers are required' });
 
   const empty = await post(JSON.stringify({ position: 1, answers: [{ id: 'q1', text: '   ' }, { text: 'без id' }] }));
   assert.equal(empty.status, 400);
-  assert.deepEqual(json(empty), { ok: false, error: 'пустой ответ не записывается' });
+  assert.deepEqual(json(empty), { ok: false, error: 'an empty answer is not recorded' });
   assert.ok(!fs.existsSync(brief('answers.jsonl')), 'пустое в бриф не попало');
 
   const ok = await post(JSON.stringify({ position: 1, answers: [{ id: 'q1', text: ' сказано ' }, { id: 'q2', text: '' }] }));
@@ -133,7 +133,7 @@ test('GET /interview/answer — маршрут только для POST: ост�
 test('/interview/open — позиция без вопросов 400; с вопросами поднимает страницу, второй вызов её же', async () => {
   const none = await hit('GET', '/interview/open?position=5', { keepBody: true });
   assert.equal(none.status, 400);
-  assert.deepEqual(json(none), { ok: false, error: 'вопросы этой позиции ещё не написаны' });
+  assert.deepEqual(json(none), { ok: false, error: 'the questions for this position are not written yet' });
   const noParam = await hit('GET', '/interview/open', { keepBody: true });
   assert.equal(noParam.status, 400);
 
@@ -164,10 +164,10 @@ test('/interview/open — позиция без вопросов 400; с воп�
 test('/interview/expand — нет узла 404; узел раскручивается в живой заход, повтор не дублирует вопрос', async () => {
   const miss = await hit('GET', '/interview/expand?node=absent', { keepBody: true });
   assert.equal(miss.status, 404);
-  assert.deepEqual(json(miss), { ok: false, error: 'узел не найден: absent' });
+  assert.deepEqual(json(miss), { ok: false, error: 'node not found: absent' });
   const noNode = await hit('GET', '/interview/expand', { keepBody: true });
   assert.equal(noNode.status, 404);
-  assert.deepEqual(json(noNode), { ok: false, error: 'узел не найден: null' });
+  assert.deepEqual(json(noNode), { ok: false, error: 'node not found: null' });
 
   const first = await hit('GET', '/interview/expand?node=n1');
   assert.equal(first.status, 200, first.body);

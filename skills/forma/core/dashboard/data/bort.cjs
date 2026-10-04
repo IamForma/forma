@@ -49,7 +49,7 @@ function mcpServerRow(name, cfg, meta) {
     name,
     source: meta.rel,
     level: meta.level,
-    transport: cfg.type || (cfg.command ? 'stdio' : 'неизвестен'),
+    transport: cfg.type || (cfg.command ? 'stdio' : 'unknown'),
     target: cfg.url || [cfg.command, ...(cfg.args || [])].filter(Boolean).join(' ') || null,
     broken: false,
   };
