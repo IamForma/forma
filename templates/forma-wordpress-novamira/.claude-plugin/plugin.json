@@ -1,7 +1,7 @@
 {
   "name": "forma-wordpress-novamira",
   "displayName": "Форма: WordPress-разработка (Novamira)",
-  "description": "Необязательный компаньон-пресет к «Форма» — разработка WordPress с помощью Novamira MCP (+Elementor) — скиллы + заготовка архитектурного снимка сайта (site-config)",
+  "description": "Необязательный компаньон-пресет к «Форма» — разработка WordPress с помощью Novamira MCP (+Elementor) — скиллы + заготовка архитектурного снимка сайта (project/SITE.md)",
   "version": "0.0.5",
   "license": "MIT"
 }

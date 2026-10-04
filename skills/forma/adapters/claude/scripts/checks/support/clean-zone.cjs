@@ -24,9 +24,16 @@ function cleanOwn(root) {
     : []);
 }
 
+/** Запись слоя 4 — путь к файлу или к каталогу; каталог покрывает всё внутри. */
+function isOwn(rel, own) {
+  if (own.has(rel)) return true;
+  for (const o of own) if (rel === o || rel.startsWith(o + '/')) return true;
+  return false;
+}
+
 /** `rel` — путь от корня с «/». Вне чистых зон или в слое 4 — `false` (не проверяется). */
 function inCleanZone(rel, own) {
-  if (own.has(rel) || !/\.(md|cjs|js|mjs|sh|py|html)$/.test(rel)) return false;
+  if (isOwn(rel, own) || !/\.(md|cjs|js|mjs|sh|py|html)$/.test(rel)) return false;
   if (rel.split('/').some((p) => CLEAN_SKIP.has(p) || (p.startsWith('.') && !['.claude', '.forma'].includes(p)))) return false;
   if (/^protocol\/README[^/]*\.md$/.test(rel)) return true;
   return CLEAN_ROOTS.some((r) => rel === r || rel.startsWith(r + '/'));
@@ -48,4 +55,4 @@ function scanCleanFile(rel, text) {
   return problems;
 }
 
-module.exports = { CLEAN_ROOTS, CLEAN_SKIP, cleanOwn, inCleanZone, scanCleanFile };
+module.exports = { CLEAN_ROOTS, CLEAN_SKIP, cleanOwn, isOwn, inCleanZone, scanCleanFile };

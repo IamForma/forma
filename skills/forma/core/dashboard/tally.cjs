@@ -80,10 +80,12 @@ const callIdMatch = (line, tail) => !ID_UNKNOWN_RE.test(line) && /`([^`\s]+)`\s*
 // карточек сессии, а доля у каждой своя: ключ дедупликации — карточка + id. Строки с меткой
 // границы окна — приращения одной сессии по одной карточке, каждая за свои ответы: метка в ключе.
 // Старые строки без метки (накопительные) по-прежнему схлопываются в первую.
-function dedupKey(line, file, id) {
+// Обычные строки: id вызова плюс числа захода. Один вызов, записанный в двух карточках теми же числами, —
+// дубль; общий id сессии с разными числами — разные окна, считаются все (раньше вторая и далее терялись).
+function dedupKey(line, file, id, m) {
   return /card-session-spend/.test(line)
     ? path.basename(file) + "|" + id + "|" + (sessionWindowEnd(line) ?? "")
-    : id;
+    : [id, m[3], m[4] ?? "", m[5] ?? ""].join("|");
 }
 
 // Строка → канонические переменные (.forma/manual/en/03-forma/ECONOMY.md); счёт — economy.cjs.
@@ -115,7 +117,7 @@ function readLine(raw, file, engine, seenIds) {
   if (engine && (engineKey(line) || 'untagged') !== engine) return {};
   const idMatch = callIdMatch(line, m[8]);
   if (idMatch) {
-    const key = dedupKey(line, file, idMatch[1]);
+    const key = dedupKey(line, file, idMatch[1], m);
     if (seenIds.has(key)) return { dup: true };
     seenIds.add(key);
   }

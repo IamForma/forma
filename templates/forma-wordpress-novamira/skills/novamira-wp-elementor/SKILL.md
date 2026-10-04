@@ -5,7 +5,7 @@ description: Project-neutral rules for working with Elementor through a live, pr
 
 # Novamira WordPress Elementor
 
-Use this skill only when the current site's `site-config` confirms Elementor and a live MCP exposes the needed capability. Read the current schema before changing an element: controls, widget types, and storage formats vary by Elementor version, theme, and installed extensions.
+Use this skill only when the current site's `project/SITE.md` confirms Elementor and a live MCP exposes the needed capability. Read the current schema before changing an element: controls, widget types, and storage formats vary by Elementor version, theme, and installed extensions.
 
 Make changes through the capability assigned in the card. Do not hard-code page IDs, template IDs, CSS selectors, control names, plugin versions, or connector names from another installation. Keep custom CSS scoped to the element being changed and regenerate or clear caches only by the procedure verified for the current site.
 

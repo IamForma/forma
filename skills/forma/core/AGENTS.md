@@ -220,6 +220,16 @@ Kind matters at check time: a tooling task is checked against its own criterion 
 
 **Project knowledge lives in project files, not in an engine's memory** — written at the moment it appears, by the route of the skill `project-knowledge`.
 
+**Three layers of files — what lives where.** A fact or setting of this product found at work is written to `project/` by `project-knowledge`, never into a role, skill, script, manual or the protocol source; a skill that needs product data reads it from `project/` by path.
+
+| Layer | Where | What | Travels to the protocol source |
+| --- | --- | --- | --- |
+| 1. Node roles and skills | the engine adapter directories (`.claude/`, `.agents/`, `.codex/`) | the method itself — portable, carries no fact of a specific product | yes, by `engine-to-protocol.cjs` |
+| 2. Shared across engines | `.forma/` (protocol clone, manual, dashboard) | the law and its machinery, identical for every project | this layer **is** the protocol source |
+| 3. Product | `project/`, `.forma/living/`, `.devtool/` | this product's data and settings — a site snapshot, credentials by reference, design tokens, goals, cards, board, project history | never |
+
+Prohibition 16 names the clean zones this keeps clean; the release check (`check-release.cjs --traces`) catches only pattern-matched traces (card codes, dates, domains, emails, hashes) in layers 1–2 or in the protocol source — not every product fact.
+
 **Any reach to a subagent is tied to a card — no exceptions.** A production node (`Spec`/`Kit`/`Run`/`Core`) or a one-off helper call (checking a fact, a piece of documentation, whether something is alive): the card is opened before the call — the five fields, or for a light one-off check at minimum the task statement and the readiness criterion — and filled in after it returns, with the result and the spend (§3). Nothing invoked as a subagent goes unrecorded. **Not retroactive:** a one-off call made before this rule existed doesn't get a card invented afterwards — `.forma/living/CHANGELOG.md`.
 
 **A card is a file on the board, in four zones, each under its own heading, in this order:**

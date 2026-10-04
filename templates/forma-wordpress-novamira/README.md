@@ -11,7 +11,7 @@
 | `novamira-wp-deploy` | безопасная работа с WordPress через Novamira MCP — аутентификация, sandbox→продакшен, кеш, персистентность |
 | `novamira-wp-elementor` | сборка страниц в Elementor через MCP — контейнеры, ширина, Theme Builder conditions |
 
-Четвёртый — `forma-wordpress-novamira` — не готовый рецепт, а установщик: кладёт в текущий проект пустую заготовку `site-config` (архитектурный снимок конкретного сайта — своя для каждого проекта, поэтому не может идти общей для всех, кто ставит этот плагин).
+Четвёртый — `forma-wordpress-novamira` — не готовый рецепт, а установщик: кладёт в текущий проект пустую заготовку `project/SITE.md` (архитектурный снимок конкретного сайта — своя для каждого проекта, поэтому не может идти общей для всех, кто ставит этот плагин; продуктовые данные сайта живут только в `project/`).
 
 ## Установка
 
@@ -19,7 +19,7 @@
 claude plugin marketplace add IamForma/forma   # если ещё не добавлен
 claude plugin install forma-wordpress-novamira@forma
 # в проекте:
-"разверни заготовку site-config" (или /forma-wordpress-novamira)
+"разверни заготовку project/SITE.md" (или /forma-wordpress-novamira)
 ```
 
 **Если «Форма» стоит git-клоном (способ 1)** — шаблон уже лежит в `protocol/templates/forma-wordpress-novamira/`, плагин не нужен. В сессии проекта:
@@ -46,11 +46,11 @@ claude plugin install forma-wordpress-novamira@forma
 | `.claude-plugin/plugin.json` | манифест этого плагина |
 | `skills/novamira-wp-deploy/SKILL.md` | правила работы с WordPress через Novamira MCP |
 | `skills/novamira-wp-elementor/SKILL.md` | правила сборки в Elementor через MCP |
-| `skills/forma-wordpress-novamira/SKILL.md` | установщик — кладёт заготовку `site-config` в целевой проект |
-| `skills/forma-wordpress-novamira/template/site-config/SKILL.md` | сама заготовка: пустой каркас архитектурного снимка сайта |
+| `skills/forma-wordpress-novamira/SKILL.md` | установщик — кладёт заготовку `project/SITE.md` в целевой проект |
+| `skills/forma-wordpress-novamira/template/project/SITE.md` | сама заготовка: пустой каркас архитектурного снимка сайта |
 | `skills/forma-wordpress-novamira/template/scripts/` | скрипты сайта и переводов → `.claude/scripts/` проекта: `site.cjs` (novamira CLI на `SITE_SLUG` из `.env`), `site-php.cjs` (PHP-файл на сайт через execute-php, отчёт JSON), `loco-pipeline.py` (перевод ru_RU.po плагинов Loco одним прогоном), `tokenator_translator.py` (автоперевод .po через `TOKENATOR_API_KEY`), `po_shift_check.py` (поиск съехавших переводов в .po). Ключи и сайт — только из `.env` |
 
 ## Известные ограничения версии 0.0.1
 
 - не проверено живой установкой в отдельном проекте;
-- навыки содержат только переносимую методику. Факты, примеры и инциденты конкретного сайта хранятся в `site-config` и опыте этого проекта, а не в шаблоне.
+- навыки содержат только переносимую методику. Факты, примеры и инциденты конкретного сайта хранятся в `project/SITE.md` и опыте этого проекта, а не в шаблоне.

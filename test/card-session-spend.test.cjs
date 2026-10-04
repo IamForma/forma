@@ -218,6 +218,12 @@ test('tally: строки с разной границей — приращен�
   assert.equal(legacy.tokens, 1000, 'старые накопительные строки схлопываются в первую, как прежде');
 });
 
+test('tally: общий id вызова с разными числами — разные заходы, с теми же числами — дубль', () => {
+  const row = (n, r, t) => '- `Intent`, 2026-09-29: attempt, ' + n + ' tokens (' + r + ' cache-read), ' + t + ' s, `s-shared` — claude-code: сборка секции.';
+  const shared = tallyTotal('909', [row(1000, 500, 10), row(2000, 800, 20), row(2000, 800, 20)]);
+  assert.equal(shared.tokens, 3000, 'две разные записи под одним id считаются обе, точная копия — один раз');
+});
+
 // ---- дашборд: buildData (dashboard/data/cards.cjs) — тот же ключ, что в tally ----
 // Карточка `num` в собранных данных: объект с путём карточки и её заходами.
 function boardCard(num) {
