@@ -2,20 +2,20 @@
 draft: false
 ---
 
-# Главная цель вида `incoming` · Входящие
+# Main goal of kind `incoming` · Incoming
 
-Одна из девяти главных целей проекта — все девять идут параллельно (`intent-goal-opening.md`, «Эпик», «Как формируются цели»). Подцели — в карте `ROADMAP.md`, под этой целью.
+One of the project's nine main goals — all nine run in parallel (`intent-goal-opening.md`, "Epic", "How goals are formed"). Subgoals are in the `ROADMAP.md` map, under this goal.
 
 ---
 
-**Вид**: `incoming` · дорожка на доске — лейбл из `PROJECT.md`, «Эпики проекта».
+**Kind**: `incoming` · the board lane — a label from `PROJECT.md`, "Project epics".
 
-**Метка карточек**: `goal-incoming` (или метка подцели, если карточка к ней относится).
+**Card label**: `goal-incoming` (or the subgoal's label, if the card belongs to one).
 
-**Формирует**: ядро, по умолчанию.
+**Formed by**: the core, by default.
 
-**Образ по умолчанию**: по факту происходящего — заранее не предугадывается.
+**Default image**: by the fact of what happens — not foreseen in advance.
 
-**Образ в этом проекте**: по факту происходящего — заранее не предугадывается
+**Image in this project**: by the fact of what happens — not foreseen in advance
 
-**Кто закрывает**: вердикт `Intent`; закрывает человек (запреты 1 и 8).
+**Closed by**: the verdict of `Intent`; the human closes (prohibitions 1 and 8).

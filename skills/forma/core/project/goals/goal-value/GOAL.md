@@ -2,20 +2,20 @@
 draft: false
 ---
 
-# Главная цель вида `value` · Ценность
+# Main goal of kind `value` · Value
 
-Одна из девяти главных целей проекта — все девять идут параллельно (`intent-goal-opening.md`, «Эпик», «Как формируются цели»). Подцели — в карте `ROADMAP.md`, под этой целью.
+One of the project's nine main goals — all nine run in parallel (`intent-goal-opening.md`, "Epic", "How goals are formed"). Subgoals are in the `ROADMAP.md` map, under this goal.
 
 ---
 
-**Вид**: `value` · дорожка на доске — лейбл из `PROJECT.md`, «Эпики проекта».
+**Kind**: `value` · the board lane — a label from `PROJECT.md`, "Project epics".
 
-**Метка карточек**: `goal-value` (или метка подцели, если карточка к ней относится).
+**Card label**: `goal-value` (or the subgoal's label, if the card belongs to one).
 
-**Формирует**: ядро, по умолчанию.
+**Formed by**: the core, by default.
 
-**Образ по умолчанию**: экономика по факту: во что обходится производство, не задаётся заранее — фиксируется по мере того, как складывается.
+**Default image**: economics by fact: what production costs is not set in advance — it is recorded as it builds up.
 
-**Образ в этом проекте**: экономика по факту: во что обходится производство, не задаётся заранее — фиксируется по мере того, как складывается
+**Image in this project**: economics by fact: what production costs is not set in advance — it is recorded as it builds up
 
-**Кто закрывает**: вердикт `Core` по тренду; закрывает человек (запреты 1 и 8).
+**Closed by**: the verdict of `Core` by the trend; the human closes (prohibitions 1 and 8).

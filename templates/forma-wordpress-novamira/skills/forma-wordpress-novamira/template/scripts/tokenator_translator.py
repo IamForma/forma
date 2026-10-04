@@ -1,13 +1,13 @@
-"""Автоперевод .po (en → ru) через Tokenator (OpenAI-совместимый API).
+"""Auto-translating .po (en → ru) through Tokenator (an OpenAI-compatible API).
 
-Запуск:
-  python .claude/scripts/tokenator_translator.py [--dir <папка с new/ и completed/>] [--model ...] [--batch 50] [--dry-run]
+Run:
+  python .claude/scripts/tokenator_translator.py [--dir <dir with new/ and completed/>] [--model ...] [--batch 50] [--dry-run]
 
-Берёт *.po из <dir>/new, переводит пустые msgstr, сохраняет после каждого пакета,
-полностью переведённый файл переносит в <dir>/completed. Перевод, в котором плейсхолдеры
-или HTML-теги не совпали с оригиналом, отбрасывается и уходит на повтор; не прошедший
-и повтор остаётся пустым. Расход (токены, время) пишется в <dir>/usage.json.
-Ключ — TOKENATOR_API_KEY (.env), адрес — TOKENATOR_ENDP (.env).
+Takes *.po from <dir>/new, translates the empty msgstr, saves after every batch,
+moves a fully translated file to <dir>/completed. A translation whose placeholders
+or HTML tags did not match the original is discarded and sent to a retry; one that fails
+the retry too stays empty. Spend (tokens, time) is written to <dir>/usage.json.
+Key — TOKENATOR_API_KEY (.env), address — TOKENATOR_ENDP (.env).
 """
 import argparse
 import json
@@ -21,7 +21,7 @@ import polib
 from dotenv import load_dotenv
 from openai import OpenAI
 
-sys.stdout.reconfigure(encoding="utf-8")  # консоль Windows иначе печатает кириллицу кракозябрами
+sys.stdout.reconfigure(encoding="utf-8")  # the Windows console otherwise prints Cyrillic as garbage
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 load_dotenv(os.path.join(ROOT, ".env"))
@@ -29,9 +29,9 @@ load_dotenv(os.path.join(ROOT, ".env"))
 API_KEY = os.getenv("TOKENATOR_API_KEY")
 BASE_URL = os.getenv("TOKENATOR_ENDP", "https://api.tokenator.top/v1")
 if not API_KEY:
-    raise SystemExit("Нет TOKENATOR_API_KEY в .env")
+    raise SystemExit("No TOKENATOR_API_KEY in .env")
 
-# Не переводятся: имена продуктов и брендов (дополняется по мере встречи).
+# Not translated: product and brand names (extended as met).
 KEEP = ["BetterDocs", "WordPress", "Fluent", "FluentCRM", "Novamira", "WooCommerce", "Elementor", "Gutenberg"]
 
 PH_RE = re.compile(r"%(?:\d+\$)?[-+ 0#']*\d*(?:\.\d+)?[bcdeEfFgGosuxX%]|\{\{?\s*[\w.]+\s*\}?\}|\{\d+\}")
@@ -41,7 +41,7 @@ usage = {"prompt_tokens": 0, "completion_tokens": 0, "requests": 0, "seconds": 0
 
 
 def signature(text):
-    """Плейсхолдеры и имена тегов — должны совпасть у оригинала и перевода."""
+    """Placeholders and tag names — must match in the original and the translation."""
     tags = sorted(re.sub(r"\s.*", "", t.strip("</>")).lower() for t in TAG_RE.findall(text))
     return sorted(PH_RE.findall(text)), tags
 
@@ -81,8 +81,8 @@ def ask(client, model, items, nplurals):
                 usage["completion_tokens"] += r.usage.completion_tokens or 0
             out = json.loads(r.choices[0].message.content).get("translations", [])
             return {o["id"]: o for o in out if isinstance(o, dict) and "id" in o}
-        except Exception as e:  # сеть, лимит, битый JSON — повтор с паузой
-            print(f"  ошибка API (попытка {attempt + 1}): {e}")
+        except Exception as e:  # network, limit, broken JSON — retry with a pause
+            print(f"  API error (attempt {attempt + 1}): {e}")
             time.sleep(2 * (attempt + 1))
     return {}
 
@@ -100,7 +100,7 @@ def apply(e, res, nplurals):
         forms = res.get("translation_plural") or []
         if len(forms) < nplurals:
             return False
-        # форма «1» часто берёт плейсхолдеры множественного оригинала — годится совпадение с любым из двух
+        # form "1" often takes the placeholders of the plural original — a match with either of the two will do
         if not all(valid(e.msgid, str(forms[i])) or valid(e.msgid_plural, str(forms[i])) for i in range(nplurals)):
             return False
         e.msgstr_plural = {i: str(forms[i]) for i in range(nplurals)}
@@ -130,17 +130,17 @@ def process(client, args, path):
     m = re.search(r"nplurals\s*=\s*(\d+)", po.metadata.get("Plural-Forms", ""))
     nplurals = int(m.group(1)) if m else 3
     todo = [e for e in po if needs(e, nplurals)]
-    # Строки без букв (числа, символы, одиночные плейсхолдеры) переводить незачем — копируются как есть.
+    # Strings without letters (numbers, symbols, lone placeholders) need no translation — copied as they are.
     for e in [e for e in todo if not e.msgid_plural and not re.search(r"[A-Za-z]{2,}", PH_RE.sub("", TAG_RE.sub("", e.msgid)))]:
         e.msgstr = e.msgid
         todo.remove(e)
-    print(f"\n== {os.path.basename(path)}: к переводу {len(todo)}")
+    print(f"\n== {os.path.basename(path)}: to translate {len(todo)}")
     if args.dry_run or not todo:
         if not args.dry_run:
             po.save(path)
         return not todo
 
-    for rnd in range(2):  # второй круг — только отброшенные проверкой
+    for rnd in range(2):  # the second round — only those discarded by the check
         pending = [e for e in po if needs(e, nplurals)]
         if not pending:
             break
@@ -149,19 +149,19 @@ def process(client, args, path):
             res = ask(client, args.model, [item(i, e) for i, e in enumerate(chunk)], nplurals)
             ok = sum(apply(e, res[i], nplurals) for i, e in enumerate(chunk) if i in res)
             po.save(path)
-            print(f"  круг {rnd + 1}, пакет {s // args.batch + 1}: принято {ok}/{len(chunk)}")
+            print(f"  round {rnd + 1}, batch {s // args.batch + 1}: accepted {ok}/{len(chunk)}")
     left = sum(needs(e, nplurals) for e in po)
     if left:
-        print(f"  осталось пустых: {left} — файл остаётся в new/")
+        print(f"  empty left: {left} — the file stays in new/")
     return left == 0
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dir", default=os.getcwd(), help="папка с new/ и completed/")
+    ap.add_argument("--dir", default=os.getcwd(), help="dir with new/ and completed/")
     ap.add_argument("--model", default="gemini-3.1-flash-lite")
     ap.add_argument("--batch", type=int, default=50)
-    ap.add_argument("--dry-run", action="store_true", help="только посчитать пустые строки")
+    ap.add_argument("--dry-run", action="store_true", help="only count the empty strings")
     args = ap.parse_args()
 
     new, done = os.path.join(args.dir, "new"), os.path.join(args.dir, "completed")
@@ -171,7 +171,7 @@ def main():
 
     files = sorted(f for f in os.listdir(new) if f.endswith(".po"))
     if not files:
-        print(f"Папка {new} пуста.")
+        print(f"Directory {new} is empty.")
         return 0
     incomplete = []
     for f in files:
@@ -187,9 +187,9 @@ def main():
     if not args.dry_run:
         with open(os.path.join(args.dir, "usage.json"), "w", encoding="utf-8") as fh:
             json.dump(usage, fh, ensure_ascii=False, indent=2)
-    print(f"\nРасход: {usage}")
+    print(f"\nSpend: {usage}")
     if incomplete:
-        print("Не доведены:", ", ".join(incomplete))
+        print("Not finished:", ", ".join(incomplete))
     return 1 if incomplete else 0
 
 

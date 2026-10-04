@@ -16,7 +16,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { walk: walkTree } = require('../skills/forma/core/dashboard/lib/fs.cjs');
+const { walk: walkTree, projectFile } = require('../skills/forma/core/dashboard/lib/fs.cjs');
 const { run, gitRun } = require('./lib/git.cjs');
 const { scanTraces, scanMessages } = require('./check-release.cjs');
 
@@ -41,7 +41,7 @@ if (!fs.existsSync(path.join(proto, '.git'))) stop('protocol/.git нет — э�
 // Выпуск по объёму: коммиты копятся в `dev`, версия поднимается раз на выпуск.
 // N — PROJECT.md, строка «Выпуск протокола»; нет строки — 10.
 const RELEASE_N = (() => {
-  try { const m = fs.readFileSync(path.join(root, 'project', 'PROJECT.md'), 'utf8').match(/Выпуск протокола[^\n]*?(\d+)\s*$/m); if (m) return +m[1]; } catch { /* нет PROJECT.md или строки выпуска — берём умолчание ниже */ }
+  try { const m = fs.readFileSync(projectFile(root, 'PROJECT.md'), 'utf8').match(/Выпуск протокола[^\n]*?(\d+)\s*$/m); if (m) return +m[1]; } catch { /* нет PROJECT.md или строки выпуска — берём умолчание ниже */ }
   return 10;
 })();
 const hasDev = () => !!pgit('rev-parse', '--verify', '-q', 'refs/heads/dev').out.trim();

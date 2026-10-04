@@ -4,6 +4,7 @@
 // Метка цели — истина; эпик — дорожка её вида. Метка обязательна вперёд, с дня вступления правила `goal-label`.
 
 const fs = require('fs');
+const { projectFile, opsFile } = require('../../dashboard/lib/fs.cjs');
 const path = require('path');
 const { cardFiles, boardDir, labelsOf, createdDay } = require('../../dashboard/lib/card.cjs');
 
@@ -13,10 +14,10 @@ const GOAL_LABEL_RE = new RegExp('^goal-(\\d+|' + CODES.join('|') + ')$');
 
 const read = (file) => fs.readFileSync(file, 'utf8');
 
-/** Код вида → лейбл эпика, из таблицы эпиков `project/PROJECT.md` (первая строка кода побеждает). */
+/** Код вида → лейбл эпика, из таблицы эпиков `project/config/PROJECT.md` (первая строка кода побеждает). */
 function readLanes(root) {
   const laneOf = new Map();
-  const projectMd = path.join(root, 'project', 'PROJECT.md');
+  const projectMd = projectFile(root, 'PROJECT.md');
   if (!fs.existsSync(projectMd)) return laneOf;
   const re = new RegExp('^\\|\\s*`(' + CODES.join('|') + ')`\\s*\\|\\s*([^|]+?)\\s*\\|');
   for (const line of read(projectMd).split('\n')) {
@@ -43,11 +44,11 @@ function readGoals(root) {
   return { goals, draft };
 }
 
-/** Вид подцели — из карты `project/ROADMAP.md`: подцель стоит под своей главной целью (строка goal-<код>), глубже неё. */
+/** Вид подцели — из карты `project/ops/ROADMAP.md`: подцель стоит под своей главной целью (строка goal-<код>), глубже неё. */
 function readKinds(root) {
   const kindOf = new Map();
   for (const c of CODES) kindOf.set('goal-' + c, c);
-  const roadmap = path.join(root, 'project', 'ROADMAP.md');
+  const roadmap = opsFile(root, 'ROADMAP.md');
   if (!fs.existsSync(roadmap)) return kindOf;
   let current = null;
   let depth = -1;

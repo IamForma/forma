@@ -2,20 +2,20 @@
 draft: true
 ---
 
-# Главная цель вида `docs` · Документация
+# Main goal of kind `docs` · Documentation
 
-Одна из девяти главных целей проекта — все девять идут параллельно (`intent-goal-opening.md`, «Эпик», «Как формируются цели»). Подцели — в карте `ROADMAP.md`, под этой целью.
+One of the project's nine main goals — all nine run in parallel (`intent-goal-opening.md`, "Epic", "How goals are formed"). Subgoals are in the `ROADMAP.md` map, under this goal.
 
 ---
 
-**Вид**: `docs` · дорожка на доске — лейбл из `PROJECT.md`, «Эпики проекта».
+**Kind**: `docs` · the board lane — a label from `PROJECT.md`, "Project epics".
 
-**Метка карточек**: `goal-docs` (или метка подцели, если карточка к ней относится).
+**Card label**: `goal-docs` (or the subgoal's label, if the card belongs to one).
 
-**Формирует**: `Intent` предлагает по брифу, человек дополняет и подтверждает.
+**Formed by**: `Intent` proposes from the brief, the human adds and confirms.
 
-**Образ по умолчанию**: структура документации продукта для человека — пользовательская, для администраторов, техническая; простая или многоуровневая.
+**Default image**: the structure of the product's documentation for the human — user, administrator, technical; simple or multi-level.
 
-**Образ в этом проекте**: *(предложит `Intent` по брифу; до брифа — пусто)*
+**Image in this project**: *(`Intent` will propose from the brief; empty before the brief)*
 
-**Кто закрывает**: вердикт `Intent`; закрывает человек (запреты 1 и 8).
+**Closed by**: the verdict of `Intent`; the human closes (prohibitions 1 and 8).

@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { readIfExists } = require('../lib/fs.cjs');
+const { readIfExists, projectFile } = require('../lib/fs.cjs');
 const { boardDir } = require('../lib/card.cjs');
 const engines = require('../lib/engines.cjs');
 const { parseBoardCard } = require('./board-card.cjs');
@@ -56,11 +56,11 @@ function readGoalInfo(projectRoot) {
     const f = path.join(dir, d, 'GOAL.md');
     if (!fs.existsSync(f)) continue;
     const t = fs.readFileSync(f, 'utf8');
-    const img = (t.match(/\*\*Образ в этом проекте\*\*:\s*(.+)/) || t.match(/\*\*Образ по умолчанию\*\*:\s*(.+)/) || [, ''])[1];
+    const img = (t.match(/\*\*(?:Образ в этом проекте|Image in this project)\*\*:\s*(.+)/) || t.match(/\*\*(?:Образ по умолчанию|Default image)\*\*:\s*(.+)/) || [, ''])[1];
     info[d] = {
       image: img.trim().slice(0, 600),
       draft: /^draft:\s*true/m.test(t),
-      closer: ((t.match(/\*\*Кто закрывает\*\*:\s*(.+)/) || [, ''])[1]).trim(),
+      closer: ((t.match(/\*\*(?:Кто закрывает|Closed by)\*\*:\s*(.+)/) || [, ''])[1]).trim(),
     };
   }
   return info;
@@ -68,10 +68,10 @@ function readGoalInfo(projectRoot) {
 
 /** Пороги «заходов на задачу» и «объёма круга» из `PROJECT.md`; нет числа — `null`. */
 function readThresholds(projectRoot) {
-  const pj = readIfExists(path.join(projectRoot, 'project', 'PROJECT.md'));
+  const pj = readIfExists(projectFile(projectRoot, 'PROJECT.md'));
   return {
-    attempts: +((pj.match(/Заходов на задачу\s*\|\s*(\d+)/) || [])[1]) || null,
-    volume: +((pj.match(/Объём круга[^|]*\|\s*(\d+)/) || [])[1]) || null,
+    attempts: +((pj.match(/(?:Заходов на задачу|Attempts per task)\s*\|\s*(\d+)/) || [])[1]) || null,
+    volume: +((pj.match(/(?:Объём круга|Circle volume|Cycle volume)[^|]*\|\s*(\d+)/) || [])[1]) || null,
   };
 }
 

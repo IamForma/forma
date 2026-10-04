@@ -298,11 +298,11 @@ Questions in order; the first "yes" determines the route. `Intent` on a single t
 | Law: choice points, who decides | `AGENTS.md` §2 — section "Route choice" | the human, via a "3. Form" card |
 | The choice rule (section 7) | a new on-demand file `route-choice.md` — `Intent` and `Spec` read it only at the moment of choice | `Intent`, via housekeeping |
 | Rationale | this file | — |
-| Which routes are enabled, the "small task" threshold, `over-2`/`over-4` on/off | `project/PROJECT.md`, section "Routes" | the human, before the start |
+| Which routes are enabled, the "small task" threshold, `over-2`/`over-4` on/off | `project/config/PROJECT.md`, section "Routes" | the human, before the start |
 | An epic's default route | `PROJECT.md`, "Project epics" — a "route" column; replaces the `/Intent+Kit` marker in the name | the human |
 | The choice for a specific task | label `route-N` and `over-N` + a reason line in `## History` | `Intent` or `Spec`; flag `--route N` in `new-card.cjs` |
 | A `route-8` segment's route map | the goal's `GOAL.md`, section "Segments" | `Spec` proposes, `Intent` approves |
-| The `over-1` kit library | `project/CONFIG.md`, section "Kits by task kind" | `Kit` |
+| The `over-1` kit library | `project/config/CONFIG.md`, section "Kits by task kind" | `Kit` |
 
 **Why a label and not a separate configuration file:** the choice belongs to the task and lives with it. The label is visible on the board; by it `sync-engines --check` catches a route without `Spec` lacking the human's approval in the history, and `Core` counts spend by route.
 
@@ -360,7 +360,7 @@ The mandatory goal label `goal-*` (§6) stays alongside.
 | `kit.md`, `on-demand/kit-route8.md` | launch plan by waves; the right to lengthen a route; spreading by resource inside a wave; recording a kind's kit into the library (`over-1`); the launch plan, resource spreading and kit recording sit in `kit-route8.md` |
 | `core.md` | reading spend and returns by `route-*`, by waves and segments; proposing a rule amendment |
 
-### Configuration — `project/PROJECT.md`, new section "Routes"
+### Configuration — `project/config/PROJECT.md`, new section "Routes"
 
 | Field | What it sets | Who |
 |---|---|---|
@@ -371,7 +371,7 @@ The mandatory goal label `goal-*` (§6) stays alongside.
 | Dispatcher | Workflow or `Intent`; from what number of segment cards — Workflow | the human |
 | An epic's default route | a column in "Project epics" | the human |
 
-`project/CONFIG.md` — section "Kits by task kind" (`over-1`): kind → role, skill, tool, access, model; date and source card. Kept by `Kit`.
+`project/config/CONFIG.md` — section "Kits by task kind" (`over-1`): kind → role, skill, tool, access, model; date and source card. Kept by `Kit`.
 
 The `GOAL.md` of a `route-8` goal — section "Segments": segments → waves → cards → executor. `Spec` writes the waves, `Kit` adds the executors, `Intent` approves.
 

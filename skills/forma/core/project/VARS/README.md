@@ -1,67 +1,67 @@
-# Решённые величины проекта
+# Decided values of the project
 
-То, что решено внутри дела и стало общим для всех целей: название, цвет, формат, тон, адрес, единица измерения, тестовые учётные записи. Каждая величина живёт **здесь и только здесь**; из целей и карточек на неё ссылаются как `[[имя]]`.
+What was decided inside the work and became common to all goals: a name, a color, a format, a tone, an address, a unit of measure, test accounts. Each value lives **here and only here**; goals and cards refer to it as `[[name]]`.
 
-Записывает `Intent` при закрытии цели. Пересматривает — человек, событием, а не правкой.
+Written by `Intent` when a goal closes. Revised by the human, as an event, not by an edit.
 
-**Кандидатов на новую величину предлагает `Kit`** — он основной практический пользователь `VARS/`: снаряжая задачи, первым натыкается на пробел (`kit.md`, «Реквизиты доступа»). Предложение — строкой в истории карточки, не правкой этого файла; решает и записывает по-прежнему только `Intent`, при закрытии цели.
+**`Kit` proposes candidates for a new value** — it is the main practical user of `VARS/`: kitting tasks, it is the first to hit a gap (`kit.md`, "Access credentials"). A proposal is a line in the card's history, not an edit of this file; deciding and writing is still only `Intent`'s, when a goal closes.
 
-**Это папка, не один файл.** Список величин одного проекта разного рода — числа дизайн-системы, тестовые пользователи, адреса — не обязан жить в одной таблице. Каждый файл `VARS/<сущность>.md` — одна такая таблица по своей теме, того же формата, что ниже. Этот файл (`VARS/README.md`) держит только методику: как называть, как пересматривать. Заводя новую сущность величин — новый файл `VARS/<имя>.md`, строка со ссылкой на него сюда, в перечень ниже.
+**This is a folder, not one file.** A project's list of values of different kinds — design-system numbers, test users, addresses — need not live in one table. Each file `VARS/<entity>.md` is one such table on its own subject, in the same format as below. This file (`VARS/README.md`) holds only the method: how to name, how to revise. Starting a new entity of values — a new file `VARS/<name>.md`, a line linking to it here, in the list below.
 
-## Файлы папки
+## Files of the folder
 
-*Пусто — первый файл величин появится, когда в проекте что-то будет решено.*
+*Empty — the first file of values appears when something in the project is decided.*
 
 ---
 
-## Формат одной величины (одинаков во всех файлах папки)
+## Format of one value (the same in all files of the folder)
 
-| Имя | Значение | Решено в | На неё опираются |
+| Name | Value | Decided in | Relied on by |
 |---|---|---|---|
 | `[[ ]]` | | goal-NN | |
 
 <!--
-Имя — короткое и однозначное, латиницей или кириллицей, но одинаково везде.
-«Решено в» — цель, в которой величина возникла. Пусто у тех, что заданы человеком до старта.
-«На неё опираются» — цели, где её используют. Заполняется по мере появления ссылок.
+Name — short and unambiguous, in Latin or any script, but the same everywhere.
+"Decided in" — the goal where the value arose. Empty for those set by the human before the start.
+"Relied on by" — the goals where it is used. Filled in as references appear.
 -->
 
 <!--
-Величина — не справочник и не данные.
+A value is not a reference and not data.
 
-  Умение     — как делать          оформляется нами
-  Справочник — чему соответствовать приходит извне
-  Данные     — с чем работать      вход задачи
-  Величина   — что уже решено      рождается в цели
+  Skill      — how to do           shaped by us
+  Reference  — what to conform to  comes from outside
+  Data       — what to work with   a task's input
+  Value      — what is already decided  born in a goal
 
-Справочник пришёл извне и не обсуждается. Величину решили мы — и потому её
-можно пересмотреть, но только зная, кто на неё оперся.
+A reference came from outside and is not discussed. A value was decided by us — and therefore
+it can be revised, but only knowing who relied on it.
 
-Ссылки `[[имя]]` — обычная markdown-конвенция: работает в git, в grep и в любом
-редакторе, который её понимает. Приложением протокол не связан.
+`[[name]]` links are a plain markdown convention: they work in git, in grep and in any
+editor that understands them. The protocol is not tied to an application.
 -->
 
 ---
 
-## Пересмотр
+## Revision
 
-Изменение решённой величины — **не правка, а событие**. Повод обычно один: среда не даёт записанного — `Spec` остановился и доложил.
+Changing a decided value is **not an edit but an event**. The cause is usually one: the environment does not give what was recorded — `Spec` stopped and reported.
 
-Порядок:
+Order:
 
-1. **Собрать затронутое** — по столбцу «На неё опираются» и по поиску `[[имя]]`. Список получается механически, а не по памяти — ради этого столбец и ведётся.
-2. **Решить, что делать с каждой из затронутых целей:** пересмотреть, оставить, переоткрыть. Закрытые цели, которые перестали быть верными, — обратно в `ROADMAP.md`, в состояние `открыта`.
-3. **Записать новое значение здесь** и изменение — в `JOURNAL.md`, раздел «Изменено в инфраструктуре»: что было, что стало, почему, кто решил.
-4. **Справочники, где эта величина названа, получают новую версию.** Макет, дизайн-система. Старая версия остаётся.
-5. **Сделанное по старой величине помечается** — в справочнике состава, там, где ведётся состав вещи.
-6. **Помеченное чинится оснастными задачами следующего круга**, а не переделкой текущего. Иначе круг не закроется никогда.
+1. **Collect what is affected** — by the "Relied on by" column and by searching `[[name]]`. The list comes out mechanically, not from memory — that is what the column is kept for.
+2. **Decide what to do with each affected goal:** revise, leave, reopen. Closed goals that stopped being true go back to `ROADMAP.md`, to the state `open`.
+3. **Write the new value here** and the change in `JOURNAL.md`, section "Changed in infrastructure": what it was, what it became, why, who decided.
+4. **References where this value is named get a new version.** Mockup, design system. The old version stays.
+5. **What was made by the old value is marked** — in the composition reference, where the thing's composition is kept.
+6. **What is marked is fixed by tooling tasks of the next circle**, not by redoing the current one. Otherwise the circle will never close.
 
-**Волна не идёт назад по закрытым кругам.** Закрытая папка не переписывается: расхождение выносится вперёд задачами, и его видно. Переписанное задним числом видно не будет.
+**The wave does not go back through closed circles.** A closed folder is not rewritten: the divergence is carried forward by tasks, and it is visible. What is rewritten after the fact will not be visible.
 
-Без первого шага величина меняется тихо, и через три цели половина проекта опирается на то, чего уже нет.
+Without the first step a value changes silently, and three goals later half the project rests on what no longer exists.
 
-## Столбец «На неё опираются»
+## The "Relied on by" column
 
-Заполняется **именами того, что сломается**: страницы, разделы макета, справочники. Не номерами целей — по номеру цели не найти, что чинить.
+Filled in with **the names of what will break**: pages, mockup sections, references. Not goal numbers — by a goal number you cannot find what to fix.
 
-Пустой столбец делает пересмотр невозможным: изменить величину можно, а узнать последствия — нет.
+An empty column makes revision impossible: a value can be changed, but its consequences cannot be learned.

@@ -1,42 +1,42 @@
-# Макеты
+# Mockups
 
-Здесь референс дорабатывается до состояния, в котором его можно одевать на реальную сборку.
+Here a reference is refined to the state in which it can be dressed onto a real build.
 
-## Два состояния, и путать их нельзя
+## Two states, and they must not be confused
 
-**Пока дорабатывается — это работа.** Идёт по целям и задачам, как всё остальное: у неё есть образ результата, признак, сверка. Не «поправлю по ходу».
+**While being refined — it is work.** It goes by goals and tasks like everything else: it has a result image, a criterion, a check. Not "I'll fix it along the way".
 
-**Зафиксирован версией — это справочник.** С этой минуты макет не правят: ссылка на его пункт входит в признак готовности каждой страницы, а изменение — событие с записью в `JOURNAL.md`.
+**Fixed as a version — it is a reference.** From that moment the mockup is not edited: a link to its item enters the readiness criterion of every page, and a change is an event with a record in `JOURNAL.md`.
 
-Переход между состояниями — момент, который надо назвать вслух. Пока он не назван, работа и мерка перемешаны, и сползание невидимо.
+The transition between states is a moment that must be named aloud. Until it is named, work and measure are mixed, and the drift is invisible.
 
-## Что лежит
+## What lies here
 
 ```
 mockups/
-  <страница>/
-    v1/                 экспорт из инструмента: файлы, скриншоты
-    tokens.md           величины: шрифты, кегли, интервалы, цвета, радиусы
-    notes.md            что дорабатывалось и почему
+  <page>/
+    v1/                 export from the tool: files, screenshots
+    tokens.md           values: fonts, sizes, spacings, colors, radii
+    notes.md            what was refined and why
 ```
 
-Величины из `tokens.md` переносятся в `VARS/` и дальше живут только там — карточки ссылаются `[[имя]]`, а не несут числа.
+Values from `tokens.md` are carried into `VARS/` and live only there afterwards — cards refer `[[name]]`, they do not carry numbers.
 
-## Когда реальность возражает
+## When reality objects
 
-Среда не даёт того, что нарисовано, — макет **не правится молча**. Он справочник, а справочник меняется версией.
+The environment does not give what is drawn — the mockup is **not edited silently**. It is a reference, and a reference changes by version.
 
-1. `Spec` остановился и доложил человеку: какая величина недостижима, что доступно взамен.
-2. Решение — событие с записью в `JOURNAL.md`.
-3. Макет получает `v2`. `v1` остаётся: по ней сделаны страницы, и надо знать, какие.
-4. В справочнике состава страницы, сверенные с `v1`, помечены. Чинятся оснастными задачами следующего круга.
+1. `Spec` stopped and reported to the human: which value is unattainable, what is available instead.
+2. The decision is an event with a record in `JOURNAL.md`.
+3. The mockup gets `v2`. `v1` stays: pages were made by it, and it must be known which.
+4. In the composition reference, pages checked against `v1` are marked. They are fixed by tooling tasks of the next circle.
 
-Молчаливая правка макета — самое дорогое, что здесь можно сделать: мерка съезжает вместе с работой, и расхождение перестаёт быть видимым.
+A silent edit of a mockup is the most expensive thing that can be done here: the measure slides along with the work, and the divergence stops being visible.
 
-## Чем сличают готовое
+## What the finished is compared with
 
-| Что | Как | Допуск |
+| What | How | Tolerance |
 |---|---|---|
-| величины | список против списка | точное совпадение |
-| геометрия | наложение скриншотов на трёх ширинах | назвать в пикселях |
-| впечатление | показать рядом двум людям | не различают |
+| values | list against list | exact match |
+| geometry | overlay of screenshots at three widths | name it in pixels |
+| impression | show side by side to two people | they cannot tell apart |

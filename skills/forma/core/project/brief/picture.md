@@ -1,166 +1,165 @@
-# Живая картина интервью — договор о файле
+# The live interview picture — the file contract
 
-Вкладка «Интервью» дашборда рисуется из `project/brief/picture.json`. Файл пишет `Intent` по ходу интервью к брифу; дашборд его только читает — и правит ровно одно поле, `status` у догадки, по клику человека.
+The dashboard's "Interview" tab is drawn from `project/brief/picture.json`. `Intent` writes the file as the brief interview goes; the dashboard only reads it — and edits exactly one field, a guess's `status`, on the human's click.
 
-**Файла нет — интервью не идёт.** Это не ошибка и не пустая заготовка: вкладка так и говорит. Сломанный JSON показывается отдельно от отсутствующего, потому что это разные вещи — во втором случае разговора нет, в первом он идёт и картина сломана.
+**No file — no interview in progress.** This is not an error and not an empty stub: the tab says so. A broken JSON is shown separately from a missing one, because they are different things — in the second case there is no conversation, in the first it is going on and the picture is broken.
 
-**Кто когда пишет.** Картина перерисовывается **по отправленному раунду ответов**, не после каждой фразы. `Intent` переписывает файл целиком один раз за раунд и поднимает `round`.
+**Who writes, and when.** The picture is redrawn **per submitted round of answers**, not after every phrase. `Intent` rewrites the file whole once per round and raises `round`.
+
+**Machine names stay canonical.** The five position names, the layer keys (`человек` / `предмет`) and the other keys below are the file's machine vocabulary: they are written exactly as given here, in every project language. Only the free text (`text`, `label`, `tag`, `topic`) follows the project language.
 
 ---
 
-## Форма файла
+## File shape
 
 ```jsonc
 {
-  "topic": "интервью к брифу проекта",
-  "round": 2,                       // номер последнего отправленного раунда
-  "updated": "2026-09-21T11:38:00+03:00",   // настоящий ISO, с зоной
-  "finished": null,                 // ISO, когда интервью закрыто
+  "topic": "brief interview for the project",
+  "round": 2,                       // number of the last submitted round
+  "updated": "2026-09-21T11:38:00+03:00",   // a real ISO timestamp, with zone
+  "finished": null,                 // ISO, when the interview is closed
 
-  "positions": [                    // пять позиций сценария (project/brief/interview.md)
+  "positions": [                    // the script's five positions (project/brief/interview.md)
     {
-      "name": "Облик",              // строго одно из пяти имён, см. ниже
-      "state": "answered",          // пишется только "answered" или "now";
-                                    // available/blocked/ready выводятся, не хранятся
-      "fill": 100,                  // 0-100; необязательно, у answered по умолчанию 100
-      "text": "Описание облика продукта: ключевые сценарии, аудитория…",
-      "layers": {                   // только у позиций 3 и 4
+      "name": "Облик",              // strictly one of the five names, see below
+      "state": "answered",          // only "answered" or "now" is written;
+                                    // available/blocked/ready are derived, not stored
+      "fill": 100,                  // 0-100; optional, 100 by default for answered
+      "text": "Description of the product's look: key scenarios, audience…",
+      "layers": {                   // positions 3 and 4 only
         "человек": { "text": "…" },
         "предмет": { "text": "…" }
       },
-      "guess": {                    // необязательно — догадка по этой позиции
-        "id": "g-pos2",             // уникален в пределах файла; по нему приходит клик
-        "text": "Догадка архитектора, выведенная из ответов человека.",
+      "guess": {                    // optional — a guess for this position
+        "id": "g-pos2",             // unique within the file; the click arrives by it
+        "text": "The architect's guess, derived from the human's answers.",
         "status": "open"            // open | confirmed | rejected
       }
     }
   ],
 
-  "tree": {                         // дерево предмета; null, пока первая позиция не отвечена
+  "tree": {                         // the subject tree; null until the first position is answered
     "id": "n-root",
-    "label": "Мой проект",
-    "role": "root",                 // root | part | fn — чем узел приходится дереву
+    "label": "My project",
+    "role": "root",                 // root | part | fn — what the node is to the tree
     "kind": "said",                 // said | guess | pending
-    "tag": "проект",                // подпись справа от имени; у догадки ставится своя
-    "from": "позиция 1",            // откуда узел взялся: «позиция N» или «раунд N»
-    "fresh": false,                 // появился в последнем раунде — подсвечивается
-    "status": "open",               // только у kind: "guess"
+    "tag": "project",               // caption to the right of the name; a guess sets its own
+    "from": "position 1",           // where the node came from: "position N" or "round N"
+    "fresh": false,                 // appeared in the last round — highlighted
+    "status": "open",               // only for kind: "guess"
     "children": []
   }
 }
 ```
 
-## Вопросы: первый заход открытый
+## Questions: the first pass is open
 
-**Варианты на выбор придумывает агент.** Опрос с готовыми вариантами на первом заходе записал бы в бриф замысел агента, одобренный человеком, вместо замысла человека, записанного агентом, — и обошёл бы главное решение этой картины незаметно, потому что формально всё «сказано человеком: он кликнул».
+**The agent invents the choice options.** A poll with ready-made options on the first pass would record in the brief the agent's idea approved by the human, instead of the human's idea recorded by the agent — and would bypass this picture's main decision unnoticed, because formally everything is "said by the human: they clicked".
 
-Поэтому: **первый заход по позиции — открытый**, поле для слов человека, без вариантов. Варианты появляются со второго захода и строятся **из уже сказанного** — уточнить, разложить, довести до конца. Так опрос экономит силы на разворачивании мысли, а не подсовывает саму мысль.
+Hence: **the first pass on a position is open** — a field for the human's words, no options. Options appear from the second pass and are built **from what has already been said** — to clarify, to break down, to finish. That way the poll spends effort on unfolding the thought, not on slipping in the thought itself.
 
-**Разговор идёт на странице интервью** — скилл `forma-grill-with-ui`, отдельной вкладкой по кнопке позиции. Формы внутри дашборда нет намеренно: два места ввода под одни и те же вопросы утомляют сильнее, чем один привычный формат, к которому человек привыкает. Дашборд показывает, страница спрашивает.
+**The conversation goes on the interview page** — the `forma-grill-with-ui` skill, a separate tab opened by the position's button. There is deliberately no form inside the dashboard: two places to enter answers to the same questions tire more than one familiar format the human gets used to. The dashboard shows, the page asks.
 
-**Три слоя, и путать их нельзя.** Страница интервью — транспорт (`events.jsonl` сессии). `project/brief/answers.jsonl` — дословная запись сказанного, внутри брифа, потому что запись разговора принадлежит проекту, а не папке сессии скилла, которую однажды подчистят. `picture.json` — синтез `Intent`.
+**Three layers, and they must not be confused.** The interview page is the transport (the session's `events.jsonl`). `project/brief/answers.jsonl` is the verbatim record of what was said, inside the brief, because the record of the conversation belongs to the project, not to the skill's session folder, which will be cleaned up one day. `picture.json` is `Intent`'s synthesis.
 
-**Ответы человека хранятся дословно и отдельно** — `project/brief/answers.jsonl`, по строке на отправку. Картина (`picture.json`) — это синтез `Intent` из них. Два файла, а не один, именно потому, что «сказанное человеком» и «понятое агентом» не должны лежать в одном месте под одним именем.
+**The human's answers are stored verbatim and separately** — `project/brief/answers.jsonl`, one line per submission. The picture (`picture.json`) is `Intent`'s synthesis of them. Two files, not one, precisely because "said by the human" and "understood by the agent" must not lie in one place under one name.
 
-## Стартовый раунд позиции 1 «Облик»
+## The starting round of position 1 "Облик" (Look)
 
-Три вопроса, независимых друг от друга: идут одним раундом, отвечать можно в любом порядке и по одному. 
+Three questions, independent of each other: they go as one round, to be answered in any order and one at a time.
 
-| | Вопрос | Что достаёт |
+| | Question | What it draws out |
 |---|---|---|
-| **1** | Проект уже работает. Вы показываете его человеку, который о нём ничего не знает, — открываете и даёте посмотреть. Что он видит перед собой? | Картинку, которая и так в голове, вместо определения. Отсюда выпадают объекты — заготовки для дерева предмета |
-| **2** | Назовите одну-две уже существующие вещи, на которые это похоже. И сразу — чем ваше от них отличается | Сопоставление с существующим, которого прямо требует `interview.md`. Назвать существующее почти ничего не стоит; «чем отличается» вытаскивает то, ради чего проект делается. Идёт в `brief/reference.md` |
-| **3** | Что в нём должно бросаться в глаза первым? И что, наоборот, должно быть незаметным, уйти вглубь? | Иерархию, а не список: что главное, что служебное. Мост ко второй позиции — части проступают уже здесь |
+| **1** | The project already works. You show it to a person who knows nothing about it — you open it and let them look. What do they see in front of them? | The picture that is in the head anyway, instead of a definition. Objects fall out of it — blanks for the subject tree |
+| **2** | Name one or two existing things this resembles. And at once — how yours differs from them | The comparison with the existing that `interview.md` directly requires. Naming the existing costs almost nothing; "how it differs" draws out what the project is made for. Goes into `brief/reference.md` |
+| **3** | What in it should catch the eye first? And what, on the contrary, should be unnoticeable, go deeper? | A hierarchy, not a list: what is main, what is auxiliary. A bridge to the second position — parts already show through here |
 
-**Чего в первом вопросе нет намеренно.**
+**What the first question deliberately does not have.**
 
-«О чём ваш проект?» — вопрос, на который почти невозможно ответить плохо и почти невозможно ответить полезно: он вытягивает миссию, а позиция 1 требует опознаваемого облика, того, на что можно указать.
+"What is your project about?" is a question that is almost impossible to answer badly and almost impossible to answer usefully: it draws out the mission, while position 1 requires a recognizable look, something that can be pointed at.
 
-«Что человек почувствует за первые пять секунд?» — это слой человека в **позиции 3**. Заданный первым, он даст ответ про пользу, облик останется неназванным, а третья позиция потом будет спрашивать то, на что уже ответили, — и хуже, потому что без частей.
+"What will a person feel in the first five seconds?" is the human layer of **position 3**. Asked first, it would give an answer about benefit, the look would stay unnamed, and the third position would then ask what has already been answered — and worse, without parts.
 
-Имени человека не спрашиваем: обращение по имени не делает ответ лучше, а первый вопрос слишком дорог, чтобы тратить его на анкету. Имя попадёт в строку «Дата · кто говорил» записи интервью, когда понадобится.
+We do not ask for the human's name: addressing by name does not make the answer better, and the first question is too costly to spend on a form. The name will go into the "Date · who spoke" line of the interview record when needed.
 
-**Раунды остальных позиций пишутся, когда до них доходит очередь**, вместе с человеком, — не сочиняются вперёд. Вопрос, составленный до того, как услышан предыдущий ответ, спрашивает про воображаемый проект.
+**The rounds of the other positions are written when their turn comes**, together with the human — not composed in advance. A question composed before the previous answer is heard asks about an imaginary project.
 
 ---
 
-## Порядок: фронтир, а не список
+## Order: a frontier, not a list
 
-Позиции открываются не подряд, а по мере того, как оседают предпосылки. Первая и вторая доступны сразу — облик и разбор, одна другой не ждёт. Третья ждёт вторую: вопрос «какую общую цель части выполняют вместе» без названных частей заставляет человека гадать за не сказанное им же. Четвёртая ждёт третью.
+Positions open not in sequence but as the premises settle. The first and second are available at once — look and breakdown, neither waits for the other. The third waits for the second: the question "which common goal do the parts fulfill together" without named parts makes the human guess for what they have not said. The fourth waits for the third.
 
-Состояние позиции **нигде не хранится** — оно выводится из ответов и зависимостей при каждой сборке. Вторая запись о нём разошлась бы с первой.
+A position's state is **stored nowhere** — it is derived from the answers and dependencies at every build. A second record of it would drift from the first.
 
-| Состояние | Что значит |
+| State | What it means |
 |---|---|
-| `available` | предпосылки осели, можно отвечать |
-| `blocked` | ждёт названную позицию; видна и подписана, чего ждёт |
-| `now` | человек отвечает прямо сейчас |
-| `answered` | ответ записан |
-| `ready` | только у пятой: первые четыре закрыты, сверка не сделана |
+| `available` | the premises have settled, it can be answered |
+| `blocked` | waits for a named position; visible and labeled with what it waits for |
+| `now` | the human is answering right now |
+| `answered` | the answer is recorded |
+| `ready` | the fifth only: the first four are closed, the check is not done |
 
-**Закрытая позиция не прячется.** Спрятанная читалась бы как несуществующая, а серая с подписью «ждёт позицию 2» говорит и о порядке, и о том, что впереди.
+**A closed position is not hidden.** A hidden one would read as nonexistent, while a gray one labeled "waits for position 2" speaks both of the order and of what lies ahead.
 
-## Два слоя у позиций 3 и 4
+## Two layers for positions 3 and 4
 
-Слой **человека** — что получатель почувствует; слой **предмета** — каким функционалом это производится. Одно без другого вырождается: чувство без функционала — обещание, функционал без чувства — работа неизвестно ради чего. 
+The **human** layer — what the recipient feels; the **subject** layer — which functionality produces it. One without the other degenerates: a feeling without functionality is a promise, functionality without a feeling is work for an unknown purpose.
 
-В файле это `layers` у позиции: `{ "человек": { "text": "…" }, "предмет": { "text": "…" } }`. Позиция закрыта, когда закрыты оба слоя. Для разговора это значит, что заходов не пять, а семь, и каждый мельче — что и было целью деления.
+In the file this is `layers` on the position: `{ "человек": { "text": "…" }, "предмет": { "text": "…" } }`. A position is closed when both layers are closed. For the conversation this means there are not five passes but seven, and each is smaller — which was the point of the split.
 
-## Пятая позиция — не вопрос человеку
+## The fifth position is not a question to the human
 
-`Маршрут` помечен `asks: "intent"`, и кнопки «ответить» у него нет. Маршрут — разведка узла: ветку задаёт поле «Шаблон проекта» в `PROJECT.md`, и при готовом шаблоне `Intent` **сверяет** записанное в `ROUTE.md`, а не сочиняет заново. Кнопка звала бы человека делать работу узла.
+`Маршрут` (Route) is marked `asks: "intent"`, and it has no "answer" button. The route is the node's reconnaissance: the branch is set by the "Project template" field in `PROJECT.md`, and with a ready template `Intent` **checks** what is recorded in `ROUTE.md` rather than composing it anew. A button would call the human to do the node's work.
 
-Результат сверки человек принимает или оспаривает — теми же ✓ и ✗, что и догадки.
+The human accepts or disputes the result of the check — with the same ✓ and ✗ as the guesses.
 
-## Имена на экране — со стороны предмета
+## Names on screen — from the side of the subject
 
-`Облик`, `Части`, `Общая цель частей`, `Внутренняя функциональность`, `Маршрут`. Внутренние имена качеств — Красота, Простота, Индивидуальность, Честность, Естественность — на экран не выносятся: вопрос не должен объявлять, какое качество он достаёт, иначе человек начинает отвечать категории, а не про свой проект.
-
----
-
-**Позиция, которой нет в файле, рисуется пустой, а не пропадает:** пять позиций всегда пять, иначе не видно, чего ещё не спросили.
-
-**`kind: "pending"`** — ветка-заглушка «функции ждут позицию 4». Не догадка: у неё нет ни автора, ни содержания, подтверждать в ней нечего.
+`Облик` (Look), `Части` (Parts), `Общая цель частей` (The parts' common goal), `Внутренняя функциональность` (Internal functionality), `Маршрут` (Route). The internal names of the qualities — Beauty, Simplicity, Individuality, Honesty, Naturalness — are not put on screen: a question must not announce which quality it draws out, otherwise the human starts answering the category, not about their own project.
 
 ---
 
-## Три состояния знания
+**A position that is not in the file is drawn empty, not dropped:** five positions are always five, otherwise it is not visible what has not been asked yet.
 
-Главное решение здесь, и оно не про раскладку: **сказанное человеком, угаданное агентом и неизвестное никому показываются по-разному, и третье не выдаётся за второе.**
+**`kind: "pending"`** is a placeholder branch "the functions wait for position 4". Not a guess: it has no author and no content, there is nothing to confirm in it.
 
-| В файле | На экране | Что это значит |
+---
+
+## Three states of knowledge
+
+The main decision here, and it is not about layout: **what the human said, what the agent guessed, and what is unknown to anyone are shown differently, and the third is not passed off as the second.**
+
+| In the file | On screen | What it means |
 |---|---|---|
-| `kind: "said"` | сплошной контур | человек сказал это прямо |
-| `kind: "guess"`, `status: "open"` | пунктир, метка «уточняется» | агент вывел из слов; спрашивается в следующем раунде, не решается здесь |
-| `kind: "guess"`, `status: "confirmed"` | — | не используется: человек сказал это в интервью, значит `said` |
-| `kind: "guess"`, `status: "rejected"` | — | не используется: отклонённое не попадает в картину |
-| `kind: "pending"` | пунктир, серым | об этом ещё не спрашивали |
+| `kind: "said"` | solid outline | the human said this directly |
+| `kind: "guess"`, `status: "open"` | dashed, label "being clarified" | the agent derived it from words; asked in the next round, not decided here |
+| `kind: "guess"`, `status: "confirmed"` | — | not used: the human said it in the interview, so it is `said` |
+| `kind: "guess"`, `status: "rejected"` | — | not used: the rejected does not get into the picture |
+| `kind: "pending"` | dashed, gray | not asked about yet |
 
-**Догадка помечается поузлово, а не областью** (Q4·C). Без этого она становится решением человека незаметно: он увидит её на экране, она покажется знакомой, и он её не оспорит. Прототип v1 это и показал — нарисовал четыре части убедительно, хотя человек про них не говорил.
-
----
-
-## Где решается неясное
-
-
-
-Догадка — не объект, требующий решения, а **признак того, что интервью не доведено**. Увидев, что чего-то не понял, `Intent` задаёт следующий раунд и спрашивает, пока человек не ответит полно и ясно. Доска показывает **результат**, а не список неулаженного.
-
-Отсюда следствия:
-
-- в `picture.json` не должно накапливаться догадок: то, что ещё неясно, — это вопрос следующего раунда, а не узел с пометкой;
-- узел, о котором ещё не договорились, помечен «уточняется». Это **сведение, а не предложение решить**: кнопок у него нет;
-- с доски есть переход в интервью — «Открыть интервью». Единственное действие, которое доска предлагает по неясному, — пойти и спросить.
-
-**Почему прежнее правило отменено.** Клик по догадке выглядел дёшево — одно движение вместо разговора. Но он закрывал вопрос, **не задав его**: человек соглашался с формулировкой агента, вместо того чтобы сказать своими словами. Разница видна на первом же примере — «чайные» вместо распознанного «Отчаянные»: подтверждённая кликом, эта догадка осталась бы моим чтением с его подписью, а не его словом.
-
+**A guess is marked per node, not by area** (Q4·C). Without this it becomes the human's decision unnoticed: they will see it on screen, it will look familiar, and they will not dispute it. The v1 prototype showed exactly this — it drew four parts convincingly although the human had not spoken about them.
 
 ---
 
-## Чем кончается
+## Where the unclear is settled
 
-Догадок к закрытию интервью оставаться не должно: на то и раунды, чтобы каждая стала вопросом и получила ответ. То, что всё же осталось неспрошенным, уходит в запись **«ещё не уточнено» рядом с брифом** — не в сам бриф и не в `ROUTE.md` (Q6·C, Q7·B).
+A guess is not an object demanding a decision but **a sign that the interview is not finished**. Seeing that something is not understood, `Intent` asks the next round and keeps asking until the human answers fully and clearly. The board shows the **result**, not a list of the unsettled.
 
-Не в бриф потому, что бриф — якорная точка и вдоль пути не переписывается: предположение, осевшее в нём, через месяц читается как слово человека, **пометку глаз перестаёт видеть**. Не в `ROUTE.md` потому, что там туман про маршрут, а здесь про предмет, и читать пришлось бы через раз «это про что».
+Consequences:
 
-Отклонённые не уходят никуда: человек их уже посмотрел и сказал «нет».
+- guesses must not accumulate in `picture.json`: what is still unclear is a question for the next round, not a node with a mark;
+- a node not yet agreed on is marked "being clarified". This is **information, not an offer to decide**: it has no buttons;
+- from the board there is a transition into the interview — "Open the interview". The only action the board offers about the unclear is to go and ask.
+
+**Why the earlier rule was repealed.** Clicking a guess looked cheap — one movement instead of a conversation. But it closed the question **without asking it**: the human agreed with the agent's wording instead of saying it in their own words. The difference is visible in the first example — "tea" instead of the recognized "Desperate": confirmed by a click, that guess would have stayed my reading under their signature, not their word.
+
+---
+
+## How it ends
+
+No guesses should remain by the interview's close: that is what the rounds are for — each becomes a question and gets an answer. What nevertheless stayed unasked goes into a **"not yet clarified" record beside the brief** — not into the brief itself and not into `ROUTE.md` (Q6·C, Q7·B).
+
+Not into the brief because the brief is the anchor point and is not rewritten along the way: a supposition that settled in it reads a month later as the human's word, and **the eye stops seeing the mark**. Not into `ROUTE.md` because that holds fog about the route, while this is about the subject, and one would have to read it every other time asking "what is this about".
+
+The rejected go nowhere: the human has already looked at them and said "no".

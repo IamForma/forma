@@ -11,12 +11,12 @@ description: Собирает из текущего проекта на «Фор
 
 | Входит | Не входит никогда |
 |---|---|
-| `project/ROUTE.md` — маршрут (шаги, вход/выход, почему такой порядок); `project/brief/idea.md` — только каркас разделов, содержание обезличено до пометок «ещё не спрошено» | карточки `.devtool/features/`, `project/cards/` |
+| `project/config/ROUTE.md` — маршрут (шаги, вход/выход, почему такой порядок); `project/brief/idea.md` — только каркас разделов, содержание обезличено до пометок «ещё не спрошено» | карточки `.devtool/features/`, `project/cards/` |
 | базовые цели девяти видов (`value`, `docs`, `forma`, `result-image`, `core`, `incoming`, `goal`, `experience`, `review-image`) — порядок, образ результата и признак **в общем виде**, как алгоритм | история, расход, `JOURNAL.md`, `dashboard/*.log` |
 | подцели `goal-NN` — только как обобщённый порядок шагов, без предмета проекта | `VARS/`, `.env`, `project/brief/` (кроме каркаса `idea.md`) |
-| скиллы проекта, очищенные от привязки (`.claude/skills/*`, кроме скиллов ядра `forma`) | `project/experience/`, `project/CONFIG.md`, `mockups/`, `reference/` |
+| скиллы проекта, очищенные от привязки (`.claude/skills/*`, кроме скиллов ядра `forma`) | `project/experience/`, `project/config/CONFIG.md`, `mockups/`, `reference/` |
 
-Реестр видов — `intent-goal-opening.md`, «Epic». Цели — `project/goals/`, форма целого — `project/ROADMAP.md`.
+Реестр видов — `intent-goal-opening.md`, «Epic». Цели — `project/goals/`, форма целого — `project/ops/ROADMAP.md`.
 
 ## Шаги
 
@@ -32,7 +32,7 @@ description: Собирает из текущего проекта на «Фор
 5. **Упаковка** в `<каталог forma>/templates/<имя>/`:
    - `.claude-plugin/plugin.json` — `name`, `displayName`, `description`, `version: "0.0.1"`, `license: "MIT"`;
    - `README.md` — что внутри, установка (`claude plugin install <имя>@forma`), статус маршрута (пройден системой или проекция практики — как в исходном `ROUTE.md`);
-   - `skills/<имя>/SKILL.md` — установщик: кладёт в проект `project/ROUTE.md`, `project/brief/idea.md` (если есть) и `project/goals/goal-<код>/GOAL.md` девяти видов (+ обобщённые подцели) из `skills/<имя>/template/`; не перезаписывает существующее молча;
+   - `skills/<имя>/SKILL.md` — установщик: кладёт в проект `project/config/ROUTE.md`, `project/brief/idea.md` (если есть) и `project/goals/goal-<код>/GOAL.md` девяти видов (+ обобщённые подцели) из `skills/<имя>/template/`; не перезаписывает существующее молча;
    - `skills/<скилл>/` — обезличенные скиллы проекта;
    - запись в `.claude-plugin/marketplace.json`: `{"name": "<имя>", "source": "./templates/<имя>", "description": "..."}`.
 6. **Проверка утечек** — по упакованной папке, до отчёта:

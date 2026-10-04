@@ -88,7 +88,9 @@ test('старые корневые каталоги перенесены в .fo
     assert.equal(fs.existsSync(path.join(px.root, d)), false, `старый корень «${d}» остался`);
     assert.equal(fs.existsSync(path.join(px.root, '.forma', d)), true, `.forma/${d} не создан`);
   }
-  assert.deepEqual(hashTree(path.join(px.root, 'project')), beforeProject, 'project/ изменился при миграции');
+  const expected = { ...beforeProject };
+  if (expected['PROJECT.md']) { expected['config/PROJECT.md'] = expected['PROJECT.md']; delete expected['PROJECT.md']; }
+  assert.deepEqual(hashTree(path.join(px.root, 'project')), expected, 'project/ изменился при миграции');
   assert.deepEqual(hashTree(path.join(px.root, '.devtool')), beforeDevtool, '.devtool/ изменился при миграции');
 });
 

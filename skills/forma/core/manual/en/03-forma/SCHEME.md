@@ -34,12 +34,12 @@ Inside the **Engine** layer there is its own split by portability into the proto
 | `.forma/manual/en/03-forma/PROTOCOL.md` | Engine | justifications of the rules — does not travel into projects | no |
 | `.forma/manual/en/03-forma/SKILLS.md` | Engine | registry of companion plugins (core + optional) — what each delivers, where the README is | new plugin |
 | `.forma/manual/en/03-forma/ZONES.md` | Engine | five zones of the protocol constructor (numbering 1 Kit/2 Intent/3 Core/4 Spec/5 Run), what is mandatory and what is a replaceable part | new zone |
-| `project/PROJECT.md` | Project | tooling, thresholds, accesses, project epic names, project language | per project |
-| `project/CONFIG.md` | Project | project structure file by file + technical contracts of the environment + tooling log | as findings come in |
-| `project/VALUE.md` | Project | statistics and value across closed goals — attempts, tokens, what the project gained | as goals progress |
-| `project/ROADMAP.md` | Project | what we build and in what order | as goals progress |
+| `project/config/PROJECT.md` | Project | tooling, thresholds, accesses, project epic names, project language | per project |
+| `project/config/CONFIG.md` | Project | project structure file by file + technical contracts of the environment + tooling log | as findings come in |
+| `project/ops/VALUE.md` | Project | statistics and value across closed goals — attempts, tokens, what the project gained | as goals progress |
+| `project/ops/ROADMAP.md` | Project | what we build and in what order | as goals progress |
 | `project/VARS/` | Project | resolved values of the project, by entity files | as goals progress |
-| `project/JOURNAL.md` | Project | records of closed cycles | upon closing |
+| `project/ops/JOURNAL.md` | Project | records of closed cycles | upon closing |
 | `goals/goal-NN/` | Project | a goal: a segment of the whole and its cycles | every goal |
 | `.devtool/features/` | Board | a card is a file, the status column is the actual location/`status` field | at every step of the cycle |
 
@@ -233,7 +233,7 @@ A goal is taken such that its tasks fit within the volume threshold: a site page
 | card — result | `Run` | no |
 | `docs/` | `Run` on a card of the "work" kind, visible to the human | no |
 
-One act — one file; whoever writes it owns it. A card is a file on the board, in four zones: the top is written by `Spec`, the bottom by `Kit`, the history — by `Spec`, `Kit` and `Intent`, each with their own line on their own event, without rewriting others', the result (after the history) — `Run`, having finished the work: what actually came out, not a chronology. Everything about the task — in one file; there is no separate file for history or result. **The language of the cards follows the project language from `project/PROJECT.md`:** if the project is Russian-language, the zones are named in Russian (`## Задача`, `## Снаряжение`, `## История`, `## Результат`), field wording and the kind (`дело` / `оснастка`) are written in Russian. The basic canonical structure is preserved; both forms are functionally equivalent. A closed folder is not cleaned or rewritten.
+One act — one file; whoever writes it owns it. A card is a file on the board, in four zones: the top is written by `Spec`, the bottom by `Kit`, the history — by `Spec`, `Kit` and `Intent`, each with their own line on their own event, without rewriting others', the result (after the history) — `Run`, having finished the work: what actually came out, not a chronology. Everything about the task — in one file; there is no separate file for history or result. **The language of the cards follows the project language from `project/config/PROJECT.md`:** if the project is Russian-language, the zones are named in Russian (`## Задача`, `## Снаряжение`, `## История`, `## Результат`), field wording and the kind (`дело` / `оснастка`) are written in Russian. The basic canonical structure is preserved; both forms are functionally equivalent. A closed folder is not cleaned or rewritten.
 
 **The zero goal — `goal-00`.** An ordinary goal with its own `GOAL.md`; there is no separate entity. Segment: **the system is ready for work**. All tasks in it have the kind `оснастка`.
 
@@ -322,7 +322,7 @@ Schema files are not read with the same frequency, and a file's weight must matc
 | 1 | `AGENTS.md` (+ §8 of its engine: `.claude/rules/claude-8.md` / `.agents/rules/gemini-8.md`) | all five nodes | every invocation, without exception |
 | 2 | `.claude/agents/*.md`, `.agents/plugins/forma/agents/*.md` | the specific node | every invocation of exactly that node |
 | 2b | `.claude/agents/on-demand/*.md`, `.agents/plugins/forma/agents/on-demand/*.md` | the node on which a rare event occurred (goal opening, schema housekeeping, stack recon, external model) | by event — the node reads the file with `Read` itself, does not keep its weight constantly |
-| 3 | `.forma/manual/en/03-forma/PROTOCOL.md`, `.forma/manual/en/03-forma/SCHEME.md`, `project/CONFIG.md`, `project/PROJECT.md`, `project/ROADMAP.md` | the node that needs a specific fact/threshold/contract | on reference — not on every invocation |
+| 3 | `.forma/manual/en/03-forma/PROTOCOL.md`, `.forma/manual/en/03-forma/SCHEME.md`, `project/config/CONFIG.md`, `project/config/PROJECT.md`, `project/ops/ROADMAP.md` | the node that needs a specific fact/threshold/contract | on reference — not on every invocation |
 | 4 | `GOAL.md` of the current goal, the card itself, `.claude/skills/*/SKILL.md` | the node working exactly with this goal/task/process | by event, even tighter than level 3 |
 
 Moving content between levels is honest only in one direction of the criterion: not "where it is more convenient", but "how often this is actually read". Promotion to a more frequent level for imaginary convenience ("let it be at hand for everyone") is paid on every invocation of every node — more expensive than the saving where the content was taken from (precedent — an attempt to move the card formatting rule from `spec.md` to `CLAUDE.md`, rolled back in the same session after measurement: the move into a level-1 file cost more than the saving in the less frequently read level-2 file).

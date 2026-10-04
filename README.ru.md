@@ -83,8 +83,8 @@ code --install-extension LachyFS.kanban-markdown
 ### После установки
 
 - Дашборд: `node dashboard/serve.js` → `http://localhost:5050/`.
-- Задайте два порога (заходы, объём) в `project/PROJECT.md`.
-- Начните подготовку по `project/SETUP.md` — интервью ведёт `Intent`, основная сессия.
+- Задайте два порога (заходы, объём) в `project/config/PROJECT.md`.
+- Начните подготовку по `project/config/SETUP.md` — интервью ведёт `Intent`, основная сессия.
 
 По желанию: `skill-creator`, `context-mode`, `agentmemory` — см. полное описание.
 

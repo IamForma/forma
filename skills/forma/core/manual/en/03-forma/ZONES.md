@@ -43,7 +43,7 @@ The numbering of the zones is not the order of the execution route (`Intent → 
 **What is included:** kitting the doer with specific tools of the work — what `Run` actually uses when doing work in a specific project (a website, an application, anything else).
 
 **Two states, both already exist:**
-- **Empty profile** — the `project/` skeleton (six files, six directories), filled in together with the human through an interview (`project/SETUP.md`), part of the core by default.
+- **Empty profile** — the `project/` skeleton (six files, six directories), filled in together with the human through an interview (`project/config/SETUP.md`), part of the core by default.
 - **Pre-prepared profile** — for a specific project type, directories, documentation, and recommended skills are already ready. Example: `forma-wordpress-novamira` (Novamira MCP, Magnific, skills `novamira-wp-deploy`/`novamira-wp-elementor`/`excalidraw-diagrams`).
 
 **Constructor:** every human can create their own profiles for their own task type — `forma-wordpress-novamira` is not the only possible profile, but one of many that can be created.
