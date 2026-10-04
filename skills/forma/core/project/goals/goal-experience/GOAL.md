@@ -2,20 +2,20 @@
 draft: false
 ---
 
-# Главная цель вида `experience` · Опыт
+# Main goal of kind `experience` · Experience
 
-Одна из девяти главных целей проекта — все девять идут параллельно (`intent-goal-opening.md`, «Эпик», «Как формируются цели»). Подцели — в карте `ROADMAP.md`, под этой целью.
+One of the project's nine main goals — all nine run in parallel (`intent-goal-opening.md`, "Epic", "How goals are formed"). Subgoals are in the `ROADMAP.md` map, under this goal.
 
 ---
 
-**Вид**: `experience` · дорожка на доске — лейбл из `PROJECT.md`, «Эпики проекта».
+**Kind**: `experience` · the board lane — a label from `PROJECT.md`, "Project epics".
 
-**Метка карточек**: `goal-experience` (или метка подцели, если карточка к ней относится).
+**Card label**: `goal-experience` (or the subgoal's label, if the card belongs to one).
 
-**Формирует**: ядро, по умолчанию.
+**Formed by**: the core, by default.
 
-**Образ по умолчанию**: граф: `Kit` собирает статистику и графы знаний; из них — опыт, из опыта — шаблон проекта для других проектов.
+**Default image**: a graph: `Kit` collects statistics and knowledge graphs; from them — experience, from experience — a project template for other projects.
 
-**Образ в этом проекте**: граф: `Kit` собирает статистику и графы знаний; из них — опыт, из опыта — шаблон проекта для других проектов
+**Image in this project**: a graph: `Kit` collects statistics and knowledge graphs; from them — experience, from experience — a project template for other projects
 
-**Кто закрывает**: вердикт `Intent`; закрывает человек (запреты 1 и 8).
+**Closed by**: the verdict of `Intent`; the human closes (prohibitions 1 and 8).

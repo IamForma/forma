@@ -1,17 +1,17 @@
-# Цели
+# Goals
 
-Карта целей проекта живёт в `project/ROADMAP.md`; здесь — сегмент каждой отдельной цели, один каталог на цель.
+The project's goal map lives in `project/ops/ROADMAP.md`; here is the segment of each separate goal, one directory per goal.
 
-## Формат
+## Format
 
 ```
 goals/
-  goal-<код>/        главная цель вида — девять, по одной на эпик (value, docs, forma, result-image, core, incoming, goal, experience, review-image)
+  goal-<code>/       a kind's main goal — nine, one per epic (value, docs, forma, result-image, core, incoming, goal, experience, review-image)
     GOAL.md
-  goal-NN-<имя>/     подцель, сквозная нумерация по всем видам; вид задаёт карта ROADMAP.md
-    GOAL.md    образ результата, признак, круги, вердикты
+  goal-NN-<name>/    a subgoal, continuous numbering across all kinds; the kind is set by the ROADMAP.md map
+    GOAL.md    result image, criterion, circles, verdicts
 ```
 
-`NN` — порядковый номер, `<имя>` — короткое, латиницей транслитерации. Заводит `Intent` на шаге 11 подготовки (`project/SETUP.md`) или при открытии новой цели по `ROADMAP.md`.
+`NN` — the sequence number, `<name>` — short, in Latin letters. Created by `Intent` at step 11 of the preparation (`project/config/SETUP.md`) or when opening a new goal from `ROADMAP.md`.
 
-Документация по итогам цели, для человека, — не здесь, а в `project/docs/goal-NN-<имя>/` (тот же номер и имя каталога — правило переноса, `manual/en/03-forma/SCHEME.md`, разд. 6).
+Documentation on a goal's outcome, for the human, is not here but in `project/docs/goal-NN-<name>/` (the same number and directory name — the carrying-over rule, `manual/en/03-forma/SCHEME.md`, sect. 6).

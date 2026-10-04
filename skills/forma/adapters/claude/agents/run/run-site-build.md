@@ -14,7 +14,7 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 ## When to take
 
-A card whose result is a page, template, or content block, built or changed through a live site-builder ability (a block editor or page-builder connector) — not a bare PHP write. Read `project/SITE.md` (the site's architectural snapshot) before any write.
+A card whose result is a page, template, or content block, built or changed through a live site-builder ability (a block editor or page-builder connector) — not a bare PHP write. Read `project/config/SITE.md` (the site's architectural snapshot) before any write.
 
 ## Boundary
 

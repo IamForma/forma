@@ -12,12 +12,12 @@ Read this file only when you take on `SETUP.md` step **10b, "Kitting"** — not 
 2. **Requirements per goal candidate** — what references/facts each one needs so `Intent` can honestly write an end-image and arrival criterion, without generalizing on a blank spot.
 3. **Goals** — the subgoals of the nine kinds this project needs, as labels `goal-NN` (`intent-goal-opening.md`, "Epic"); the nine lanes themselves are fixed by the schema.
 4. **Node provisioning** — a preliminary arsenal: what skills/tools/connectors `Spec`/`Kit`/`Run`/`Core` will need across the whole goal plan, not one card — the same kind of provisioning you already do per task (`kit.md`), here done once, ahead, for the whole project.
-5. **Project documentation structure** — what files/directories are needed and what each is for: the same knowledge you already keep in `project/CONFIG.md` §1, here as a first draft, before the structure exists by fact.
+5. **Project documentation structure** — what files/directories are needed and what each is for: the same knowledge you already keep in `project/config/CONFIG.md` §1, here as a first draft, before the structure exists by fact.
 6. **Gap closing** — what's missing from the brief and references that `grilling` didn't ask about. Not another interview — recon after it. Route each gap by kind, reusing routes that already exist, not a new one:
 
 | Kind of gap | Who closes it | Where it goes |
 |---|---|---|
-| Public fact about a technology/environment | you, recon (`agents/on-demand/kit-recon.md`) | `project/CONFIG.md`, "Environment technical contracts" |
+| Public fact about a technology/environment | you, recon (`agents/on-demand/kit-recon.md`) | `project/config/CONFIG.md`, "Environment technical contracts" |
 | Decision or access only the human knows | human | `VARS/credentials.md`/`.env` by kind (`AGENTS.md` §5, item 15), or directly into `brief/kitting.md` |
 | A fact you can find, but the choice between options is the human's | you find it, bring the choice | human, same as any "human" row in the route (`AGENTS.md` §2) |
 | A gap you can't close without changing the image itself or the arsenal | human decides | epic "3. Form/Intent+Kit", or back to the brief as an unattainable value |

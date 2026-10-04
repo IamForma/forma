@@ -3,7 +3,7 @@ id: "card-001-test"
 status: "backlog"
 priority: "medium"
 assignee: null
-epic: "3. Форма/Intent+Kit"
+epic: "3. Form/Intent+Kit"
 dueDate: null
 created: "2026-01-01T00:00:00.000Z"
 modified: "2026-01-01T00:00:00.000Z"

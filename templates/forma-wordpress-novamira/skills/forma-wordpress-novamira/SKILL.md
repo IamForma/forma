@@ -1,32 +1,32 @@
 ---
 name: forma-wordpress-novamira
-description: Кладёт в текущий проект маршрут этого шаблона (project/ROUTE.md — референс пятой позиции интервью) и пустую заготовку project/SITE.md — архитектурного снимка сайта, к которому подключён Novamira MCP. Остальные скиллы плагина (novamira-wp-deploy, novamira-wp-elementor) уже активны сами по себе, этот вызов им не нужен. Вызывать при старте нового сайтового проекта на этом стеке, или явно по /forma-wordpress-novamira.
+description: Puts into the current project this template's route (project/config/ROUTE.md — the reference for the fifth interview position) and an empty project/config/SITE.md stub — the architectural snapshot of the site Novamira MCP is connected to. The plugin's other skills (novamira-wp-deploy, novamira-wp-elementor) are already active on their own, this call is not needed for them. Call it when starting a new site project on this stack, or explicitly via /forma-wordpress-novamira.
 ---
 
-# forma-wordpress-novamira — заготовка сайтового проекта
+# forma-wordpress-novamira — site project stub
 
-Ставит три вещи.
+Installs three things.
 
-**Маршрут** — `template/project/ROUTE.md` → `project/ROUTE.md`. Это главное, что даёт шаблон проекта: последовательность, по которой сайт на этом стеке доводится до результата (интервью → промпт лендинга → Aura → лендинг как прототип всех страниц → предопределённая карта сайта → три версии макапа). Сценарий интервью приходит с ядром и здесь не дублируется; **шаблон добавляет только референс в пятую позицию** — «естественность», то есть маршрут.
+**The route** — `template/project/config/ROUTE.md` → `project/config/ROUTE.md`. This is the main thing the project template gives: the sequence by which a site on this stack is brought to a result (interview → landing prompt → Aura → landing as the prototype of all pages → predefined sitemap → three versions of the mockup). The interview script comes with the core and is not duplicated here; **the template adds only a reference to the fifth position** — "naturalness", that is, the route.
 
-**Заготовку `project/SITE.md`** — `template/project/SITE.md` → `project/SITE.md`, пустой каркас архитектурного снимка сайта (тема, кеш, конструктор, снипеты, аутентификация MCP, каталог страниц). Продуктовые данные сайта живут только в `project/`, не в `.claude/skills/` (`AGENTS.md`, «Three layers of files»). Заполняется по факту, разведкой конкретного сайта — не при установке.
+**The `project/config/SITE.md` stub** — `template/project/config/SITE.md` → `project/config/SITE.md`, an empty skeleton of the site's architectural snapshot (theme, cache, builder, snippets, MCP authentication, page catalog). The site's product data lives only in `project/`, not in `.claude/skills/` (`AGENTS.md`, "Three layers of files"). Filled in by fact, by reconnaissance of the specific site — not at installation.
 
-**Скрипты сайта и переводов** — `template/scripts/` → `.claude/scripts/`: обёртка novamira CLI, загрузка PHP на сайт, конвейер переводов .po.
+**Site and translation scripts** — `template/scripts/` → `.claude/scripts/`: a wrapper of the novamira CLI, uploading PHP to the site, the .po translation pipeline.
 
-## Порядок установки
+## Installation order
 
-1. **Проверь, не установлено ли уже.** Если в проекте уже есть `project/SITE.md` или `project/ROUTE.md` с заполненными шагами — не перезаписывай молча: покажи содержимое, спроси человека (заменить, слить вручную, отменить). Особенно `ROUTE.md`: в нём может быть раздел «Пройдено», а он невосстановим.
-2. **Скопируй маршрут.** `template/project/ROUTE.md` → `project/ROUTE.md`.
-   **Каркас идеи — если есть.** `template/project/brief/idea.md` есть → `project/brief/idea.md`. В проекте уже заполненный `idea.md` (разделы не только с пометкой «ещё не спрошено») — не перезаписывай молча: покажи, спроси человека, как в шаге 1. Нет своего — остаётся каркас ядра.
-3. **Пропиши статус шаблона.** В `project/PROJECT.md`, блок «Шаблон проекта»: имя `forma-wordpress-novamira`, источник — этот шаблон, статус — `формируется с человеком`, пока раздел «Пройдено» в `ROUTE.md` пуст. Статус `готовый проверенный` ставится **только после того, как маршрут пройден до результата**, и ставит его человек, не установщик.
-4. **Скопируй заготовку `project/SITE.md`.** `template/project/SITE.md` → `project/SITE.md` (не перезаписывай, если файл уже существует и заполнен — см. шаг 1).
-5. **Скопируй скрипты сайта и переводов.** `template/scripts/*` → `.claude/scripts/` (создай каталог, если нет): `site.cjs`, `site-php.cjs`, `loco-pipeline.py`, `po_shift_check.py`, `tokenator_translator.py`. Файл с таким именем уже есть — не перезаписывай молча: покажи разницу, спроси человека. Сайт и ключи скрипты берут только из `.env` проекта по имени (`SITE_SLUG`, `TOKENATOR_API_KEY`, необязательный `TOKENATOR_ENDP`) — отсутствующие имена допиши в `.env.example` без значений.
-6. **Покажи человеку, что дальше.** Заготовка пуста — заполнение (URL, WP/PHP, тема, кеш, снипет-менеджер, способ аутентификации MCP, каталог страниц) происходит на Шаге 0 скилла `novamira-wp-deploy` («Новый проект: бутстрап»), разведкой через сам Novamira MCP и в разговоре с человеком — не выдумывается заранее.
+1. **Check whether it is already installed.** If the project already has `project/config/SITE.md` or `project/config/ROUTE.md` with filled-in steps — do not overwrite silently: show the content, ask the human (replace, merge by hand, cancel). `ROUTE.md` above all: it may hold a "Passed" section, and that cannot be restored.
+2. **Copy the route.** `template/project/config/ROUTE.md` → `project/config/ROUTE.md`.
+   **The idea skeleton — if there is one.** If `template/project/brief/idea.md` exists → `project/brief/idea.md`. If the project already has a filled-in `idea.md` (sections other than those marked "not yet asked") — do not overwrite silently: show it, ask the human, as in step 1. If it has none of its own, the core's skeleton stays.
+3. **Set the template status.** In `project/config/PROJECT.md`, the "Project template" block: name `forma-wordpress-novamira`, source — this template, status — `forming with the human` while the "Passed" section of `ROUTE.md` is empty. The status `verified ready` is set **only after the route has been walked to a result**, and it is set by the human, not by the installer.
+4. **Copy the `project/config/SITE.md` stub.** `template/project/config/SITE.md` → `project/config/SITE.md` (do not overwrite if the file already exists and is filled in — see step 1).
+5. **Copy the site and translation scripts.** `template/scripts/*` → `.claude/scripts/` (create the directory if missing): `site.cjs`, `site-php.cjs`, `loco-pipeline.py`, `po_shift_check.py`, `tokenator_translator.py`. If a file with that name already exists — do not overwrite silently: show the difference, ask the human. The scripts take the site and keys only from the project's `.env`, by name (`SITE_SLUG`, `TOKENATOR_API_KEY`, optional `TOKENATOR_ENDP`) — add the missing names to `.env.example` without values.
+6. **Show the human what comes next.** The stub is empty — filling it in (URL, WP/PHP, theme, cache, snippet manager, MCP authentication method, page catalog) happens at Step 0 of the `novamira-wp-deploy` skill ("New project: bootstrap"), by reconnaissance through Novamira MCP itself and in conversation with the human — it is not invented in advance.
 
-## Чего этот скилл не делает
+## What this skill does not do
 
-- **не объявляет маршрут проверенным** — статус `готовый проверенный` ставит человек по факту пройденного, установка ставит `формируется с человеком`;
-- **не приносит своего сценария интервью** — сценарий один и приходит с ядром, шаблон кладёт только референс пятой позиции;
-- не выдумывает содержание `project/SITE.md` — каркас пуст, заполнение это разведка + разговор с человеком, не установка;
-- не подключает сами MCP-серверы (Novamira/Aura/Magnific) — они у каждого проекта свои (свой сайт, свои учётные данные), см. README плагина, раздел «MCP-серверы этого стека»;
-- не публикует и не коммитит ничего сам.
+- **does not declare the route verified** — the status `verified ready` is set by the human by the fact of what has been passed, installation sets `forming with the human`;
+- **does not bring its own interview script** — there is one script and it comes with the core, the template puts only the fifth position's reference;
+- does not invent the content of `project/config/SITE.md` — the skeleton is empty, filling it in is reconnaissance plus conversation with the human, not installation;
+- does not connect the MCP servers themselves (Novamira/Aura/Magnific) — each project has its own (its own site, its own credentials), see the plugin's README, section "MCP servers of this stack";
+- does not publish or commit anything by itself.

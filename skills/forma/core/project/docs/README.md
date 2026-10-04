@@ -1,28 +1,28 @@
-# Документация проекта
+# Project documentation
 
-База знаний о том, что сделано. Структура — по целям: у каждой цели `project/goals/goal-NN-<имя>/` свой раздел здесь, `docs/goal-NN-<имя>/`. Не по типу артефакта (архитектура/гайд/компонент) — по тому, что эта документация объясняет.
+A knowledge base of what has been done. Structured by goals: each goal `project/goals/goal-NN-<name>/` has its own section here, `docs/goal-NN-<name>/`. Not by artifact type (architecture/guide/component) — by what this documentation explains.
 
-**Кто пишет.** `Intent`, эпик «2. Документация/Intent» — **после того, как круг закрыт**, а не по ходу его. Не `Run`: он сделал вещь, но к человеку не обращается никогда (`AGENTS.md` §1), а документация — это Форма, объясняющая человеку, что она поставила.
+**Who writes.** `Intent`, epic "2. Documentation/Intent" — **after the circle is closed**, not along the way. Not `Run`: it made the thing, but never addresses the human (`AGENTS.md` §1), and documentation is the Form explaining to the human what it has delivered.
 
-**Из чего пишет.** Из зон «Результат» закрытых карточек и из живого результата — `Intent` смотрит сам. Не хронология исполнения (та — в истории карточки) и не вердикт (тот — в `GOAL.md`), и не пересказ карточек: читатель этих страниц про карточки, заходы и узлы не знает и знать не должен.
+**From what.** From the "Result" zones of closed cards and from the live result — `Intent` looks itself. Not the chronology of execution (that is in the card's history), not a verdict (that is in `GOAL.md`), and not a retelling of the cards: the reader of these pages knows nothing about cards, attempts and nodes and should not.
 
-**Почему после закрытия.** Документация описывает подтверждённое, а не задуманное. Отсюда следствие, которое надо планировать, а не обнаруживать: `Core` закрывает карточки круга пачкой, поэтому документация круга N пишется в круге N+1, а последней цели нужен завершающий круг.
+**Why after closing.** Documentation describes the confirmed, not the intended. A consequence follows that must be planned, not discovered: `Core` closes a circle's cards together, so the documentation of circle N is written in circle N+1, and the last goal needs a finishing circle.
 
-**Род — «дело», не «оснастка»**, и у документации свои цели: она пишется ко всему проекту, а не к каждой цели по отдельности. Цели продукта поставляют сам продукт и документацию не должны — документация описывает то, что ими уже поставлено, и потому идёт позже. Какие виды документации бывают в этом проекте и что в каждый входит — `project/PROJECT.md`, «Виды документации»; сколько под них целей и как размечены разделы — решает человек при открытии этих целей.
+**The kind is `work`, not `tooling`**, and documentation has its own goals: it is written for the whole project, not for each goal separately. Product goals deliver the product itself and must not deliver documentation — documentation describes what they have already delivered, and therefore comes later. Which kinds of documentation exist in this project and what each includes — `project/config/PROJECT.md`, "Documentation kinds"; how many goals go under them and how sections are laid out — the human decides when opening those goals.
 
-**Кто подтверждает.** Человек. Автор не проверяет сам себя (`AGENTS.md` §5, запрет 1), а здесь верный проверяющий — тот, кому обещали.
-
----
-
-## Структура разделов
-
-Новая цель на `ROADMAP.md` — новый раздел здесь, тем же именем каталога, что у `project/goals/goal-NN-<имя>/` (правило переноса каталога — `manual/en/03-forma/SCHEME.md`, разд. 6). Разделов пока нет — первый появится вместе с первой закрытой целью.
+**Who confirms.** The human. The author does not check themselves (`AGENTS.md` §5, prohibition 1), and the right checker here is the one who was promised.
 
 ---
 
-## Связь с Канбан-доской (`.devtool/features/`)
+## Structure of sections
 
-Задачи ссылаются на статьи этой базы вики-ссылками, по разделу цели: `[[docs/goal-NN-<имя>/...]]`.
+A new goal on `ROADMAP.md` — a new section here, with the same directory name as `project/goals/goal-NN-<name>/` (the rule of carrying the directory over — `manual/en/03-forma/SCHEME.md`, sect. 6). There are no sections yet — the first appears with the first closed goal.
 
-* **В карточке задачи** — ссылка на релевантную статью раздела своей цели.
-* **В статье документации** — итоговое описание функционала, принятые решения, ссылки на затронутые файлы.
+---
+
+## Connection with the Kanban board (`.devtool/features/`)
+
+Tasks refer to this base's articles by wiki-links, by the goal's section: `[[docs/goal-NN-<name>/...]]`.
+
+* **In a task card** — a link to the relevant article of its goal's section.
+* **In a documentation article** — the final description of the functionality, the decisions taken, links to the affected files.

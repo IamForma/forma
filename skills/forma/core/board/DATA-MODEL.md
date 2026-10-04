@@ -10,7 +10,7 @@
 | `status` | `backlog` · `todo` · `in-progress` · `review` · `done` |
 | `priority` | `low` · `medium` · `high` |
 | `assignee` | `"Spec"` · `"Kit"` · `"Run"` · `"Intent"` · `"Core"` · `null` (AGENTS.md §7) |
-| `epic` | точное имя эпика из `project/PROJECT.md`, «Эпики проекта» |
+| `epic` | точное имя эпика из `project/config/PROJECT.md`, «Эпики проекта» |
 | `dueDate` | дата или `null` |
 | `created`, `modified` | ISO-время |
 | `completedAt` | ISO-время или `null` |

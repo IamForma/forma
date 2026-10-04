@@ -83,8 +83,8 @@ The board `.devtool/features/` is where card status, history, results and spend 
 ### After installation
 
 - Dashboard: `node dashboard/serve.js` → `http://localhost:5050/`.
-- Set the two thresholds (attempts, volume) in `project/PROJECT.md`.
-- Start preparation from `project/SETUP.md` — the interview is led by `Intent`, the main session.
+- Set the two thresholds (attempts, volume) in `project/config/PROJECT.md`.
+- Start preparation from `project/config/SETUP.md` — the interview is led by `Intent`, the main session.
 
 Optional companions: `skill-creator`, `context-mode`, `agentmemory` — see the full description.
 

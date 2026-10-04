@@ -2,20 +2,20 @@
 draft: false
 ---
 
-# Главная цель вида `core` · Баланс
+# Main goal of kind `core` · Balance
 
-Одна из девяти главных целей проекта — все девять идут параллельно (`intent-goal-opening.md`, «Эпик», «Как формируются цели»). Подцели — в карте `ROADMAP.md`, под этой целью.
+One of the project's nine main goals — all nine run in parallel (`intent-goal-opening.md`, "Epic", "How goals are formed"). Subgoals are in the `ROADMAP.md` map, under this goal.
 
 ---
 
-**Вид**: `core` · дорожка на доске — лейбл из `PROJECT.md`, «Эпики проекта».
+**Kind**: `core` · the board lane — a label from `PROJECT.md`, "Project epics".
 
-**Метка карточек**: `goal-core` (или метка подцели, если карточка к ней относится).
+**Card label**: `goal-core` (or the subgoal's label, if the card belongs to one).
 
-**Формирует**: ядро, по умолчанию; человек ничего не называет.
+**Formed by**: the core, by default; the human names nothing.
 
-**Образ по умолчанию**: содружество узлов: ни один не перебирает за счёт другого; числа порогов — в `PROJECT.md`.
+**Default image**: a commonwealth of nodes: none overreaches at another's expense; the threshold numbers are in `PROJECT.md`.
 
-**Образ в этом проекте**: содружество узлов: ни один не перебирает за счёт другого; числа порогов — в `PROJECT.md`
+**Image in this project**: a commonwealth of nodes: none overreaches at another's expense; the threshold numbers are in `PROJECT.md`
 
-**Кто закрывает**: вердикт `Core`; закрывает человек (запреты 1 и 8).
+**Closed by**: the verdict of `Core`; the human closes (prohibitions 1 and 8).

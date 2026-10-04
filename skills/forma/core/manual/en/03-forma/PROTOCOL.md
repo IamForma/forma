@@ -665,13 +665,13 @@ The five-node structure is not tied to size: for a large project, no other proto
 
 The only thing that requires separate attention as scale grows is **orchestration**: many tasks are linked to one another, and the results of some `Run`-runners must correctly reach the input of others, before a dependent card is taken up. The five-node schema itself already provides a basis for this — the "where it goes next" field in the card (section 2, `AGENTS.md`) and the distribution across cycles (section 3) — but the rules for docking many parallel `Run` doers with each other, when there are not one or two but many, is a separate mechanics, not yet worked out in this schema, not solved by this section. It is recorded as an open question, not as a ready-made solution.
 
-### 5. The language of the cards and project artifacts — follows the language of the project (`project/PROJECT.md`)
+### 5. The language of the cards and project artifacts — follows the language of the project (`project/config/PROJECT.md`)
 
 The mechanics of the schema (levels 1, 2, 2b — `AGENTS.md` and §8 of the engines, agent roles, `on-demand/`) are formatted in English for internal token economy and precision of inter-agent transmission of reasoning ("agents write for agents in the model's training language").
 
 But level 4 — the task cards on the board `.devtool/features/`, the goal wordings in `GOAL.md`, the documents in `docs/` and the settled values in `VARS/` — belongs to a specific project and the human. If the project is run in Russian, the artificial imposition of English zone headings in cards creates a psychological break and noise: the card becomes a hybrid, where half the words are English and half are Russian.
 
-Therefore the canon contains a strict rule: **the language of the cards follows the language of the project, set in `project/PROJECT.md`**. For a Russian-language project:
+Therefore the canon contains a strict rule: **the language of the cards follows the language of the project, set in `project/config/PROJECT.md`**. For a Russian-language project:
 - zone headings are formatted in Russian: `## Задача` (`## Task`), `## Снаряжение` (`## Kit`), `## История` (`## History`), `## Результат` (`## Result`);
 - task fields: `№ · род | что даёт | признак готовности | бюджет заходов | куда идёт дальше`, the kind of task — `дело` (`work`), `оснастка` (`tooling`) or `решение` (`decision`);
 - kit fields: `Роль · Умение · Инструмент · Доступ · Данные · Модель`.

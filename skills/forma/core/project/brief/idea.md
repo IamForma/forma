@@ -1,24 +1,24 @@
-# Идея · <название проекта>
+# Idea · <project name>
 
-Каркас постоянный, разделы наполняются по ходу интервью. Пометки: *ещё не спрошено*, *догадка* — не подтверждено человеком. Изменение сказанного — строкой «изменено по qN» в конце раздела. Ссылка на вопрос — (qN).
+The skeleton is permanent, the sections are filled in as the interview goes. Marks: *not yet asked*, *guess* — not confirmed by the human. A change to what was said — a line "changed per qN" at the end of the section. A reference to a question — (qN).
 
-## Облик
-*ещё не спрошено:* как выглядит результат.
+## Look
+*not yet asked:* what the result looks like.
 
-## Состав
-*ещё не спрошено:* из чего состоит.
+## Composition
+*not yet asked:* what it consists of.
 
-## Общая цель
-*ещё не спрошено:* для кого и зачем.
+## General goal
+*not yet asked:* for whom and why.
 
-## Функции
-- *ещё не спрошено:* что результат делает.
+## Functions
+- *not yet asked:* what the result does.
 
-## Маршрут
-*ещё не спрошено:* шаги от интервью до результата. Есть `project/ROUTE.md` шаблона — расхождение с ним называется здесь.
+## Route
+*not yet asked:* the steps from the interview to the result. If the template has a `project/config/ROUTE.md`, any divergence from it is named here.
 
-## Признак готовности
-*ещё не спрошено:* что человек проверит сам, чтобы сказать «готово».
+## Readiness criterion
+*not yet asked:* what the human will check themselves in order to say "done".
 
-## Открытые вопросы
-- *пока нет.*
+## Open questions
+- *none yet.*

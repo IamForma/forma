@@ -129,7 +129,7 @@ function posHtml(p){
   }
 
   return `<div class="pos ${cls}">
-    <div class="pos-head"><span class="pos-n mono">${p.n}</span><span class="pos-name">${esc(p.name)}</span><span class="pos-state">${POS_STATE_LABEL[p.state] || ''}</span></div>
+    <div class="pos-head"><span class="pos-n mono">${p.n}</span><span class="pos-name">${esc(p.label || p.name)}</span><span class="pos-state">${POS_STATE_LABEL[p.state] || ''}</span></div>
     <div class="pos-fill"><i style="width:${p.fill}%"></i></div>
     ${body}${layers}${guess}${note}${done}${open}
   </div>`;

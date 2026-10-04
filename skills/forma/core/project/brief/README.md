@@ -1,13 +1,13 @@
-# Бриф
+# Brief
 
-Что человек рассказал до первой цели — фундамент, на котором дальше стоит весь проект. Собирается интервью-техникой `grilling` (`grilling/SKILL.md` в каталоге скиллов движка, если подключена), ведёт `Intent` (`project/SETUP.md`, шаг 1).
+What the human said before the first goal — the foundation on which the whole project stands. Collected with the `grilling` interview technique (`grilling/SKILL.md` in the engine's skills directory, if installed), led by `Intent` (`project/config/SETUP.md`, step 1).
 
-## Файлы
+## Files
 
-| Файл | Что в нём |
+| File | What it holds |
 |---|---|
-| `interview.md` | сценарий интервью: пять позиций (красота/простота/индивидуальность/честность-миссия/естественность) — не переписывается по ходу проекта |
-| `history.md` | систематизированная запись того, что человек рассказал — все исходные параметры интервью, структурно оформленные |
-| `reference.md` | референсы, собранные при интервью и по ходу сбора брифа |
+| `interview.md` | the interview script: five positions (beauty/simplicity/individuality/honesty-mission/naturalness) — not rewritten along the project |
+| `history.md` | a systematized record of what the human said — all the interview's source parameters, structurally laid out |
+| `reference.md` | references collected at the interview and while the brief is gathered |
 
-**Не переписывается по ходу.** Бриф — снимок замысла на момент первого разговора (`AGENTS.md`, «Пять пар»: `project/brief` — «якорная точка»). Если конец-образ и бриф разошлись — расхождение называется, а не тихо правится здесь.
+**Not rewritten along the way.** The brief is a snapshot of the idea at the moment of the first conversation (`AGENTS.md`, "Five pairs": `project/brief` — "the anchor point"). If the end-image and the brief diverge, the divergence is named, not quietly corrected here.

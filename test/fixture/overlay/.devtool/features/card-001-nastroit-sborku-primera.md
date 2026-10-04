@@ -3,7 +3,7 @@ id: "card-001-nastroit-sborku-primera"
 status: "review"
 priority: "medium"
 assignee: "Intent"
-epic: "3. Форма/Intent+Kit"
+epic: "3. Form/Intent+Kit"
 dueDate: null
 created: "2031-01-01T10:00:00.000Z"
 modified: "2031-01-02T10:00:00.000Z"

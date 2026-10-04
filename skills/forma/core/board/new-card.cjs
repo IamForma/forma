@@ -14,6 +14,7 @@
 // Часть ядра: одна для всех движков, путей движка не знает.
 
 const fs = require('fs');
+const { projectFile } = require('../dashboard/lib/fs.cjs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { makeCli } = require('../dashboard/lib/cli.cjs');
@@ -27,7 +28,7 @@ const { arg, flag, values: args } = cli;
 const die = cli.die('new-card');
 
 // 1. Эпики из PROJECT.md
-const projectMd = fs.readFileSync(path.join(ROOT, 'project', 'PROJECT.md'), 'utf8');
+const projectMd = fs.readFileSync(projectFile(ROOT, 'PROJECT.md'), 'utf8');
 const lanes = new Map();
 for (const m of projectMd.matchAll(/^\|\s*`([a-z-]+)`\s*\|\s*([^|]+?)\s*\|/gm)) lanes.set(m[1], m[2]);
 if (!lanes.size) die('в PROJECT.md не найдена таблица «Эпики проекта»');
@@ -59,7 +60,8 @@ let lang = arg('lang');
 if (!lang) {
   const lm = projectMd.match(/\*\*(?:Язык проекта|Project language)\*\*[^:\n]*:\s*([^\n]*)/);
   const v = (lm && lm[1]) || '';
-  lang = /англ|english/i.test(v.slice(0, 40)) ? 'en' : /[а-яё]/i.test(projectMd.slice(0, 200)) ? 'ru' : 'en';
+  const head = v.slice(0, 40);
+  lang = /англ|english|^en/i.test(head) ? 'en' : /рус|russian|^ru/i.test(head) ? 'ru' : /[а-яё]/i.test(projectMd.slice(0, 200)) ? 'ru' : 'en';
 }
 const Z = {
   task: zoneHeading('task', lang), kit: zoneHeading('kit', lang), hist: zoneHeading('history', lang), res: zoneHeading('result', lang),

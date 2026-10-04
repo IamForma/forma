@@ -114,13 +114,13 @@ described there, then end the turn.
    `rec` in place and set `updated: true` (the page marks it). Clear `updated` once the user
    answers it.
 3a. Update three files on every send, only the parts this send touched; unconfirmed —
-   *догадка*, a change to what was said — line «изменено по qN»:
+   *guess*, a change to what was said — line "changed per qN" (markers as in the skeleton; in a translated project they are translated too):
    - `project/brief/idea.md` — the interview skeleton;
    - `project/brief/picture.json` → `tree` — node `{id, kind: said|guess|pending, label,
      from: "qN", role, children: []}`; `said` = the human said it, `guess` = yours, `pending`
      = branch not yet asked;
    - `project/brief/landing-prompt.md` — the first-page prompt: engagement scenario,
-     sections, style, texts; unchecked — *догадка*.
+     sections, style, texts; unchecked — *guess*.
 4. Add the next round: the frontier (see Interview method), up to three when independent,
    each with `deps` listing the question ids it depends on. New questions get the next round
    number. If the tree is fully walked, add no questions and set `note` to a short sentence
@@ -271,7 +271,7 @@ On a `finish` action, or when the user says finish in the terminal:
    Do not compress: a reader with no access to the session must be able to build from it.
 
    **Section headers follow the project's language** (same rule as `AGENTS.md` §6 already
-   sets for task cards — check `project/PROJECT.md`, "Язык проекта"). All thirteen sections
+   sets for task cards — check `project/config/PROJECT.md`, "Project language"). All thirteen sections
    get translated, not only the five Form axes below; nothing above is skipped or renamed to
    English when the project language isn't English. For a Russian-language project, use:
    Terms → Термины · Why → Почему · Locked decisions → Закреплённые решения · Routine

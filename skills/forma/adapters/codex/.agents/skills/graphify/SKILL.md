@@ -296,7 +296,7 @@ Wait for all subagents. For each result:
 - If the file is missing, the subagent was likely dispatched as read-only (Explore type) — print a warning: "chunk N missing from disk — subagent may have been read-only. Re-run with the extractor agent." Do not silently skip.
 - If a subagent failed or returned invalid JSON, print a warning and skip that chunk - do not abort
 
-If more than half the chunks failed or are missing, stop and tell the user to re-run and ensure `subagent_type="extractor"` is used (`.claude/agents/extractor.md` — narrow text-in/text-out extractor, `omitClaudeMd: true`; `project/CONFIG.md#omit-claude-md`).
+If more than half the chunks failed or are missing, stop and tell the user to re-run and ensure `subagent_type="extractor"` is used (`.claude/agents/extractor.md` — narrow text-in/text-out extractor, `omitClaudeMd: true`; `project/config/CONFIG.md#omit-claude-md`).
 
 Save new results to cache:
 ```powershell
