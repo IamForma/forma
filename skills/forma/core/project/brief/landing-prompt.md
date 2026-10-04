@@ -1,24 +1,24 @@
-# Промпт первой страницы · <название проекта>
+# First-page prompt · <project name>
 
-Каркас постоянный, пишется по ходу интервью после каждой отправки; на Finish сверяется со всеми ответами. Пометки: *ещё не спрошено*, *догадка* — не подтверждено человеком. Изменение сказанного — строкой «изменено по qN». Ссылка на вопрос — (qN).
+The skeleton is permanent, written as the interview goes after each submission; at Finish it is checked against all the answers. Marks: *not yet asked*, *guess* — not confirmed by the human. A change to what was said — a line "changed per qN". A reference to a question — (qN).
 
-## Задание
-*ещё не спрошено:* кто исполняет, что строится, на основе какого референса.
+## Assignment
+*not yet asked:* who executes, what is built, based on which reference.
 
-## Сценарий вовлечения
-*ещё не спрошено:* путь внимания посетителя по экранам — от захвата до действия.
+## Engagement scenario
+*not yet asked:* the visitor's path of attention across the screens — from capture to action.
 
-## Секции
-*ещё не спрошено:* по порядку — id, смысл, содержание.
+## Sections
+*not yet asked:* in order — id, meaning, content.
 
-## Стиль
-*ещё не спрошено:* облик, шрифты, цвет, движение.
+## Style
+*not yet asked:* look, fonts, color, motion.
 
-## Тексты
-*ещё не спрошено:* голос, язык, ключевые строки.
+## Texts
+*not yet asked:* voice, language, key lines.
 
-## Требования
-*ещё не спрошено:* адаптив, язык, заглушки вместо выдуманного.
+## Requirements
+*not yet asked:* responsive layout, language, placeholders instead of invented content.
 
-## Результат
-*ещё не спрошено:* какой файл и где.
+## Result
+*not yet asked:* which file and where.

@@ -67,11 +67,11 @@ Not every interview opens a goal: a card whose *shape* only the human can settle
 
 ## Glossary and decision log
 
-**Glossary** (`project/GLOSSARY.md`) and **ADR** (`project/adr/`) are yours to keep (`AGENTS.md` §6): during any interview and any check you challenge the human's words against the glossary and against the code and the site, write a settled term at once, and write an ADR only when you confirm a decision card that meets all three conditions. How — routing, the three-condition filter, the duplicate check, challenging a term — skill `project-knowledge`.
+**Glossary** (`project/ops/GLOSSARY.md`) and **ADR** (`project/adr/`) are yours to keep (`AGENTS.md` §6): during any interview and any check you challenge the human's words against the glossary and against the code and the site, write a settled term at once, and write an ADR only when you confirm a decision card that meets all three conditions. How — routing, the three-condition filter, the duplicate check, challenging a term — skill `project-knowledge`.
 
 ## Choosing the route
 
-**Before the first call of any node on a task** — a route picked after work began is a record, not a choice. Read `on-demand/route-choice.md` then, and only then: the rule, overlays, labels, the reason line. Settings — `project/PROJECT.md`, "Routes".
+**Before the first call of any node on a task** — a route picked after work began is a record, not a choice. Read `on-demand/route-choice.md` then, and only then: the rule, overlays, labels, the reason line. Settings — `project/config/PROJECT.md`, "Routes".
 
 - **Single task:** you choose `route-N`, set the label, write the reason line.
 - **`route-0`…`route-5`:** the human approves the five fields before the first call; the reply goes into `## History` as the approval line (`route-choice.md`). No "yes" — `backlog`.

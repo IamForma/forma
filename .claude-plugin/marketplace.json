@@ -14,7 +14,7 @@
     {
       "name": "forma-wordpress-novamira",
       "source": "./templates/forma-wordpress-novamira",
-      "description": "Отделяемый шаблон проекта к forma — разработка WordPress с помощью Novamira MCP (+Elementor) + заготовка архитектурного снимка сайта (project/SITE.md)"
+      "description": "Отделяемый шаблон проекта к forma — разработка WordPress с помощью Novamira MCP (+Elementor) + заготовка архитектурного снимка сайта (project/config/SITE.md)"
     }
   ]
 }

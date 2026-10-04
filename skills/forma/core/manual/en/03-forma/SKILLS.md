@@ -23,7 +23,7 @@ Details — `.forma/protocol/skills/forma/SKILL.md`.
 
 ## `forma-wordpress-novamira`
 
-A separable project template — WordPress development with the help of Novamira MCP (+ Elementor) with Aura/Magnific bundled. Two ready-made skills (`novamira-wp-deploy`, `novamira-wp-elementor`) + an installer for an empty `project/SITE.md` stub (an architectural snapshot of a specific site — its own for each project, not portable in general form; product data lives in `project/`, never in `.claude/skills/`). Separated because the template predetermines the working experience — a route the project is only learning to form and pass along; the core does not depend on this decision.
+A separable project template — WordPress development with the help of Novamira MCP (+ Elementor) with Aura/Magnific bundled. Two ready-made skills (`novamira-wp-deploy`, `novamira-wp-elementor`) + an installer for an empty `project/config/SITE.md` stub (an architectural snapshot of a specific site — its own for each project, not portable in general form; product data lives in `project/`, never in `.claude/skills/`). Separated because the template predetermines the working experience — a route the project is only learning to form and pass along; the core does not depend on this decision.
 
 Installation: `claude plugin install forma-wordpress-novamira@forma`.
 

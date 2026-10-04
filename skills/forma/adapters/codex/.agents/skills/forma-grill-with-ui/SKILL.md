@@ -271,7 +271,7 @@ On a `finish` action, or when the user says finish in the terminal:
    Do not compress: a reader with no access to the session must be able to build from it.
 
    **Section headers follow the project's language** (same rule as `AGENTS.md` §6 already
-   sets for task cards — check `project/PROJECT.md`, "Язык проекта"). All thirteen sections
+   sets for task cards — check `project/config/PROJECT.md`, "Язык проекта"). All thirteen sections
    get translated, not only the five Form axes below; nothing above is skipped or renamed to
    English when the project language isn't English. For a Russian-language project, use:
    Terms → Термины · Why → Почему · Locked decisions → Закреплённые решения · Routine

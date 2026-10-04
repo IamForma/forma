@@ -20,7 +20,7 @@ function projectSettingsHtml(p){
   const epics = p.epics && p.epics.rows.length ? `<table class="chain-table"><thead><tr><th>${t('eng.th.epic')}</th><th>${t('eng.th.function')}</th><th>${t('eng.th.route')}</th></tr></thead><tbody>${p.epics.rows.map(r =>
     `<tr><td style="white-space:nowrap"><b>${esc(r[1])}</b></td><td class="set-wide">${esc(r[2])}</td><td>${setPill(r[3], 'set-route')}</td></tr>`).join('')}</tbody></table>` : setEmpty();
   return `<section class="chain-section">
-    <h2 class="eyebrow">${t('eng.project.title')} · <code>project/PROJECT.md</code></h2>
+    <h2 class="eyebrow">${t('eng.project.title')} · <code>project/config/PROJECT.md</code></h2>
     <div class="bs-tiles">
       ${setTile(esc(p.language || '—'), t('eng.project.language'))}
       ${setTile(esc(p.thresholds.attempts || '—'), t('eng.project.attempts'))}

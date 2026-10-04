@@ -11,11 +11,10 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const { readIfExists } = require('../../.forma/dashboard/lib/fs.cjs');
+const { readIfExists, projectFile } = require('../../.forma/dashboard/lib/fs.cjs');
 const { cardFiles, frontmatterBlock } = require('../../.forma/dashboard/lib/card.cjs');
-const read = (p) => readIfExists(path.join(ROOT, p));
 
-const pm = read('project/PROJECT.md');
+const pm = readIfExists(projectFile(ROOT, 'PROJECT.md'));
 const vm = pm.match(/^\|\s*Объём круга[^|]*\|\s*(\d+)/m) || pm.match(/^\|\s*Cycle volume[^|]*\|\s*(\d+)/m);
 const volume = vm ? +vm[1] : null;
 const rm = pm.match(/Выпуск протокола[^\n]*?(\d+)\s*$/m);

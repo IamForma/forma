@@ -2,20 +2,20 @@
 draft: true
 ---
 
-# Главная цель вида `result-image` · Образ результата
+# Main goal of kind `result-image` · Result image
 
-Одна из девяти главных целей проекта — все девять идут параллельно (`intent-goal-opening.md`, «Эпик», «Как формируются цели»). Подцели — в карте `ROADMAP.md`, под этой целью.
+One of the project's nine main goals — all nine run in parallel (`intent-goal-opening.md`, "Epic", "How goals are formed"). Subgoals are in the `ROADMAP.md` map, under this goal.
 
 ---
 
-**Вид**: `result-image` · дорожка на доске — лейбл из `PROJECT.md`, «Эпики проекта».
+**Kind**: `result-image` · the board lane — a label from `PROJECT.md`, "Project epics".
 
-**Метка карточек**: `goal-result-image` (или метка подцели, если карточка к ней относится).
+**Card label**: `goal-result-image` (or the subgoal's label, if the card belongs to one).
 
-**Формирует**: **человек**, по брифу.
+**Formed by**: **the human**, from the brief.
 
-**Образ по умолчанию**: образ конечного продукта.
+**Default image**: the image of the final product.
 
-**Образ в этом проекте**: *(ждёт человека — формулирует только он)*
+**Image in this project**: *(waits for the human — only they formulate it)*
 
-**Кто закрывает**: вердикт `Intent`; закрывает человек (запреты 1 и 8).
+**Closed by**: the verdict of `Intent`; the human closes (prohibitions 1 and 8).

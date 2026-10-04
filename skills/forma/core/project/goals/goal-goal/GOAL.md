@@ -2,20 +2,20 @@
 draft: true
 ---
 
-# Главная цель вида `goal` · Производство
+# Main goal of kind `goal` · Production
 
-Одна из девяти главных целей проекта — все девять идут параллельно (`intent-goal-opening.md`, «Эпик», «Как формируются цели»). Подцели — в карте `ROADMAP.md`, под этой целью.
+One of the project's nine main goals — all nine run in parallel (`intent-goal-opening.md`, "Epic", "How goals are formed"). Subgoals are in the `ROADMAP.md` map, under this goal.
 
 ---
 
-**Вид**: `goal` · дорожка на доске — лейбл из `PROJECT.md`, «Эпики проекта».
+**Kind**: `goal` · the board lane — a label from `PROJECT.md`, "Project epics".
 
-**Метка карточек**: `goal-goal` (или метка подцели, если карточка к ней относится).
+**Card label**: `goal-goal` (or the subgoal's label, if the card belongs to one).
 
-**Формирует**: `Intent` выводит этапы из образа результата, человек добавляет детали.
+**Formed by**: `Intent` derives the stages from the result image, the human adds details.
 
-**Образ по умолчанию**: конечный продукт; его части — подцели `goal-NN`.
+**Default image**: the final product; its parts are the subgoals `goal-NN`.
 
-**Образ в этом проекте**: *(предложит `Intent` по брифу; до брифа — пусто)*
+**Image in this project**: *(`Intent` will propose from the brief; empty before the brief)*
 
-**Кто закрывает**: вердикт `Core`; закрывает человек (запреты 1 и 8).
+**Closed by**: the verdict of `Core`; the human closes (prohibitions 1 and 8).

@@ -12,7 +12,7 @@
 //   external (--channel=external) — работает как раньше: сам вызывает
 //     .claude/scripts/external-model-bridge.cjs (qwen3.7-flash / OpenRouter) на каждый
 //     cache-miss файл, без остановки. Только по явной просьбе человека
-//     (project/CONFIG.md#deepseek-extraction-quality — узкий контракт извлечения).
+//     (project/config/CONFIG.md#deepseek-extraction-quality — узкий контракт извлечения).
 //
 // Подкоманды:
 //   node build-done-cards-graph.cjs --backfill

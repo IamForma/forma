@@ -136,7 +136,7 @@ function sources() {
   const skillDirs = list(path.join(ROOT, '.claude', 'skills'), () => true)
     .map(d => path.join(d, 'SKILL.md')).filter(f => fs.existsSync(f));
   return {
-    goals: [[path.join(ROOT, 'project', 'ROADMAP.md'), roadmapForGoals],
+    goals: [[[path.join(ROOT, 'project', 'ops', 'ROADMAP.md'), path.join(ROOT, 'project', 'ROADMAP.md')].find(f => fs.existsSync(f)) || path.join(ROOT, 'project', 'ops', 'ROADMAP.md'), roadmapForGoals],
             ...[...open, ...done].map(f => [f, cardForGoals])],
     board: open.map(f => [f, cardForBoard]),               // живая доска — без закрытых
     arsenal: [...list(path.join(ROOT, '.claude', 'agents'), f => f.endsWith('.md')).map(f => [f, agentForArsenal]),

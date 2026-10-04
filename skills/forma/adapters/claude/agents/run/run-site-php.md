@@ -14,7 +14,7 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 ## When to take
 
-A card whose result needs a direct PHP read or write on the live site — a query, a one-off data fix, a probe before a larger write. Read `project/SITE.md` (the site's architectural snapshot) before any write.
+A card whose result needs a direct PHP read or write on the live site — a query, a one-off data fix, a probe before a larger write. Read `project/config/SITE.md` (the site's architectural snapshot) before any write.
 
 ## Boundary
 

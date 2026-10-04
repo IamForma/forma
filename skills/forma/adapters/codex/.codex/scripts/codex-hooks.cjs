@@ -7,6 +7,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
+const { readIfExists, projectFile } = require(path.join(ROOT, '.forma', 'dashboard', 'lib', 'fs.cjs'));
 const read = p => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); } catch { return ''; } };
 const out = o => process.stdout.write(JSON.stringify(o));
 
@@ -17,9 +18,9 @@ function startGate() {
     const g = read(`project/goals/goal-${c}/GOAL.md`);
     if (!g || /^draft:\s*true\s*$/m.test(g)) stop.push(`goal-${c}: образ цели не сформирован человеком (draft)`);
   }
-  const block = (read('project/PROJECT.md').match(/^\| Порог[\s\S]*?(?:\r?\n\s*\r?\n|(?![\s\S]))/m) || [''])[0];
+  const block = (readIfExists(projectFile(ROOT, 'PROJECT.md')).match(/^\| (?:Порог|Threshold)[\s\S]*?(?:\r?\n\s*\r?\n|(?![\s\S]))/m) || [''])[0];
   if (/^\| [^|]+ \| *(не задан)? *\|\s*$/m.test(block)) stop.push('PROJECT.md: заданы не все четыре порога');
-  const svc = (read('project/PROJECT.md').match(/^\| Сервис \|[\s\S]*?(?:\r?\n\s*\r?\n|(?![\s\S]))/m) || [''])[0];
+  const svc = (readIfExists(projectFile(ROOT, 'PROJECT.md')).match(/^\| (?:Сервис|Service) \|[\s\S]*?(?:\r?\n\s*\r?\n|(?![\s\S]))/m) || [''])[0];
   if (svc.split(/\r?\n/).slice(2).some(l => /^\|.*\| *\|\s*$/.test(l))) stop.push('PROJECT.md: у платного сервиса не задан предел на круг');
   return stop.length ? 'СТОП СТАРТА — круг не открывается, сначала интервью с человеком (AGENTS.md §3):\n' + stop.map(s => '  · ' + s).join('\n') + '\n\n' : '';
 }

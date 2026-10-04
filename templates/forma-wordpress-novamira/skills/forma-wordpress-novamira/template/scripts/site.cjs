@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// node .claude/scripts/site.cjs <аргументы novamira>  →  novamira --site <SITE_SLUG из .env> <аргументы>
-// Обёртка-проводник: stdio и код выхода novamira пробрасываются как есть (договор run-scripts
-// относится к скриптам работы, не к проводнику). Без SITE_SLUG — код 2, сводка JSON в stderr.
+// node .claude/scripts/site.cjs <novamira arguments>  →  novamira --site <SITE_SLUG from .env> <arguments>
+// A pass-through wrapper: the stdio and exit code of novamira are passed on as they are (the run-scripts contract
+// applies to work scripts, not to the pass-through). Without SITE_SLUG — code 2, a JSON summary to stderr.
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -21,7 +21,7 @@ module.exports = { siteSlug };
 if (require.main === module) {
   const slug = siteSlug();
   if (!slug) {
-    process.stderr.write(JSON.stringify({ status: 'stop', error: 'нет SITE_SLUG в .env' }) + '\n');
+    process.stderr.write(JSON.stringify({ status: 'stop', error: 'no SITE_SLUG in .env' }) + '\n');
     process.exit(2);
   }
   const r = spawnSync('novamira', ['--site', slug, ...process.argv.slice(2)],

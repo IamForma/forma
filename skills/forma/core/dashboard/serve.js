@@ -98,7 +98,7 @@ function reopen(state) {
 // Позиция написана не на каждом узле, а на предках — берём ближайшую сверху.
 function findNode(node, id, position) {
   if (!node) return null;
-  const mine = /позиция\s*(\d)/.exec(String(node.from || '') + ' ' + String(node.tag || ''));
+  const mine = /(?:позиция|position)\s*(\d)/.exec(String(node.from || '') + ' ' + String(node.tag || ''));
   const pos = mine ? Number(mine[1]) : position;
   if (node.id === id) return { node, position: pos || 1 };
   for (const c of node.children || []) {
@@ -117,9 +117,8 @@ function findNode(node, id, position) {
 const expandQuestion = (node, n) => ({
   id: 'x-' + (n + 1),
   node: node.id,
-  title: 'Подробнее',
-  text: 'В дереве это записано так: «' + node.label + '». Раскройте этот пункт: что за ним стоит, '
-      + 'как он выглядит на деле, чего в нём не хватает. Дальше пойду вопросами по вашему ответу.',
+  title: interviewCopy().grow.title,
+  text: interviewCopy().grow.text.replace('{label}', node.label),
 });
 
 // Заход, которым возобновляют закрытую позицию: один открытый вопрос и ничего больше.
@@ -127,11 +126,16 @@ const expandQuestion = (node, n) => ({
 // Подсказывать здесь нечего. Что человек хочет добавить, знает только он; список
 // готовых тем был бы моим замыслом, поданным ему на одобрение, — ровно то, чего
 // избегает первый заход (`project/brief/picture.md`).
+// Тексты для человека — на языке проекта (`data/interview-spec.cjs`, «Project language» в PROJECT.md).
+const interviewCopy = () => {
+  const { projectFile, readIfExists } = require('./lib/fs.cjs');
+  const { langOf, localize } = require('./data/interview-spec.cjs');
+  return localize(langOf(readIfExists(projectFile(PROJECT_ROOT, 'PROJECT.md'))));
+};
+
 const resumeQuestions = (position) => [{
   id: `p${position}-r${Date.now().toString(36)}`,
-  title: 'Что ещё обсудить',
-  text: 'Эта позиция была закрыта, но закрыта не навсегда. Что вы хотели бы добавить, '
-      + 'поправить или обсудить заново? Можно одним словом — дальше раскручу вопросами.',
+  ...interviewCopy().resume,
 }];
 
 // Вопросы, которыми засевается новый заход позиции: ровно те, что записаны в `OPENING_ROUND`
@@ -152,12 +156,13 @@ const writeState = (session, state) => fs.writeFileSync(path.join(session, 'stat
 // человеком, вместо замысла человека (`project/brief/picture.md`).
 function seedQuestions(session, questions) {
   const state = readState(session);
-  state.note = 'Первый заход открытый: отвечайте своими словами. Можно ответить не на все.';
+  const { seed } = interviewCopy();
+  state.note = seed.note;
   state.questions = questions.map((q, i) => ({
     id: q.id, round: 1, deps: [],
     // Имя для бокового списка страницы: «Вопрос 1» там ничего не говорит,
     // а по списку человек выбирает, к чему вернуться.
-    title: q.title || `Вопрос ${i + 1}`, body: q.text,
+    title: q.title || seed.question.replace('{n}', i + 1), body: q.text,
     options: [], status: 'open', durable: false, updated: false,
   }));
   state.agent = { status: 'waiting', since: new Date().toISOString(), handled: 0 };
@@ -169,7 +174,7 @@ function seedQuestions(session, questions) {
 function createGrillSession(position, questions) {
   const out = execFileSync(process.execPath, [
     GRILL_SERVER, 'new',
-    '--topic', `Интервью к брифу — позиция ${position}`,
+    '--topic', interviewCopy().seed.topic.replace('{n}', position),
     '--doc', 'project/brief/interview.md',
   ], { cwd: PROJECT_ROOT, encoding: 'utf8' });
   const session = JSON.parse(out.trim().split('\n').pop()).session;

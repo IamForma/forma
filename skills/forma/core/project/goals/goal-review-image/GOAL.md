@@ -2,20 +2,20 @@
 draft: true
 ---
 
-# Главная цель вида `review-image` · Ревью образа
+# Main goal of kind `review-image` · Image review
 
-Одна из девяти главных целей проекта — все девять идут параллельно (`intent-goal-opening.md`, «Эпик», «Как формируются цели»). Подцели — в карте `ROADMAP.md`, под этой целью.
+One of the project's nine main goals — all nine run in parallel (`intent-goal-opening.md`, "Epic", "How goals are formed"). Subgoals are in the `ROADMAP.md` map, under this goal.
 
 ---
 
-**Вид**: `review-image` · дорожка на доске — лейбл из `PROJECT.md`, «Эпики проекта».
+**Kind**: `review-image` · the board lane — a label from `PROJECT.md`, "Project epics".
 
-**Метка карточек**: `goal-review-image` (или метка подцели, если карточка к ней относится).
+**Card label**: `goal-review-image` (or the subgoal's label, if the card belongs to one).
 
-**Формирует**: **человек**.
+**Formed by**: **the human**.
 
-**Образ по умолчанию**: как человек тестирует результат — достаточно одной фразы.
+**Default image**: how the human tests the result — one phrase is enough.
 
-**Образ в этом проекте**: *(ждёт человека — формулирует только он)*
+**Image in this project**: *(waits for the human — only they formulate it)*
 
-**Кто закрывает**: закрывает человек (запреты 1 и 8).
+**Closed by**: the human closes (prohibitions 1 and 8).

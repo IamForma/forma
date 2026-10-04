@@ -13,8 +13,8 @@ foreach ($role in 'intent', 'spec', 'kit', 'run', 'core') {
 }
 
 foreach ($path in @(
-    (Join-Path $repoRoot 'project\PROJECT.md'),
-    (Join-Path $repoRoot 'project\ROADMAP.md'),
+    (@('project\config\PROJECT.md', 'project\PROJECT.md') | ForEach-Object { Join-Path $repoRoot $_ } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1),
+    (@('project\ops\ROADMAP.md', 'project\ROADMAP.md') | ForEach-Object { Join-Path $repoRoot $_ } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1),
     (Join-Path $repoRoot 'VARS'),
     (Join-Path $repoRoot '.codex\CODEX-8.md'),
     (Join-Path $repoRoot '.codex\CLAUDE-COMPAT.md')

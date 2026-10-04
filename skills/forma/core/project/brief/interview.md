@@ -1,172 +1,172 @@
-# Запись интервью
+# Interview record
 
-Что человек рассказал **до первой цели**. Собирает `Intent`, пишет со слов человека.
+What the human said **before the first goal**. Collected by `Intent`, written from the human's words.
 
-**Не переписывается по ходу дела.** Записанное здесь — точка привязки: по нему проверяют, не сполз ли замысел. Мерка, которая едет вместе с результатами, меркой быть перестаёт. Изменилось намерение — новая запись ниже, с датой; старая остаётся.
+**Not rewritten along the way.** What is recorded here is the anchor point: it is used to check whether the idea has drifted. A measure that travels along with the results stops being a measure. If the intention changed — a new record below, with a date; the old one stays.
 
 ---
 
-## Сценарий по умолчанию — пять позиций
+## The default script — five positions
 
-**Сценарий — в ядре.** Он один на любой проект, с шаблоном или без. Шаблон проекта не приносит своего сценария: он кладёт **референс в пятую позицию** — записанный маршрут, с которым `Intent` сверяется.
+**The script is in the core.** It is one for any project, with a template or without. A project template does not bring its own script: it puts a **reference into the fifth position** — a recorded route that `Intent` checks against.
 
-Ведётся скиллом `grilling` (`grilling/SKILL.md` в каталоге скиллов движка), раундами по фронтиру дерева решений, не единым списком и не по одному вопросу за раз. Первые четыре — вопросы человеку, **незаметные**: вопрос не объявляет, какое качество он достаёт, человек просто отвечает на обычный разговорный вопрос (на пути наименьшего действия нельзя объективно ответить на прямой вопрос про признак — `PROTOCOL.md`, «Путь наименьшего действия»).
+It is run by the `grilling` skill (`grilling/SKILL.md` in the engine's skills directory), in rounds along the frontier of the decision tree, not as a single list and not one question at a time. The first four are questions to the human, **unnoticeable**: a question does not announce which quality it is reaching for, the human simply answers an ordinary conversational question (on the path of least action a direct question about the criterion cannot be answered objectively — `PROTOCOL.md`, "The path of least action").
 
-**Ведётся по каркасу `project/brief/idea.md`** (семь разделов: Облик, Состав, Общая цель, Функции, Маршрут, Признак готовности, Открытые вопросы). По каждому ответу правится только затронутый раздел; неподтверждённое — пометкой *догадка*, неспрошенное — *ещё не спрошено*, изменение сказанного — строкой «изменено по qN».
+**It is run on the skeleton `project/brief/idea.md`** (seven sections: Look, Composition, General goal, Functions, Route, Readiness criterion, Open questions). On each answer only the affected section is edited; the unconfirmed — with the mark *guess*, the unasked — *not yet asked*, a change to what was said — a line "changed per qN".
 
-**Позиции читаются со стороны предмета, а не со стороны говорящего.** Не «что вам дорого», а «из чего это состоит и на что работает»: человек отвечает о проекте, не о себе.
+**The positions are read from the side of the subject, not of the speaker.** Not "what do you value" but "what does it consist of and what does it work for": the human answers about the project, not about themselves.
 
-1. **Красота** — **как это должно выглядеть**: что проект из себя представляет внешне, какой у него облик.
-2. **Простота** — **на какие отдельные части проект делится**: «состоит вот из такого, такого и такого». Вместе с первой даёт целое представление — облик плюс разбор.
-3. **Индивидуальность** — **какую одну общую цель все эти части выполняют вместе**: какую пользу они несут сообща срезу аудитории, над какой одной задачей работают. Два слоя: что человек **почувствует**, и каким функционалом проект это производит.
-4. **Искренность, честность, миссия** — **какие функции проект выполняет внутри себя**, чтобы удовлетворить названное в позиции 3: какая внутренняя функциональность в нём должна существовать. Это и есть список того, что будет исполнять `Run`, — кирпичи, из которых сложено здание.
-5. **Естественность** (неизбежность, гармония, судьба — близкие по смыслу для этой же позиции) — **маршрут**: каким естественным способом всё это в конечном счёте реализуется. Не вопрос человеку, а работа `Intent` — и объём этой работы зависит от того, есть ли шаблон проекта.
+1. **Beauty** — **how it should look**: what the project is externally, what look it has.
+2. **Simplicity** — **into which separate parts the project divides**: "it consists of this, this and this". Together with the first it gives a whole picture — the look plus the breakdown.
+3. **Individuality** — **which one common goal all these parts fulfill together**: what benefit they bring jointly to a slice of the audience, which one task they work on. Two layers: what the human will **feel**, and by which functionality the project produces it.
+4. **Sincerity, honesty, mission** — **which functions the project performs inside itself** in order to satisfy what was named in position 3: what internal functionality must exist in it. This is the very list of what `Run` will execute — the bricks the building is made of.
+5. **Naturalness** (inevitability, harmony, fate — close in meaning for this same position) — **the route**: by what natural way all this is finally realized. Not a question to the human but `Intent`'s work — and the amount of this work depends on whether there is a project template.
 
-### Пятая позиция — две ветки, и цена у них разная
+### The fifth position — two branches, and their prices differ
 
-Ветку задаёт поле «Шаблон проекта» в `project/PROJECT.md`, а не догадка по наличию файлов.
+The branch is set by the "Project template" field in `project/config/PROJECT.md`, not by a guess from which files exist.
 
-| Статус шаблона | Что делает `Intent` на позиции 5 | Позиции 1–4 |
+| Template status | What `Intent` does at position 5 | Positions 1–4 |
 |---|---|---|
-| `готовый проверенный` | **сверка.** Маршрут записан (`project/ROUTE.md`) — `Intent` его не сочиняет заново, а уточняет, **нет ли расхождений** между тем, что хочет человек, и тем, что шаблон предполагает. Расхождение называется вслух, не сглаживается | полностью, как обычно |
-| `формируется с человеком` | то же, но маршрут неполон: сверка по записанному, построение по недостающему | полностью |
-| `нет` — зона неизвестная | **построение.** Маршрут взять неоткуда. `Intent` вместе с человеком вырабатывает, что делаем первым шагом, что вторым, что третьим. **Все пять позиций прорабатываются в одинаковом объёме**, пятая наравне с остальными | полностью |
+| `verified ready` | **a check.** The route is recorded (`project/config/ROUTE.md`) — `Intent` does not compose it anew but clarifies **whether there are divergences** between what the human wants and what the template presumes. A divergence is named aloud, not smoothed over | in full, as usual |
+| `forming with the human` | the same, but the route is incomplete: check against what is written, build what is missing | in full |
+| `none` — unknown territory | **building.** There is nowhere to take a route from. `Intent` works out with the human what we do as the first step, the second, the third. **All five positions are worked through at equal depth**, the fifth on a par with the others | in full |
 
-**Синтезировать маршрут, который уже записан, — ошибка:** это сочинение решённого заново и расхождение с шаблоном на ровном месте.
+**Synthesizing a route that is already recorded is a mistake:** it is composing the decided anew and a divergence from the template out of nowhere.
 
-**Чего шаблон не сокращает.** Он фиксирует **маршрут**, а не содержание: из чего состоит проект, ради чего и какая у него внутренняя функциональность — на это отвечает человек, сколько бы шаблонов ни стояло. Сокращается ровно одна позиция из пяти.
+**What a template does not shorten.** It fixes the **route**, not the content: what the project consists of, what for and what internal functionality it has — the human answers that, however many templates are installed. Exactly one position of the five is shortened.
 
-Пятёрка — первое слово каждой из «Пяти пар» (`AGENTS.md` §1): красиво (`Intent`), просто (`Spec`), индивидуально (`Core`), честно (`Run`), естественно (`Kit`). Раскрытая здесь, до первой цели, она держит все пять узлов калиброванными по одному и тому же человеческому смыслу слова, а не только по формальному признаку.
+The five is the first word of each of the "Five pairs" (`AGENTS.md` §1): beautifully (`Intent`), simply (`Spec`), individually (`Core`), honestly (`Run`), naturally (`Kit`). Unfolded here, before the first goal, it keeps all five nodes calibrated by the same human meaning of the word, not only by a formal criterion.
 
-### Что понимается под каждой позицией
+### What is understood by each position
 
-Не то, что спрашивается у человека дословно (вопросы — незаметные, см. выше), а то, что `Intent` ищет в ответе и держит в синтезе. Заполняется по частям, по одной позиции за раз.
+Not what is asked of the human verbatim (the questions are unnoticeable, see above), but what `Intent` looks for in the answer and holds in the synthesis. Filled in by parts, one position at a time.
 
-Оптики две, суть одна: слой **человека** — что получатель чувствует; слой **предмета** — какой функционал это производит. Одно без другого вырождается: чувство без функционала — обещание, функционал без чувства — работа неизвестно ради чего. 
+There are two optics, the essence is one: the **human** layer — what the recipient feels; the **subject** layer — which functionality produces it. One without the other degenerates: a feeling without functionality is a promise, functionality without a feeling is work for an unknown purpose.
 >
-> | Позиция | Слой человека — что спрашиваем | Слой предмета — что выносим |
+> | Position | Human layer — what we ask | Subject layer — what we take out |
 > |---|---|---|
-> | **3. Индивидуальность** | какую пользу получает **срез аудитории**: человек может пользы и не заметить, но **почувствовать**, что получил её | **какой функционал проект должен выполнять** и какое воздействие им производить, чтобы человек был удовлетворён |
-> | **4. Честность, миссия** | ради чего это делается, забота о том, что получится | **какие функции проект выполняет**, чтобы удовлетворить то, что названо в позиции 3 |
+> | **3. Individuality** | what benefit a **slice of the audience** receives: a person may not notice the benefit but **feel** that they received it | **which functionality the project must perform** and which effect to produce with it so that the person is satisfied |
+> | **4. Honesty, mission** | what this is done for, care about what will come out | **which functions the project performs** to satisfy what was named in position 3 |
 >
-> **Человек здесь — не проектант, а тот, для кого проектируют.** «Что лично приобретает именно этот человек» в разборе ниже читается как «человек из этого среза аудитории», а не «тот, у кого берут интервью». Личность пользы при этом сохраняется: польза конкретного среза, а не аудитории вообще, — иначе позиция вырождается в «своей нет» (`AGENTS.md` §1, потеря `Core`).
+> **The human here is not the designer but the one the design is for.** "What this particular person personally gains" in the breakdown below is read as "a person from this slice of the audience", not "the one being interviewed". The individuality of the benefit is preserved: the benefit of a specific slice, not of the audience in general — otherwise the position degenerates into "no own" (`AGENTS.md` §1, `Core`'s loss).
 >
-> **Куда это ведёт дальше.** Функции из позиции 4 — то, что исполняет `Run`: каждая закрытая им задача есть кирпичик здания. Строя проект, надо понимать, **из каких функций сложено целое здание**, — и позиции 3 и 4 дают именно этот список, а не настроение.
+> **Where this leads next.** The functions from position 4 are what `Run` executes: each task it closes is a brick of the building. Building a project, one must understand **which functions the whole building is made of** — and positions 3 and 4 give exactly this list, not a mood.
 >
-> Разборы ниже остаются как есть: они привязаны к потерям узлов «Пяти пар» и работают как запас веток для `grilling` — **как разговорить человека**. Краткий список в начале файла говорит, **что вынести** из ответа.
+> The breakdowns below stay as they are: they are tied to the losses of the "Five pairs" nodes and work as a stock of branches for `grilling` — **how to get the human talking**. The short list at the start of the file says **what to take out** of an answer.
 
-**1. Красота.** Не абстрактная привлекательность («сделать красиво») — конкретный, опознаваемый облик вещи: то, что можно указать, сопоставить с другим существующим, а не абстракция без формы. Раскрывается через:
+**1. Beauty.** Not abstract attractiveness ("make it beautiful") — a concrete, recognizable look of a thing: what can be pointed at, compared with another existing thing, not an abstraction without form. Unfolded through:
 
-- **облик, физический образ** — как это выглядит, какую форму имеет;
-- **структура и организация** — из чего состоит, как устроено;
-- **принцип действия** — по какому принципу работает;
-- **значение** — что это значит, какую роль играет;
-- **причина существования** — зачем это нужно, что оправдывает его бытие.
+- **look, the physical image** — how it looks, what form it has;
+- **structure and organization** — what it consists of, how it is arranged;
+- **principle of action** — by what principle it works;
+- **meaning** — what it means, what role it plays;
+- **reason for existing** — what it is needed for, what justifies its being.
 
-Опознаваемость — стержень позиции: не «сделать красиво» вообще, а нечто, что можно в каком-то смысле потрогать, ощутить, осознать как существующее — и сопоставить с другим. Красота, потерявшая опознаваемость, вырождается в абстракцию — ровно то, чем `Intent` теряет пару при потере формы (`AGENTS.md` §1, «обобщение»).
+Recognizability is the core of the position: not "make it beautiful" in general, but something that can in some sense be touched, felt, realized as existing — and compared with another. Beauty that has lost recognizability degenerates into an abstraction — exactly how `Intent` loses its pair when it loses the form (`AGENTS.md` §1, "generalization").
 
-*Возможные ветки `grilling`* — не чек-лист для зачитывания подряд, а запас на случай, если корневой вопрос 1 (`intent.md`, «Интервью») сам не откроет грань; задаются, только когда фронтир до них дошёл:
+*Possible `grilling` branches* — not a checklist to read out in a row but a stock in case root question 1 (`intent.md`, "Interview") does not open the facet by itself; asked only when the frontier has reached them:
 
-- (структура/организация) «А из чего это состоит, если разобрать по частям?»
-- (принцип действия) «Как это вообще работает — если рассказать по шагам, как это происходит?»
-- (значение) «Что это значит для тех, кто увидит это в первый раз?»
-- (причина существования) «Если бы этого не было — чего бы тогда не хватало?»
+- (structure/organization) "And what does it consist of, if taken apart?"
+- (principle of action) "How does it work at all — if told step by step how it happens?"
+- (meaning) "What does it mean for those who see it for the first time?"
+- (reason for existing) "If it did not exist — what would then be missing?"
 
-**2. Простота.** Люди не хотят сложности: если вещь сложная, её разбирают на простые части, пока каждая не станет ясной. Раскрывается через:
+**2. Simplicity.** People do not want complexity: if a thing is complex, it is taken apart into simple parts until each becomes clear. Unfolded through:
 
-- **формулировка в одну фразу или слово** — как это назвать, чтобы стало сразу понятно;
-- **разбиение на части** — из большой, сложной сущности выделяются конкретные, отдельные моменты — на что именно она распадается;
-- **сегменты аудитории** — для кого именно это должно быть простым: сегментов может быть несколько, и для каждого — своё простое объяснение, не одно на всех;
-- **понятность как признак** — простота есть — значит понятно, что это такое и зачем оно нужно; простоты нет — понимания тоже нет.
+- **a formulation in one phrase or word** — what to call it so that it is immediately clear;
+- **breakdown into parts** — from a large, complex entity concrete, separate moments are singled out — what exactly it falls apart into;
+- **audience segments** — for whom exactly it must be simple: there may be several segments, and for each its own simple explanation, not one for all;
+- **clarity as a sign** — if simplicity is there, it is clear what it is and why it is needed; if there is no simplicity, there is no understanding either.
 
-Простота, потерявшая часть без разбора — не решившая, что в этой части неважно, а просто выбросившая её, — вырождается в опущение: ровно то, чем `Spec` теряет пару при потере формы (`AGENTS.md` §1, «опущение»).
+Simplicity that lost a part without sorting — not having decided what in that part is unimportant but simply having thrown it out — degenerates into omission: exactly how `Spec` loses its pair when it loses the form (`AGENTS.md` §1, "omission").
 
-*Возможные ветки `grilling`* — запас на случай, если корневой вопрос 2 сам не откроет грань:
+*Possible `grilling` branches* — a stock in case root question 2 does not open the facet by itself:
 
-- (разбиение на части) «Если бы пришлось объяснять по кусочкам — с чего бы вы начали, а что шло бы дальше?»
-- (сегменты аудитории) «Кому это будет понятно сразу, а кому придётся объяснять дольше?»
-- (понятность как признак) «Как вы поймёте, что человек и правда понял, а не просто кивнул?»
+- (breakdown into parts) "If you had to explain it piece by piece — where would you start, and what would come next?"
+- (audience segments) "To whom will it be clear at once, and to whom will it take longer to explain?"
+- (clarity as a sign) "How will you know that a person really understood, and did not just nod?"
 
-**3. Индивидуальность.** Не внешняя форма (это «Красота», п. 1) — внутреннее содержание: что лично приобретает для себя именно этот человек, а не аудитория вообще. Раскрывается через:
+**3. Individuality.** Not the external form (that is "Beauty", item 1) — the inner content: what this particular person gains for themselves, not the audience in general. Unfolded through:
 
-- **личная польза** — что именно человек получает для себя, какую пользу или выгоду это ему даёт;
-- **внутреннее содержание** — не как это выглядит, а чем это наполнено изнутри;
-- **личная ценность** — какую определённую ценность и важность это несёт лично для него — не миссия проекта вообще (общая миссия — часть п. 4), а то, что в ней находит конкретно он;
-- **внутренняя гармония** — то счастье, баланс, гармония, которые человек находит в себе через эту вещь — личная потребность, а не внешняя причина;
-- **особенность** — никто не хочет быть похожим на других, все хотят быть особенными: чем это делает того, кто этим пользуется, непохожим на прочих, отличным.
+- **personal benefit** — what exactly the person gets for themselves, what benefit or gain it gives them;
+- **inner content** — not how it looks but what it is filled with from inside;
+- **personal value** — what definite value and importance it carries personally for them — not the project's mission in general (the general mission is part of item 4) but what they in particular find in it;
+- **inner harmony** — the happiness, balance, harmony a person finds in themselves through this thing — a personal need, not an external reason;
+- **distinctiveness** — nobody wants to be like others, everyone wants to be special: how it makes the one who uses it unlike the rest, different.
 
-Индивидуальность, потерявшая личную выгоду каждого и превратившаяся в общее на всех, без разбора, кому это на самом деле нужно, вырождается в отсутствие своей — ровно то, чем `Core` теряет пару при потере формы (`AGENTS.md` §1, «своей нет»).
+Individuality that lost each person's personal gain and turned into something common to all, without sorting out who actually needs it, degenerates into having none of its own — exactly how `Core` loses its pair when it loses the form (`AGENTS.md` §1, "no own").
 
-*Возможные ветки `grilling`* — запас на случай, если корневой вопрос 3 сам не откроет грань:
+*Possible `grilling` branches* — a stock in case root question 3 does not open the facet by itself:
 
-- (личная польза) «Что лично вы получите, когда это заработает?»
-- (особенность) «Чем это будет отличаться от того, что уже у всех есть?»
-- (внутренняя гармония) «Когда это получится — что вы почувствуете в первую очередь?»
+- (personal benefit) "What will you personally get when this works?"
+- (distinctiveness) "How will it differ from what everyone already has?"
+- (inner harmony) "When it works out — what will you feel first of all?"
 
-**4. Искренность, честность, миссия.** Ни один человек не может добиться чего-либо в одиночку — такова природа человека: ему нужна целостность окружения, сообщество, которое сближает и сплачивает вокруг общей миссии. Раскрывается через:
+**4. Sincerity, honesty, mission.** No person can achieve anything alone — such is human nature: they need the wholeness of an environment, a community that brings people closer and unites them around a common mission. Unfolded through:
 
-- **честность без двойного дна** — никакого подвоха, обмана, скрытого смысла: то, что видно, и есть то, что есть;
-- **забота о сообществе** — не о себе одном, а о тех, кто рядом: как человек может взаимодействовать с другими, делиться опытом, заботиться о них;
-- **совместность результата** — то, чего не добиться по отдельности: результат получается только сообща, не в одиночку;
-- **что это даёт** — тепло, опору, надежду, поддержку, любовь — то, без чего человек не может обойтись, потому что не способен состояться один.
+- **honesty without a false bottom** — no catch, deceit, hidden meaning: what is seen is what is;
+- **care for the community** — not for oneself alone but for those nearby: how a person can interact with others, share experience, look after them;
+- **togetherness of the result** — what cannot be achieved separately: the result comes only jointly, not alone;
+- **what it gives** — warmth, support, hope, backing, love — what a person cannot do without, because they cannot come to be alone.
 
-Честность, ставшая подвохом или скрытым умыслом, вырождается в подмену — ровно то, чем `Run` теряет пару при потере формы (`AGENTS.md` §1, «подмена»).
+Honesty that became a catch or a hidden intent degenerates into substitution — exactly how `Run` loses its pair when it loses the form (`AGENTS.md` §1, "substitution").
 
-*Возможные ветки `grilling`* — запас на случай, если корневой вопрос 4 сам не откроет грань:
+*Possible `grilling` branches* — a stock in case root question 4 does not open the facet by itself:
 
-- (забота о сообществе) «Кто ещё, кроме вас, от этого выиграет — и что именно получит?»
-- (совместность результата) «Что здесь нельзя сделать в одиночку, только вместе с другими?»
-- (что это даёт) «Что человек почувствует, получив это от вас — поддержку, тепло, что-то ещё?»
+- (care for the community) "Who besides you will gain from it — and what exactly will they get?"
+- (togetherness of the result) "What here cannot be done alone, only together with others?"
+- (what it gives) "What will a person feel getting this from you — support, warmth, something else?"
 
-**5. Естественность (неизбежность, гармония, судьба).** Не то, что само интегрируется и синхронизируется из первых четырёх, — активная работа `Intent`: законное обоснование, не вера в то, что всё сработает. Если красота (1), простота (2), индивидуальность (3) и честность-миссия (4) держатся на фантазии, а не на подтверждаемом основании, они ни к чему не приведут — останутся за пределами реальных, человеческих и физических законов. Раскрывается через:
+**5. Naturalness (inevitability, harmony, fate).** Not what integrates and synchronizes itself out of the first four — `Intent`'s active work: a lawful grounding, not faith that everything will work. If beauty (1), simplicity (2), individuality (3) and honesty-mission (4) rest on fantasy and not on a confirmable ground, they will lead nowhere — they stay outside real, human and physical laws. Unfolded through:
 
-- **законное обоснование, не вера** — что здесь научного, правильного с точки зрения науки, закона, установившегося порядка, — то, что действительно делает предыдущие четыре реализуемыми, а не просто желаемыми;
-- **подтверждаемость** — не абстракция и не фантазия: то, что можно подтвердить опытом, знаниями, фактами — здравым смыслом и разумным рассуждением, а не верой в результат;
-- **закон, а не выбор** — так работает, и не может работать иначе — как закон притяжения, как закон термодинамики;
-- **технология, а не намерение** — сама суть метода, который работает на нас, а не то, что нам хочется, чтобы он работал;
-- **ощущение неизбежности** — «а по-другому и быть не могло» — следствие подтверждённого основания, а не само основание: чувство идёт последним, не первым, и само по себе обоснованием не является.
+- **lawful grounding, not faith** — what here is scientific, right from the point of view of science, law, established order — what really makes the previous four realizable and not merely desired;
+- **confirmability** — not an abstraction and not a fantasy: what can be confirmed by experience, knowledge, facts — by common sense and sound reasoning, not by faith in the result;
+- **law, not choice** — this is how it works and cannot work otherwise — like the law of gravity, like the law of thermodynamics;
+- **technology, not intention** — the very essence of the method that works for us, not what we want it to work like;
+- **a sense of inevitability** — "and it could not have been otherwise" — a consequence of a confirmed ground, not the ground itself: the feeling comes last, not first, and is not a grounding by itself.
 
-Это не пункт, который добывается сам собой или возникает пассивно, — его нужно раскрыть точно так же, как первые четыре, только не вопросом человеку, а собственной разведкой `Intent`: закон, наука, установившийся порядок — факт из среды, не выбор человека, и разведывается `Intent` сама, не спрашивается (`grilling/SKILL.md`, «Факты — твоя работа, не вопрос человеку»). Проверяется только после того, как первые четыре уже известны — не потому что тогда «само собой соединяется», а потому что до этого момента нечего обосновывать: закону не с чем соотноситься, пока нет самих красоты, простоты, индивидуальности и миссии.
+This is not an item that gets obtained by itself or arises passively — it must be unfolded exactly like the first four, only not by a question to the human but by `Intent`'s own reconnaissance: law, science, established order — a fact from the environment, not the human's choice, and `Intent` scouts it itself, does not ask (`grilling/SKILL.md`, "Facts are your work, not a question to the human"). It is checked only after the first four are already known — not because then it "joins up by itself" but because until that moment there is nothing to ground: the law has nothing to relate to until beauty, simplicity, individuality and mission themselves exist.
 
-Естественность, принятая на веру или добытая напрямую вопросом человеку, а не подтверждённая `Intent` законом, наукой и опытом, — уже не закон, а подгонка под желаемое: искажение, ровно то, чем `Kit` теряет пару при потере формы (`AGENTS.md` §1, «искажение»).
+Naturalness taken on faith or extracted directly by a question to the human, rather than confirmed by `Intent` with law, science and experience, is no longer law but fitting to what is wished: distortion, exactly how `Kit` loses its pair when it loses the form (`AGENTS.md` §1, "distortion").
 
-Дословные формулировки вопросов 1-4 и синтеза 5 — в `intent.md`, «Интервью»; здесь фиксируется результат, не сам разговор.
+The verbatim wordings of questions 1–4 and of synthesis 5 are in `intent.md`, "Interview"; what is recorded here is the result, not the conversation itself.
 
 ---
 
-## Дата · кто говорил
+## Date · who spoke
 
-### 1. Красота
+### 1. Beauty
 
-<!-- Незаметный вопрос 1 сценария выше. Что зацепило, на чём задержался взгляд или мысль. -->
+<!-- Unnoticeable question 1 of the script above. What caught, where the gaze or thought lingered. -->
 
-### 2. Простота
+### 2. Simplicity
 
-<!-- Незаметный вопрос 2. Одна фраза или слово, без объяснений постороннему. -->
+<!-- Unnoticeable question 2. One phrase or word, without explanations for an outsider. -->
 
-### 3. Индивидуальность
+### 3. Individuality
 
-<!-- Незаметный вопрос 3. Личная мотивация — почему важно именно этому человеку. -->
+<!-- Unnoticeable question 3. Personal motivation — why it matters to this very person. -->
 
-### 4. Искренность, честность, миссия
+### 4. Sincerity, honesty, mission
 
-<!-- Незаметный вопрос 4. Нужные действия и забота о том, что получится в итоге. -->
+<!-- Unnoticeable question 4. The needed actions and care about what comes out in the end. -->
 
-### 5. Естественность (разведка `Intent`)
+### 5. Naturalness (`Intent`'s reconnaissance)
 
-<!-- Не вопрос человеку и не пассивное следствие первых четырёх — активная разведка Intent, из ответов 1-4 и референса:
-     - признак прибытия — по какому признаку двое независимых узнают, что дошли;
-     - референсы — названные вещи с адресом, в brief/reference.md, не здесь;
-     - естественный путь — какие навыки/законы/порядок/знания/опыт нужны, чтобы это случилось «как будто само собой» — дальше идёт в GOAL.md.
-     Черновик синтеза несётся человеку на подтверждение. См. intent.md, «Интервью». -->
+<!-- Not a question to the human and not a passive consequence of the first four — `Intent`'s active reconnaissance, from answers 1–4 and the reference:
+     - arrival criterion — by which sign two independent parties recognize that they arrived;
+     - references — named things with an address, in brief/reference.md, not here;
+     - natural path — which skills/laws/order/knowledge/experience are needed for it to happen "as if by itself" — it goes on into GOAL.md.
+     The draft synthesis is taken to the human for confirmation. See intent.md, "Interview". -->
 
 ---
 
-## Что человек принёс
+## What the human brought
 
-<!-- Перечень: шаблоны, выгрузки, доступы, образцы. Сами файлы — в materials/. -->
+<!-- A list: templates, exports, access, samples. The files themselves — in materials/. -->
 
-## Что осталось неясным
+## What stayed unclear
 
-<!-- Вопросы, на которые ответа пока нет. Их наличие — не провал: это то,
-     что придётся называть разрывом до нарезки. -->
+<!-- Questions to which there is no answer yet. Their presence is not a failure: it is
+     what will have to be named as a gap before slicing. -->

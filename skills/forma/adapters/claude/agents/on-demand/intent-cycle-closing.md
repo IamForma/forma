@@ -27,7 +27,7 @@ Split in two: you **gather and present**, `Core` **judges**. You don't compare t
 | Step | What exactly |
 |---|---|
 | `ROADMAP.md` | the goal's state to `reached` (not `closed` — that word holds a broader event, `ROADMAP.md`, "Map") and the "what it gives the whole" line. What was envisioned is rewritten as what happened: the map remembers goals the way `JOURNAL.md` remembers cycles |
-| Call `Spec` | for the `project/VALUE.md` summary (`spec-statistics.md`) — it counts attempts/tokens from the goal's card histories and writes the value line. Same order: not your work, only the call |
+| Call `Spec` | for the `project/ops/VALUE.md` summary (`spec-statistics.md`) — it counts attempts/tokens from the goal's card histories and writes the value line. Same order: not your work, only the call |
 
 **Reopening an already-reached goal with a new cycle** — new adjacent findings, not the remainder of the old criterion — **can only be done by the human**, never on your own initiative, even if the finding is yours.
 

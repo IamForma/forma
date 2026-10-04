@@ -1,0 +1,44 @@
+{
+  "moves": [
+    {
+      "from": "project/PROJECT.md",
+      "to": "project/config/PROJECT.md"
+    },
+    {
+      "from": "project/CONFIG.md",
+      "to": "project/config/CONFIG.md"
+    },
+    {
+      "from": "project/SETUP.md",
+      "to": "project/config/SETUP.md"
+    },
+    {
+      "from": "project/ROUTE.md",
+      "to": "project/config/ROUTE.md"
+    },
+    {
+      "from": "project/SITE.md",
+      "to": "project/config/SITE.md"
+    }
+  ],
+  "exceptions": {
+    "files": [
+      ".devtool/features/",
+      "project/cards/",
+      ".forma/living/JOURNAL.md",
+      ".forma/living/CHANGELOG.md",
+      "living/JOURNAL.md",
+      "living/CHANGELOG.md",
+      "test/fixture/old-layout/",
+      "CHANGELOG.md",
+      ".forma/protocol/",
+      ".codex/",
+      ".agents/",
+      "GEMINI.md"
+    ],
+    "dirs": [
+      ".claude/skills/",
+      ".agents/skills/"
+    ]
+  }
+}

@@ -24,7 +24,7 @@ None of these sources alone gives the full picture: the brief is the desire, the
 2. **Requirements for the goals.** For each candidate goal — which references, facts, accesses are needed so that `Intent` can honestly write the end-image and the arrival criterion, without generalization out of thin air (`intent-goal-opening.md`, "Your loss — generalization").
 3. **Epics.** Which substantive epics are needed beyond the seven process epics, whose closed list is already set by the protocol (`intent-goal-opening.md`, "Epic") — epics by sections of the site/project, specific to this project, not to the schema in general.
 4. **Node kitting.** A preliminary arsenal: which skills, skills, connectors `Spec`/`Kit`/`Run`/`Core` will need to implement the whole goal plan — not a single card. An extension of the same kitting that `Kit` usually maintains at the task level (`kit.md`), here — ahead of time, for the whole project at once.
-5. **Project documentation structure.** Which files and directories are needed, what each is about — the same work that `Kit` already does constantly (`project/CONFIG.md`, "6. Kit — Documentation (tooling)"), here — the first draft pass, before the structure has actually appeared as work.
+5. **Project documentation structure.** Which files and directories are needed, what each is about — the same work that `Kit` already does constantly (`project/config/CONFIG.md`, "6. Kit — Documentation (tooling)"), here — the first draft pass, before the structure has actually appeared as work.
 6. **Additional data kitting.** What is missing from the brief and references for the rest — no longer an interview (`grilling` is closed at step 1), but recon after it.
 
 ### Additional kitting — who searches, where it goes
@@ -33,7 +33,7 @@ A gap found at this step is not homogeneous — it is distributed among categori
 
 | Kind of gap | Who closes it | Where it goes |
 |---|---|---|
-| A public fact about a technology/environment (plugin documentation, API, integration) | `Kit` itself — recon, in the same manner as the "Unfamiliar stack" (`AGENTS.md` §2; `kit-recon.md`) | `project/CONFIG.md`, "Environment technical contracts" |
+| A public fact about a technology/environment (plugin documentation, API, integration) | `Kit` itself — recon, in the same manner as the "Unfamiliar stack" (`AGENTS.md` §2; `kit-recon.md`) | `project/config/CONFIG.md`, "Environment technical contracts" |
 | A decision or access known only to the human (password, account, business rule, preference) | the human | `VARS/credentials.md` / `.env` by kind (§5, p.15), or directly into `brief/kitting.md` |
 | A fact `Kit` can find, but a choice among several options is a human decision | `Kit` searches and brings a question with options | to the human, in the same manner as the "human" row in the route (`AGENTS.md` §2) |
 | A gap `Kit` cannot close without editing the image itself or extending the arsenal | the human decides | the epic "3. Form/Intent+Kit", or a return to the brief as an unattainable value |
@@ -44,7 +44,7 @@ A gap found at this step is not homogeneous — it is distributed among categori
 
 It then feeds:
 
-- `project/CONFIG.md`, §6 — the structure and arsenal get their first draft form, then the file grows by fact, as usual;
+- `project/config/CONFIG.md`, §6 — the structure and arsenal get their first draft form, then the file grows by fact, as usual;
 - `PROJECT.md` — a preliminary list of project epics;
 - step 11 of `SETUP.md` — the material from which `Intent` forms the real `GOAL.md`, not a bare decision from scratch.
 

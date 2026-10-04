@@ -1,35 +1,35 @@
-# Опыт — что выяснилось на деле
+# Experience — what turned out in practice
 
-Хранилище находок, которые стоит переиспользовать. **Один файл на предмет**, имя файла — то слово, по которому находку будут искать.
+A store of findings worth reusing. **One file per subject**, the filename is the word by which the finding will be searched.
 
-## Кто и когда пишет
+## Who writes, and when
 
-`Run` и `Kit` — **в момент находки**, не сводкой на закрытии цели. Опыт, приходящий кругом позже, обычно уже устарел.
+`Run` and `Kit` — **at the moment of the finding**, not as a summary at a goal's closing. Experience arriving a circle later is usually already outdated.
 
-Пишут **только когда способ был неочевиден или стоил попыток**: гоча, ограничение среды, что не сработало и почему. Лог обо всём — лог ни о чём.
+They write **only when the way was non-obvious or cost attempts**: a gotcha, an environment limit, what did not work and why. A log of everything is a log of nothing.
 
-## Кто и когда читает
+## Who reads, and when
 
-`Kit` перед снаряжением (`kit.md`, «Четыре проверки») и `Run` перед началом работы — **грепом по предмету карточки, не файл целиком и не каталог целиком**. Это намеренно: хранилище может расти сколько угодно, цена чтения остаётся прежней. Хранилище, которое читают целиком, наказывает систему за то, что она учится.
+`Kit` before kitting (`kit.md`, "Four checks") and `Run` before starting work — **by grepping the card's subject, not the whole file and not the whole directory**. This is deliberate: the store may grow as much as it likes, the price of reading stays the same. A store that is read whole punishes the system for learning.
 
-## Формат
+## Format
 
 ```markdown
-# <предмет, как его будут искать>
+# <subject, as it will be searched>
 
-Находка в одном-двух предложениях: что не работает, что работает вместо.
-ГГГГ-ММ-ДД · источник: .devtool/features/done/<карточка>.md
+The finding in one or two sentences: what does not work, what works instead.
+YYYY-MM-DD · source: .devtool/features/done/<card>.md
 
-## Использовано
-- .devtool/features/<карточка>.md
+## Used by
+- .devtool/features/<card>.md
 ```
 
-**Предмет уже имеет файл — дописывай строку в него, второй не заводи.** И впиши свою карточку в «Использовано»: этот список — то, как два узла, работающие над одним предметом параллельно, находят друг друга. Греп по доске так не умеет: он совпадает по словам, а слова каждый узел придумывает сам.
+**The subject already has a file — append a line to it, do not start a second one.** And enter your card in "Used by": that list is how two nodes working on one subject in parallel find each other. A grep over the board cannot do that: it matches by words, and each node invents its own words.
 
-## Повышение до контракта
+## Promotion to a contract
 
-Строка, которой воспользовались и которая подтвердилась, переезжает в `project/CONFIG.md`, «Технические контракты среды», как контракт с якорем — на такие якоря ссылаются роли. Делает `Kit` попутно, в момент использования; отдельным проходом — нет.
+A line that has been used and confirmed moves to `project/config/CONFIG.md`, "Technical contracts of the environment", as a contract with an anchor — roles refer to such anchors. `Kit` does it in passing, at the moment of use; not as a separate pass.
 
-## Прополка
+## Weeding
 
-Разъехавшиеся ключи (один предмет записан дважды под разными именами) и противоречащие записи — карточка эпика «8. Опыт/Intent+Kit». По факту беспорядка, не ритуалом на каждую цель.
+Diverged keys (one subject recorded twice under different names) and contradicting records — a card of epic "8. Experience/Intent+Kit". On the fact of disorder, not as a ritual for every goal.

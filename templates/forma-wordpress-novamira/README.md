@@ -1,56 +1,56 @@
-# Форма: WordPress-разработка (Novamira)
+# Forma: WordPress development (Novamira)
 
-Необязательный компаньон-плагин к [«Форма»](../../README.md), лежит в её каталоге `templates/` — разработка WordPress с помощью Novamira MCP (+ Elementor), готовый набор с Aura/Magnific в комплекте. Устанавливается отдельно, поверх базового `forma`, только если дело — именно такого рода.
+An optional companion plugin to [Forma](../../README.md), kept in its `templates/` directory — WordPress development with Novamira MCP (+ Elementor), a ready set with Aura/Magnific included. Installed separately, on top of base `forma`, only if the work is of exactly this kind.
 
-## Что внутри
+## What is inside
 
-Три скилла активны сразу после установки плагина — копировать не нужно:
+Three skills are active right after the plugin is installed — nothing to copy:
 
-| Скилл | Для чего |
+| Skill | What it is for |
 |---|---|
-| `novamira-wp-deploy` | безопасная работа с WordPress через Novamira MCP — аутентификация, sandbox→продакшен, кеш, персистентность |
-| `novamira-wp-elementor` | сборка страниц в Elementor через MCP — контейнеры, ширина, Theme Builder conditions |
+| `novamira-wp-deploy` | safe work with WordPress through Novamira MCP — authentication, sandbox→production, cache, persistence |
+| `novamira-wp-elementor` | building pages in Elementor through MCP — containers, widths, Theme Builder conditions |
 
-Четвёртый — `forma-wordpress-novamira` — не готовый рецепт, а установщик: кладёт в текущий проект пустую заготовку `project/SITE.md` (архитектурный снимок конкретного сайта — своя для каждого проекта, поэтому не может идти общей для всех, кто ставит этот плагин; продуктовые данные сайта живут только в `project/`).
+The third — `forma-wordpress-novamira` — is not a ready recipe but an installer: it puts into the current project an empty `project/config/SITE.md` stub (the architectural snapshot of a specific site — its own for every project, so it cannot be one common file for everyone who installs this plugin; the site's product data lives only in `project/`).
 
-## Установка
+## Installation
 
 ```
-claude plugin marketplace add IamForma/forma   # если ещё не добавлен
+claude plugin marketplace add IamForma/forma   # if not added yet
 claude plugin install forma-wordpress-novamira@forma
-# в проекте:
-"разверни заготовку project/SITE.md" (или /forma-wordpress-novamira)
+# in the project:
+"deploy the project/config/SITE.md stub" (or /forma-wordpress-novamira)
 ```
 
-**Если «Форма» стоит git-клоном (способ 1)** — шаблон уже лежит в `protocol/templates/forma-wordpress-novamira/`, плагин не нужен. В сессии проекта:
+**If Forma is installed as a git clone (way 1)** — the template already lies in `protocol/templates/forma-wordpress-novamira/`, the plugin is not needed. In the project's session:
 
 ```
-скопируй скиллы из protocol/templates/forma-wordpress-novamira/skills/ в .claude/skills/ (кроме forma-wordpress-novamira)
-прочитай protocol/templates/forma-wordpress-novamira/skills/forma-wordpress-novamira/SKILL.md и установи по нему шаблон проекта
+copy the skills from protocol/templates/forma-wordpress-novamira/skills/ into .claude/skills/ (except forma-wordpress-novamira)
+read protocol/templates/forma-wordpress-novamira/skills/forma-wordpress-novamira/SKILL.md and install the project template by it
 ```
 
-## MCP-серверы этого стека
+## MCP servers of this stack
 
-Плагин их не подключает сам — у Claude Code нет способа поставить внешний MCP-сервер с чужими учётными данными автоматически, только запустить уже настроенный. Ниже — что обычно нужно подключить вручную, под конкретный проект:
+The plugin does not connect them itself — Claude Code has no way to install an external MCP server with someone else's credentials automatically, only to launch one already configured. Below is what usually has to be connected by hand, for a specific project:
 
-| MCP | Зачем | Как подключить |
+| MCP | What for | How to connect |
 |---|---|---|
-| Novamira | Мост в WordPress конкретного сайта — `execute-php`, файлы, контент, Voxel/Elementor-abilities | плагин Novamira ставится на сам сайт, коннектор — `claude mcp add` (или `/mcp`) с адресом REST-эндпойнта и своими учётными данными (Application Password или OAuth, см. `novamira-wp-deploy` ЗАКОН №1) — свой на каждый сайт |
-| Aura | Генерация изображений, публикация сайта | коннектор claude.ai, подключается в настройках коннекторов аккаунта |
-| Magnific | Изображения/видео/аудио/3D-генерация | коннектор claude.ai, подключается в настройках коннекторов аккаунта |
+| Novamira | The bridge into a specific site's WordPress — `execute-php`, files, content, Voxel/Elementor abilities | the Novamira plugin is installed on the site itself, the connector — `claude mcp add` (or `/mcp`) with the REST endpoint address and your own credentials (Application Password or OAuth, see `novamira-wp-deploy` LAW №1) — its own for every site |
+| Aura | Image generation, site publishing | a claude.ai connector, connected in the account's connector settings |
+| Magnific | Image/video/audio/3D generation | a claude.ai connector, connected in the account's connector settings |
 
-## Структура
+## Structure
 
-| Путь | За что отвечает |
+| Path | What it is responsible for |
 |---|---|
-| `.claude-plugin/plugin.json` | манифест этого плагина |
-| `skills/novamira-wp-deploy/SKILL.md` | правила работы с WordPress через Novamira MCP |
-| `skills/novamira-wp-elementor/SKILL.md` | правила сборки в Elementor через MCP |
-| `skills/forma-wordpress-novamira/SKILL.md` | установщик — кладёт заготовку `project/SITE.md` в целевой проект |
-| `skills/forma-wordpress-novamira/template/project/SITE.md` | сама заготовка: пустой каркас архитектурного снимка сайта |
-| `skills/forma-wordpress-novamira/template/scripts/` | скрипты сайта и переводов → `.claude/scripts/` проекта: `site.cjs` (novamira CLI на `SITE_SLUG` из `.env`), `site-php.cjs` (PHP-файл на сайт через execute-php, отчёт JSON), `loco-pipeline.py` (перевод ru_RU.po плагинов Loco одним прогоном), `tokenator_translator.py` (автоперевод .po через `TOKENATOR_API_KEY`), `po_shift_check.py` (поиск съехавших переводов в .po). Ключи и сайт — только из `.env` |
+| `.claude-plugin/plugin.json` | the manifest of this plugin |
+| `skills/novamira-wp-deploy/SKILL.md` | rules for working with WordPress through Novamira MCP |
+| `skills/novamira-wp-elementor/SKILL.md` | rules for building in Elementor through MCP |
+| `skills/forma-wordpress-novamira/SKILL.md` | the installer — puts the `project/config/SITE.md` stub into the target project |
+| `skills/forma-wordpress-novamira/template/project/config/SITE.md` | the stub itself: an empty skeleton of the site's architectural snapshot |
+| `skills/forma-wordpress-novamira/template/scripts/` | site and translation scripts → the project's `.claude/scripts/`: `site.cjs` (novamira CLI on `SITE_SLUG` from `.env`), `site-php.cjs` (a PHP file to the site via execute-php, a JSON report), `loco-pipeline.py` (translating the ru_RU.po of Loco plugins in one run), `tokenator_translator.py` (auto-translating .po through `TOKENATOR_API_KEY`), `po_shift_check.py` (finding shifted translations in .po). Keys and site — only from `.env` |
 
-## Известные ограничения версии 0.0.1
+## Known limitations of version 0.0.1
 
-- не проверено живой установкой в отдельном проекте;
-- навыки содержат только переносимую методику. Факты, примеры и инциденты конкретного сайта хранятся в `project/SITE.md` и опыте этого проекта, а не в шаблоне.
+- not verified by a live installation in a separate project;
+- the skills hold only portable method. Facts, examples and incidents of a specific site are kept in `project/config/SITE.md` and in that project's experience, not in the template.

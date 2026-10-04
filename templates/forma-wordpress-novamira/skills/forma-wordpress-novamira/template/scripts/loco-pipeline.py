@@ -1,11 +1,11 @@
-"""loco-pipeline.py — перевод ru_RU.po плагинов в wp-content/languages/loco/plugins/ одним прогоном (договор run-scripts).
+"""loco-pipeline.py — translating the ru_RU.po of plugins in wp-content/languages/loco/plugins/ in one run (the run-scripts contract).
 
-  python .claude/scripts/loco-pipeline.py --domains fluent-roadmap[,..] --work <папка> --report <путь.json> [--dry-run] [--write] [--llm]
+  python .claude/scripts/loco-pipeline.py --domains fluent-roadmap[,..] --work <dir> --report <path.json> [--dry-run] [--write] [--llm]
 
-Этапы по каждому домену: fetch (чтение .po с сайта) → pot (шаблон Loco с сайта, слияние polib локально) →
-translate (tokenator_translator.py) → check (po_shift_check.py, блоков сдвига 0) → upload + compile (Loco writeAll) → verify (главная 200).
-Сайт только читается, пока нет --write. --dry-run: работа в <work>/dry-run/, Tokenator в режиме подсчёта, на сайт ничего.
-Консоль: одна строка JSON. Коды: 0 все готовы · 1 остались пустые/сдвиги (повторный запуск продолжит) · 2 стоп.
+Stages per domain: fetch (read the .po from the site) → pot (the Loco template from the site, merged locally with polib) →
+translate (tokenator_translator.py) → check (po_shift_check.py, 0 shifted blocks) → upload + compile (Loco writeAll) → verify (home page 200).
+The site is only read until --write. --dry-run: work in <work>/dry-run/, Tokenator in counting mode, nothing to the site.
+Console: one JSON line. Codes: 0 all done · 1 empty strings/shifts remain (a rerun continues) · 2 stop.
 """
 import argparse, base64, json, os, pathlib, subprocess, sys, tempfile, urllib.request
 
@@ -79,7 +79,7 @@ def main():
     ap.add_argument("--site", default=SITE)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--write", action="store_true")
-    ap.add_argument("--llm", action="store_true", help="проверка сдвигов моделью (платно)")
+    ap.add_argument("--llm", action="store_true", help="shift check by a model (paid)")
     a = ap.parse_args()
     work = pathlib.Path(a.work) / ("dry-run" if a.dry_run else "")
     new, done_dir = work / "new", work / "completed"

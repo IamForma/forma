@@ -216,7 +216,7 @@ Kind matters at check time: a tooling task is checked against its own criterion 
 
 **Fog and out of scope** — `GOAL.md` sections "Not yet specified" and "Out of scope". A question that can be **named** now is a `decision` card; one that can't yet is fog, and fog isn't sliced. The test and the rules — `intent-goal-opening.md`, "Record".
 
-**Decision log and glossary.** `project/adr/` (closed decisions) and `project/GLOSSARY.md` (domain terms) are kept by `Intent` (`intent.md`, "Glossary and decision log"). Other nodes use the glossary's terms and name a conflict (§2), never redefine one.
+**Decision log and glossary.** `project/adr/` (closed decisions) and `project/ops/GLOSSARY.md` (domain terms) are kept by `Intent` (`intent.md`, "Glossary and decision log"). Other nodes use the glossary's terms and name a conflict (§2), never redefine one.
 
 **Project knowledge lives in project files, not in an engine's memory** — written at the moment it appears, by the route of the skill `project-knowledge`.
 
@@ -265,7 +265,7 @@ There is no separate file for history or result — the task's whole life is in 
 
 **Material born of a card** — interview records, prototypes, evidence, an external model's output — lives in `project/cards/card-NNN/`, outside the board (the card moves into `done/`, the folder must not). The folder keeps the grounds, the card keeps the decision; project material is referenced, never copied there.
 
-**The card's language follows the project language** in `project/PROJECT.md`: for a non-English project the zone headings, fields, kind (`дело` / `оснастка` / `решение`) and notes are written in it (`## Задача`, `## Снаряжение`, `## История`, `## Результат`); the zones and mandatory fields don't change.
+**The card's language follows the project language** in `project/config/PROJECT.md`: for a non-English project the zone headings, fields, kind (`дело` / `оснастка` / `решение`) and notes are written in it (`## Задача`, `## Снаряжение`, `## История`, `## Результат`); the zones and mandatory fields don't change.
 
 ---
 

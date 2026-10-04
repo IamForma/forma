@@ -8,7 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { readIfExists } = require('../lib/fs.cjs');
+const { readIfExists, projectFile } = require('../lib/fs.cjs');
 const { parseFlatFrontmatter } = require('../lib/card.cjs');
 const engines = require('../lib/engines.cjs');
 
@@ -37,7 +37,7 @@ function buildLaw(projectRoot) {
   return {
     agents: rd('AGENTS.md'),
     engine: readEngineFile(projectRoot, 'engineRulesFile'),
-    project: rd('project/PROJECT.md'),
+    project: readIfExists(projectFile(projectRoot, 'PROJECT.md')),
     routes: rd('.forma/manual/ru/03-forma/ROUTES.md'),
     protocol: rd('.forma/manual/ru/03-forma/PROTOCOL.md'),
     roles: readRoles(projectRoot, engines.first(projectRoot, 'rolesDir')),

@@ -3,7 +3,7 @@ id: "card-003-zakrytaya-osnastka"
 status: "done"
 priority: "medium"
 assignee: null
-epic: "3. Форма/Intent+Kit"
+epic: "3. Form/Intent+Kit"
 dueDate: null
 created: "2031-01-01T09:00:00.000Z"
 modified: "2031-01-01T18:00:00.000Z"

@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * Вкладки «Проект» и «Движок»: только чтение. «Проект» — `project/PROJECT.md` и `GOAL.md` целей;
+ * Вкладки «Проект» и «Движок»: только чтение. «Проект» — `project/config/PROJECT.md` и `GOAL.md` целей;
  * «Движок» — настройки движка, которые читает адаптер (`engineSettings`), он же держит запрет 15 (у секретов
  * только имя), плюс каталог маршрутов. Нет адаптера — настройки не найдены, а не пустые.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { readIfExists } = require('../lib/fs.cjs');
+const { readIfExists, projectFile } = require('../lib/fs.cjs');
 const { parseFrontmatter } = require('../lib/card.cjs');
 const engines = require('../lib/engines.cjs');
 const { readRoutesCatalog } = require('./routes.cjs');
@@ -24,7 +24,8 @@ const tableCells = (l) => l.trim().replace(/^\||\|$/g, '').split('|').map(clean)
  */
 function projectMdReader(raw) {
   const lines = raw.replace(/<!--[\s\S]*?-->/g, '').split(/\r?\n/);
-  const secStart = (label) => lines.findIndex((l) => l.startsWith('**' + label));
+  // label — имя раздела или список имён (русское и английское): каркас проекта ставится на обоих языках
+  const secStart = (label) => lines.findIndex((l) => [].concat(label).some((n) => l.startsWith('**' + n)));
   const inline = (label) => {
     const l = lines[secStart(label)];
     if (!l) return null;
@@ -108,23 +109,23 @@ function readGoalDrafts(projectRoot) {
 }
 
 function readProjectSettings(projectRoot) {
-  const raw = readIfExists(path.join(projectRoot, 'project', 'PROJECT.md'), null);
+  const raw = readIfExists(projectFile(projectRoot, 'PROJECT.md'), null);
   if (!raw) return { present: false };
   const md = projectMdReader(raw);
-  const tpl = md.table('Шаблон проекта');
-  const thr = md.table('Пороги');
+  const tpl = md.table(['Шаблон проекта', 'Project template']);
+  const thr = md.table(['Пороги', 'Thresholds']);
   const skills = readSkills(projectRoot);
   return {
     present: true,
-    source: 'project/PROJECT.md',
-    language: md.inline('Язык проекта'),
-    template: { name: tableValue(tpl, (k) => k === 'Имя'), status: tableValue(tpl, (k) => k === 'Статус') },
-    thresholds: { attempts: tableValue(thr, (k) => /^Заходов/.test(k)), volume: tableValue(thr, (k) => /^Объём/.test(k)) },
-    release: md.trailingNumber('Выпуск протокола'),
-    epics: md.table('Эпики проекта'),
-    services: md.table('Внешние сервисы'),
-    tooling: toolingView(md.table('Оснастка узлов')),
-    references: md.table('Справочники проекта'),
+    source: 'project/config/PROJECT.md',
+    language: md.inline(['Язык проекта', 'Project language']),
+    template: { name: tableValue(tpl, (k) => k === 'Имя' || k === 'Name'), status: tableValue(tpl, (k) => k === 'Статус' || k === 'Status') },
+    thresholds: { attempts: tableValue(thr, (k) => /^(Заходов|Attempts)/.test(k)), volume: tableValue(thr, (k) => /^(Объём|Volume|Cycle volume)/.test(k)) },
+    release: md.trailingNumber(['Выпуск протокола', 'Protocol release']),
+    epics: md.table(['Эпики проекта', 'Project epics']),
+    services: md.table(['Внешние сервисы', 'External services']),
+    tooling: toolingView(md.table(['Оснастка узлов', 'Node tooling'])),
+    references: md.table(['Справочники проекта', 'Project references']),
     skills: { columns: skills.columns, rows: skills.rows },
     skillDirs: skills.dirs,
     goals: readGoalDrafts(projectRoot),

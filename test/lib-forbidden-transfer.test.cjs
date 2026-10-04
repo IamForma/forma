@@ -13,7 +13,7 @@ test('FORBIDDEN_PREFIX покрывает продуктовые зоны', () =
 
 test('isForbiddenTransfer: product/board/living-зоны запрещены вне зависимости от слоя 4', () => {
   const own = new Set();
-  assert.equal(isForbiddenTransfer('project/SITE.md', own), true);
+  assert.equal(isForbiddenTransfer('project/config/SITE.md', own), true);
   assert.equal(isForbiddenTransfer('project', own), true);
   assert.equal(isForbiddenTransfer('.devtool/features/card-001.md', own), true);
   assert.equal(isForbiddenTransfer('.forma/living/CHANGELOG.md', own), true);

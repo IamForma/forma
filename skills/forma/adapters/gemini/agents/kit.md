@@ -70,7 +70,7 @@ You determine what each task requires and fill in six units on the card:
 
 Nodes carry their skill list in frontmatter `uses:` — reference only, doesn't change the node's behavior. Run roles carry it in `skills:` — a working key, loaded into the role's context at start, so only what that role actually needs belongs there. `tier` is a form-bookkeeping field only — Claude Code doesn't read it.
 
-Write the channel explicitly into the kit — `Run` doesn't choose it. (The bridge has one more use, yours as well: extraction for the knowledge graphs, under its own narrow contract — `project/CONFIG.md`, `#deepseek-extraction-quality`; `kit-graphs.md`. Don't confuse the two uses.)
+Write the channel explicitly into the kit — `Run` doesn't choose it. (The bridge has one more use, yours as well: extraction for the knowledge graphs, under its own narrow contract — `project/config/CONFIG.md`, `#deepseek-extraction-quality`; `kit-graphs.md`. Don't confuse the two uses.)
 
 **When the doer is `Run`: matrix "task → Run role" from `agents/run/*.md`, one row per card of the wave.**
 
@@ -199,7 +199,7 @@ The store is `project/experience/` — one file per subject, named the way someo
 - Skill `skill-authoring` — read when a skill is missing from the arsenal, or before writing any text an agent reads (skill, role file, line of the law, `description`).
 - `kit-arsenal.md` — read when opening a cycle (declared node tooling against the arsenal) or trimming a role's tools.
 - `kit-graphs.md` — read when building, refreshing or reading the knowledge graphs.
-- `kit-experience.md` — read when promoting an experience line into `project/CONFIG.md`, or on a weeding card.
+- `kit-experience.md` — read when promoting an experience line into `project/config/CONFIG.md`, or on a weeding card.
 - `kit-limits.md` — read when a skill, tool, access or model kind is missing, or `Run` returns "the tool can't do that".
 - `kit-route8.md` — read when kitting a `route-8` segment.
 - `spend-line.md` — read when you write a spend line yourself (the external bridge you called, `kit-graphs.md`).
@@ -211,7 +211,7 @@ Run them before you assemble anything, and before you open a card of your own. A
 | Check | What it saves |
 |---|---|
 | `project/experience/`, by the subject | the gotcha may already be written down — then the kit changes, or the card isn't needed at all |
-| `project/CONFIG.md` | a contract of the environment may already constrain this; **look here before anything external** |
+| `project/config/CONFIG.md` | a contract of the environment may already constrain this; **look here before anything external** |
 | The board, by grep — `.devtool/features/`, live cards and `done/` alike | a card for the same ground may already exist under another name: live match — reuse or reopen it, don't open a second; closed match — its result already answers this |
 | `VARS/` | the value exists and is named; you reference it, you don't invent one |
 

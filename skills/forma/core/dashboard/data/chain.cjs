@@ -7,7 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { walk, readIfExists } = require('../lib/fs.cjs');
+const { walk, readIfExists, projectFile, opsFile } = require('../lib/fs.cjs');
 const { boardDir, parseFrontmatter } = require('../lib/card.cjs');
 
 const SETUP_STEPS = [
@@ -54,7 +54,7 @@ function readSetup(root) {
 /** Имена процессных эпиков — из PROJECT.md, тем же правилом, что у sync-engines. */
 function readProcessEpics(root) {
   const names = new Set();
-  const projectMd = readOrNull(path.join(root, 'project', 'PROJECT.md'));
+  const projectMd = readOrNull(projectFile(root, 'PROJECT.md'));
   if (!projectMd) return names;
   for (const line of projectMd.split('\n')) {
     const m = line.match(/^\|\s*`(incoming|value|infra|config)`\s*\|\s*([^|]+?)\s*\|/);
@@ -85,7 +85,7 @@ function readGoalDirs(root) {
 
 /** ROADMAP.md даёт цели имя. */
 function nameGoalsFromRoadmap(root, goals) {
-  const roadmap = readOrNull(path.join(root, 'project', 'ROADMAP.md'));
+  const roadmap = readOrNull(opsFile(root, 'ROADMAP.md'));
   if (!roadmap) return;
   for (const line of roadmap.split('\n')) {
     const m = line.match(/(goal-(?:\d+|[a-z][a-z-]*))\s*[·:—]\s*(.+?)\s*$/);

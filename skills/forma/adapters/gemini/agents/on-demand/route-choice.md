@@ -1,6 +1,6 @@
 # Route choice
 
-Read this file only at the moment of choosing a route: `Intent` before the first call on a task, `Spec` while slicing a `route-8` segment. The law it serves — `AGENTS.md` §2 "Choosing the route", §6 route labels, §7 wave gate; what each route costs and why — `.forma/manual/en/03-forma/ROUTES.md` §3–§6. The project's settings — enabled routes, the `route-0` size limit, `over-2`/`over-4`, parallel `Run` per wave, the dispatcher, each epic's default route — are read from `project/PROJECT.md`, "Routes" (Russian: «Маршруты»). A route or overlay that section leaves disabled is not chosen, whatever the rule below gives: the next question answers instead.
+Read this file only at the moment of choosing a route: `Intent` before the first call on a task, `Spec` while slicing a `route-8` segment. The law it serves — `AGENTS.md` §2 "Choosing the route", §6 route labels, §7 wave gate; what each route costs and why — `.forma/manual/en/03-forma/ROUTES.md` §3–§6. The project's settings — enabled routes, the `route-0` size limit, `over-2`/`over-4`, parallel `Run` per wave, the dispatcher, each epic's default route — are read from `project/config/PROJECT.md`, "Routes" (Russian: «Маршруты»). A route or overlay that section leaves disabled is not chosen, whatever the rule below gives: the next question answers instead.
 
 ## The rule
 
@@ -38,7 +38,7 @@ After the route, each independently; a second label, `over-N`:
 
 | Condition | Overlay | Changes |
 |---|---|---|
-| a kit for the kind is recorded in `project/CONFIG.md` | `over-1` | the kit is taken by name |
+| a kit for the kind is recorded in `project/config/CONFIG.md` | `over-1` | the kit is taken by name |
 | mechanics checked by fact ("was → becomes", a file); no judgment | `over-2` | executor — the external model (`external-model-bridge.cjs`) |
 | N uniform tasks | `over-3` | one slicing and kit for N; the first card is `trial`, the rest start after its acceptance |
 | a stream of small, cheap, reversible tasks under one criterion | `over-4` | acceptance — one per batch |

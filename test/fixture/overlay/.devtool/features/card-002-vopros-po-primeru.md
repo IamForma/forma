@@ -3,7 +3,7 @@ id: "card-002-vopros-po-primeru"
 status: "backlog"
 priority: "low"
 assignee: "Intent"
-epic: "6. Входящие/Intent"
+epic: "6. Incoming/Intent"
 dueDate: null
 created: "2031-01-03T10:00:00.000Z"
 modified: "2031-01-03T10:00:00.000Z"

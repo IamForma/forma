@@ -75,7 +75,7 @@ function loadEnvKey(name) {
   return m[1].trim();
 }
 
-// Дефолт (project/CONFIG.md #deepseek-extraction-quality):
+// Дефолт (project/config/CONFIG.md #deepseek-extraction-quality):
 // OpenRouter GLM 5.3 Flash — почти втрое дешевле DeepSeek на сопоставимом качестве извлечения.
 // DeepSeek остаётся резервом на случай, когда критично время (--provider deepseek явно).
 const DEFAULT_PROVIDER = 'openrouter';
