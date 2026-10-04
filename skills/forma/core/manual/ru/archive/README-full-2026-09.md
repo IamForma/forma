@@ -200,7 +200,7 @@ git clone https://github.com/IamForma/forma.git protocol
 прочитай .forma/protocol/.forma/templates/forma-wordpress-novamira/.forma/skills/forma-wordpress-novamira/SKILL.md и установи по нему шаблон проекта
 ```
 
-Первая строка делает рабочие скиллы шаблона проектными (то, что при способе 2 даёт сам плагин); вторая — выполняет установщик шаблона (маршрут `project/ROUTE.md`, заготовка `site-config`), пути `template/…` в нём читаются от его собственной папки. Обновление — `git -C protocol pull` и те же две строки; установщик не перезапишет заполненные `ROUTE.md`/`site-config` без вопроса.
+Первая строка делает рабочие скиллы шаблона проектными (то, что при способе 2 даёт сам плагин); вторая — выполняет установщик шаблона (маршрут `project/ROUTE.md`, заготовка `project/SITE.md`), пути `template/…` в нём читаются от его собственной папки. Обновление — `git -C protocol pull` и те же две строки; установщик не перезапишет заполненные `ROUTE.md`/`SITE.md` без вопроса.
 
 ### Разработка протокола из любого проекта (для автора)
 
@@ -297,7 +297,7 @@ code --install-extension LachyFS.kanban-markdown
 
 | Плагин | Для чего | Установка |
 |---|---|---|
-| [`forma-wordpress-novamira`](https://github.com/IamForma/forma/blob/main/.forma/templates/forma-wordpress-novamira/README.md) | разработка WordPress с помощью Novamira MCP (+ Elementor) с Aura/Magnific — три готовых скилла + заготовка `site-config` | `claude plugin install forma-wordpress-novamira@forma` |
+| [`forma-wordpress-novamira`](https://github.com/IamForma/forma/blob/main/.forma/templates/forma-wordpress-novamira/README.md) | разработка WordPress с помощью Novamira MCP (+ Elementor) с Aura/Magnific — три готовых скилла + заготовка `project/SITE.md` | `claude plugin install forma-wordpress-novamira@forma` |
 
 Подробности — README внутри каталога шаблона.
 
