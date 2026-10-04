@@ -20,6 +20,8 @@ Seven questions, in order; the **first "yes"** is the route.
 
 No "yes" at all — `route-7`. Doubt between two — the longer one.
 
+**The label binds the executor.** A card labelled `route-2`, `5`, `6` or `7` is executed by `Run`, never by `Intent` in its own session: a label with no call behind it is a route on paper (prohibitions 1 and 7). `Intent` that wants to do the work itself changes the label first — `route route-N → route-0 (why: <code>)` — within the `route-0` limit, or hands the card on. The board check `route-executor` reports a card in `review`/`done` on such a route with no `Run` attempt in its history.
+
 **Guard on `route-0`:** after several `route-0` in a row the next goes through `route-1` or `route-2` — clutter accumulates unseen.
 
 ## When, who, the dispatcher

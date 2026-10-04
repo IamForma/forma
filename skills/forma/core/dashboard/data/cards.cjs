@@ -32,14 +32,14 @@ function addByEngine(acc, add) {
 }
 
 /**
- * Один вызов, записанный в нескольких карточках, считается один раз — ключ тот же, что в `tally.cjs`.
+ * Один вызов, записанный в нескольких карточках теми же числами, считается один раз; общий id с разными числами — разные окна, считаются все — ключ тот же, что в `tally.cjs`.
  * Строка основной сессии — карточка + id сессии + граница окна: строки с разной границей — приращения
  * одной сессии, все считаются; без метки (накопительные, старые) — первая. `seen` копит ключи по всем карточкам.
  */
 function dedupeAttempts(attempts, file, seen) {
   return attempts.filter((z) => {
     if (!z.callId) return true;
-    const key = z.sessionSpend ? path.basename(file) + '|' + z.callId + '|' + (z.windowEnd ?? '') : z.callId;
+    const key = z.sessionSpend ? path.basename(file) + '|' + z.callId + '|' + (z.windowEnd ?? '') : [z.callId, z.tokens, z.cacheRead ?? '', z.seconds ?? ''].join('|');
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
