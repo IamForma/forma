@@ -5,7 +5,7 @@ model: claude-sonnet-5
 tier: standard
 effort: medium
 tools: Read, Grep, Glob, mcp__site__mcp-adapter-execute-ability, Bash(node .claude/scripts/site.cjs *)
-skills: novamira-wp-deploy, novamira-wp-elementor, site-config
+skills: novamira-wp-deploy, novamira-wp-elementor
 ---
 
 # `run-site-build`
@@ -14,7 +14,7 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 ## When to take
 
-A card whose result is a page, template, or content block, built or changed through a live site-builder ability (a block editor or page-builder connector) — not a bare PHP write.
+A card whose result is a page, template, or content block, built or changed through a live site-builder ability (a block editor or page-builder connector) — not a bare PHP write. Read `project/SITE.md` (the site's architectural snapshot) before any write.
 
 ## Boundary
 

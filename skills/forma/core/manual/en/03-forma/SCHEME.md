@@ -16,6 +16,8 @@ It is universal: not adjusted per work. Why — see `PROTOCOL.md`.
 | **Project** | `project/` entirely: `PROJECT.md`, `CONFIG.md`, `ROADMAP.md`, `VARS/`, `JOURNAL.md`, `goals/` | yes, as goals progress | The specifics of this project — what we work with, what we build, what is already decided |
 | **Board** | `.devtool/features/` | yes, at every step of the cycle | The operational state — which task is where right now, who holds it |
 
+Inside the **Engine** layer there is its own split by portability into the protocol: node roles and skills (`.claude/`, `.agents/`, `.codex/`) travel into the protocol source, what is shared across engines (`.forma/`) is the protocol itself; a product fact or site setting enters neither — only the **Project** layer (`AGENTS.md`, "Three layers of files").
+
 `.forma/manual/` belongs to the **Engine** layer — the structure of the schema does not depend on which specific site is being built. The third layer is deliberately not named "intention": that name is already taken by the `Intent` node, and a layer name coinciding with a node name would be a source of confusion — the `Intent` node writes to all three layers (`GOAL.md` in the Project, cards on the Board, housekeeping in the Engine), rather than owning a separate layer. Diagram: `.forma/manual/en/assets/three-layers.excalidraw`.
 
 | File | Layer | What it contains | Changes |

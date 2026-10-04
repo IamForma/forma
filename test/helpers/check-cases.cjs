@@ -27,6 +27,9 @@ const CASES = [
   { name: 'route-stage', registry: 'board', id: 'route-stage',
     apply: (m) => m.edit(CARD_1, (t) => t.replace(/^- `Intent`, 2031-01-01: route route-4.*\n/m, '')),
     expect: /card-001-nastroit-sborku-primera\.md: нет строки причины маршрута/ },
+  { name: 'route-executor', registry: 'board', id: 'route-executor',
+    apply: (m) => m.edit(CARD_1, (t) => t.replace('"route-4"]', '"route-7"]')),
+    expect: /card-001-nastroit-sborku-primera\.md: маршрут route-7 ведёт через `Run`, а в истории нет ни одного его захода/ },
   { name: 'status-values', registry: 'board', id: 'status-values',
     apply: (m) => m.edit(CARD_1, (t) => t.replace(/^status:.*$/m, 'status: "in_progress"')),
     expect: /card-001-nastroit-sborku-primera\.md: status "in_progress" — допустимо только backlog\/todo\/in-progress\/review\/done/ },
@@ -97,5 +100,5 @@ const CASES = [
     expect: null },
 ];
 
-module.exports = { CASES, CHECKS_JSON: { 'route-labels': '2030-01-01', 'route-stage': '2030-01-01', 'attempt-format': '2030-01-01',
+module.exports = { CASES, CHECKS_JSON: { 'route-labels': '2030-01-01', 'route-stage': '2030-01-01', 'route-executor': '2030-01-01', 'attempt-format': '2030-01-01',
   'spend-english': '2030-01-01', 'agent-id': '2030-01-01', 'engine-tag': '2030-01-01', 'goal-label': '2030-01-01' } };

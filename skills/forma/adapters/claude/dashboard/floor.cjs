@@ -51,7 +51,7 @@ const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 
 /** Слова, которыми называется отсутствие стенограмм. Ни один путь отсюда не возвращает
  *  нуля: ведущий ноль читается глазами как «окно бесплатное» — ровно наоборот. */
-const NO_TRANSCRIPTS = 'стенограмм проекта не найдено';
+const NO_TRANSCRIPTS = 'no-transcripts'; // код: браузер переводит `bort.fl.u.<код>`
 
 /**
  * Одна стенограмма → пол. Потоком, с дедупликацией.
@@ -185,7 +185,7 @@ if (require.main === module) {
 
     const groups = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     if (data.unavailable) {
-      console.log(data.unavailable);
+      console.log('no project transcripts found');
     } else {
       console.log('Пол окна по сессиям проекта — минимальный размер вызова (R + создание + ввод)\n');
       for (const s of data.sessions) {
