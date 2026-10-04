@@ -6,7 +6,8 @@
  * первого захода — `interview-spec.cjs`. Файла нет — интервью не идёт; вкладка отдаёт скелет и причину.
  */
 
-const { POSITIONS, OPENING_ROUND } = require('./interview-spec.cjs');
+const { POSITIONS, langOf, localize } = require('./interview-spec.cjs');
+const { projectFile, readIfExists } = require('../lib/fs.cjs');
 const { readIdea, readLandingPrompt, readPictureText, readAnswers, sessionInfo } = require('./interview-files.cjs');
 
 /**
@@ -39,7 +40,9 @@ function answerContext(projectRoot) {
   for (const rec of answers) {
     for (const a of rec.answers || []) givenBy.set(a.id, { text: a.text, at: rec.at });
   }
-  return { sentFor: new Set(answers.map((o) => o.position)), sessions: sessionInfo(projectRoot), givenBy };
+  // Текст, который читает человек, — на языке проекта; машинные ключи позиций (`name`) от языка не зависят.
+  const loc = localize(langOf(readIfExists(projectFile(projectRoot, 'PROJECT.md'))));
+  return { sentFor: new Set(answers.map((o) => o.position)), sessions: sessionInfo(projectRoot), givenBy, loc };
 }
 
 const sessionOf = (ctx, spec) => (ctx.sessions[spec.n] && { url: ctx.sessions[spec.n].url, alive: ctx.sessions[spec.n].alive }) || null;
@@ -47,7 +50,7 @@ const sessionOf = (ctx, spec) => (ctx.sessions[spec.n] && { url: ctx.sessions[sp
 /** Вопросы позиции: сессия открыта — спрошено то, что в ней; нет — то, чем её засеют. */
 function questionsFor(spec, ctx) {
   const sess = ctx.sessions[spec.n] || null;
-  const source = (sess && sess.questions && sess.questions.length) ? sess.questions : (OPENING_ROUND[spec.n] || []);
+  const source = (sess && sess.questions && sess.questions.length) ? sess.questions : (ctx.loc.OPENING_ROUND[spec.n] || []);
   return source.map((q) => ({ ...q, given: ctx.givenBy.get(q.id) || null }));
 }
 
@@ -57,9 +60,9 @@ function emptyLayers(spec) {
 
 function emptyPosition(spec, ctx) {
   // Состояние скелета считается по вопросам как они есть, без ответов человека: отвечать тут ещё нечему.
-  const rawQuestions = (ctx.sessions[spec.n] && ctx.sessions[spec.n].questions) || OPENING_ROUND[spec.n] || [];
+  const rawQuestions = (ctx.sessions[spec.n] && ctx.sessions[spec.n].questions) || ctx.loc.OPENING_ROUND[spec.n] || [];
   return {
-    n: spec.n, name: spec.name, asks: spec.asks, hint: spec.hint,
+    n: spec.n, name: spec.name, label: spec.label, asks: spec.asks, hint: spec.hint,
     note: spec.note || null, deps: spec.deps,
     waitingFor: spec.deps.slice(),
     state: positionState(spec, { answered: new Set(), own: null, submitted: ctx.sentFor.has(spec.n), questions: rawQuestions }),
@@ -83,7 +86,7 @@ function emptyPicture(projectRoot) {
     landingPrompt: readLandingPrompt(projectRoot),
     answered: 0,
     guesses: { open: 0, confirmed: 0, rejected: 0 },
-    positions: POSITIONS.map((spec) => emptyPosition(spec, ctx)),
+    positions: ctx.loc.POSITIONS.map((spec) => emptyPosition(spec, ctx)),
   };
 }
 
@@ -123,6 +126,7 @@ function livePosition(spec, own, answered, ctx) {
   return {
     n: spec.n,
     name: spec.name,
+    label: spec.label,
     asks: spec.asks,
     hint: spec.hint,
     note: spec.note || null,
@@ -156,7 +160,7 @@ function livePicture(projectRoot, data) {
   const byName = new Map((data.positions || []).map((p) => [p.name, p]));
   const ctx = answerContext(projectRoot);
   const answered = answeredPositions(byName);
-  const positions = POSITIONS.map((spec) => livePosition(spec, byName.get(spec.name) || null, answered, ctx));
+  const positions = ctx.loc.POSITIONS.map((spec) => livePosition(spec, byName.get(spec.name) || null, answered, ctx));
   const tree = data.tree || null;
   return {
     present: true,

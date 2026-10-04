@@ -1,6 +1,6 @@
 # `Spec` — Trial run and pilot
 
-Read this file when you are about to hand off a batch of same-type tasks, or a batch of N ≥ 3 would run on a channel or model not yet confirmed by an anchor in `project/CONFIG.md`. Shared rules — `.claude/agents/spec.md`.
+Read this file when you are about to hand off a batch of same-type tasks, or a batch of N ≥ 3 would run on a channel or model not yet confirmed by an anchor in `project/config/CONFIG.md`. Shared rules — `.claude/agents/spec.md`.
 
 ## Trial run
 
@@ -14,4 +14,4 @@ Reason: unclarity about intent is resolved by a question, but **unclarity about 
 
 ## Mandatory pilot before a batch on an unverified channel/model
 
-A card proposes a batch of N ≥ 3 same-type units, and the channel/model for this class of task isn't yet confirmed by an anchor in `project/CONFIG.md` (`kit.md`, "Contracts" — e.g. `#deepseek-extraction-quality`): write the readiness criterion in two stages, not one. First a threshold — a number, not "quality is acceptable" (e.g. "≥5 nodes/file on average") — checked on a single unit, in the same card's pass, not a separate dispatch. Only then the batch. Once confirmed on that single unit, the threshold becomes a fact of the environment in `CONFIG.md` (`Kit` writes the anchor), and the pilot for this class of task is skipped from then on.
+A card proposes a batch of N ≥ 3 same-type units, and the channel/model for this class of task isn't yet confirmed by an anchor in `project/config/CONFIG.md` (`kit.md`, "Contracts" — e.g. `#deepseek-extraction-quality`): write the readiness criterion in two stages, not one. First a threshold — a number, not "quality is acceptable" (e.g. "≥5 nodes/file on average") — checked on a single unit, in the same card's pass, not a separate dispatch. Only then the batch. Once confirmed on that single unit, the threshold becomes a fact of the environment in `CONFIG.md` (`Kit` writes the anchor), and the pilot for this class of task is skipped from then on.

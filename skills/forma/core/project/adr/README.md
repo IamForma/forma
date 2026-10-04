@@ -1,32 +1,32 @@
-# Журнал технических решений (ADR)
+# Decision log (ADR)
 
-Постоянная запись закрытых решений проекта (`AGENTS.md` §6). Источник формата — [mattpocock/skills, `domain-modeling/ADR-FORMAT.md`](https://github.com/mattpocock/skills/tree/main/skills/engineering/domain-modeling), адаптирован.
+A permanent record of the project's closed decisions (`AGENTS.md` §6). Format source: [mattpocock/skills, `domain-modeling/ADR-FORMAT.md`](https://github.com/mattpocock/skills/tree/main/skills/engineering/domain-modeling), adapted.
 
-**Когда заводится — три условия разом:**
-1. **Трудно отменить** — передумать потом дорого.
-2. **Неожиданно без контекста** — будущий читатель спросит «почему так?».
-3. **Итог реального выбора** — были настоящие альтернативы, выбрана одна по причинам.
+**When one is made — three conditions at once:**
+1. **Hard to reverse** — changing one's mind later is expensive.
+2. **Surprising without context** — a future reader will ask "why is it like this?".
+3. **The outcome of a real choice** — there were genuine alternatives, one was chosen for reasons.
 
-Нет хоть одного — ADR не заводится: решение остаётся в карточке.
+If even one is missing — no ADR is made: the decision stays in the card.
 
-**Кто пишет:** `Intent`, подтверждая закрытую карточку рода `решение` (или любую, чей итог — решение). Карточка хранит основания, ADR — постоянную запись.
+**Who writes:** `Intent`, when confirming a closed card of kind `decision` (or any whose outcome is a decision). The card keeps the grounds, the ADR keeps the permanent record.
 
-**Нумерация:** наибольший номер в папке + 1: `0001-<slug>.md`.
+**Numbering:** the highest number in the folder + 1: `0001-<slug>.md`.
 
-## Шаблон
+## Template
 
 ```md
-# {Короткое название решения}
+# {Short name of the decision}
 
-{1–3 предложения: контекст, что решили и почему.}
+{1–3 sentences: context, what was decided and why.}
 
-Источник: card-NNN.
+Source: card-NNN.
 ```
 
-Одного абзаца достаточно. Необязательные разделы — только когда несут смысл:
+One paragraph is enough. Optional sections — only when they carry meaning:
 
-- **Статус** во frontmatter (`предложено | принято | устарело | заменено ADR-NNNN`) — когда решение пересматривают;
-- **Рассмотренные варианты** — когда отвергнутое стоит помнить;
-- **Последствия** — когда неочевидны.
+- **Status** in the frontmatter (`proposed | accepted | obsolete | superseded by ADR-NNNN`) — when the decision is revisited;
+- **Options considered** — when the rejected is worth remembering;
+- **Consequences** — when they are not obvious.
 
-**Что подходит:** форма архитектуры; способ связи частей; выбор технологии с привязкой; границы и объём (явные «нет» ценны как «да»); сознательный уход от очевидного пути; ограничения, не видимые в коде; неочевидно отвергнутые альтернативы.
+**What qualifies:** the shape of the architecture; the way parts are connected; a technology choice with lock-in; boundaries and scope (explicit "no"s are as valuable as "yes"es); a conscious departure from the obvious path; constraints not visible in the code; non-obviously rejected alternatives.

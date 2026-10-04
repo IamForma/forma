@@ -33,18 +33,18 @@ function groupsFor(root) {
 // (что именно — в why); разделение — отдельное решение.
 const PROJECT_KINDS = [
   { key: 'static', title: 'Static · settings', note: 'edited by a human; does not change during work', items: [
-    { p: 'project/PROJECT.md', note: 'язык, пороги, эпики, маршруты, сервисы, оснастка, доступы',
+    { p: 'project/config/PROJECT.md', note: 'язык, пороги, эпики, маршруты, сервисы, оснастка, доступы',
       mixed: 'статус шаблона, «Версия на сегодня» справочников, реестр оформленных умений' },
-    { p: 'project/CONFIG.md', note: 'структура разделов проекта и доски',
+    { p: 'project/config/CONFIG.md', note: 'структура разделов проекта и доски',
       mixed: '«Технические контракты среды», «Лог оснастки»' },
-    { p: 'project/ROUTE.md', note: 'шаги маршрута шаблона',
+    { p: 'project/config/ROUTE.md', note: 'шаги маршрута шаблона',
       mixed: '«Пройдено», «Точки выбора»' },
-    { p: 'project/SETUP.md', note: 'порядок подготовки проекта' },
+    { p: 'project/config/SETUP.md', note: 'порядок подготовки проекта' },
   ] },
   { key: 'dynamic', title: 'Dynamics · project keeping', note: 'statistics and state; written by the nodes during work', items: [
-    { p: 'project/JOURNAL.md', note: 'журнал кругов' },
-    { p: 'project/VALUE.md', note: 'статистика и ценность по закрытым целям' },
-    { p: 'project/ROADMAP.md', note: 'карта целей и их состояние' },
+    { p: 'project/ops/JOURNAL.md', note: 'журнал кругов' },
+    { p: 'project/ops/VALUE.md', note: 'статистика и ценность по закрытым целям' },
+    { p: 'project/ops/ROADMAP.md', note: 'карта целей и их состояние' },
     { p: 'project/goals', note: 'цели: образ, круги, вердикты' },
     { p: 'project/cards', note: 'материал, рождённый карточками' },
     { p: 'project/experience', note: 'опыт: факты среды' },
@@ -100,8 +100,8 @@ const NOTES = {
   'project/mockups': 'макеты',
   'project/adr': 'журнал решений',
   'project/VARS': 'доступы к сайту',
-  'project/PROJECT.md': 'пороги, эпики, маршруты, внешние сервисы',
-  'project/JOURNAL.md': 'журнал циклов',
+  'project/config/PROJECT.md': 'пороги, эпики, маршруты, внешние сервисы',
+  'project/ops/JOURNAL.md': 'журнал циклов',
   '.devtool': 'доска: каталоги статусов; карточки в них — проект',
   '.devtool/features': 'карточки проекта: в работе и done/',
   '.devtool/features/done': 'принятые карточки',
@@ -160,10 +160,10 @@ function markKinds(n, rel) {
 
 // Файлы, где ведутся настройки. who: human — правит человек; nodes — ведут узлы; secret — значения не показываются (запрет 15).
 const SETTINGS_FILES = [
-  { p: 'project/PROJECT.md', who: 'human', note: 'язык, пороги, эпики, маршруты, внешние сервисы, оснастка' },
-  { p: 'project/CONFIG.md', who: 'human', note: 'структура разделов проекта и доски' },
-  { p: 'project/ROUTE.md', who: 'human', note: 'шаги маршрута шаблона' },
-  { p: 'project/SETUP.md', who: 'human', note: 'порядок подготовки проекта' },
+  { p: 'project/config/PROJECT.md', who: 'human', note: 'язык, пороги, эпики, маршруты, внешние сервисы, оснастка' },
+  { p: 'project/config/CONFIG.md', who: 'human', note: 'структура разделов проекта и доски' },
+  { p: 'project/config/ROUTE.md', who: 'human', note: 'шаги маршрута шаблона' },
+  { p: 'project/config/SETUP.md', who: 'human', note: 'порядок подготовки проекта' },
   { p: 'project/VARS', who: 'human', note: 'решённые величины и доступы к сайту (credentials.md — секреты, только по имени)' },
   { p: 'AGENTS.md', who: 'human', note: 'закон §1–7, общий для всех движков' },
   { p: '.claude/settings.json', who: 'human', note: 'Claude Code: права, хуки, модель' },

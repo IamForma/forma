@@ -1,53 +1,50 @@
-# Материалы карточек
+# Card materials
 
-Одна папка на карточку, названная её кодом: `card-NNN/`. Код — префикс имени файла карточки на доске (`.devtool/features/card-NNN-<что-то>.md`); заголовок карточки может меняться, код — нет, поэтому папка не переименовывается никогда.
+One folder per card, named by its code: `card-NNN/`. The code is the prefix of the card's filename on the board (`.devtool/features/card-NNN-<something>.md`); the card's title may change, the code never does, so the folder is never renamed.
 
-**Папка заводится только когда есть что в неё положить.** Пустых нет: у большинства карточек материалов не бывает, и сто тридцать пустых каталогов — это шум, а не порядок.
-
----
-
-## Граница: что сюда кладут, а что нет
-
-| Сюда | Не сюда |
-|---|---|
-| то, что **родилось от этой карточки** и вне её не имеет смысла: запись интервью, прототип, скриншот как доказательство, черновик, вывод внешней модели | **решения** — они в пяти полях `## Задача` и в `## Результат`, всегда. Карточка — обязывающая запись, папка — основание |
-| то, у чего иначе нет дома | **материалы проекта** — дизайн-система, макапы, бриф, референсы. Они принадлежат проекту, а не задаче: карточка на них **ссылается** |
-
-**Папка хранит основание, карточка — решение.** Это не стилистика: решение, переехавшее в красивый документ рядом, перестаёт быть видимым на доске, и через месяц карточка читается так, будто её никто не решал (`intent.md`, «Interview on a card»).
+**A folder is created only when there is something to put in it.** There are no empty ones: most cards have no materials, and a hundred and thirty empty directories are noise, not order.
 
 ---
 
-## Карточка переезжает, папка стоит
+## The boundary: what goes here, and what does not
 
-Карточка при закрытии физически перемещается: `.devtool/features/card-NNN-x.md` → `.devtool/features/done/card-NNN-x.md` (`AGENTS.md` §7). Папка материалов лежит **вне доски** и не движется — поэтому ссылка на неё не ломается ни при закрытии, ни при переоткрытии.
-
-По той же причине материалы не кладут внутрь `.devtool/`: это территория расширения канбана, и посторонние каталоги в ней — чужое добро.
-
-## Как на неё ссылаются
-
-Из карточки — обычной ссылкой в `## Результат` или `## Снаряжение`: `project/cards/card-NNN/`. Отдельного поля во фронтматтере нет: расширение пишет эти файлы само, и переживёт ли оно незнакомый ключ — неизвестно.
-
-## Что проверяет машина
-
-- **папка без карточки** — осталась от удалённой или код перепутан;
-- **ссылка на несуществующий файл** внутри папки;
-- **файл тяжелее 500 КБ** — предупреждение, см. ниже;
-- сколько у карточки материалов — для сводки.
-
-Это те самые тихие расхождения, которые иначе находятся случайно и поздно.
-
-## Тяжёлые файлы — ссылаемся, не храним
-
-
-
-Четыре рода материала, четыре разных дома:
-
-| Род | Где живёт |
+| Here | Not here |
 |---|---|
-| **доказательство проверки** — «я посмотрел, и вот» | **нигде.** В карточке записывается **замеренный факт**, текстом: не скриншот ширины, а «1600 px, замерено `getBoundingClientRect()`». Текст ищется, сравнивается и через год понятен; картинку через год никто не откроет |
-| **изображение, которое читается только глазами** — референс, «до/после» | в папке карточки, **ужатое**: потолок 500 КБ на файл. Не влезает — значит это не доказательство, а актив, см. ниже |
-| **сгенерированный актив** — 3D, картинки, видео от внешнего поставщика | **у поставщика**, ссылкой: он там уже лежит и имеет постоянный адрес. Копия в проекте — второй экземпляр того же, со всеми последствиями |
-| **видео** | в git никогда. Видео показывают человеку один раз; в карточку идёт описание шагов текстом |
+| what was **born of this card** and makes no sense outside it: an interview record, a prototype, a screenshot as evidence, a draft, an external model's output | **decisions** — they are in the five fields of `## Task` and in `## Result`, always. The card is the binding record, the folder is the ground |
+| what otherwise has no home | **project materials** — design system, mockups, brief, references. They belong to the project, not to the task: the card **refers** to them |
 
-**Ссылка обязана быть восстановимой.** Путь к файлу на диске ссылкой не является: на другой машине его нет. Рядом с тяжёлым материалом кладётся текстовая строка — что это, откуда взялось, по какому адресу забрать заново. Без неё «мы ссылаемся» — не решение, а надежда.
+**The folder keeps the ground, the card keeps the decision.** This is not style: a decision that moved into a nice document beside it stops being visible on the board, and a month later the card reads as if nobody had decided it (`intent.md`, "Interview on a card").
 
+---
+
+## The card moves, the folder stays
+
+On closing, the card physically moves: `.devtool/features/card-NNN-x.md` → `.devtool/features/done/card-NNN-x.md` (`AGENTS.md` §7). The materials folder lies **outside the board** and does not move — so a link to it breaks neither on closing nor on reopening.
+
+For the same reason materials are not put inside `.devtool/`: that is the kanban extension's territory, and foreign directories in it are someone else's property.
+
+## How it is referenced
+
+From the card — with an ordinary link in `## Result` or `## Kit`: `project/cards/card-NNN/`. There is no separate frontmatter field: the extension writes these files itself, and whether it survives an unfamiliar key is unknown.
+
+## What the machine checks
+
+- **a folder without a card** — left from a deleted one, or the code is mixed up;
+- **a link to a nonexistent file** inside the folder;
+- **a file heavier than 500 KB** — a warning, see below;
+- how many materials a card has — for the summary.
+
+These are exactly the quiet divergences that are otherwise found by accident and late.
+
+## Heavy files — we link, we do not store
+
+Four kinds of material, four different homes:
+
+| Kind | Where it lives |
+|---|---|
+| **check evidence** — "I looked, and here" | **nowhere.** The card records the **measured fact**, as text: not a screenshot of a width but "1600 px, measured with `getBoundingClientRect()`". Text is searched, compared and understandable a year later; nobody will open the picture a year later |
+| **an image read only by eye** — a reference, "before/after" | in the card's folder, **compressed**: a 500 KB ceiling per file. If it does not fit, it is not evidence but an asset, see below |
+| **a generated asset** — 3D, images, video from an external provider | **at the provider**, by link: it already lies there and has a permanent address. A copy in the project is a second instance of the same, with all the consequences |
+| **video** | never in git. Video is shown to the human once; the card gets a text description of the steps |
+
+**A link must be recoverable.** A path to a file on disk is not a link: on another machine it does not exist. Next to a heavy material goes a text line — what it is, where it came from, at which address to fetch it again. Without it "we link" is not a decision but a hope.

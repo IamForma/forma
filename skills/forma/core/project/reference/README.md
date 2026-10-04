@@ -1,7 +1,7 @@
-# Справочник
+# Reference
 
-Справочные материалы проекта — дизайн-система, спецификации сущностей, промты, каталоги источников и подобное, на что ссылаются карточки задач. Состав целиком зависит от проекта: схема протокола его не диктует, эта папка — просто выделенное место, чтобы такие материалы не расползались по корню.
+Project reference materials — a design system, entity specifications, prompts, source catalogs and the like, which task cards refer to. The contents depend entirely on the project: the protocol's schema does not dictate them, this folder is just a dedicated place so that such materials do not sprawl across the root.
 
-Заводится по ходу, своими подкаталогами/файлами — по мере того, как в проекте появляется что-то, на что нужно ссылаться повторно (не разово).
+Created as you go, with its own subdirectories/files — as something appears in the project that needs to be referred to repeatedly (not once).
 
-Не путать с `project/VARS/` — там решённые величины (числа, одно значение), здесь — более крупные материалы (документы, каталоги, макеты источников).
+Not to be confused with `project/VARS/` — there are decided values (numbers, a single value), here are larger materials (documents, catalogs, source mockups).

@@ -54,7 +54,7 @@ Every task goes onto the board as a card: frontmatter `status: "backlog"`, `assi
 
 | Rule | What it means |
 |---|---|
-| Language | card language, headings and fields follow the project language (`project/PROJECT.md`) — the translation of the four zone headings is in `AGENTS.md` §6 |
+| Language | card language, headings and fields follow the project language (`project/config/PROJECT.md`) — the translation of the four zone headings is in `AGENTS.md` §6 |
 | Filename | a short, plain-language slug in the project's language — not a transliteration, not an encoded path: a word in the team's own language reads easier than `my-listing-seating` or `goal-NN-card-NN-seating.md`. Goal, cycle and card numbers live in the frontmatter (`id`/`goal`/`round`), not in the name |
 | Title of an entity card | human-facing name **plus** entity type and category, one line — in a growing series human names become indistinguishable without opening the card. Same for "what it delivers" |
 | A long field | not a table row: `\| Field \| Value \|` works while the value is short — a name, a number, a link. A seven-item criterion or a paragraph-long kit in one cell reads as unbroken text. Put it under a bold field heading (`**Readiness criterion**`) as a list, the way "History" already is |
@@ -108,10 +108,10 @@ The most common rework is **splitting a card in two**: an exhausted budget revea
 
 - `spec-slicing-details.md` — read when you slice documentation (epic "2. Documentation/Intent"), a content unit (a post, a page, a demo example), a style, tone, grid or palette that runs through every part, or rework a closed card; also for the limits and the rationale of "Homogeneity of a cycle".
 - `spec-route8.md` — read when an incoming card reaches you as a synthesis document the human has approved, or `Intent` has set `route-8` and handed you a segment.
-- `spec-trial-pilot.md` — read when you are about to hand off a batch of same-type tasks (trial run), or a batch of N ≥ 3 would run on a channel or model not yet confirmed by an anchor in `project/CONFIG.md` (mandatory pilot).
+- `spec-trial-pilot.md` — read when you are about to hand off a batch of same-type tasks (trial run), or a batch of N ≥ 3 would run on a channel or model not yet confirmed by an anchor in `project/config/CONFIG.md` (mandatory pilot).
 - `spec-unattainable-value.md` — read when `Kit` has escalated that a value recorded in `VARS/` is unattainable in the environment.
 - `spec-cycle-boundary.md` — read when a task has not reached completion this cycle, or a new goal continues the theme of a closed one.
-- `spec-statistics.md` — read when `Intent` calls you at the close of a goal for the `project/VALUE.md` summary.
+- `spec-statistics.md` — read when `Intent` calls you at the close of a goal for the `project/ops/VALUE.md` summary.
 
 ## Report to the caller
 

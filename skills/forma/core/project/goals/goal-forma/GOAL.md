@@ -2,20 +2,20 @@
 draft: false
 ---
 
-# Главная цель вида `forma` · Форма
+# Main goal of kind `forma` · Form
 
-Одна из девяти главных целей проекта — все девять идут параллельно (`intent-goal-opening.md`, «Эпик», «Как формируются цели»). Подцели — в карте `ROADMAP.md`, под этой целью.
+One of the project's nine main goals — all nine run in parallel (`intent-goal-opening.md`, "Epic", "How goals are formed"). Subgoals are in the `ROADMAP.md` map, under this goal.
 
 ---
 
-**Вид**: `forma` · дорожка на доске — лейбл из `PROJECT.md`, «Эпики проекта».
+**Kind**: `forma` · the board lane — a label from `PROJECT.md`, "Project epics".
 
-**Метка карточек**: `goal-forma` (или метка подцели, если карточка к ней относится).
+**Card label**: `goal-forma` (or the subgoal's label, if the card belongs to one).
 
-**Формирует**: ядро, по умолчанию.
+**Formed by**: the core, by default.
 
-**Образ по умолчанию**: движок, собранный из того, что есть — знаний, скиллов, плагинов; докручивается по ходу работы.
+**Default image**: an engine assembled from what exists — knowledge, skills, plugins; tuned along the way.
 
-**Образ в этом проекте**: движок, собранный из того, что есть — знаний, скиллов, плагинов; докручивается по ходу работы
+**Image in this project**: an engine assembled from what exists — knowledge, skills, plugins; tuned along the way
 
-**Кто закрывает**: вердикт `Intent`; закрывает человек (запреты 1 и 8).
+**Closed by**: the verdict of `Intent`; the human closes (prohibitions 1 and 8).

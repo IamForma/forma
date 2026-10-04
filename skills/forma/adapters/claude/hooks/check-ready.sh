@@ -21,11 +21,13 @@ fi
 
 # где лежат файлы проекта: в корне (рабочий проект) или в project/ (репозиторий протокола)
 P=PROJECT.md; M=ROADMAP.md; V=VARS
-[ -f "$P" ] || { P=project/PROJECT.md; M=project/ROADMAP.md; V=project/VARS; }
+[ -f "$P" ] || { P=project/config/PROJECT.md; M=project/ops/ROADMAP.md; V=project/VARS; }
+[ -f "$P" ] || P=project/PROJECT.md   # до переезда конфигурации в project/config/
+[ -f "$M" ] || { [ -f project/ROADMAP.md ] && M=project/ROADMAP.md; }   # до переезда в project/ops/
 
 # PROJECT.md
 if [ -f "$P" ]; then
-  if sed -n '/^| Порог/,/^$/p' "$P" | grep -qE '^\| [^|]+ \| *\|$'; then
+  if sed -nE '/^\| (Порог|Threshold)/,/^$/p' "$P" | grep -qE '^\| [^|]+ \| *\|$'; then
     add "PROJECT.md: пороги заполнены не все"
   fi
 fi
@@ -69,13 +71,19 @@ if [ -d "$G" ]; then
     fi
   done
 fi
-if [ -f "$P" ] && sed -n '/^| Порог/,/^$/p' "$P" | grep -qE '^\| [^|]+ \| *(не задан)? *\|$'; then
+if [ -f "$P" ] && sed -nE '/^\| (Порог|Threshold)/,/^$/p' "$P" | grep -qE '^\| [^|]+ \| *(не задан)? *\|$'; then
   stop="$stop
   · PROJECT.md: заданы не оба порога (заходы, объём)"
 fi
 
+# каркас project/ ждёт перевода (установка с --lang ru): интервью не начинать до снятия метки
+if [ -f .forma/translation-pending.json ]; then
+  stop="$stop
+  · каркас project/ не переведён (.forma/translation-pending.json): сначала шаг «Перевод каркаса» скилла forma"
+fi
+
 # третий предел — только если подключены платные сервисы (строка в «Внешние сервисы» с пустым пределом)
-if [ -f "$P" ] && sed -n '/^| Сервис |/,/^$/p' "$P" | grep -vE '^\| Сервис |^\|---' | grep -qE '\| *\|$'; then
+if [ -f "$P" ] && sed -nE '/^\| (Сервис|Service) \|/,/^$/p' "$P" | grep -vE '^\| (Сервис|Service) \||^\|---' | grep -qE '\| *\|$'; then
   stop="$stop
   · PROJECT.md: у платного сервиса не задан предел на круг"
 fi

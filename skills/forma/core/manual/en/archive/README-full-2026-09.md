@@ -96,7 +96,7 @@ The absence of memory in the model does not mean the absence of growth: each nod
 |---|---|---|---|
 | `Intent` | `JOURNAL.md`, `ROADMAP.md` "What closed goals gave" | the cycle's five numbers, "What was missing", the qualitative outcome of the goal | when a cycle / goal closes |
 | `Spec` | `project/VALUE.md` | the sum of attempts and tokens over the cards of a closed goal (`tally.cjs` — never recounted by hand) | when a goal closes — after the fact, not during slicing |
-| `Kit` | `project/CONFIG.md`, `.claude/skills/` | the log of tooling and technical contracts of the environment + formalized skills — the very arsenal it reads first thing when kitting | as findings come |
+| `Kit` | `project/config/CONFIG.md`, `.claude/skills/` | the log of tooling and technical contracts of the environment + formalized skills — the very arsenal it reads first thing when kitting | as findings come |
 | `Run` | `project/docs/`, the card's "Result" | a short record for each visible piece of work — the next pass of the same profile reads `docs/` first, not rediscovering from scratch | on completing a `work` task |
 | `Core` | writes nothing separately — brings together others' records | the trend over the tail of `JOURNAL.md`, `VALUE.md`, "Formalized .forma/skills" (whether the list grows between cycles) | on closing a cycle / on a breached threshold |
 
@@ -145,7 +145,7 @@ The scheme files are arranged in four levels by frequency of actual reading, not
 |---|---|---|---|
 | 1 | `AGENTS.md` (+ its engine's §8: `CLAUDE.md` or `.claude/rules/claude-8.md` / `.agents/rules/gemini-8.md`) | all five nodes | every call, without exception |
 | 2 | `agents/*.md` (+ `on-demand/*.md` inside — on a rare event) | a specific node | every call of that very node |
-| 3 | `.forma/manual/`, `project/CONFIG.md`, `project/PROJECT.md`, `project/ROADMAP.md` | a node that needs a specific fact | on reference |
+| 3 | `.forma/manual/`, `project/config/CONFIG.md`, `project/config/PROJECT.md`, `project/ROADMAP.md` | a node that needs a specific fact | on reference |
 | 4 | the current goal's `GOAL.md`, the card, `.forma/skills/*/SKILL.md` | the node working with that goal/task | on an event, narrower still than level 3 |
 
 Full analysis — `.forma/skills/forma/core/.forma/manual/en/03-forma/PROTOCOL.md`, "The language of the scheme and the language of explanation are different roles, not the same thing", and `.forma/skills/forma/core/.forma/manual/en/03-forma/SCHEME.md`, "9. Reading levels of the scheme".
@@ -200,7 +200,7 @@ copy the skills from .forma/protocol/.forma/templates/forma-wordpress-novamira/.
 read .forma/protocol/.forma/templates/forma-wordpress-novamira/.forma/skills/forma-wordpress-novamira/SKILL.md and install the project template by it
 ```
 
-The first line makes the template's working skills project skills (what the plugin itself gives with way 2); the second runs the template installer (the route `project/ROUTE.md`, the blank `project/SITE.md` snapshot); the `template/…` paths in it are read relative to its own folder. Updating — `git -C protocol pull` and the same two lines; the installer will not overwrite filled-in `ROUTE.md`/`SITE.md` without asking.
+The first line makes the template's working skills project skills (what the plugin itself gives with way 2); the second runs the template installer (the route `project/config/ROUTE.md`, the blank `project/config/SITE.md` snapshot); the `template/…` paths in it are read relative to its own folder. Updating — `git -C protocol pull` and the same two lines; the installer will not overwrite filled-in `ROUTE.md`/`SITE.md` without asking.
 
 ### Developing the protocol from any project (for the author)
 
@@ -297,7 +297,7 @@ The `.forma/templates/` directory holds project templates — plugins of the sam
 
 | Plugin | What for | Installation |
 |---|---|---|
-| [`forma-wordpress-novamira`](https://github.com/IamForma/forma/blob/main/.forma/templates/forma-wordpress-novamira/README.md) | WordPress development with Novamira MCP (+ Elementor) with Aura/Magnific — three ready skills + a blank `project/SITE.md` snapshot | `claude plugin install forma-wordpress-novamira@forma` |
+| [`forma-wordpress-novamira`](https://github.com/IamForma/forma/blob/main/.forma/templates/forma-wordpress-novamira/README.md) | WordPress development with Novamira MCP (+ Elementor) with Aura/Magnific — three ready skills + a blank `project/config/SITE.md` snapshot | `claude plugin install forma-wordpress-novamira@forma` |
 
 Details — the README inside the template directory.
 

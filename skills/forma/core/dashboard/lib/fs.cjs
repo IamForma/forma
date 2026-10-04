@@ -62,4 +62,20 @@ function readIfExists(file, fallback = '') {
   catch { return fallback; }
 }
 
-module.exports = { walk, readJson, writeJsonAtomic, readIfExists };
+/** Статичная конфигурация проекта (`PROJECT.md`, `CONFIG.md`, `SETUP.md`, `ROUTE.md`, `SITE.md`) — в `project/config/`;
+ *  до переезда лежала в `project/`. Старый путь — запасной: проект, не прошедший установщик, читается как раньше. */
+function projectFile(root, name) {
+  const next = path.join(root, 'project', 'config', name);
+  const old = path.join(root, 'project', name);
+  return !fs.existsSync(next) && fs.existsSync(old) ? old : next;
+}
+
+/** Служебные файлы проекта (`ROADMAP.md`, `JOURNAL.md`, `VALUE.md`, `GLOSSARY.md`) — в `project/ops/`;
+ *  до переезда лежали в `project/`. Старый путь — запасной, как у `projectFile`. */
+function opsFile(root, name) {
+  const next = path.join(root, 'project', 'ops', name);
+  const old = path.join(root, 'project', name);
+  return !fs.existsSync(next) && fs.existsSync(old) ? old : next;
+}
+
+module.exports = { walk, readJson, writeJsonAtomic, readIfExists, projectFile, opsFile };

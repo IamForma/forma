@@ -18,7 +18,7 @@
     "model_external": "z-ai/glm-5.3-flash (openrouter)",
     "_channel_meaning": {
       "internal": "по умолчанию. .claude/scripts/build-done-cards-graph.cjs сам вызвать Agent tool не может (это может только живая сессия) — на cache-miss файлах печатает JSON-список и останавливается; извлечение через Haiku проводит вызывающий (Intent/агент), результат каждого файла дописывается в кэш командой `node .claude/scripts/build-done-cards-graph.cjs record --file ... --json ...`, повторный запуск скрипта собирает граф из полного кэша",
-      "external": "только по явной просьбе человека — скрипт сам, без живого агента, вызывает .claude/scripts/external-model-bridge.cjs (GLM 5.3 Flash / OpenRouter, ключ в .env, project/CONFIG.md#deepseek-extraction-quality) на каждый cache-miss файл, не останавливаясь"
+      "external": "только по явной просьбе человека — скрипт сам, без живого агента, вызывает .claude/scripts/external-model-bridge.cjs (GLM 5.3 Flash / OpenRouter, ключ в .env, project/config/CONFIG.md#deepseek-extraction-quality) на каждый cache-miss файл, не останавливаясь"
     },
     "cache_file": ".forma/dashboard/.cache/graphify-extract-cache.json — ключ: относительный путь карточки, значение: {hash (sha256 содержимого), nodes, edges, hyperedges, tokens, cost, extractedAt, model, channel}. Не изменившийся файл (хэш совпал) — cache-hit, ни одного нового вызова модели."
   },

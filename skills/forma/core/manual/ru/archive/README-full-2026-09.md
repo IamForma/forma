@@ -96,7 +96,7 @@ Claude Code плагин: пятиузловой протокол управле
 |---|---|---|---|
 | `Intent` | `JOURNAL.md`, `ROADMAP.md` «Что дали закрытые цели» | пять чисел круга, «Чего не хватало», качественный итог цели | при закрытии круга / цели |
 | `Spec` | `project/VALUE.md` | сумма заходов и токенов по карточкам закрытой цели (`tally.cjs` — не пересчитывает вручную) | при закрытии цели — задним числом, не во время нарезки |
-| `Kit` | `project/CONFIG.md`, `.claude/skills/` | лог оснастки и технических контрактов среды + оформленные умения — тот самый арсенал, который сам же читает первым делом на снаряжении | по мере находок |
+| `Kit` | `project/config/CONFIG.md`, `.claude/skills/` | лог оснастки и технических контрактов среды + оформленные умения — тот самый арсенал, который сам же читает первым делом на снаряжении | по мере находок |
 | `Run` | `project/docs/`, «Результат» карточки | короткая запись на каждое видимое дело — следующий заход того же профиля читает `docs/` первым, не переоткрывает с нуля | по завершении задачи рода «дело» |
 | `Core` | ничего не пишет отдельно — сводит чужие записи | тренд по хвосту `JOURNAL.md`, `VALUE.md`, «Оформленные умения» (растёт ли список между кругами) | на закрытии круга / по нарушенному порогу |
 
@@ -145,7 +145,7 @@ Claude Code плагин: пятиузловой протокол управле
 |---|---|---|---|
 | 1 | `AGENTS.md` (+ §8 своего движка: `CLAUDE.md` либо `.claude/rules/claude-8.md` / `.agents/rules/gemini-8.md`) | все пять узлов | каждый вызов, без исключения |
 | 2 | `agents/*.md` (+ `on-demand/*.md` внутри — по редкому событию) | конкретный узел | каждый вызов именно этого узла |
-| 3 | `.forma/manual/`, `project/CONFIG.md`, `project/PROJECT.md`, `project/ROADMAP.md` | узел, которому нужен конкретный факт | по обращению |
+| 3 | `.forma/manual/`, `project/config/CONFIG.md`, `project/config/PROJECT.md`, `project/ROADMAP.md` | узел, которому нужен конкретный факт | по обращению |
 | 4 | `GOAL.md` текущей цели, карточка, `.forma/skills/*/SKILL.md` | узел, работающий именно с этой целью/задачей | по событию, ещё у́же уровня 3 |
 
 Полный разбор — `.forma/skills/forma/core/.forma/manual/en/03-forma/PROTOCOL.md`, «Язык схемы и язык объяснения — разные роли, не одно и то же», и `.forma/skills/forma/core/.forma/manual/en/03-forma/SCHEME.md`, «9. Уровни чтения схемы».
@@ -200,7 +200,7 @@ git clone https://github.com/IamForma/forma.git protocol
 прочитай .forma/protocol/.forma/templates/forma-wordpress-novamira/.forma/skills/forma-wordpress-novamira/SKILL.md и установи по нему шаблон проекта
 ```
 
-Первая строка делает рабочие скиллы шаблона проектными (то, что при способе 2 даёт сам плагин); вторая — выполняет установщик шаблона (маршрут `project/ROUTE.md`, заготовка `project/SITE.md`), пути `template/…` в нём читаются от его собственной папки. Обновление — `git -C protocol pull` и те же две строки; установщик не перезапишет заполненные `ROUTE.md`/`SITE.md` без вопроса.
+Первая строка делает рабочие скиллы шаблона проектными (то, что при способе 2 даёт сам плагин); вторая — выполняет установщик шаблона (маршрут `project/config/ROUTE.md`, заготовка `project/config/SITE.md`), пути `template/…` в нём читаются от его собственной папки. Обновление — `git -C protocol pull` и те же две строки; установщик не перезапишет заполненные `ROUTE.md`/`SITE.md` без вопроса.
 
 ### Разработка протокола из любого проекта (для автора)
 
@@ -297,7 +297,7 @@ code --install-extension LachyFS.kanban-markdown
 
 | Плагин | Для чего | Установка |
 |---|---|---|
-| [`forma-wordpress-novamira`](https://github.com/IamForma/forma/blob/main/.forma/templates/forma-wordpress-novamira/README.md) | разработка WordPress с помощью Novamira MCP (+ Elementor) с Aura/Magnific — три готовых скилла + заготовка `project/SITE.md` | `claude plugin install forma-wordpress-novamira@forma` |
+| [`forma-wordpress-novamira`](https://github.com/IamForma/forma/blob/main/.forma/templates/forma-wordpress-novamira/README.md) | разработка WordPress с помощью Novamira MCP (+ Elementor) с Aura/Magnific — три готовых скилла + заготовка `project/config/SITE.md` | `claude plugin install forma-wordpress-novamira@forma` |
 
 Подробности — README внутри каталога шаблона.
 

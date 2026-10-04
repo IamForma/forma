@@ -1,16 +1,16 @@
-"""Поиск съехавших переводов в .po (перевод стоит не у своей строки).
+"""Finding shifted translations in .po (a translation sits not at its own string).
 
-Запуск:
-  python .claude/scripts/po_shift_check.py <файл.po | папка> [--llm] [--model ...] [--batch 40]
+Run:
+  python .claude/scripts/po_shift_check.py <file.po | dir> [--llm] [--model ...] [--batch 40]
 
-Два слоя:
-  1. Без модели, бесплатно — у каждой пары (msgid, msgstr) сравниваются «отпечатки»:
-     плейсхолдеры, HTML-теги, числа, URL, длина. Несовпадение, которое у соседней строки
-     (i±1..3) совпадает — признак сдвига. Серия подряд идущих сдвигов = съехавший блок.
-  2. --llm — модель (Tokenator) судит каждую пару: перевод соответствует оригиналу или нет;
-     если нет — какой из соседних оригиналов он переводит. Ловит сдвиг и там, где отпечатков нет
-     (короткие строки без %s и тегов).
-Отчёт: <папка>/shift-report.json и сводка в консоль. Файлы не меняются.
+Two layers:
+  1. No model, free — for every (msgid, msgstr) pair the "fingerprints" are compared:
+     placeholders, HTML tags, numbers, URLs, length. A mismatch that matches at a neighbouring
+     string (i±1..3) is a sign of a shift. A run of consecutive shifts = a shifted block.
+  2. --llm — a model (Tokenator) judges each pair: does the translation match the original or not;
+     if not — which of the neighbouring originals it translates. Catches a shift even where there are no fingerprints
+     (short strings without %s and tags).
+Report: <dir>/shift-report.json and a summary to the console. Files are not changed.
 """
 import argparse
 import json
@@ -98,7 +98,7 @@ def llm(entries, model, batch):
                 usage[0] += r.usage.prompt_tokens or 0
                 usage[1] += r.usage.completion_tokens or 0
             raw = r.choices[0].message.content or ""
-            m = re.search(r"\{.*\}", raw, re.S)  # модель иногда оборачивает JSON в ```json … ```
+            m = re.search(r"\{.*\}", raw, re.S)  # the model sometimes wraps JSON in ```json … ```
             for b in json.loads(m.group(0) if m else raw).get("bad", []):
                 i = b.get("id")
                 if isinstance(i, int) and 0 <= i < len(entries):
@@ -107,12 +107,12 @@ def llm(entries, model, batch):
                     bad.append({"i": i, "line": entries[i].linenum, "msgid": src[:120], "msgstr": dst[:120],
                                 "reason": "llm", "neighbor_offset": (t - i) if isinstance(t, int) and t != i else None})
         except Exception as ex:
-            print(f"  ошибка API на пакете {s // batch + 1}: {ex}")
+            print(f"  API error on batch {s // batch + 1}: {ex}")
     return bad, usage
 
 
 def runs(rows):
-    """Серии соседних строк со сдвигом на одно и то же смещение — съехавшие блоки."""
+    """Runs of neighbouring strings shifted by the same offset — shifted blocks."""
     out, cur = [], []
     for r in sorted((r for r in rows if r["neighbor_offset"]), key=lambda r: r["i"]):
         if cur and r["i"] - cur[-1]["i"] <= 2 and r["neighbor_offset"] == cur[-1]["neighbor_offset"]:
@@ -142,10 +142,10 @@ def check(path, args):
     rows.sort(key=lambda r: r["i"])
     blocks = runs(rows)
     shifted = sum(1 for r in rows if r["neighbor_offset"])
-    print(f"{os.path.basename(path)}: переводов {len(entries)}, подозрительных {len(rows)}, со сдвигом {shifted}, блоков {len(blocks)}"
-          + (f", токены {usage[0]}+{usage[1]}" if usage else ""))
+    print(f"{os.path.basename(path)}: translations {len(entries)}, suspicious {len(rows)}, shifted {shifted}, blocks {len(blocks)}"
+          + (f", tokens {usage[0]}+{usage[1]}" if usage else ""))
     for b in blocks:
-        print(f"   блок: строки {b['from_line']}–{b['to_line']}, смещение {b['offset']:+d}, пар {b['count']}")
+        print(f"   block: lines {b['from_line']}–{b['to_line']}, offset {b['offset']:+d}, pairs {b['count']}")
     return {"file": os.path.basename(path), "translated": len(entries), "suspicious": rows, "blocks": blocks, "tokens": usage}
 
 
@@ -162,7 +162,7 @@ def main():
     out_dir = args.path if os.path.isdir(args.path) else os.path.dirname(os.path.abspath(args.path))
     with open(os.path.join(out_dir, "shift-report.json"), "w", encoding="utf-8") as fh:
         json.dump(report, fh, ensure_ascii=False, indent=2)
-    print(f"\nОтчёт: {os.path.join(out_dir, 'shift-report.json')}")
+    print(f"\nReport: {os.path.join(out_dir, 'shift-report.json')}")
 
 
 if __name__ == "__main__":

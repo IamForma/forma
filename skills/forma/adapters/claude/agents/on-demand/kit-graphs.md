@@ -13,7 +13,7 @@ Read this file when you build, refresh or read the knowledge graphs, or prepare 
 | manual, project | the engine's and the project's documents | the smallest that can extract meaning | `graphify` |
 | tendons | rule ↔ case links between the three above | none | `build-tendons.cjs` |
 
-**As cheap as possible — two rules.** What is written explicitly (frontmatter, labels, card codes, paths, headings, spend lines, the journal) is parsed, never sent to a model: that costs nothing and is exact. A model is reached only for meaning that isn't written as structure, and then the smallest one that holds the quality — the internal extractor by default; the external bridge (`external-model-bridge.cjs`) only under the narrow contract `project/CONFIG.md`, `#deepseek-extraction-quality`. Which one, for which files, is your decision, written into the card like any channel.
+**As cheap as possible — two rules.** What is written explicitly (frontmatter, labels, card codes, paths, headings, spend lines, the journal) is parsed, never sent to a model: that costs nothing and is exact. A model is reached only for meaning that isn't written as structure, and then the smallest one that holds the quality — the internal extractor by default; the external bridge (`external-model-bridge.cjs`) only under the narrow contract `project/config/CONFIG.md`, `#deepseek-extraction-quality`. Which one, for which files, is your decision, written into the card like any channel.
 
 **Grown, never rebuilt.** Every graph is cached by file hash: an unchanged file keeps its nodes without a call, a changed one is re-read, a deleted one takes its nodes with it. A rebuild costs what changed, not what exists.
 

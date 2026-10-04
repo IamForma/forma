@@ -1,0 +1,40 @@
+{
+  "moves": [
+    {
+      "from": "project/ROADMAP.md",
+      "to": "project/ops/ROADMAP.md"
+    },
+    {
+      "from": "project/JOURNAL.md",
+      "to": "project/ops/JOURNAL.md"
+    },
+    {
+      "from": "project/VALUE.md",
+      "to": "project/ops/VALUE.md"
+    },
+    {
+      "from": "project/GLOSSARY.md",
+      "to": "project/ops/GLOSSARY.md"
+    }
+  ],
+  "exceptions": {
+    "files": [
+      ".devtool/features/",
+      "project/cards/",
+      ".forma/living/JOURNAL.md",
+      ".forma/living/CHANGELOG.md",
+      "living/JOURNAL.md",
+      "living/CHANGELOG.md",
+      "test/fixture/old-layout/",
+      "CHANGELOG.md",
+      ".forma/protocol/",
+      ".codex/",
+      ".agents/",
+      "GEMINI.md"
+    ],
+    "dirs": [
+      ".claude/skills/",
+      ".agents/skills/"
+    ]
+  }
+}
