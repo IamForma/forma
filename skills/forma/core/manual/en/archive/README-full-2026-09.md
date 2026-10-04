@@ -200,7 +200,7 @@ copy the skills from .forma/protocol/.forma/templates/forma-wordpress-novamira/.
 read .forma/protocol/.forma/templates/forma-wordpress-novamira/.forma/skills/forma-wordpress-novamira/SKILL.md and install the project template by it
 ```
 
-The first line makes the template's working skills project skills (what the plugin itself gives with way 2); the second runs the template installer (the route `project/ROUTE.md`, the `site-config` stub); the `template/…` paths in it are read relative to its own folder. Updating — `git -C protocol pull` and the same two lines; the installer will not overwrite filled-in `ROUTE.md`/`site-config` without asking.
+The first line makes the template's working skills project skills (what the plugin itself gives with way 2); the second runs the template installer (the route `project/ROUTE.md`, the blank `project/SITE.md` snapshot); the `template/…` paths in it are read relative to its own folder. Updating — `git -C protocol pull` and the same two lines; the installer will not overwrite filled-in `ROUTE.md`/`SITE.md` without asking.
 
 ### Developing the protocol from any project (for the author)
 
@@ -297,7 +297,7 @@ The `.forma/templates/` directory holds project templates — plugins of the sam
 
 | Plugin | What for | Installation |
 |---|---|---|
-| [`forma-wordpress-novamira`](https://github.com/IamForma/forma/blob/main/.forma/templates/forma-wordpress-novamira/README.md) | WordPress development with Novamira MCP (+ Elementor) with Aura/Magnific — three ready skills + a `site-config` stub | `claude plugin install forma-wordpress-novamira@forma` |
+| [`forma-wordpress-novamira`](https://github.com/IamForma/forma/blob/main/.forma/templates/forma-wordpress-novamira/README.md) | WordPress development with Novamira MCP (+ Elementor) with Aura/Magnific — three ready skills + a blank `project/SITE.md` snapshot | `claude plugin install forma-wordpress-novamira@forma` |
 
 Details — the README inside the template directory.
 
