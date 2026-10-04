@@ -19,6 +19,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync, spawn } = require('child_process');
 const { writeJsonAtomic } = require('./lib/fs.cjs');
+const i18n = require('./lib/i18n.cjs');
 const { DEFAULT_PORT } = require('./port.cjs');
 
 const ROOT = __dirname;
@@ -208,7 +209,7 @@ function grillUrl(session, deadlineMs) {
     const tick = () => {
       const { url, alive } = live.sessions.serverOf(session);
       if (url && alive) return resolve(url);
-      if (Date.now() >= until) return reject(new Error('страница интервью не поднялась'));
+      if (Date.now() >= until) return reject(new Error('the interview page did not start'));
       setTimeout(tick, 120);
     };
     tick();
@@ -526,18 +527,18 @@ function attachExpandQuestion(hit, q) {
 function handleExpand(req, res) {
   const nodeId = queryOf(req).get('node');
   const hit = findNode((latestData.interview || {}).tree, nodeId, 1);
-  if (!hit) return sendJson(res, 404, { ok: false, error: 'узел не найден: ' + nodeId });
+  if (!hit) return sendJson(res, 404, { ok: false, error: 'node not found: ' + nodeId });
   const { position } = hit;
   const q = expandQuestion(hit.node, countExpanded(position));
   let target;
   try {
     target = attachExpandQuestion(hit, q);
   } catch (err) {
-    return sendJson(res, 500, { ok: false, error: 'не удалось раскрутить: ' + err.message });
+    return sendJson(res, 500, { ok: false, error: 'could not expand the node: ' + err.message });
   }
   if (target.existing) {
     return replyGrillUrl(res, target.session, {
-      extra: { position, existing: target.existing }, failMessage: 'страница интервью не отвечает',
+      extra: { position, existing: target.existing }, failMessage: 'the interview page is not responding',
     });
   }
   replyGrillUrl(res, target.session, { extra: { position }, watchPosition: position });
@@ -549,12 +550,12 @@ function handleOpen(req, res) {
   const position = Number(params.get('position'));
   const resume = params.get('resume') === '1';
   const questions = resume ? resumeQuestions(position) : openingQuestions(position);
-  if (!questions.length) return sendJson(res, 400, { ok: false, error: 'вопросы этой позиции ещё не написаны' });
+  if (!questions.length) return sendJson(res, 400, { ok: false, error: 'the questions for this position are not written yet' });
   let session;
   try {
     session = ensureGrillSession(position, questions, resume);
   } catch (err) {
-    return sendJson(res, 500, { ok: false, error: 'сессия не поднялась: ' + err.message });
+    return sendJson(res, 500, { ok: false, error: 'the session did not start: ' + err.message });
   }
   replyGrillUrl(res, session, { watchPosition: position });
 }
@@ -567,9 +568,9 @@ function parseAnswerBody(body) {
     position = Number(parsed.position);
     answers = Array.isArray(parsed.answers) ? parsed.answers : null;
   } catch {
-    return { error: 'плохой JSON' };
+    return { error: 'bad JSON' };
   }
-  if (!Number.isInteger(position) || !answers) return { error: 'нужны position и answers' };
+  if (!Number.isInteger(position) || !answers) return { error: 'position and answers are required' };
   return { position, answers };
 }
 
@@ -587,7 +588,7 @@ function saveAnswers(res, body) {
   if (parsed.error) return sendJson(res, 400, { ok: false, error: parsed.error });
   const { position } = parsed;
   const clean = cleanAnswers(parsed.answers);
-  if (!clean.length) return sendJson(res, 400, { ok: false, error: 'пустой ответ не записывается' });
+  if (!clean.length) return sendJson(res, 400, { ok: false, error: 'an empty answer is not recorded' });
   try {
     fs.mkdirSync(BRIEF_DIR, { recursive: true });
     const record = { at: new Date().toISOString(), position, answers: clean };
@@ -629,6 +630,9 @@ function handleStatic(req, res, urlPath) {
   });
 }
 
+// Языки интерфейса: по файлу на язык в locales/ (web/js/i18n.js).
+function handleLocales(req, res) { sendJson(res, 200, { default: i18n.FALLBACK, locales: i18n.listLocales() }); }
+
 // Таблица маршрутов: метод + путь → функция `(req, res)`. Нет строки — `handleStatic`.
 // ANY — маршрут, который не смотрел на метод и до таблицы; так и оставлен, чтобы разбор запроса не менял поведения.
 const ANY = '*';
@@ -638,6 +642,7 @@ const ROUTES = [
   { method: ANY, path: '/interview/open', handle: handleOpen },
   { method: 'POST', path: '/interview/answer', handle: handleAnswer },
   { method: ANY, path: '/data.json', handle: handleData },
+  { method: ANY, path: '/locales.json', handle: handleLocales },
 ];
 
 const findRoute = (method, urlPath) => ROUTES.find((r) => r.path === urlPath && (r.method === ANY || r.method === method));
@@ -653,7 +658,7 @@ function decodePath(rawUrl) {
 
 function handleRequest(req, res) {
   const urlPath = decodePath(req.url);
-  if (urlPath === null) return sendJson(res, 400, { ok: false, error: 'плохой адрес' });
+  if (urlPath === null) return sendJson(res, 400, { ok: false, error: 'bad address' });
   const route = findRoute(req.method, urlPath);
   if (route) route.handle(req, res);
   else handleStatic(req, res, urlPath);

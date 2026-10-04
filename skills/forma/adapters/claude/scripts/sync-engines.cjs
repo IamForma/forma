@@ -18,12 +18,20 @@
  *
  * Использование:
  *   node .claude/scripts/sync-engines.cjs [--check] [--diff] [--quiet] [--file <путь>]
+ *   node .claude/scripts/sync-engines.cjs --apply [--dry-run]
  *
  * Флаги:
- *   --check  (по умолчанию) Сверить пары файлов и вывести статус. Код 0 — паритет, 1 — дрейф.
- *   --diff   Показать строки с расхождениями для файлов, где обнаружен дрейф.
- *   --quiet  Вывести только одну строку статуса (удобно для хуков).
- *   --file   Один файл (хук чистых зон): след проекта — в вывод, код 0 всегда; вне зоны — молчание.
+ *   --check    (по умолчанию) Сверить пары файлов и вывести статус. Код 0 — паритет, 1 — дрейф.
+ *   --diff     Показать строки с расхождениями для файлов, где обнаружен дрейф.
+ *   --quiet    Вывести только одну строку статуса (удобно для хуков).
+ *   --file     Один файл (хук чистых зон): след проекта — в вывод, код 0 всегда; вне зоны — молчание.
+ *   --apply    Сгенерировать `.agents/plugins/forma/agents/` из `.claude/agents/` (роли узлов и
+ *              on-demand) по правилам `checks/support/gen-gemini-roles.cjs`. Идемпотентна: без
+ *              изменений в источнике повторный запуск ничего не пишет. Фронтматтер (model/effort/
+ *              tools/skills) не трогает — он инженерный выбор под движок, не генерируется.
+ *              Код 0 — применено (или уже синхронно), 1 — есть `problem` (новый файл без
+ *              фронтматтера назначения, нужна ручная правка один раз).
+ *   --dry-run  С `--apply`: показать, что будет записано, без записи.
  *
  * Что проверяется: цельность ядра (закон, manual, модуль экономики и его тест соответствия) и каждый
  * установленный адаптер движка — своим тестом соответствия контракту экономики. Адаптер без теста
@@ -40,6 +48,7 @@ const { runChecks } = require('../../.forma/dashboard/lib/checks.cjs');
 const CHECKS = require('./checks/index.cjs');
 const { cleanOwn, inCleanZone, scanCleanFile } = require('./checks/support/clean-zone.cjs');
 const parity = require('./checks/support/role-parity.cjs');
+const geminiGen = require('./checks/support/gen-gemini-roles.cjs');
 
 const ROOT = path.resolve(__dirname, '../..');
 const NL = String.fromCharCode(10);
@@ -101,8 +110,31 @@ function printReport({ problems, info, results, isDiff }) {
   else console.log('Для просмотра строк с расхождениями запустите с флагом --diff');
 }
 
+/** `--apply`: генерация зеркала ролей, отдельная от сверки закона/ядра ниже. */
+function runApply(args) {
+  const dryRun = args.includes('--dry-run');
+  const { written, unchanged, problems } = geminiGen.applyAll(ROOT, { dryRun });
+  const rule = '='.repeat(70);
+  console.log(rule);
+  console.log('  ' + (dryRun ? 'ГЕНЕРАЦИЯ (--dry-run, без записи)' : 'ГЕНЕРАЦИЯ') + ': .agents/plugins/forma/agents/ из .claude/agents/');
+  console.log(rule + '\n');
+  if (written.length) {
+    console.log((dryRun ? 'Будет записано' : 'Записано') + `: ${written.length}`);
+    for (const w of written) console.log(`  — ${w.relFile} (${w.was})`);
+  } else {
+    console.log('Изменений нет — зеркало уже синхронно.');
+  }
+  console.log(`Без изменений: ${unchanged.length}`);
+  if (problems.length) {
+    console.log(`\nСведения, требующие ручного шага: ${problems.length}`);
+    for (const p of problems) console.log(`  — ${p.relFile}: ${p.reason}`);
+  }
+  process.exit(problems.length ? 1 : 0);
+}
+
 function main() {
   const args = process.argv.slice(2);
+  if (args.includes('--apply')) runApply(args);
   const fi = args.indexOf('--file');
   if (fi >= 0) checkOneFile(args[fi + 1]);
 

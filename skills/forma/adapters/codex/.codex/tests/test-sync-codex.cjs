@@ -77,11 +77,14 @@ try {
     ['model tier', path.join(fixture, '.codex/agents/intent.toml'), s => s.replace('model_reasoning_effort = "low"', 'model_reasoning_effort = "medium"')],
     ['role link', path.join(fixture, '.codex/roles/kit.md'), s => s.replace('.claude/agents/kit.md', '.claude/agents/not-kit.md')],
     ['skill mirror', path.join(fixture, '.agents/skills/grilling/SKILL.md'), s => `${s}\nfixture drift\n`],
-    ['hook declaration', path.join(fixture, '.codex/hooks.json'), s => s.replace('tool-usage.ps1', 'tool-usage-removed.ps1')]
+    ['hook declaration', path.join(fixture, '.codex/hooks.json'), s => s.replace('tool-usage.ps1', 'tool-usage-removed.ps1')],
+    ['canonical Run profile set', path.join(fixture, '.claude/agents/run/run-mechanical.md'), s => s]
   ];
   if (hasPackaged) cases.push(['template file', path.join(fixture, packaged, '.codex/hooks.json'), s => `${s}\nfixture drift\n`]);
   for (const [name, file, mutate] of cases) {
-    const original = fs.readFileSync(file, 'utf8'); fs.writeFileSync(file, mutate(original)); check(false, name); fs.writeFileSync(file, original);
+    const original = fs.readFileSync(file, 'utf8');
+    if (name === 'canonical Run profile set') { fs.rmSync(file); check(false, name); fs.writeFileSync(file, original); }
+    else { fs.writeFileSync(file, mutate(original)); check(false, name); fs.writeFileSync(file, original); }
   }
   if (hasPackaged) {
     const installed = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-codex-installed-'));
