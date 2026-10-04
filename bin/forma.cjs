@@ -38,7 +38,7 @@ const HELP = `forma init — установка/обновление прото�
 
   npx github:IamForma/forma init [флаги]
 
-  --engines  claude[,codex,gemini]   движки (codex, gemini — бета (в разработке))
+  --engines  claude[,codex,gemini]   движки (codex, gemini — бета, в разработке, но ставятся)
   --template <имя>|none              шаблон проекта из templates/ (по умолчанию none)
   --board    auto|skip               Kanban Markdown: найти CLI редакторов и поставить (по умолчанию auto)
   --lang     en|ru                   язык документов проекта (по умолчанию en; ru — перевод каркаса агентом после установки)
@@ -419,13 +419,49 @@ function protectedTemplatePaths(root, existingTemplate) {
   return protectedPaths
 }
 
+// Codex (бета): .codex/ и зеркало скиллов .agents/skills из адаптера; config.toml проекта не перезаписывается (в нём MCP проекта);
+// затем sync-codex --apply пересобирает роли и зеркало из .claude/ (нужен установленный Claude Code).
+function installCodex(root, protectedPaths) {
+  const A = path.join(ADAPTERS, 'codex')
+  const skip = (d) => protectedPaths.has(path.resolve(d))
+  const cfg = path.join(root, '.codex', 'config.toml')
+  const hadCfg = fs.existsSync(cfg)
+  copyTree(path.join(A, '.codex'), path.join(root, '.codex'), { skip: (d) => skip(d) || (hadCfg && path.resolve(d) === path.resolve(cfg)) })
+  copyTree(path.join(A, '.agents', 'skills'), path.join(root, '.agents', 'skills'), { skip })
+  const out = ['Codex (бета): .codex/ (роли, агенты, хуки, тесты, §8) и .agents/skills — установлены' + (hadCfg ? '; config.toml проекта сохранён' : '')]
+  const sync = path.join(root, '.codex', 'scripts', 'sync-codex.cjs')
+  if (!fs.existsSync(path.join(root, '.claude', 'agents'))) {
+    out.push('  ! .claude/agents не найден — установите Claude Code (--engines claude,codex), затем: node .codex/scripts/sync-codex.cjs --apply --plugin <skills/forma>')
+  } else {
+    const r = require('child_process').spawnSync(process.execPath, [sync, '--apply', '--root', root, '--plugin', SKILL], { encoding: 'utf8' })
+    out.push(r.status === 0 ? '  sync-codex --apply: роли и зеркало скиллов собраны' : '  ! sync-codex --apply завершился с кодом ' + r.status + ': ' + ((r.stdout || '') + (r.stderr || '')).trim().split(/\r?\n/).slice(-3).join(' | '))
+  }
+  return out
+}
+
+// Gemini (бета, Antigravity): обёртка с §8, плагин, роли узлов; mcp_config.json — пустая заготовка, существующий не трогается.
+function installGemini(root) {
+  const A = path.join(ADAPTERS, 'gemini')
+  const P = path.join(root, '.agents', 'plugins', 'forma')
+  copyTree(path.join(A, 'rules'), path.join(root, '.agents', 'rules'))
+  copyFile(path.join(A, 'forma-adapter.cjs'), path.join(root, '.agents', 'forma-adapter.cjs'))
+  copyFile(path.join(A, 'plugin.json'), path.join(P, 'plugin.json'))
+  copyTree(path.join(A, 'agents'), path.join(P, 'agents'))
+  copyFile(path.join(A, 'mcp_config.json'), path.join(P, 'mcp_config.json'), { overwrite: false })
+  return ['Gemini (Antigravity, бета): .agents/rules, .agents/plugins/forma (роли, plugin.json) — установлены']
+}
+
 function installEngines(root, engines, protectedPaths, report) {
   for (const e of engines) {
     if (e === 'claude') {
       const warn = installClaude(root, protectedPaths)
       report.push('Claude Code: .claude/rules, agents, hooks, scripts, skills, settings.json (хуки) — синхронизированы')
       if (warn) report.push('  ! ' + warn)
-    } else report.push(`${ENGINES.find((x) => x.id === e).label}: бета — адаптер в разработке (adapters/${e}/NOT-READY.md), не ставится`)
+    } else if (e === 'codex') {
+      report.push(...installCodex(root, protectedPaths))
+    } else if (e === 'gemini') {
+      report.push(...installGemini(root))
+    }
   }
 }
 
@@ -456,7 +492,7 @@ function writeManifest(root, { engines, lang, template, projectCreated }) {
   try { previous = verifyInstall.readManifest(root) } catch { /* битая прежняя опись пересоздаётся */ }
   const rows = engines.map((id) => (id === 'claude'
     ? { id, profile: '.claude/verify-profile.cjs', expect: claudeExpect() }
-    : { id, note: 'адаптер не готов — профиль сверки появится вместе с ним' }))
+    : { id, note: 'бета — профиля сверки пока нет' }))
   const manifest = verifyInstall.buildManifest(root, { owned, projectCreated, previous, engines: rows, lang, version: require('../package.json').version, template })
   const f = path.join(root, verifyInstall.MANIFEST)
   fs.mkdirSync(path.dirname(f), { recursive: true })
