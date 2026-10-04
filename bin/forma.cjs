@@ -38,7 +38,7 @@ const HELP = `forma init — установка/обновление прото�
 
   npx github:IamForma/forma init [флаги]
 
-  --engines  claude[,codex,gemini]   движки (неготовые помечены «скоро» и не ставятся)
+  --engines  claude[,codex,gemini]   движки (codex, gemini — бета (в разработке))
   --template <имя>|none              шаблон проекта из templates/ (по умолчанию none)
   --board    auto|skip               Kanban Markdown: найти CLI редакторов и поставить (по умолчанию auto)
   --lang     en|ru                   язык документов проекта (по умолчанию en; ru — перевод каркаса агентом после установки)
@@ -342,7 +342,7 @@ async function chooseEngines(o, ask) {
   let engines = o.engines
   if (!engines && ask) {
     console.log('\n[1/4] Движки:')
-    ENGINES.forEach((e, i) => console.log(`  ${i + 1}. ${e.label}${e.id === 'claude' ? '' : ' — скоро'}`))
+    ENGINES.forEach((e, i) => console.log(`  ${i + 1}. ${e.label}${e.id === 'claude' ? '' : ' — бета'}`))
     const a = await ask('Номера через запятую [1]: ')
     engines = (a.trim() || '1').split(/[\s,]+/).map((x) => (ENGINES[Number(x) - 1] || {}).id || x).join(',')
   }
@@ -425,7 +425,7 @@ function installEngines(root, engines, protectedPaths, report) {
       const warn = installClaude(root, protectedPaths)
       report.push('Claude Code: .claude/rules, agents, hooks, scripts, skills, settings.json (хуки) — синхронизированы')
       if (warn) report.push('  ! ' + warn)
-    } else report.push(`${ENGINES.find((x) => x.id === e).label}: скоро — адаптер не готов (adapters/${e}/NOT-READY.md), не ставится`)
+    } else report.push(`${ENGINES.find((x) => x.id === e).label}: бета — адаптер в разработке (adapters/${e}/NOT-READY.md), не ставится`)
   }
 }
 
