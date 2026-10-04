@@ -258,7 +258,6 @@ function templateFiles(name) {
     for (const rel of walk(src, { symlinks: true })) out.push([path.join(src, rel), path.join(dst, rel)])
   }
   add(path.join(own, 'project'), 'project')
-  add(path.join(own, 'site-config'), path.join('.claude', 'skills', 'site-config'))
   add(path.join(own, 'scripts'), path.join('.claude', 'scripts'))
   for (const e of fs.readdirSync(T, { withFileTypes: true })) {
     if (e.isDirectory() && e.name !== name) add(path.join(T, e.name), path.join('.claude', 'skills', e.name))
