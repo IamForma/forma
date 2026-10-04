@@ -472,4 +472,5 @@ function boardInit(DATA) {
   document.addEventListener('scroll',function(e){ var t=e.target, y=(t===document||t===document.documentElement)?scrollY:t.scrollTop; if(t!==document&&t!==document.documentElement&&!(t.id==='main'||t.classList&&t.classList.contains('col-list')))return; if(y>160&&!auto&&open){ auto=true; show(); } else if(y<20&&auto){ auto=false; show(); } },{passive:true,capture:true});
   new ResizeObserver(function(){ document.documentElement.style.setProperty('--bh',bar.offsetHeight+'px'); }).observe(bar);
   show();
+  document.addEventListener('i18n',show);
 })();
