@@ -8,6 +8,7 @@ module.exports = [
   require('./epics.cjs'),
   require('./route-labels.cjs'),
   require('./route-stage.cjs'),
+  require('./route-executor.cjs'),
   require('./status-values.cjs'),
   require('./card-materials.cjs'),
   require('./spend-language.cjs'),
