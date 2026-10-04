@@ -17,11 +17,11 @@
 </header>
 <div id="view-board">
 <div class="bar" id="bar">
-  <div class="bar-head"><input type="search" class="hq" id="q" placeholder="Найти: номер (107), код, название… Enter — открыть"><span class="meta" id="qn"></span><div class="stats" id="stats"></div></div>
-  <div class="bar-sel"><button type="button" class="bar-toggle" id="bar-toggle">Фильтры ▾</button><span class="bar-sum" id="bar-sum"></span></div>
+  <div class="bar-head"><input type="search" class="hq" id="q" data-i18n-ph="board.search" placeholder="Find: number (107), code, title… Enter — open"><span class="meta" id="qn"></span><div class="stats" id="stats"></div></div>
+  <div class="bar-sel"><button type="button" class="bar-toggle" id="bar-toggle">Filters ▾</button><span class="bar-sum" id="bar-sum"></span></div>
   <div class="row bar-goals" id="f-goal"></div>
   <div class="bar-body">
-  <div class="row"><b>Срез</b><span id="group"></span></div>
+  <div class="row"><b data-i18n="board.slice">Slice</b><span id="group"></span></div>
   <div class="row" id="f-state"></div>
   <div class="row" id="f-epic"></div>
   <div class="row" id="f-assignee"></div>
@@ -39,10 +39,10 @@
 <div id="view-graphs" class="lx" hidden><div class="wrap"><div id="graphs"></div></div></div>
 <div id="view-settings" hidden>
   <nav class="lawnav" id="settings-nav">
-    <span class="chip on" data-stab="law">Закон</span>
-    <span class="chip" data-stab="project">Проект</span>
-    <span class="chip" data-stab="engine">Движок</span>
-    <span class="chip" data-stab="structure">Структура</span>
+    <span class="chip on" data-stab="law" data-i18n="set.tab.law">Law</span>
+    <span class="chip" data-stab="project" data-i18n="set.tab.project">Project</span>
+    <span class="chip" data-stab="engine" data-i18n="set.tab.engine">Engine</span>
+    <span class="chip" data-stab="structure" data-i18n="set.tab.structure">Structure</span>
   </nav>
   <div id="view-law"></div>
   <div id="view-project" class="lx" hidden><div class="wrap"><div id="project"></div></div></div>

@@ -18,13 +18,13 @@ function renderPanels(d) {
   renderEconomy(d);
   // Графы: вкладка рисуется один раз — открытый граф не перезагружается на каждом обновлении
   if (!graphShown) {
-    document.getElementById('graphs').innerHTML = `<nav class="side-tabs">${[['.forma/manual','Граф: Мануал'],['engine','Граф: Движок'],['done-cards','Граф: Опыт'],['project','Граф: Проект'],['site','Граф: Результат']].map(([c,t]) => `<button class="side-tab" data-c="${c}">${t}</button>`).join('')}</nav><div id="gp"></div>`;
+    document.getElementById('graphs').innerHTML = `<nav class="side-tabs">${[['.forma/manual','app.graph.manual'],['engine','app.graph.engine'],['done-cards','app.graph.experience'],['project','app.graph.project'],['site','app.graph.site']].map(([c,k]) => `<button class="side-tab" data-c="${c}">${t(k)}</button>`).join('')}</nav><div id="gp"></div>`;
     showGraph(graphShown = '.forma/manual');
   }
 }
 function renderAll(d) { renderPanels(d); boardInit(d.board); }
 i18nInit().then(() => fetch('./data.json')).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(renderAll)
-  .catch(err => { document.getElementById('main').textContent = 'Не удалось получить данные (' + err + '). Дашборд открывается через свой сервер: node .forma/dashboard/serve.js'; });
+  .catch(err => { document.getElementById('main').textContent = t('app.loadFail', {err: String(err)}); });
 // Смена языка — перерисовка последнего среза данных на новом языке.
 document.addEventListener('i18n', () => { if (latestData) renderAll(latestData); });
 // Живое обновление: serve.js пушит полный срез при каждой правке карточки. Первое сообщение — те же данные, что дал fetch.

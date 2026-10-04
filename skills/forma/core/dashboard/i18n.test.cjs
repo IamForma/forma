@@ -56,6 +56,26 @@ it('серверный tr: язык и запасной en', () => {
   assert.equal(i18n.tr('xx', 'tab.economy'), 'Economy');
 });
 
+it('счётные подписи дашборда: en 1/2/5 cards, ru 1/2/5/21 карточка', () => {
+  const d = { en: i18n.readDict('en'), ru: i18n.readDict('ru') };
+  const tr = (lang, n) => core.translate(d, lang, 'count.cards', { n, num: String(n) });
+  assert.deepEqual([1, 2, 5].map((n) => tr('en', n)), ['1 card', '2 cards', '5 cards']);
+  assert.deepEqual([1, 2, 5, 21].map((n) => tr('ru', n)), ['1 карточка', '2 карточки', '5 карточек', '21 карточка']);
+});
+
+it('common.js: fmt и relTime идут через Intl по языку, без русских форм в коде', () => {
+  const vm = require('node:vm');
+  const src = fs.readFileSync(path.join(__dirname, 'web/js/common.js'), 'utf8');
+  const all = fs.readdirSync(path.join(__dirname, 'web/js')).filter((f) => f.endsWith('.js') && f !== 'law.js').map((f) => fs.readFileSync(path.join(__dirname, 'web/js', f), 'utf8')).join(' ');
+  assert.ok(!/toLocaleString\('ru|ru-RU|plural\(|назад/.test(all));
+  for (const [lang, num, ago] of [['en', '1,234', '5 minutes ago'], ['ru', '1 234', '5 минут назад']]) {
+    const ctx = { i18nLang: () => lang, t: () => '', Intl, Date, Math, Number, String, document: {} };
+    vm.runInNewContext(src + '\nthis.out = { f: fmt(1234), r: relTime(5) };', ctx);
+    assert.equal(ctx.out.f, num);
+    assert.equal(ctx.out.r, ago);
+  }
+});
+
 // Браузерная часть: файл исполняется в песочнице с подставными window, document, fetch и localStorage.
 function browser(store = {}) {
   const events = [];

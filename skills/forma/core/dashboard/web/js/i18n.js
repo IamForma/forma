@@ -31,7 +31,7 @@
   const STORE = 'forma.lang';
   const dicts = {};
   let lang = FALLBACK;
-  let locales = [{ code: 'en', name: 'English' }, { code: 'ru', name: 'Русский' }];
+  let locales = [{ code: 'en', name: 'English' }, { code: 'ru', name: 'Русский' }]; // i18n-keep: родное имя языка
 
   const stored = () => { try { return localStorage.getItem(STORE); } catch { return null; } };
   const store = (code) => { try { localStorage.setItem(STORE, code); } catch { /* приватный режим — выбор не запоминается */ } };

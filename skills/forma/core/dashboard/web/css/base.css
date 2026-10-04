@@ -76,7 +76,7 @@ main{padding:16px 24px 40px}
 .route{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:12px 0}
 .stage{border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--surface-soft);min-width:96px}
 .stage small{display:block;color:var(--ink-faint)}.stage.done{border-color:var(--st-done);color:var(--st-done)}
-.stage.now{border:2px solid var(--accent);background:var(--accent-soft);color:var(--ink);font-weight:600}.stage.now::before{content:"▶ вы здесь";display:block;font-size:10px;color:var(--accent)}
+.stage.now{border:2px solid var(--accent);background:var(--accent-soft);color:var(--ink);font-weight:600}.stage.now::before{content:"▶ " attr(data-here);display:block;font-size:10px;color:var(--accent)}
 .arrow{color:var(--ink-faint)}
 .tl{list-style:none;padding:0;margin:6px 0;font-size:12.5px}.tl li{border-left:2px solid var(--border);padding:2px 0 8px 12px;position:relative}
 .tl li::before{content:"";position:absolute;left:-5px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--c,var(--ink-faint))}
