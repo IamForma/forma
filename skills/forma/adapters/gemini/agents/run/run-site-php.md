@@ -5,7 +5,7 @@ model: gemini-3.8-flash
 tier: standard
 effort: low
 tools: Read, run_command(node .claude/scripts/site-php.cjs *)
-skills: novamira-wp-deploy, site-config
+skills: novamira-wp-deploy
 ---
 
 # `run-site-php` (Gemini Engine)
@@ -14,7 +14,7 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 ## When to take
 
-A card whose result needs a direct PHP read or write on the live site — a query, a one-off data fix, a probe before a larger write.
+A card whose result needs a direct PHP read or write on the live site — a query, a one-off data fix, a probe before a larger write. Read `project/SITE.md` (the site's architectural snapshot) before any write.
 
 ## Boundary
 

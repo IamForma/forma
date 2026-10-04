@@ -58,8 +58,7 @@
   <text x="120" y="1230" font-size="17" fill="#7dd3fc">└── forma-wordpress-novamira/</text>
   <text x="150" y="1258" font-size="17" fill="#cbd5e1">├── SKILL.md</text>
   <text x="150" y="1286" font-size="17" fill="#7dd3fc">└── template/</text>
-  <text x="180" y="1314" font-size="17" fill="#7dd3fc">└── site-config/</text>
-  <text x="210" y="1342" font-size="17" fill="#cbd5e1">└── SKILL.md</text>
+  <text x="180" y="1314" font-size="17" fill="#cbd5e1">└── SITE.md</text>
 
   <text x="90" y="1370" font-size="17" fill="#cbd5e1">└── README.md</text>
 

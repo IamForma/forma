@@ -5,7 +5,7 @@ model: gemini-3.8-flash
 tier: standard
 effort: low
 tools: Read, Grep, Glob, run_command(node .claude/scripts/site.cjs *)
-skills: novamira-wp-deploy, novamira-wp-elementor, site-config
+skills: novamira-wp-deploy, novamira-wp-elementor
 ---
 
 # `run-site-build` (Gemini Engine)

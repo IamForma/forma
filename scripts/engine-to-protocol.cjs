@@ -21,6 +21,7 @@ const fs = require('fs');
 const path = require('path');
 const { walk: walkTree } = require('../skills/forma/core/dashboard/lib/fs.cjs');
 const { gitOut } = require('./lib/git.cjs');
+const { readOwnLayer, isForbiddenTransfer } = require('./lib/forbidden-transfer.cjs');
 
 const root = process.cwd();
 const protoDir = path.join(root, '.forma/protocol');
@@ -73,7 +74,11 @@ if (fs.existsSync(excFile)) {
     else (MASK[m[2]] = MASK[m[2]] || []).push(new RegExp(m[3]));
   }
 }
-const skipped = (rel) => SKIP.some((r) => r.test(rel));
+// Слой 4 (.claude/project-layer.txt) и зоны, что физически не бывают в шаблоне протокола — не «новое»,
+// не переносятся ни по --apply, ни по --add, ни попаданием в MAP (lib/forbidden-transfer.cjs).
+const OWN_LAYER = readOwnLayer(root);
+const forbidden = (rel) => isForbiddenTransfer(rel, OWN_LAYER);
+const skipped = (rel) => forbidden(rel) || SKIP.some((r) => r.test(rel));
 const MASKED = '\u0000masked\u0000';
 const norm = (s) => s.replace(/\r\n/g, '\n');
 const mask = (rel, s) => { if (s == null) return null; const rs = MASK[rel]; s = norm(s);
@@ -208,6 +213,11 @@ if (mark) {
   process.exit(0);
 }
 
+const forbiddenAdds = adds.filter(forbidden);
+if (forbiddenAdds.length) {
+  console.error('СТОП: --add отказан для продуктовых зон и слоя 4 (project/, .devtool/, .forma/living/, записи .claude/project-layer.txt): ' + forbiddenAdds.join(', '));
+  process.exit(1);
+}
 const bad = adds.filter((a) => !R.fresh.some((x) => x.rel === a));
 if (bad.length) { console.error('СТОП: --add не из списка новых: ' + bad.join(', ')); process.exit(1); }
 if (!apply) { console.log('\nНичего не записано. Перенести: --apply' + (R.fresh.length ? ' [--add <путь>]' : '') + '.'); process.exit(0); }
