@@ -89,6 +89,7 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 - **Override** (a different model/tool than the role carries) — a history line with the reason, before handoff; the card's kit block then shows the override, not the inherited default.
 - **No catalog role fits the subject** — don't force one: open a `tooling` card for a new role, label the task card `after-card-NNN`, task waits.
 - **One asset or a light edit → `run-image`; a series or a package (several assets, one style) → `run-image-series`.**
+- **A prototype built from a reference** (page, screen, layout, an exact-match criterion): the kit carries a `run-visual-check` pass before the card's `stage check`, and the criterion names the tolerance. A deviation beyond it is not recorded as "accepted with deviations" inside the result — it becomes its own fix card, or the human changes the criterion. "Similar" never closes an "exact" criterion.
 
 **Access credentials — always exact, never generic.** "Access exists" without an account name isn't kitting, it's a note of intent: `Run` needs exactly what it takes to log in and confirm the criterion.
 
