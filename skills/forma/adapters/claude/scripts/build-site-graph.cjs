@@ -140,11 +140,8 @@ function indexMentions(files, cardLike, entityIds) {
 
 // --- сборка графа ----------------------------------------------------------------
 
-function buildGraph(snap, cardIndex, projectIndex, cache) {
-  const nodes = new Map(), edges = [];
-  const addNode = (n) => nodes.set(n.id, { ...nodes.get(n.id), ...n });
-  addNode({ id: 'site:main', label: snap.site.name || snap.site.url, type: 'site', url: snap.site.url });
-
+// Страницы, записи и их секции/виджеты; кэш секций по хешу контента обновляется на месте.
+function addContent(snap, cache, addNode, edges) {
   const templatePartByName = new Map();
   let hit = 0, miss = 0, pageCount = 0;
   const alive = new Set();
@@ -185,6 +182,14 @@ function buildGraph(snap, cardIndex, projectIndex, cache) {
     }
   }
   for (const id of Object.keys(cache)) if (!alive.has(String(id))) delete cache[id]; // удалённая сущность уходит из кэша
+  return { templatePartByName, alive, hit, miss, pageCount };
+}
+
+function buildGraph(snap, cardIndex, projectIndex, cache) {
+  const nodes = new Map(), edges = [];
+  const addNode = (n) => nodes.set(n.id, { ...nodes.get(n.id), ...n });
+  addNode({ id: 'site:main', label: snap.site.name || snap.site.url, type: 'site', url: snap.site.url });
+  const { templatePartByName, alive, hit, miss, pageCount } = addContent(snap, cache, addNode, edges);
 
   // front-page: wp_template «front-page» обслуживает page_on_front, тянет шаблонные части
   if (snap.site.show_on_front === 'page' && snap.site.front_page_id) {
