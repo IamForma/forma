@@ -42,7 +42,8 @@ const HELP = `forma init — install/update the Forma protocol in the current fo
   --engines  claude[,codex,gemini]   engines (codex, gemini — beta, in development, but installable)
   --template <name>|none             project template from templates/ (default: none)
   --board    auto|skip               Kanban Markdown: find editor CLIs and install (default: auto)
-  --lang     en|ru                   project document language (default: en; ru — the agent translates the scaffold after install)
+  --lang     <code>                  project document language (default: en). Catalogs shipped: en, ru; any other code (fr, de, ...)
+                                     works too: the agent translates the scaffold after install, hook messages stay English
   --dir      <path>                  project root (default: current folder)
   --yes                              no questions, defaults for anything missing
 
@@ -387,27 +388,33 @@ async function chooseBoard(o, ask) {
   return boardMode || 'auto'
 }
 
-// step 4: project document language — by flag, from the menu, or en; an unknown one exits with 2
-const LANGS = [{ id: 'en', label: 'English (default)' }, { id: 'ru', label: 'Russian — the agent translates the scaffold after install' }]
+// step 4: project document language — by flag, from the menu, or en. A language with a message catalog
+// (core/i18n/messages/<code>.json) gets hook output in it; any other code is accepted: the agent translates the scaffold
+// (keeping the anchors), the hooks print English.
+const MESSAGES = path.join(CORE, 'i18n', 'messages')
+const catalogLangs = () => fs.readdirSync(MESSAGES).filter((n) => /^[a-z]{2,3}\.json$/.test(n)).map((n) => n.slice(0, -5)).sort((x, y) => (x === 'en' ? -1 : y === 'en' ? 1 : x.localeCompare(y)))
+// the name written into PROJECT.md: the English name of a known language, else the code itself
+const langName = (code) => { const n = (i18n.KEYS.languages[code] || [])[0]; return n ? n[0].toUpperCase() + n.slice(1) : code }
 async function chooseLang(o, ask) {
+  const known = catalogLangs()
   let lang = o.lang
   if (!lang && ask) {
     console.log('\n[4/4] Project document language:')
-    LANGS.forEach((l, i) => console.log(`  ${i + 1}. ${l.label}`))
-    const a = (await ask('Number [1]: ')).trim()
-    lang = !a ? 'en' : ((LANGS[Number(a) - 1] || {}).id || a)
+    known.forEach((id, i) => console.log(`  ${i + 1}. ${langName(id)}${id === 'en' ? ' (default)' : ' — the agent translates the scaffold after install'}`))
+    console.log('  or type another language code (fr, de, ...): the agent translates the scaffold, hook messages stay English')
+    const a = (await ask('Number or code [1]: ')).trim()
+    lang = !a ? 'en' : (known[Number(a) - 1] || a)
   }
   lang = String(lang || 'en').toLowerCase()
-  if (!LANGS.some((l) => l.id === lang)) { console.error(`Language not supported: ${lang}. Available: ${LANGS.map((l) => l.id).join(', ')}`); process.exit(2) }
+  if (!/^[a-z]{2,3}$/.test(lang)) { console.error(`Language not supported: ${lang}. Use a language code such as ${known.join(', ')}, fr, de`); process.exit(2) }
   return lang
 }
 
 // Project language: a field in PROJECT.md and, for non-English, a "translation pending" marker — the agent translates, not the installer.
-const LANG_NAMES = { en: 'English', ru: 'Russian' }
 function applyLanguage(root, lang) {
   const f = projectFile(root, 'PROJECT.md')
   let t = fs.readFileSync(f, 'utf8')
-  t = t.replace(/(\*\*Project language\*\*[^\n]*?\)\*?:\s*)English\./, `$1${LANG_NAMES[lang]}.`)
+  t = t.replace(/(\*\*Project language\*\*[^\n]*?\)\*?:\s*)English\./, `$1${langName(lang)}.`)
   fs.writeFileSync(f, t)
   if (lang === 'en') return null
   const files = []
@@ -540,7 +547,7 @@ function install(root, choice) {
   installTemplateStep({ root, template: choice.template, existingTemplate }, core, report)
   if (core.projectCreated) {
     const n = applyLanguage(root, choice.lang)
-    report.push(n === null ? 'document language: English' : `document language: ${LANG_NAMES[choice.lang]} — translation awaits the agent: ${n} files (.forma/translation-pending.json; step in SKILL.md "Scaffold translation")`)
+    report.push(n === null ? 'document language: English' : `document language: ${langName(choice.lang)} — translation awaits the agent: ${n} files (.forma/translation-pending.json; step in SKILL.md "Scaffold translation")${catalogLangs().includes(choice.lang) ? '' : `; no message catalog for "${choice.lang}": hook messages stay English (add core/i18n/messages/${choice.lang}.json)`}`)
   } else if (choice.lang !== 'en') report.push('language: project/ already existed — not translated (language is chosen on first install only)')
   writeManifest(root, { engines: choice.engines, lang: choice.lang, template: choice.template === 'none' ? (existingTemplate || 'none') : choice.template, projectCreated: core.projectCreated })
   return { report, boardLines: board(choice.boardMode) }
