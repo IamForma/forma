@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true # без тегов проверка ниже всегда видит exists=false
 
       - name: Read version from plugin.json
         id: v
@@ -29,7 +31,7 @@ jobs:
       - name: Skip if tag already exists
         id: check
         run: |
-          if git rev-parse "v${{ steps.v.outputs.version }}" >/dev/null 2>&1; then
+          if git rev-parse --verify --quiet "refs/tags/v${{ steps.v.outputs.version }}" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
