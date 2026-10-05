@@ -16,6 +16,29 @@ const walkFiles = (dir) => {
   });
 };
 
+/**
+ * A working bash, or null. On Windows `bash` on PATH is often the WSL launcher (no distro, or a localhost-proxy warning),
+ * not a shell: Git Bash is tried first, and every candidate must actually run a command. Claude Code runs the hooks with
+ * its own bash, so with none usable here the shell-based checks are skipped rather than reported as a broken install.
+ */
+function findBash() {
+  const candidates = [];
+  if (process.platform === 'win32') {
+    const git = spawnSync('where', ['git'], { encoding: 'utf8' });
+    for (const g of (git.stdout || '').split(/\r?\n/).filter(Boolean)) candidates.push(path.join(path.dirname(g), '..', 'bin', 'bash.exe'));
+    for (const base of [process.env.ProgramFiles, process.env['ProgramFiles(x86)'], process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Programs')]) {
+      if (base) candidates.push(path.join(base, 'Git', 'bin', 'bash.exe'));
+    }
+  }
+  candidates.push('bash');
+  for (const c of candidates) {
+    if (c !== 'bash' && !fs.existsSync(c)) continue;
+    const r = spawnSync(c, ['-c', 'echo forma'], { encoding: 'utf8' });
+    if (!r.error && r.status === 0 && (r.stdout || '').trim() === 'forma') return c;
+  }
+  return null;
+}
+
 /** Hook wiring: for every expected hook the file exists and settings.json has its command in the event group. */
 function checkHooks(ctx, expect, out) {
   const { root, finding } = ctx;
@@ -34,8 +57,10 @@ function checkHooks(ctx, expect, out) {
     if (!entry) out.push(finding(addr, `command «bash ${file}»`, group ? 'command not in the group' : 'event group missing'));
     else if (h.timeout && entry.timeout !== h.timeout) out.push(finding(addr + ' → ' + h.name + ' → timeout', String(h.timeout), String(entry.timeout)));
   }
+  const bash = findBash();
+  if (!bash) return;
   for (const f of walkFiles(path.join(root, '.claude', 'hooks')).filter((x) => x.endsWith('.sh'))) {
-    const r = spawnSync('bash', ['-n', f], { encoding: 'utf8' });
+    const r = spawnSync(bash, ['-n', f], { encoding: 'utf8' });
     if (r.error) { out.push(finding('bash', 'bash available to check hooks', r.error.message)); break; }
     if (r.status !== 0) out.push(finding(path.relative(root, f).split(path.sep).join('/'), 'bash -n: hook syntax', (r.stderr || '').trim().split('\n')[0]));
   }
@@ -78,8 +103,9 @@ function checkReferences(ctx, out) {
 function checkBehavior(ctx, out) {
   const { root, finding } = ctx;
   const hook = path.join(root, '.claude', 'hooks', 'check-ready.sh');
-  if (fs.existsSync(hook)) {
-    const r = spawnSync('bash', [hook], { cwd: root, encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: root, FORMA_LANG: 'en' } });
+  const bash = findBash();
+  if (bash && fs.existsSync(hook)) {
+    const r = spawnSync(bash, [hook], { cwd: root, encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: root, FORMA_LANG: 'en' } });
     if (r.error || r.status !== 0) out.push(finding('.claude/hooks/check-ready.sh', 'exit 0', r.error ? r.error.message : 'exit ' + r.status));
     else for (const l of (r.stdout || '').split('\n').filter((x) => /^\s+· (agents|environment parity)/.test(x))) out.push(finding('.claude/hooks/check-ready.sh', 'no role or parity remarks', l.trim()));
   }
