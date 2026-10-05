@@ -28,7 +28,7 @@ for (const lang of ['en', 'ru']) {
   test(`установка --lang ${lang}: опись записана, сверка зелёная`, () => {
     const { dir, r } = install(lang);
     assert.equal(r.status, 0, r.stdout + r.stderr);
-    assert.match(r.stdout, /установка целостна/);
+    assert.match(r.stdout, /install is intact/);
     const m = JSON.parse(read(dir, '.forma/install-manifest.json'));
     assert.equal(m.lang, lang);
     assert.ok(Object.keys(m.files).length > 100 && Object.keys(m.skeleton).length > 20);
@@ -47,7 +47,7 @@ test('перевод каркаса: текст заголовков меняе�
   write(dir, 'project/ops/VALUE.md', read(dir, 'project/ops/VALUE.md').replace(/^## .*/gm, ''));
   const v = verify(dir);
   assert.equal(v.status, 1);
-  assert.match(v.out, /project\/ops\/VALUE\.md — заголовки «##» — ожидалось: ≥ \d+ — найдено: 0/);
+  assert.match(v.out, /project\/ops\/VALUE\.md — «##» headings — expected: ≥ \d+ — found: 0/);
 });
 
 test('красное называет адрес, ожидаемое и найденное', async (t) => {
@@ -55,22 +55,22 @@ test('красное называет адрес, ожидаемое и найд
   // каждый случай — на своей копии чистой установки; правка получает её корень
   const cases = [
     ['удалён хук', (d) => fs.rmSync(path.join(d, '.claude/hooks/intent-start.sh')),
-      /\.claude\/hooks\/intent-start\.sh — ожидалось: файл установщика — найдено: нет файла/],
+      /\.claude\/hooks\/intent-start\.sh — expected: installer file — found: file missing/],
     ['хук выпал из settings.json', (d) => {
       const s = JSON.parse(read(d, '.claude/settings.json'));
       for (const g of s.hooks.SessionStart) g.hooks = g.hooks.filter((h) => !/check-ready/.test(h.command));
       write(d, '.claude/settings.json', JSON.stringify(s));
-    }, /hooks\.SessionStart\[startup\] — ожидалось: команда «bash \.claude\/hooks\/check-ready\.sh»/],
+    }, /hooks\.SessionStart\[startup\] — expected: command «bash \.claude\/hooks\/check-ready\.sh»/],
     ['файл установщика изменён', (d) => write(d, '.forma/board/new-card.cjs', read(d, '.forma/board/new-card.cjs') + '\n// x\n'),
-      /\.forma\/board\/new-card\.cjs — ожидалось: sha256 \w+… — найдено: sha256 \w+… \(файл изменён после установки\)/],
+      /\.forma\/board\/new-card\.cjs — expected: sha256 \w+… — found: sha256 \w+… \(file changed after install\)/],
     ['синтаксис .cjs', (d) => write(d, '.forma/board/check-board.cjs', '(((\n'),
-      /check-board\.cjs — ожидалось: разбирается как CommonJS — найдено: /],
+      /check-board\.cjs — expected: parses as CommonJS — found: /],
     ['корневой CLAUDE.md', (d) => write(d, 'CLAUDE.md', 'x\n'),
-      /CLAUDE\.md — ожидалось: нет корневого CLAUDE\.md/],
+      /CLAUDE\.md — expected: no root CLAUDE\.md/],
     ['плейсхолдер в tools:', (d) => write(d, '.claude/agents/spec.md', read(d, '.claude/agents/spec.md').replace(/^tools:.*/m, 'tools: Read, mcp__<srv>__*')),
-      /spec\.md — tools: — ожидалось: имена инструментов без плейсхолдеров — найдено: mcp__<srv>__\*/],
+      /spec\.md — tools: — expected: tool names without placeholders — found: mcp__<srv>__\*/],
     ['опись удалена', (d) => fs.rmSync(path.join(d, '.forma/install-manifest.json')),
-      /install-manifest\.json — ожидалось: опись установки — найдено: нет файла/],
+      /install-manifest\.json — expected: install manifest — found: file missing/],
   ];
   for (const [name, apply, expect] of cases) {
     await t.test(name, () => {

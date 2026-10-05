@@ -20,7 +20,7 @@ test('чистая установка кладёт конфигурацию в p
   const r = init();
   assert.equal(r.status, 0, r.stdout + r.stderr);
   for (const f of CONFIG) { assert.ok(has('project/config/' + f), f); assert.ok(!has('project/' + f), 'старое место: ' + f); }
-  assert.match(r.stdout, /перенос конфигурации в project\/config\/: не требуется/);
+  assert.match(r.stdout, /config to project\/config\/ migration: not needed/);
 });
 
 test('старая раскладка: файлы переехали, точные пути в тексте переписаны, история цела', () => {
@@ -39,7 +39,7 @@ test('старая раскладка: файлы переехали, точны
 
   const r = init();
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /перенос конфигурации в project\/config\/: PROJECT\.md/);
+  assert.match(r.stdout, /config to project\/config\/ migration: PROJECT\.md/);
   for (const f of CONFIG) { assert.ok(has('project/config/' + f), f); assert.ok(!has('project/' + f), 'осталось в старом месте: ' + f); }
   assert.match(read('project/docs/note.md'), /`project\/config\/PROJECT\.md`.*`project\/config\/SETUP\.md`/);
   assert.equal(read('.devtool/features/fixture-old.md'), card, 'карточка — история, не переписывается');
@@ -49,7 +49,7 @@ test('старая раскладка: файлы переехали, точны
 test('повторная установка: ничего не переносится, сверка зелёная', () => {
   const r = init();
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /перенос конфигурации в project\/config\/: не требуется/);
+  assert.match(r.stdout, /config to project\/config\/ migration: not needed/);
   const v = spawnSync(process.execPath, [path.join(dir, '.forma/verify/verify-install.cjs'), '--root', dir], { encoding: 'utf8' });
   assert.equal(v.status, 0, v.stdout + v.stderr);
 });

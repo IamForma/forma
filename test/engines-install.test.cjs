@@ -20,9 +20,9 @@ test('claude,codex,gemini: адаптеры Codex и Gemini установлен
     '.agents/skills/grilling/SKILL.md',
     '.agents/rules/gemini-8.md', '.agents/forma-adapter.cjs', '.agents/plugins/forma/plugin.json', '.agents/plugins/forma/agents/kit.md', '.agents/plugins/forma/mcp_config.json',
   ]) assert.ok(fs.existsSync(path.join(dir, f)), f);
-  assert.match(r.stdout, /Codex \(бета\)/);
-  assert.match(r.stdout, /Gemini \(Antigravity, бета\)/);
-  assert.match(r.stdout, /установка целостна/);
+  assert.match(r.stdout, /Codex \(beta\)/);
+  assert.match(r.stdout, /Gemini \(Antigravity, beta\)/);
+  assert.match(r.stdout, /install is intact/);
 });
 
 test('повторный запуск не затирает config.toml и mcp_config.json проекта', () => {
@@ -42,6 +42,6 @@ test('только codex без Claude: ставится, sync-codex откла�
     const r = spawnSync(process.execPath, [FORMA, 'init', '--dir', d2, '--engines', 'codex', '--board', 'skip', '--yes'], { encoding: 'utf8' });
     assert.equal(r.status, 0, r.stdout + r.stderr);
     assert.ok(fs.existsSync(path.join(d2, '.codex', 'CODEX-8.md')));
-    assert.match(r.stdout, /\.claude\/agents не найден/);
+    assert.match(r.stdout, /\.claude\/agents not found/);
   } finally { fs.rmSync(d2, { recursive: true, force: true }); }
 });

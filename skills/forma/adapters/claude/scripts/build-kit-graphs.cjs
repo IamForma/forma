@@ -114,8 +114,8 @@ function logForArsenal(f, text) {
   for (const line of text.split('\n')) {
     if (line.startsWith('#') || !line.trim()) continue;
     const [, who, , tool] = line.split(' · ').map(s => s && s.trim());
-    if (!who || !tool || who === '!ОШИБКА') continue;
-    const node = 'node:' + (who === 'сессия' ? 'Session' : who[0].toUpperCase() + who.slice(1));  // журнал пишет «kit», роль — «Kit»
+    if (!who || !tool || who === '!ERROR' || who === '!ОШИБКА') continue;
+    const node = 'node:' + (who === 'session' || who === 'сессия' ? 'Session' : who[0].toUpperCase() + who.slice(1));  // журнал пишет «kit», роль — «Kit»
     const key = node + '|' + tool;
     counts.set(key, (counts.get(key) || 0) + 1);
   }

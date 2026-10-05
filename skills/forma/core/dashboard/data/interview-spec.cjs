@@ -30,6 +30,8 @@
  * Honesty, Naturalness) are not brought out here: a question must not announce which quality it is after,
  * otherwise the human starts answering categories instead of about their own project.
  */
+const i18n = require('../../i18n/index.cjs');
+
 const POSITIONS = [
   { n: 1, name: 'Облик', asks: 'human', deps: [] },
   { n: 2, name: 'Части', asks: 'human', deps: [] },
@@ -154,8 +156,8 @@ const COPY = {
 
 /** Project language → copy set: «Russian» → `ru`, anything else → `en` (the source language). */
 function langOf(projectMd) {
-  const m = String(projectMd || '').match(/\*\*(?:Project language|Язык проекта)\*\*[^\n]*?:\s*([A-Za-zА-Яа-я]+)/);
-  return m && /^(russian|русский)$/i.test(m[1]) ? 'ru' : 'en';
+  const word = (i18n.reader(projectMd).inline('language') || '').split(/\s+/)[0];
+  return i18n.langCode(word) === 'ru' ? 'ru' : 'en';
 }
 
 /** Positions with copy merged in (`label`, `hint`, `note`, layers with `label`/`hint`) and the opening rounds. */
