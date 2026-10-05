@@ -116,7 +116,7 @@ test('файл пользователя из старого dashboard/ не ут
 test('повторный запуск печатает «ничего не изменено»', () => {
   const r2 = init(px);
   assert.equal(r2.status, 0, r2.stdout + r2.stderr);
-  assert.match(r2.stdout, /перенос со старой раскладки: не требуется \(ничего не изменено\)/);
+  assert.match(r2.stdout, /old layout migration: not needed \(nothing changed\)/);
 });
 
 // та же фикстура, но git-репо без коммита (пустой индекс) — типичный случай
@@ -137,7 +137,7 @@ test('git-репо без коммита — перенос не падает, �
     assert.match(r.stdout, /\.forma\/dashboard\/my-notes\.md/, 'файл пользователя не назван в отчёте');
     const r2 = init(px2);
     assert.equal(r2.status, 0, r2.stdout + r2.stderr);
-    assert.match(r2.stdout, /перенос со старой раскладки: не требуется \(ничего не изменено\)/);
+    assert.match(r2.stdout, /old layout migration: not needed \(nothing changed\)/);
   } finally { px2.cleanup(); }
 });
 

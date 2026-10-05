@@ -1,24 +1,22 @@
 #!/bin/sh
-# PreToolUse (все инструменты): дописывает в .forma/dashboard/tool-usage.log одну строку
-# на каждый вызов инструмента — кто вызвал и что вызвал. Ничего не решает и никогда
-# не блокирует: выход всегда 0, даже если сам хук сломался.
+# PreToolUse (all tools): appends one line to .forma/dashboard/tool-usage.log per tool call - who called and what.
+# It decides nothing and never blocks: the exit is always 0, even when the hook itself is broken.
 #
-# Строка:  ГГГГ-ММ-ДДTЧЧ:ММ · <узел> · <agent_id> · <tool_name>
-# Узел    — поле agent_type входа, строчными (extractor, kit, run...). У вызовов
-#           общей сессии поля нет: они помечаются словом `сессия`, а не сливаются
-#           с узлами (признак 1).
+# Line:   YYYY-MM-DDTHH:MM · <node> · <agent_id> · <tool_name>
+# Node  - the agent_type field of the input, lowercase (extractor, kit, run...). Calls of the shared session have no
+#         such field: they are marked with the word `session` rather than merged with the nodes.
 #
-# ПОЧЕМУ ХУК НЕ МОЛЧИТ ПРИ СВОЕЙ ПОЛОМКЕ (признак 3). Молчание вызова и молчание
-# журнала — разные вещи, и их нельзя путать при чтении. Поэтому:
-#   1. Заголовок журнала пишется при создании файла. Файла нет — хук не отработал
-#      НИ РАЗУ: он не зарегистрирован, не исполняем или упал до первой записи.
-#      Файл есть, а строк под заголовком нет — хук жив, вызовов не было.
-#   2. Собственная поломка (пустой вход, нет jq, вход не JSON, нет tool_name) не
-#      уходит в никуда: вместо обычной строки пишется строка `!ОШИБКА` с причиной.
-#      Сводка `.claude/scripts/tool-usage.cjs` считает такие строки отдельно и
-#      говорит о них вслух.
-# Единственный случай, когда хук молчит по-настоящему, — когда он не может даже
-# дописать в файл. Тогда о поломке говорит пункт 1: отсутствующий или застывший файл.
+# WHY THE HOOK DOES NOT STAY SILENT WHEN IT BREAKS. The silence of a call and the silence of the log are different
+# things and must not be confused when reading. So:
+#   1. The log header is written when the file is created. No file - the hook has not run EVER: it is not
+#      registered, not executable, or fell before the first write. A file with no lines under the header - the hook
+#      is alive, there were no calls.
+#   2. Its own breakage (empty input, no jq, input not JSON, no tool_name) does not vanish: instead of the usual line
+#      a `!ERROR` line with the reason is written. The summary `.claude/scripts/tool-usage.cjs` counts such lines
+#      separately and reports them aloud.
+# The only case where the hook is truly silent is when it cannot even append to the file. Then point 1 speaks: a
+# missing or frozen file.
+# (Older logs carry `сессия` and `!ОШИБКА`; the readers accept both.)
 
 cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null || exit 0
 
@@ -32,20 +30,20 @@ INPUT=$(cat 2>/dev/null)
 
 if [ ! -f "$LOG" ]; then
   {
-    echo "# Журнал инструментов по узлам — пишется хуком .claude/hooks/tool-usage.sh"
-    echo "# на каждом PreToolUse, только дописывается. Сводка: node .claude/scripts/tool-usage.cjs"
+    echo "# Tool log by node - written by the hook .claude/hooks/tool-usage.sh"
+    echo "# on every PreToolUse, append-only. Summary: node .claude/scripts/tool-usage.cjs"
     echo "#"
-    echo "# Формат: ГГГГ-ММ-ДДTЧЧ:ММ · узел · agent_id · tool_name"
-    echo "# Узел \`сессия\` — вызов общей сессии (во входе нет agent_type)."
-    echo "# Узел \`!ОШИБКА\` — сломался сам хук; в поле инструмента стоит причина."
+    echo "# Format: YYYY-MM-DDTHH:MM · node · agent_id · tool_name"
+    echo "# Node \`session\` - a call of the shared session (no agent_type in the input)."
+    echo "# Node \`!ERROR\` - the hook itself broke; the tool field holds the reason."
     echo "#"
-    echo "# Наличие этого файла = хук отработал хотя бы раз. Файла нет — хук не жив,"
-    echo "# и это не то же самое, что «вызовов не было»."
+    echo "# This file existing = the hook ran at least once. No file - the hook is not alive,"
+    echo "# which is not the same as \"there were no calls\"."
     echo "#"
-    echo "# ЗДЕСЬ ПОПЫТКИ, А НЕ УДАЧИ. PreToolUse срабатывает ДО решения о доступе:"
-    echo "# отклонённый вызов стоит в журнале наравне с исполненным. Строка означает"
-    echo "# «узел потянулся к инструменту», а не «инструмент сработал». Пустота по"
-    echo "# инструменту доказывает, что он лишний; непустота не доказывает обратного."
+    echo "# ATTEMPTS HERE, NOT SUCCESSES. PreToolUse fires BEFORE the access decision:"
+    echo "# a rejected call stands in the log on a par with an executed one. A line means"
+    echo "# \"the node reached for the tool\", not \"the tool worked\". Emptiness for a tool"
+    echo "# proves it is superfluous; non-emptiness does not prove the opposite."
   } >> "$LOG" 2>/dev/null || exit 0
 fi
 
@@ -55,13 +53,13 @@ emit() {
 }
 
 if [ -z "$INPUT" ]; then
-  emit "$TS · !ОШИБКА · - · вход PreToolUse пуст"
+  emit "$TS · !ERROR · - · PreToolUse input is empty"
 fi
 
-FIELDS=$(printf '%s' "$INPUT" | jq -r '[(.agent_type // "сессия"), (.agent_id // "-"), (.tool_name // "-")] | join("\t")' 2>/dev/null)
+FIELDS=$(printf '%s' "$INPUT" | jq -r '[(.agent_type // "session"), (.agent_id // "-"), (.tool_name // "-")] | join("\t")' 2>/dev/null)
 
 if [ -z "$FIELDS" ]; then
-  emit "$TS · !ОШИБКА · - · вход не разобран (нет jq или вход не JSON)"
+  emit "$TS · !ERROR · - · input not parsed (no jq or input is not JSON)"
 fi
 
 OLDIFS=$IFS
@@ -71,11 +69,11 @@ $FIELDS
 EOF
 IFS=$OLDIFS
 
-[ -z "$AGENT_TYPE" ] && AGENT_TYPE="сессия"
+[ -z "$AGENT_TYPE" ] && AGENT_TYPE="session"
 [ -z "$AGENT_ID" ] && AGENT_ID="-"
 
 if [ -z "$TOOL_NAME" ] || [ "$TOOL_NAME" = "-" ]; then
-  emit "$TS · !ОШИБКА · $AGENT_ID · во входе нет tool_name"
+  emit "$TS · !ERROR · $AGENT_ID · no tool_name in the input"
 fi
 
 emit "$TS · $AGENT_TYPE · $AGENT_ID · $TOOL_NAME"

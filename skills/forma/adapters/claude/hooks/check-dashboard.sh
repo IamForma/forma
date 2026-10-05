@@ -1,7 +1,6 @@
 #!/bin/sh
-# SessionStart: проверяет, жив ли дашборд (localhost:5050) — если нет,
-# поднимает супервизор watch.js в фоне, который дальше сам следит за serve.js
-# и перезапускает его при падении. Никогда не блокирует: exit всегда 0.
+# SessionStart: checks whether the dashboard (localhost:5050) is alive; if not, starts the watch.js supervisor in
+# the background, which then watches serve.js and restarts it when it falls. Never blocks: the exit is always 0.
 
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 [ -f .forma/dashboard/ensure-running.js ] || exit 0

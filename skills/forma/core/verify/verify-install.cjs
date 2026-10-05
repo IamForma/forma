@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 'use strict';
 
-// Целостность установки «Формы»: установлено ли всё, что ставил установщик, и связано ли между собой.
-//   node .forma/verify/verify-install.cjs [--root <папка>] [--json] [--skip-behavior]
-// Выход 0 — всё сходится (у второстепенных движков допустимы предупреждения); 1 — красное у главного движка.
+// Forma install integrity: is everything the installer put down present and wired together.
+//   node .forma/verify/verify-install.cjs [--root <folder>] [--json] [--skip-behavior]
+// Exit 0 — everything matches (secondary engines may only warn); 1 — a main engine is red.
 //
-// Три слоя, каждое расхождение — «адрес — ожидалось — найдено» (запрет 13 AGENTS.md):
-//   1. Опись — `.forma/install-manifest.json`: sha256 файлов, которые записал установщик; для зон человека
-//      (`project/`) — скелет (число заголовков), не хэш: человек наполняет их по делу.
-//   2. Замыкание — каждый .cjs разбирается, каждый .json читается; профиль движка проверяет проводку
-//      (хуки ↔ файлы ↔ settings, роли, ссылки по голому имени).
-//   3. Поведение — профиль движка запускает стартовые проверки (без вызова модели).
-// Профиль движка лежит в адаптере и называется в описи (`engines[].profile`); ядро движков по имени не знает.
+// Three layers; every discrepancy is "address — expected — found" (prohibition 13 of AGENTS.md):
+//   1. Manifest — `.forma/install-manifest.json`: sha256 of the files the installer wrote; for human zones
+//      (`project/`) — the skeleton (heading counts), not a hash: people fill those in.
+//   2. Closure — every .cjs parses, every .json reads; the engine profile checks the wiring
+//      (hooks ↔ files ↔ settings, roles, bare-name references).
+//   3. Behavior — the engine profile runs the start-up checks (no model call).
+// The engine profile lives in the adapter and is named in the manifest (`engines[].profile`); the core does not know engines by name.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -21,14 +21,14 @@ const vm = require('node:vm');
 const MANIFEST = path.join('.forma', 'install-manifest.json');
 const MANIFEST_VERSION = 1;
 
-/** sha256 с нормализованными концами строк: перенос из git на Windows не должен давать красное. */
+/** sha256 with normalized line endings: a git checkout on Windows must not turn it red. */
 function sha256(file) {
   const buf = fs.readFileSync(file);
   const norm = buf.includes(13) ? Buffer.from(buf.toString('latin1').replace(/\r\n/g, '\n'), 'latin1') : buf;
   return crypto.createHash('sha256').update(norm).digest('hex');
 }
 
-/** Скелет markdown: число заголовков `#` и `##` вне кодовых блоков. Не зависит от языка текста. */
+/** Markdown skeleton: count of `#` and `##` headings outside code blocks. Independent of the text language. */
 function skeletonOf(text) {
   let fence = false, h1 = 0, h2 = 0;
   for (const line of text.split(/\r?\n/)) {
@@ -45,13 +45,13 @@ const isHumanZone = (r) => /^(project|\.devtool)\//.test(r) || r.startsWith('.fo
   || r === '.forma/dashboard/graphify.config.json' || r === MANIFEST.split(path.sep).join('/');
 
 /**
- * Опись установки. `owned` — абсолютные пути, записанные установщиком в этот проход.
- * Не `project/`-файлы получают хэш; `project/*.md` — скелет; остальное — только наличие.
- * `previous` — прежняя опись: скелет `project/` не пересчитывается, когда каталог уже был.
+ * Install manifest. `owned` — absolute paths the installer wrote in this pass.
+ * Non-`project/` files get a hash; `project/*.md` — a skeleton; the rest — presence only.
+ * `previous` — the earlier manifest: the `project/` skeleton is not recomputed when the folder already existed.
  */
 function buildManifest(root, { owned, projectCreated, previous, engines, lang, version, template }) {
   const files = {};
-  // конфигурация и служебные файлы переехали из project/ в project/config/ и project/ops/ — прежняя опись следует за файлами
+  // config and service files moved from project/ to project/config/ and project/ops/ — the earlier manifest follows the files
   const moved = (k) => k.replace(/^project\/(PROJECT|CONFIG|SETUP|ROUTE|SITE)\.md$/, 'project/config/$1.md');
   const skeleton = projectCreated || !previous ? {} : Object.fromEntries(Object.entries(previous.skeleton || {}).map(([k, v]) => [moved(k), v]));
   for (const abs of owned) {
@@ -79,7 +79,7 @@ function readManifest(root) {
   return JSON.parse(fs.readFileSync(f, 'utf8'));
 }
 
-/** Синтаксис .cjs без запуска: тело оборачивается, как это делает загрузчик CommonJS. */
+/** .cjs syntax without running it: the body is wrapped the way the CommonJS loader does. */
 function syntaxError(file) {
   const src = fs.readFileSync(file, 'utf8').replace(/^#!.*/, '');
   try { new vm.Script('(function (exports, require, module, __filename, __dirname) {' + src + '\n})', { filename: file }); return null; }
@@ -88,50 +88,50 @@ function syntaxError(file) {
 
 const finding = (address, expected, found) => ({ address, expected, found });
 
-/** Слой 1 + замыкание ядра: опись, хэши, скелет, синтаксис, JSON. */
+/** Layer 1 + core closure: manifest, hashes, skeleton, syntax, JSON. */
 function checkCore(root, manifest) {
   const out = [];
-  if (!fs.existsSync(path.join(root, 'AGENTS.md'))) out.push(finding('AGENTS.md', 'корневой закон протокола', 'нет файла'));
+  if (!fs.existsSync(path.join(root, 'AGENTS.md'))) out.push(finding('AGENTS.md', 'protocol root law', 'file missing'));
   for (const d of manifest.dirs || []) {
-    if (!fs.existsSync(path.join(root, d))) out.push(finding(d + '/', 'каталог есть', 'нет каталога'));
+    if (!fs.existsSync(path.join(root, d))) out.push(finding(d + '/', 'directory exists', 'directory missing'));
   }
   for (const [r, want] of Object.entries(manifest.files || {})) {
     const f = path.join(root, r);
-    if (!fs.existsSync(f)) { out.push(finding(r, 'файл установщика', 'нет файла')); continue; }
+    if (!fs.existsSync(f)) { out.push(finding(r, 'installer file', 'file missing')); continue; }
     const got = sha256(f);
-    if (got !== want) out.push(finding(r, 'sha256 ' + want.slice(0, 12) + '…', 'sha256 ' + got.slice(0, 12) + '… (файл изменён после установки)'));
-    if (/\.cjs$/.test(r)) { const e = syntaxError(f); if (e) out.push(finding(r, 'разбирается как CommonJS', e)); }
-    else if (/\.json$/.test(r)) { try { JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { out.push(finding(r, 'корректный JSON', e.message)); } }
+    if (got !== want) out.push(finding(r, 'sha256 ' + want.slice(0, 12) + '…', 'sha256 ' + got.slice(0, 12) + '… (file changed after install)'));
+    if (/\.cjs$/.test(r)) { const e = syntaxError(f); if (e) out.push(finding(r, 'parses as CommonJS', e)); }
+    else if (/\.json$/.test(r)) { try { JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { out.push(finding(r, 'valid JSON', e.message)); } }
   }
   for (const [r, want] of Object.entries(manifest.skeleton || {})) {
     const f = path.join(root, r);
-    if (!fs.existsSync(f)) { out.push(finding(r, 'файл каркаса project/', 'нет файла')); continue; }
+    if (!fs.existsSync(f)) { out.push(finding(r, 'project/ scaffold file', 'file missing')); continue; }
     if (!/\.md$/.test(r)) continue;
     const got = skeletonOf(fs.readFileSync(f, 'utf8'));
-    if (got.h1 < want.h1) out.push(finding(r + ' — заголовки «#»', '≥ ' + want.h1, String(got.h1)));
-    if (got.h2 < want.h2) out.push(finding(r + ' — заголовки «##»', '≥ ' + want.h2, String(got.h2)));
+    if (got.h1 < want.h1) out.push(finding(r + ' — «#» headings', '≥ ' + want.h1, String(got.h1)));
+    if (got.h2 < want.h2) out.push(finding(r + ' — «##» headings', '≥ ' + want.h2, String(got.h2)));
   }
   return out;
 }
 
-/** Профиль движка из описи: файл адаптера с `check(ctx)`. Нет файла — не установлен (для готового движка это красное). */
+/** Engine profile from the manifest: an adapter file with `check(ctx)`. No file — not installed (red for a ready engine). */
 function loadProfile(root, engine) {
-  if (!engine.profile) return { status: 'not-installed', why: engine.note || 'профиль сверки не заявлен — адаптер не готов' };
+  if (!engine.profile) return { status: 'not-installed', why: engine.note || 'no verify profile declared — adapter not ready' };
   const f = path.join(root, engine.profile);
   if (!fs.existsSync(f)) return { status: 'missing', file: engine.profile };
   try { return { status: 'ok', profile: require(f) }; }
   catch (e) { return { status: 'broken', file: engine.profile, why: e.message.split('\n')[0] }; }
 }
 
-/** Полная сверка. Возвращает { main, engines:[{id, role, notes, findings}], core, ok }. */
+/** Full verification. Returns { main, engines:[{id, role, notes, findings}], core, ok }. */
 function verify(root, { behavior = true } = {}) {
   root = path.resolve(root);
   const result = { root, ok: true, core: [], engines: [] };
   let manifest;
   try { manifest = readManifest(root); }
-  catch (e) { result.core.push(finding(MANIFEST.split(path.sep).join('/'), 'читаемый JSON', e.message)); result.ok = false; return result; }
+  catch (e) { result.core.push(finding(MANIFEST.split(path.sep).join('/'), 'readable JSON', e.message)); result.ok = false; return result; }
   if (!manifest) {
-    result.core.push(finding(MANIFEST.split(path.sep).join('/'), 'опись установки', 'нет файла — установка без описи; перезапустите установщик'));
+    result.core.push(finding(MANIFEST.split(path.sep).join('/'), 'install manifest', 'file missing — install has no manifest; rerun the installer'));
     result.ok = false;
     return result;
   }
@@ -144,31 +144,31 @@ function verify(root, { behavior = true } = {}) {
     const role = i === 0 ? 'main' : 'secondary';
     const row = { id: engine.id, role, notes: [], findings: [] };
     const loaded = loadProfile(root, engine);
-    if (loaded.status === 'not-installed') row.notes.push('не установлен: ' + loaded.why);
-    else if (loaded.status !== 'ok') row.findings.push(finding(loaded.file, 'профиль сверки движка', loaded.status === 'missing' ? 'нет файла' : loaded.why));
+    if (loaded.status === 'not-installed') row.notes.push('not installed: ' + loaded.why);
+    else if (loaded.status !== 'ok') row.findings.push(finding(loaded.file, 'engine verify profile', loaded.status === 'missing' ? 'file missing' : loaded.why));
     else {
       const ctx = { root, engine, manifest, behavior, finding, syntaxError, mainFindings: result.engines[0] ? result.engines[0].findings : [] };
       try { row.findings.push(...loaded.profile.check(ctx)); }
-      catch (e) { row.findings.push(finding(engine.profile, 'профиль отработал', e.message.split('\n')[0])); }
+      catch (e) { row.findings.push(finding(engine.profile, 'profile ran cleanly', e.message.split('\n')[0])); }
     }
     if (role === 'main' && row.findings.length) result.ok = false;
     result.engines.push(row);
   });
-  if (!engines.length) { result.core.push(finding('install-manifest.json — engines', 'хотя бы один главный движок', 'список пуст')); result.ok = false; }
+  if (!engines.length) { result.core.push(finding('install-manifest.json — engines', 'at least one main engine', 'list is empty')); result.ok = false; }
   return result;
 }
 
-/** Текстовый вид: OK или список «адрес — ожидалось — найдено». */
+/** Text form: OK or a list of "address — expected — found". */
 function format(result) {
   const lines = [];
-  const row = (f) => `  — ${f.address} — ожидалось: ${f.expected} — найдено: ${f.found}`;
+  const row = (f) => `  — ${f.address} — expected: ${f.expected} — found: ${f.found}`;
   for (const f of result.core) lines.push(row(f));
   for (const e of result.engines) {
-    const tag = e.role === 'main' ? 'главный' : 'второстепенный';
+    const tag = e.role === 'main' ? 'main' : 'secondary';
     for (const n of e.notes) lines.push(`  · ${e.id} (${tag}): ${n}`);
-    for (const f of e.findings) lines.push(e.role === 'main' ? row(f) : row(f).replace('  — ', '  ! предупреждение: '));
+    for (const f of e.findings) lines.push(e.role === 'main' ? row(f) : row(f).replace('  — ', '  ! warning: '));
   }
-  const head = result.ok ? '✓ установка целостна' : '✗ установка нарушена';
+  const head = result.ok ? '✓ install is intact' : '✗ install is broken';
   return head + (lines.length ? '\n' + lines.join('\n') : '');
 }
 

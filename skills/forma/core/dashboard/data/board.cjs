@@ -10,6 +10,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 const { readIfExists, projectFile } = require('../lib/fs.cjs');
 const { boardDir } = require('../lib/card.cjs');
+const i18n = require('../../i18n/index.cjs');
 const engines = require('../lib/engines.cjs');
 const { parseBoardCard } = require('./board-card.cjs');
 const { buildLaw } = require('./law.cjs');
@@ -68,11 +69,9 @@ function readGoalInfo(projectRoot) {
 
 /** Пороги «заходов на задачу» и «объёма круга» из `PROJECT.md`; нет числа — `null`. */
 function readThresholds(projectRoot) {
-  const pj = readIfExists(projectFile(projectRoot, 'PROJECT.md'));
-  return {
-    attempts: +((pj.match(/(?:Заходов на задачу|Attempts per task)\s*\|\s*(\d+)/) || [])[1]) || null,
-    volume: +((pj.match(/(?:Объём круга|Circle volume|Cycle volume)[^|]*\|\s*(\d+)/) || [])[1]) || null,
-  };
+  const table = i18n.reader(readIfExists(projectFile(projectRoot, 'PROJECT.md'))).table('thresholds');
+  const number = (key) => +((String(i18n.rowValue(table, key) || '').match(/^\d+/) || [])[0]) || null;
+  return { attempts: number('attempts'), volume: number('volume') };
 }
 
 function readAdrs(projectRoot) {

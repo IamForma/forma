@@ -82,6 +82,9 @@ function splitTools(line) {
 }
 
 // --- журнал ----------------------------------------------------------------
+// the hook's own error marker: the current one and the one older logs carry
+const HOOK_ERROR = ['!ERROR', '!ОШИБКА'];
+
 function readLog(logFile = LOG) {
   if (!fs.existsSync(logFile)) return { alive: false, rows: [], errors: [] };
   const lines = fs.readFileSync(logFile, 'utf8').split(/\r?\n/);
@@ -96,7 +99,7 @@ function readLog(logFile = LOG) {
       continue;
     }
     const [ts, node, agentId, tool] = parts;
-    if (node === '!ОШИБКА') errors.push({ ts, reason: tool });
+    if (HOOK_ERROR.includes(node)) errors.push({ ts, reason: tool });
     else rows.push({ ts, node, agentId, tool });
   }
   return { alive: true, rows, errors };

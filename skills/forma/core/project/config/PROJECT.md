@@ -4,22 +4,22 @@ Filled in for the specific project and lives for its whole life. The rules are i
 
 Here — what we work with and at what level. What we build and in what order — in `ROADMAP.md`. A segment — in `goals/goal-NN/GOAL.md`.
 
-**Project language** *(human, before start; sets the language of task cards, goals and documentation — `AGENTS.md` §6)*: English. The documentation of the scheme itself (`manual/`) is not translated into the project language: it exists only in English — the original, `manual/en/` — and Russian — an exact copy, `manual/ru/`.
+**Project language** <!-- k:language --> *(human, before start; sets the language of task cards, goals and documentation — `AGENTS.md` §6)*: English. The documentation of the scheme itself (`manual/`) is not translated into the project language: it exists only in English — the original, `manual/en/` — and Russian — an exact copy, `manual/ru/`.
 
 **What we do** *(human, before start)*:
 
-**Project template** *(human, at install; `Intent` picks the branch of the fifth interview position by this field — reads it, does not infer it from which files exist)*:
+**Project template** <!-- k:template --> *(human, at install; `Intent` picks the branch of the fifth interview position by this field — reads it, does not infer it from which files exist)*:
 
 | Field | Value |
 |---|---|
-| Name | — |
-| Source | — |
-| Status | `none` |
+| Name <!-- k:name --> | — |
+| Source <!-- k:source --> | — |
+| Status <!-- k:status --> | `none` |
 | Route | `project/config/ROUTE.md` — the reference for the fifth interview position |
 
 **Three possible statuses, a closed list:** `verified ready` — the route has been walked to a result, the fifth position reduces to a check; `forming with the human` — the route is partly written, check against what is written and build what is missing; `none` — unknown territory, no route exists, all five positions are worked through at equal depth. The interview script is the same either way and comes with the core: a template adds only a reference to the fifth position.
 
-**Project epics** *(human, before start; each one's role and procedure are fixed, `intent.md`, "Epic", the code in brackets cross-checks them; the name in this column is the only thing set per project here)*:
+**Project epics** <!-- k:epics --> *(human, before start; each one's role and procedure are fixed, `intent.md`, "Epic", the code in brackets cross-checks them; the name in this column is the only thing set per project here)*:
 
 | Code | Epic in this project | Function |
 |---|---|---|
@@ -45,12 +45,12 @@ Here — what we work with and at what level. What we build and in what order �
 
 **Where it lives.** `project/docs/goal-NN-<name>/`, one file per kind. A goal's section accumulates over cycles rather than being rebuilt: each closed cycle appends its own.
 
-**Thresholds** *(human, before start; `Core` revises them only through a stop with a report)*:
+**Thresholds** <!-- k:thresholds --> *(human, before start; `Core` revises them only through a stop with a report)*:
 
 | Threshold                         | Value                                                                                      |
 | --------------------------------- | ------------------------------------------------------------------------------------------ |
-| Attempts per task  |  |
-| Cycle volume, cards (per epic) |  |
+| Attempts per task <!-- k:attempts --> |  |
+| Cycle volume, cards (per epic) <!-- k:volume --> |  |
 
 Spend in tokens and elapsed time are statistics, not thresholds: they are written by fact (AGENTS.md §3), never set in advance and never asked. No limit is set in dollars.
 
@@ -66,7 +66,7 @@ Spend in tokens and elapsed time are statistics, not thresholds: they are writte
 
 Level flows along the chain of documents that are in front of the node anyway (brief → `ROADMAP.md`/`GOAL.md` → card → kit), and is not stored as a separate line the human must invent before the start.
 
-**Node tooling** *(human; what each one works with. `Kit` checks this against the arsenal when a cycle opens and names the gap. Detailed technical contracts with a date and a source card — not here but in `project/config/CONFIG.md`, "Technical contracts of the environment" — this table holds only the tool name and one invariant line with a link to the anchor)*:
+**Node tooling** <!-- k:tooling --> *(human; what each one works with. `Kit` checks this against the arsenal when a cycle opens and names the gap. Detailed technical contracts with a date and a source card — not here but in `project/config/CONFIG.md`, "Technical contracts of the environment" — this table holds only the tool name and one invariant line with a link to the anchor)*:
 
 | Node   | Works with | In the arsenal |
 | ---------- | ---------- | -------------- |
@@ -85,7 +85,7 @@ The tools per node are chosen by the human, not by `Kit`: what to form the image
 is decided by whoever holds the image. `Kit` only checks and names the shortfall.
 -->
 
-**Project references** *(human; what the result must conform to in all cycles)*:
+**Project references** <!-- k:references --> *(human; what the result must conform to in all cycles)*:
 
 Design system, glossary, standards, naming rules, API contracts, brand book. Only what tasks of **several** cycles refer to goes here; a one-off is declared in the cycle's `GOAL.md`.
 

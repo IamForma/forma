@@ -1,8 +1,8 @@
 'use strict';
 
-// Профиль сверки установки для Claude Code: проводка адаптера (хуки, роли, ссылки) и поведение стартовых проверок.
-// Ядро (`.forma/verify/verify-install.cjs`) находит этот файл по описи (`engines[].profile`) и вызывает `check(ctx)`.
-// Ожидания берутся из описи (`engine.expect`), а не из кода: установщик записал, что поставил — профиль сверяет это с диском.
+// Install verify profile for Claude Code: adapter wiring (hooks, roles, references) and start-up check behavior.
+// The core (`.forma/verify/verify-install.cjs`) finds this file via the manifest (`engines[].profile`) and calls `check(ctx)`.
+// Expectations come from the manifest (`engine.expect`), not from code: the installer recorded what it installed — the profile checks that against disk.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -16,79 +16,79 @@ const walkFiles = (dir) => {
   });
 };
 
-/** Проводка хуков: каждый ожидаемый хук — файл есть, в settings.json стоит команда в своей группе события. */
+/** Hook wiring: for every expected hook the file exists and settings.json has its command in the event group. */
 function checkHooks(ctx, expect, out) {
   const { root, finding } = ctx;
   const settingsFile = path.join(root, '.claude', 'settings.json');
-  if (!fs.existsSync(settingsFile)) { out.push(finding('.claude/settings.json', 'настройки Claude Code с хуками', 'нет файла')); return; }
+  if (!fs.existsSync(settingsFile)) { out.push(finding('.claude/settings.json', 'Claude Code settings with hooks', 'file missing')); return; }
   let settings;
   try { settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8')); }
-  catch (e) { out.push(finding('.claude/settings.json', 'корректный JSON', e.message)); return; }
+  catch (e) { out.push(finding('.claude/settings.json', 'valid JSON', e.message)); return; }
   for (const h of expect.hooks || []) {
     const file = `.claude/hooks/${h.name}`;
-    if (!fs.existsSync(path.join(root, file))) out.push(finding(file, `хук ${h.event}${h.matcher ? ' [' + h.matcher + ']' : ''}`, 'нет файла'));
+    if (!fs.existsSync(path.join(root, file))) out.push(finding(file, `hook ${h.event}${h.matcher ? ' [' + h.matcher + ']' : ''}`, 'file missing'));
     const groups = (settings.hooks && settings.hooks[h.event]) || [];
     const group = groups.find((g) => (g.matcher || '') === (h.matcher || ''));
     const entry = group && (group.hooks || []).find((x) => x.command === `bash ${file}`);
     const addr = `.claude/settings.json → hooks.${h.event}${h.matcher ? '[' + h.matcher + ']' : ''}`;
-    if (!entry) out.push(finding(addr, `команда «bash ${file}»`, group ? 'команды в группе нет' : 'группы события нет'));
+    if (!entry) out.push(finding(addr, `command «bash ${file}»`, group ? 'command not in the group' : 'event group missing'));
     else if (h.timeout && entry.timeout !== h.timeout) out.push(finding(addr + ' → ' + h.name + ' → timeout', String(h.timeout), String(entry.timeout)));
   }
   for (const f of walkFiles(path.join(root, '.claude', 'hooks')).filter((x) => x.endsWith('.sh'))) {
     const r = spawnSync('bash', ['-n', f], { encoding: 'utf8' });
-    if (r.error) { out.push(finding('bash', 'bash доступен для проверки хуков', r.error.message)); break; }
-    if (r.status !== 0) out.push(finding(path.relative(root, f).split(path.sep).join('/'), 'bash -n: синтаксис хука', (r.stderr || '').trim().split('\n')[0]));
+    if (r.error) { out.push(finding('bash', 'bash available to check hooks', r.error.message)); break; }
+    if (r.status !== 0) out.push(finding(path.relative(root, f).split(path.sep).join('/'), 'bash -n: hook syntax', (r.stderr || '').trim().split('\n')[0]));
   }
 }
 
-/** Роли: пять узлов на месте, в `tools:` нет плейсхолдеров `mcp__<…>__*`, нет корневого CLAUDE.md. */
+/** Roles: the five nodes are present, `tools:` has no `mcp__<…>__*` placeholders, no root CLAUDE.md. */
 function checkRoles(ctx, out) {
   const { root, finding } = ctx;
   const dir = path.join(root, '.claude', 'agents');
   for (const a of ['intent', 'spec', 'kit', 'core']) {
-    if (!fs.existsSync(path.join(dir, a + '.md'))) out.push(finding(`.claude/agents/${a}.md`, 'роль узла', 'нет файла'));
+    if (!fs.existsSync(path.join(dir, a + '.md'))) out.push(finding(`.claude/agents/${a}.md`, 'node role', 'file missing'));
   }
-  if (!fs.existsSync(dir) || !fs.readdirSync(dir).some((f) => /^run.*\.md$/.test(f))) out.push(finding('.claude/agents/run*.md', 'хотя бы один исполнитель', 'нет ни одного'));
+  if (!fs.existsSync(dir) || !fs.readdirSync(dir).some((f) => /^run.*\.md$/.test(f))) out.push(finding('.claude/agents/run*.md', 'at least one executor', 'none'));
   for (const f of walkFiles(dir).filter((x) => x.endsWith('.md'))) {
     const fm = fs.readFileSync(f, 'utf8').match(/^---\r?\n([\s\S]*?)\r?\n---/);
     const tools = fm && (fm[1].match(/^tools:.*$/m) || [''])[0];
-    if (tools && /mcp__<[^>]*>/.test(tools)) out.push(finding(path.relative(root, f).split(path.sep).join('/') + ' — tools:', 'имена инструментов без плейсхолдеров', tools.match(/mcp__<[^>]*>[^,\s]*/)[0]));
+    if (tools && /mcp__<[^>]*>/.test(tools)) out.push(finding(path.relative(root, f).split(path.sep).join('/') + ' — tools:', 'tool names without placeholders', tools.match(/mcp__<[^>]*>[^,\s]*/)[0]));
   }
-  if (fs.existsSync(path.join(root, 'CLAUDE.md'))) out.push(finding('CLAUDE.md', 'нет корневого CLAUDE.md (затеняет чтение AGENTS.md)', 'файл есть'));
+  if (fs.existsSync(path.join(root, 'CLAUDE.md'))) out.push(finding('CLAUDE.md', 'no root CLAUDE.md (it shadows reading AGENTS.md)', 'file present'));
 }
 
-/** Замыкание ссылок: `имя.md` в законе и §8 (строчные, без пути) называет файл, который лежит в `.claude/` или `.forma/`. */
+/** Reference closure: a bare `name.md` in the law and §8 (lowercase, no path) names a file that exists in `.claude/` or `.forma/`. */
 function checkReferences(ctx, out) {
   const { root, finding } = ctx;
   const known = new Set();
   for (const d of ['.claude', '.forma']) for (const f of walkFiles(path.join(root, d))) known.add(path.basename(f));
   for (const src of ['AGENTS.md', '.claude/rules/claude-8.md']) {
     const f = path.join(root, src);
-    if (!fs.existsSync(f)) { if (src !== 'AGENTS.md') out.push(finding(src, '§8 Claude Code', 'нет файла')); continue; }
+    if (!fs.existsSync(f)) { if (src !== 'AGENTS.md') out.push(finding(src, '§8 Claude Code', 'file missing')); continue; }
     const seen = new Set();
     for (const m of fs.readFileSync(f, 'utf8').matchAll(/`([a-z][a-z0-9-]*\.md)`/g)) {
       if (seen.has(m[1])) continue;
       seen.add(m[1]);
-      if (!known.has(m[1])) out.push(finding(`${src} → \`${m[1]}\``, 'файл в .claude/ или .forma/', 'файла нет'));
+      if (!known.has(m[1])) out.push(finding(`${src} → \`${m[1]}\``, 'file in .claude/ or .forma/', 'no such file'));
     }
   }
 }
 
-/** Поведение: стартовый хук и сверка ядра с адаптером запускаются и отвечают, модель не вызывается. */
+/** Behavior: the start hook and the core-vs-adapter check run and respond; no model is called. */
 function checkBehavior(ctx, out) {
   const { root, finding } = ctx;
   const hook = path.join(root, '.claude', 'hooks', 'check-ready.sh');
   if (fs.existsSync(hook)) {
-    const r = spawnSync('bash', [hook], { cwd: root, encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: root } });
-    if (r.error || r.status !== 0) out.push(finding('.claude/hooks/check-ready.sh', 'выход 0', r.error ? r.error.message : 'выход ' + r.status));
-    else for (const l of (r.stdout || '').split('\n').filter((x) => /^\s+· (agents|паритет)/.test(x))) out.push(finding('.claude/hooks/check-ready.sh', 'без замечаний по ролям и паритету', l.trim()));
+    const r = spawnSync('bash', [hook], { cwd: root, encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: root, FORMA_LANG: 'en' } });
+    if (r.error || r.status !== 0) out.push(finding('.claude/hooks/check-ready.sh', 'exit 0', r.error ? r.error.message : 'exit ' + r.status));
+    else for (const l of (r.stdout || '').split('\n').filter((x) => /^\s+· (agents|environment parity)/.test(x))) out.push(finding('.claude/hooks/check-ready.sh', 'no role or parity remarks', l.trim()));
   }
   const sync = path.join(root, '.claude', 'scripts', 'sync-engines.cjs');
   if (fs.existsSync(sync)) {
     const r = spawnSync(process.execPath, [sync, '--check'], { cwd: root, encoding: 'utf8' });
     if (r.status !== 0) {
       const why = ((r.stdout || '') + (r.stderr || '')).split(/\r?\n/).map((l) => l.trim()).filter((l) => l.startsWith('— ')).slice(0, 5);
-      out.push(finding('node .claude/scripts/sync-engines.cjs --check', 'выход 0', 'выход ' + r.status + (why.length ? ': ' + why.join(' | ') : '')));
+      out.push(finding('node .claude/scripts/sync-engines.cjs --check', 'exit 0', 'exit ' + r.status + (why.length ? ': ' + why.join(' | ') : '')));
     }
   }
 }

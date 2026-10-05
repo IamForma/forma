@@ -15,6 +15,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const readline = require('readline');
+const i18n = require(path.join(__dirname, '..', '..', '.forma', 'i18n', 'index.cjs'));
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const args = process.argv.slice(2);
@@ -111,7 +112,7 @@ function append(card, row) {
       throw new Error('Continuation boundary is not the final recorded segment for this call id on the card: ' + row.continuation.after);
     }
   }
-  const marker = /^## (?:Result|Результат)\s*$/m;
+  const marker = i18n.headingRe('zone.result');
   const at = body.search(marker);
   if (at < 0) throw new Error('Card has no Result section: ' + card);
   body = body.slice(0, at).replace(/\s*$/, '\n') + line(row) + (segment ? ` ${segment}` : '') + '\n\n' + body.slice(at);

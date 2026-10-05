@@ -19,6 +19,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { makeCli } = require('../dashboard/lib/cli.cjs');
 const { cardFiles, zoneHeading } = require('../dashboard/lib/card.cjs');
+const i18n = require('../i18n/index.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const BOARD = path.join(ROOT, '.devtool', 'features');
@@ -55,16 +56,15 @@ for (const k of ['seg', 'wave']) { const v = arg(k); if (v === undefined) contin
 for (const a of args('after')) { const n = (a || '').replace(/^card-/, ''); if (!/^\d+$/.test(n)) die(`--after "${a}" — нужен номер карточки NNN`); routeLabels.push('after-card-' + n.padStart(3, '0')); }
 if (flag('trial')) routeLabels.push('trial');
 
-// 3. Язык: --lang, иначе поле «Язык проекта», иначе кириллица в PROJECT.md
+// 3. Language: --lang, else the project language field; a language without a card set (work/tooling/decision) is English
 let lang = arg('lang');
-if (!lang) {
-  const lm = projectMd.match(/\*\*(?:Язык проекта|Project language)\*\*[^:\n]*:\s*([^\n]*)/);
-  const v = (lm && lm[1]) || '';
-  const head = v.slice(0, 40);
-  lang = /англ|english|^en/i.test(head) ? 'en' : /рус|russian|^ru/i.test(head) ? 'ru' : /[а-яё]/i.test(projectMd.slice(0, 200)) ? 'ru' : 'en';
-}
+// language of the project documents: without a dictionary entry the zone headings carry anchors (a translation keeps the key)
+const word = (i18n.reader(projectMd).inline('language') || '').split(/\s+/)[0];
+const code = i18n.langCode(word);
+const anchored = !!word && !(code in i18n.KEYS.languages);
+if (!lang) lang = code === 'ru' ? 'ru' : 'en';
 const Z = {
-  task: zoneHeading('task', lang), kit: zoneHeading('kit', lang), hist: zoneHeading('history', lang), res: zoneHeading('result', lang),
+  task: zoneHeading('task', lang, anchored), kit: zoneHeading('kit', lang, anchored), hist: zoneHeading('history', lang, anchored), res: zoneHeading('result', lang, anchored),
   types: lang === 'ru' ? ['дело', 'оснастка', 'решение'] : ['work', 'tooling', 'decision'],
 };
 const type = arg('type', Z.types[kind === 'goal' ? 0 : 1]);

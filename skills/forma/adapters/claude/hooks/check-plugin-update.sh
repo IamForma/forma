@@ -1,17 +1,15 @@
 #!/bin/sh
-# SessionStart: говорит, если на GitHub лежит версия плагина «Форма» новее установленной.
+# SessionStart: says so when GitHub holds a newer version of the "Forma" plugin than the installed one.
 #
-# Почему хук, а не команда и не крон. Команда требует о себе помнить — именно так
-# установленный плагин и отстал на десятки версий, никем не замеченный. Крон в этой
-# среде живёт только внутри сессии и умирает вместе с ней, то есть помнить пришлось
-# бы ещё и о нём. Хук старта не требует ничего: он уже срабатывает сам.
+# Why a hook, not a command or a cron. A command has to be remembered, which is exactly how an installed plugin
+# fell dozens of versions behind unnoticed. A cron lives only inside a session here and dies with it, so it would
+# have to be remembered too. A start hook needs nothing: it already fires by itself.
 #
-# Почему `gh`, а не `curl`. Репозиторий плагина закрытый — анонимный запрос к
-# raw.githubusercontent отвечает 404, и проверка молчала бы вечно, выглядя рабочей.
-# `gh` берёт уже имеющуюся авторизацию человека.
+# Why `gh`, not `curl`. The plugin repository is private: an anonymous request to raw.githubusercontent answers
+# 404 and the check would stay silent forever while looking alive. `gh` uses the authorization the human already has.
 #
-# Молчит всегда, кроме одного случая: на GitHub версия строго новее установленной.
-# Нет gh, нет авторизации, нет сети, ответ не разобрался — выходит тихо.
+# Silent always, except one case: the version on GitHub is strictly newer than the installed one.
+# No gh, no authorization, no network, an unparsed answer — it exits quietly.
 
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 
@@ -19,7 +17,7 @@ REPO="IamForma/forma"
 STAMP=".claude/hooks/.plugin-check-stamp"
 TODAY=$(date +%Y-%m-%d)
 
-# Не чаще раза в сутки: сеть на каждом старте сессии — задержка без нужды.
+# At most once a day: the network on every session start is a delay for nothing.
 [ -f "$STAMP" ] && [ "$(cat "$STAMP" 2>/dev/null)" = "$TODAY" ] && exit 0
 
 command -v gh >/dev/null 2>&1 || exit 0
@@ -27,7 +25,7 @@ command -v gh >/dev/null 2>&1 || exit 0
 CACHE="$HOME/.claude/plugins/cache/forma/forma"
 [ -d "$CACHE" ] || exit 0
 
-# Установленная версия — старший каталог в кэше плагина (их может лежать несколько).
+# The installed version is the highest directory in the plugin cache (several may be there).
 HAVE=$(ls "$CACHE" 2>/dev/null | grep -E '^[0-9]+(\.[0-9]+)*$' | sort -V | tail -1)
 [ -n "$HAVE" ] || exit 0
 
@@ -36,13 +34,17 @@ WANT=$(gh api "repos/$REPO/contents/.claude-plugin/plugin.json" \
        | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
 [ -n "$WANT" ] || exit 0
 
-# Отметку ставим только после удачного ответа — иначе старт без сети съел бы сутки проверки.
+# The stamp is set only after a successful answer, or an offline start would eat the day of checking.
 printf '%s' "$TODAY" > "$STAMP" 2>/dev/null
 
-# Строго новее, не просто «не равно»: в репозитории-источнике локальная версия идёт
-# впереди опубликованной, и «обновитесь» там было бы неправдой.
+# Strictly newer, not merely "different": in the source repository the local version runs ahead of the published
+# one, and "update" there would be untrue.
 NEWEST=$(printf '%s\n%s\n' "$HAVE" "$WANT" | sort -V | tail -1)
 [ "$NEWEST" = "$HAVE" ] && exit 0
 
-printf 'Плагин «Форма»: установлено %s, на GitHub %s.\nОбновить кэш: claude plugin marketplace update forma — затем попросите обновить протокол в этом проекте.\n' "$HAVE" "$WANT"
+if command -v node >/dev/null 2>&1 && [ -f .forma/i18n/cli.cjs ]; then
+  node .forma/i18n/cli.cjs msg hook.plugin_update have="$HAVE" want="$WANT"
+else
+  printf 'Plugin "Forma": installed %s, on GitHub %s.\n' "$HAVE" "$WANT"
+fi
 exit 0
