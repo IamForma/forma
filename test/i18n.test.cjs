@@ -166,3 +166,16 @@ test('хуки: один и тот же стоп на en, ru и французс
     assert.match(reason, /Blocked by the guard-delete hook.*(rm x).*"Отключи сенсорику"/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('установщик: --lang принимает код без каталога и сообщает про английские хуки; мусорный код отклонён', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-i18n-lang-'));
+  const forma = path.resolve(__dirname, '..', 'bin', 'forma.cjs');
+  const init = (lang) => spawnSync(process.execPath, [forma, 'init', '--dir', dir, '--engines', 'claude', '--board', 'skip', '--lang', lang, '--yes'], { encoding: 'utf8' });
+  try {
+    const fr = init('fr');
+    assert.equal(fr.status, 0, fr.stdout + fr.stderr);
+    assert.match(fr.stdout, /no message catalog for "fr": hook messages stay English/);
+    assert.match(fs.readFileSync(path.join(dir, 'project', 'config', 'PROJECT.md'), 'utf8'), /\*\*Project language\*\* <!-- k:language -->[^\n]*\bfr\./);
+    assert.notEqual(init('русский').status, 0);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
