@@ -79,9 +79,9 @@ function checkBehavior(ctx, out) {
   const { root, finding } = ctx;
   const hook = path.join(root, '.claude', 'hooks', 'check-ready.sh');
   if (fs.existsSync(hook)) {
-    const r = spawnSync('bash', [hook], { cwd: root, encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: root } });
+    const r = spawnSync('bash', [hook], { cwd: root, encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: root, FORMA_LANG: 'en' } });
     if (r.error || r.status !== 0) out.push(finding('.claude/hooks/check-ready.sh', 'exit 0', r.error ? r.error.message : 'exit ' + r.status));
-    else for (const l of (r.stdout || '').split('\n').filter((x) => /^\s+· (agents|паритет|parity)/.test(x))) out.push(finding('.claude/hooks/check-ready.sh', 'no role or parity remarks', l.trim()));
+    else for (const l of (r.stdout || '').split('\n').filter((x) => /^\s+· (agents|environment parity)/.test(x))) out.push(finding('.claude/hooks/check-ready.sh', 'no role or parity remarks', l.trim()));
   }
   const sync = path.join(root, '.claude', 'scripts', 'sync-engines.cjs');
   if (fs.existsSync(sync)) {

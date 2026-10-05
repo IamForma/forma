@@ -121,9 +121,21 @@ function anchorise(raw) {
   }).join('\n');
 }
 
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Heading line `## …` of a card zone (`zone.task`, `zone.history`, …): by anchor when it carries one, else by a known label.
+ * A regex over the whole line, without the line break; `flags` default to `m`.
+ */
+function headingRe(key, flags = 'm') {
+  const labels = labelsOf(key).map(escapeRe).join('|');
+  const a = `<!--\\s*k:${escapeRe(key)}\\s*-->`;
+  return new RegExp(`^##[ \\t]+(?:(?:${labels})[ \\t]*(?:${a})?|[^\\n]*?${a})[ \\t]*\\r?$`, flags);
+}
+
 /** PROJECT.md of a project: in the root of a working project or under project/config/ in the protocol repository. */
 function projectMdPath(root) {
-  for (const rel of ['project/config/PROJECT.md', 'PROJECT.md']) {
+  for (const rel of ['project/config/PROJECT.md', 'PROJECT.md', 'project/PROJECT.md']) {
     const p = path.join(root, rel);
     if (fs.existsSync(p)) return p;
   }
@@ -147,5 +159,5 @@ function message(code, params, lang) {
 
 module.exports = {
   KEYS, anchor, anchorOf, stripComments, plain, labelsOf, phrases, isKey, langCode,
-  reader, rowValue, setRow, anchorise, projectMdPath, readProjectMd, projectLang, message,
+  reader, rowValue, setRow, anchorise, headingRe, projectMdPath, readProjectMd, projectLang, message,
 };

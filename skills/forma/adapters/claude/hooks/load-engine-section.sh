@@ -1,32 +1,33 @@
 #!/bin/sh
-# SessionStart: подаёт в сессию §8 «Engine architecture in Claude Code»
-# из .claude/rules/claude-8.md.
+# SessionStart: feeds §8 "Engine architecture in Claude Code" from .claude/rules/claude-8.md into the session.
 #
-# Зачем хук. У Claude Code нет своего каталога always-on rules: файл под
-# .claude/ сам по себе не подхватывается (в отличие от .agents/rules/ у
-# Antigravity и .codex/ у Codex). §1–7 движок читает нативно из AGENTS.md,
-# а §8 доставляется отсюда — печатью в stdout, которая попадает в контекст.
+# Why a hook. Claude Code has no always-on rules directory: a file under .claude/ is not picked up by itself
+# (unlike .agents/rules/ in Antigravity and .codex/ in Codex). The engine reads §1-7 natively from AGENTS.md,
+# and §8 is delivered from here: printed to stdout, which lands in the context.
 #
-# Двойной подачи не бывает: пока в корне лежит CLAUDE.md, он несёт §8 сам,
-# и хук молчит. Это же делает переход обратимым — вернули CLAUDE.md, и хук
-# выключился, ничего не правя.
+# No double delivery: while a CLAUDE.md sits in the root it carries §8 itself and the hook stays silent. That also
+# makes the switch reversible: bring CLAUDE.md back and the hook turns off without any edit.
 #
-# Никогда не блокирует: выход всегда 0.
+# Never blocks: the exit is always 0.
 
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 
 RULES=".claude/rules/claude-8.md"
+I18N=.forma/i18n/cli.cjs
 
-# Корневой CLAUDE.md на месте — §8 приходит через него, печатать нечего.
+# said CODE [k=v ...] — a message in the project language; without the catalog the code itself is printed
+said() { if command -v node >/dev/null 2>&1 && [ -f "$I18N" ]; then node "$I18N" msg "$@"; else echo "$1"; fi; }
+
+# A root CLAUDE.md in place carries §8 itself: nothing to print.
 [ -f CLAUDE.md ] && exit 0
 
 if [ ! -f "$RULES" ]; then
-  echo "ВНИМАНИЕ: нет ни CLAUDE.md в корне, ни $RULES — узлы работают без §8 (архитектура движка). Проверьте .claude/hooks/load-engine-section.sh."
+  said hook.no_section8 rules="$RULES"
   exit 0
 fi
 
-# Закон §1–7 движок читает из AGENTS.md сам; если его нет — это уже не §8.
-[ -f AGENTS.md ] || echo "ВНИМАНИЕ: в корне нет AGENTS.md — закон протокола §1–7 не загружен."
+# The engine reads the law §1-7 from AGENTS.md itself; without it this is no longer about §8.
+[ -f AGENTS.md ] || said hook.no_agents
 
 cat "$RULES"
 exit 0

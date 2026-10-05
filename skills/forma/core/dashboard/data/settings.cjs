@@ -9,58 +9,12 @@
 const fs = require('fs');
 const path = require('path');
 const { readIfExists, projectFile } = require('../lib/fs.cjs');
+const i18n = require('../../i18n/index.cjs');
 const { parseFrontmatter } = require('../lib/card.cjs');
 const engines = require('../lib/engines.cjs');
 const { readRoutesCatalog } = require('./routes.cjs');
 
 const { UNKNOWN } = engines;
-
-const clean = (s) => s.replace(/`/g, '').trim();
-const tableCells = (l) => l.trim().replace(/^\||\|$/g, '').split('|').map(clean);
-
-/**
- * Читатель разделов PROJECT.md. Раздел — абзац, начинающийся с **Имя**; таблица раздела — первая после него.
- * Комментарии `<!-- -->` в разбор не идут.
- */
-function projectMdReader(raw) {
-  const lines = raw.replace(/<!--[\s\S]*?-->/g, '').split(/\r?\n/);
-  // label — имя раздела или список имён (русское и английское): каркас проекта ставится на обоих языках
-  const secStart = (label) => lines.findIndex((l) => [].concat(label).some((n) => l.startsWith('**' + n)));
-  const inline = (label) => {
-    const l = lines[secStart(label)];
-    if (!l) return null;
-    const m = l.replace(/\*\([^)]*\)\*/g, '').match(/:\s*(.+)$/);
-    return m ? clean(m[1].replace(/\.\s.*$/, '').replace(/\.$/, '')) : null;
-  };
-  const table = (label) => {
-    const i = secStart(label);
-    if (i < 0) return null;
-    let j = i + 1;
-    while (j < lines.length && !lines[j].startsWith('|')) {
-      if (lines[j].startsWith('**') || lines[j].startsWith('---')) return { columns: [], rows: [] };
-      j++;
-    }
-    const columns = j < lines.length ? tableCells(lines[j]) : [];
-    const rows = [];
-    for (let k = j + 2; k < lines.length && lines[k].startsWith('|'); k++) {
-      const r = tableCells(lines[k]);
-      if (r.some((c) => c)) rows.push(r);
-    }
-    return { columns, rows };
-  };
-  const trailingNumber = (label) => {
-    const l = lines[secStart(label)];
-    const m = l && l.match(/:\s*(\d+)\s*$/);
-    return m ? m[1] : null;
-  };
-  return { inline, table, trailingNumber };
-}
-
-/** Второй столбец строки таблицы, у которой первый столбец подходит под `test`; нет таблицы или строки — `null`. */
-function tableValue(table, test) {
-  const r = table && table.rows.find((x) => test(x[0]));
-  return r ? r[1] : null;
-}
 
 /** Оснастка узлов: строка считается пустой, если пусты все колонки кроме имени узла. */
 function toolingView(tooling) {
@@ -111,21 +65,21 @@ function readGoalDrafts(projectRoot) {
 function readProjectSettings(projectRoot) {
   const raw = readIfExists(projectFile(projectRoot, 'PROJECT.md'), null);
   if (!raw) return { present: false };
-  const md = projectMdReader(raw);
-  const tpl = md.table(['Шаблон проекта', 'Project template']);
-  const thr = md.table(['Пороги', 'Thresholds']);
+  const md = i18n.reader(raw);
+  const tpl = md.table('template');
+  const thr = md.table('thresholds');
   const skills = readSkills(projectRoot);
   return {
     present: true,
     source: 'project/config/PROJECT.md',
-    language: md.inline(['Язык проекта', 'Project language']),
-    template: { name: tableValue(tpl, (k) => k === 'Имя' || k === 'Name'), status: tableValue(tpl, (k) => k === 'Статус' || k === 'Status') },
-    thresholds: { attempts: tableValue(thr, (k) => /^(Заходов|Attempts)/.test(k)), volume: tableValue(thr, (k) => /^(Объём|Volume|Cycle volume)/.test(k)) },
-    release: md.trailingNumber(['Выпуск протокола', 'Protocol release']),
-    epics: md.table(['Эпики проекта', 'Project epics']),
-    services: md.table(['Внешние сервисы', 'External services']),
-    tooling: toolingView(md.table(['Оснастка узлов', 'Node tooling'])),
-    references: md.table(['Справочники проекта', 'Project references']),
+    language: md.inline('language'),
+    template: { name: i18n.rowValue(tpl, 'name'), status: i18n.rowValue(tpl, 'status') },
+    thresholds: { attempts: i18n.rowValue(thr, 'attempts'), volume: i18n.rowValue(thr, 'volume') },
+    release: md.trailingNumber('release'),
+    epics: md.table('epics'),
+    services: md.table('services'),
+    tooling: toolingView(md.table('tooling')),
+    references: md.table('references'),
     skills: { columns: skills.columns, rows: skills.rows },
     skillDirs: skills.dirs,
     goals: readGoalDrafts(projectRoot),
