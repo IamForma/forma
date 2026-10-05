@@ -143,3 +143,26 @@ test('установщик: i18n доставлен, шаблон с якоря�
     assert.match(init().stdout, /PROJECT\.md anchors: already in place/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('хуки: один и тот же стоп на en, ru и французском документе; вывод — язык проекта, запасной английский', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-i18n-hook-'));
+  const forma = path.resolve(__dirname, '..', 'bin', 'forma.cjs');
+  const r = spawnSync(process.execPath, [forma, 'init', '--dir', dir, '--engines', 'claude', '--board', 'skip', '--lang', 'en', '--yes'], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const file = path.join(dir, 'project', 'config', 'PROJECT.md');
+  const original = fs.readFileSync(file, 'utf8');
+  const hook = (name, input) => spawnSync('bash', [path.join(dir, '.claude', 'hooks', name)], { cwd: dir, encoding: 'utf8', input, env: { ...process.env, CLAUDE_PROJECT_DIR: dir, FORMA_LANG: '' } });
+  try {
+    assert.match(hook('check-ready.sh').stdout, /START STOP/);
+
+    fs.writeFileSync(file, original.replace(/(\*\*Project language\*\*[^\n]*?\)\*?:\s*)English\./, '$1Русский.'));
+    assert.match(hook('check-ready.sh').stdout, /СТОП СТАРТА/);
+
+    fs.writeFileSync(file, original.replace(/(\*\*Project language\*\*[^\n]*?\)\*?:\s*)English\./, '$1français.').replace('**Thresholds**', '**Seuils**').replace('| Attempts per task', '| Tentatives par tâche'));
+    assert.match(hook('check-ready.sh').stdout, /START STOP/);
+
+    // the reason of a blocked delete: the project language, and the code phrase stays literal in both
+    const reason = spawnSync(process.execPath, [path.join(dir, '.forma', 'i18n', 'cli.cjs'), 'msg', 'hook.delete_blocked', 'cmd=rm x', '--root', dir], { encoding: 'utf8', env: { ...process.env, FORMA_LANG: 'en' } }).stdout;
+    assert.match(reason, /Blocked by the guard-delete hook.*(rm x).*"Отключи сенсорику"/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});

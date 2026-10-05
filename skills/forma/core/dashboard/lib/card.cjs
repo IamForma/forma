@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const i18n = require('../../i18n/index.cjs');
 
 /** Каталог доски: живые карточки; закрытые — в `done/` внутри него. */
 const boardDir = (root) => path.join(root, '.devtool', 'features');
@@ -122,33 +123,38 @@ function cardTitle(text) {
 
 // ---- зоны ---------------------------------------------------------------------------------------
 
-/** Названия четырёх зон: [русское, английское] (AGENTS.md §6). */
-const ZONES = {
-  task: ['Задача', 'Task'],
-  kit: ['Снаряжение', 'Kit'],
-  history: ['История', 'History'],
-  result: ['Результат', 'Result'],
+/** Ключи четырёх зон карточки (AGENTS.md §6): заголовок ищется по якорю `<!-- k:zone.X -->`, иначе по словарю i18n. */
+const ZONES = ['task', 'kit', 'history', 'result'];
+
+/** Заголовок зоны на языке карточки (`ru` — русский, иначе английский); `anchored` — с якорем ключа: проекту на языке без словаря перевод заголовка ключ не стирает. */
+const zoneHeading = (key, lang, anchored = false) => {
+  const labels = i18n.labelsOf('zone.' + key);
+  const label = labels[lang === 'ru' ? labels.length - 1 : 0];
+  return anchored ? label + ' ' + i18n.anchor('zone.' + key) : label;
 };
 
-/** Заголовок зоны на языке карточки (`ru` — русский, иначе английский). */
-const zoneHeading = (key, lang) => ZONES[key][lang === 'ru' ? 0 : 1];
-
-/** Тело зоны по любому из её названий, без крайних пробелов; зоны нет — пустая строка. */
+/** Тело зоны, без крайних пробелов; зоны нет — пустая строка. */
 function zone(text, key) {
-  for (const n of ZONES[key]) {
-    const re = new RegExp('^## ' + n + '\\s*\\r?\\n([\\s\\S]*?)(?=^## |$(?![\\s\\S]))', 'm');
-    const m = text.match(re);
-    if (m) return m[1].trim();
-  }
-  return '';
+  const head = i18n.headingRe('zone.' + key, 'm');
+  const lines = String(text).split(/\r?\n/);
+  const i = lines.findIndex((l) => head.test(l));
+  if (i < 0) return '';
+  let end = lines.findIndex((l, k) => k > i && l.startsWith('## '));
+  if (end < 0) end = lines.length;
+  return lines.slice(i + 1, end).join('\n').trim();
 }
 
-/** Строка-заголовок зоны «История»/«History» целиком (для построчного поиска). */
-const HISTORY_HEADING_RE = new RegExp('^## (' + ZONES.history.join('|') + ')\\s*$');
+/** Строка-заголовок зоны «История» целиком (для построчного поиска). */
+const HISTORY_HEADING_RE = i18n.headingRe('zone.history', '');
 
 /** Текст карточки без зоны истории — строки расхода дописываются в закрытые карточки и не должны менять хэш. */
 function withoutHistory(text) {
-  return text.replace(/^## (?:История|History)[ \t]*\r?\n[\s\S]*?(?=^## |(?![\s\S]))/m, '');
+  const lines = String(text).split('\n');
+  const i = lines.findIndex((l) => HISTORY_HEADING_RE.test(l.replace(/\r$/, '')));
+  if (i < 0) return String(text);
+  let end = lines.findIndex((l, k) => k > i && l.startsWith('## '));
+  if (end < 0) end = lines.length;
+  return lines.slice(0, i).concat(lines.slice(end)).join('\n');
 }
 
 module.exports = {

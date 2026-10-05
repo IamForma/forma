@@ -40,7 +40,7 @@ function readyNotes(root) {
     if (!lang || /^(Documentation|Документация)/i.test(lang)) add('ready.language_unset');
   }
 
-  const roadmap = pick(root, 'ROADMAP.md', 'project/ops/ROADMAP.md');
+  const roadmap = ['ROADMAP.md', 'project/ops/ROADMAP.md', 'project/ROADMAP.md'].find((p) => exists(root, p)) || 'ROADMAP.md';
   if (!exists(root, roadmap)) add('ready.roadmap_missing');
   else if (i18n.phrases('roadmap_placeholder').some((p) => fs.readFileSync(path.join(root, roadmap), 'utf8').includes(p))) add('ready.roadmap_unfilled');
 
