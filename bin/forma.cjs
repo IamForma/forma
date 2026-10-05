@@ -9,6 +9,7 @@ const path = require('node:path')
 const readline = require('node:readline')
 const { spawnSync } = require('node:child_process')
 const { walk, projectFile } = require('../skills/forma/core/dashboard/lib/fs.cjs')
+const i18n = require('../skills/forma/core/i18n/index.cjs')
 const { parseLong } = require('../skills/forma/core/dashboard/lib/cli.cjs')
 const verifyInstall = require('../skills/forma/core/verify/verify-install.cjs')
 
@@ -183,6 +184,7 @@ function installCore(root, protectedPaths) {
   copyTree(path.join(CORE, 'manual'), path.join(forma, 'manual'))
   copyTree(path.join(CORE, 'board'), path.join(forma, 'board'))
   copyTree(path.join(CORE, 'verify'), path.join(forma, 'verify'))
+  copyTree(path.join(CORE, 'i18n'), path.join(forma, 'i18n'))
   copyTree(path.join(CORE, 'skills'), path.join(forma, 'skills'), { skip })
   // dashboard: code is overwritten, the human's settings are not
   copyTree(path.join(CORE, 'dashboard'), path.join(forma, 'dashboard'), {
@@ -276,9 +278,9 @@ function listTemplates() {
 function readProjectTemplate(root) {
   const f = projectFile(root, 'PROJECT.md')
   if (!fs.existsSync(f)) return null
-  const m = fs.readFileSync(f, 'utf8').match(/\|\s*(?:Имя|Name)\s*\|\s*`?([^|`]+?)`?\s*\|/)
-  const name = m && m[1].trim()
-  return name && name !== '—' && name !== 'нет' && name !== 'none' ? name : null
+  const name = i18n.rowValue(i18n.reader(fs.readFileSync(f, 'utf8')).table('template'), 'name')
+  const value = name && name.trim()
+  return value && value !== '—' && value !== 'нет' && value !== 'none' ? value : null
 }
 function templateFiles(name) {
   // what a template puts into the project: [source, path in the project]
@@ -308,10 +310,10 @@ function installTemplate(root, name, projectCreated) {
   if (projectCreated) {
     const f = projectFile(root, 'PROJECT.md')
     let t = fs.readFileSync(f, 'utf8')
-    const ru = /\|\s*Имя\s*\|/.test(t)
-    t = t.replace(/(\|\s*(?:Имя|Name)\s*\|)\s*—\s*\|/, `$1 \`${name}\` |`)
-      .replace(/(\|\s*(?:Источник|Source)\s*\|)\s*—\s*\|/, `$1 ${ru ? 'плагин forma' : 'forma plugin'}, \`templates/${name}\` |`)
-      .replace(/(\|\s*(?:Статус|Status)\s*\|)\s*`(?:нет|none)`\s*\|/, `$1 \`${ru ? 'формируется с человеком' : 'forming with the human'}\` |`)
+    // a fresh scaffold is English (translation comes later); the rows are found by anchor
+    t = i18n.setRow(t, 'name', `\`${name}\``)
+    t = i18n.setRow(t, 'source', `forma plugin, \`templates/${name}\``)
+    t = i18n.setRow(t, 'status', '`forming with the human`')
     fs.writeFileSync(f, t)
   }
   return { written, kept }
@@ -418,6 +420,17 @@ function applyLanguage(root, lang) {
   return files.length
 }
 
+// A PROJECT.md written without anchors (older project) gets them added: parsers then read it by key, in any language.
+function migrateAnchors(root) {
+  const f = projectFile(root, 'PROJECT.md')
+  if (!fs.existsSync(f)) return 'PROJECT.md anchors: no PROJECT.md'
+  const before = fs.readFileSync(f, 'utf8')
+  const after = i18n.anchorise(before)
+  if (after === before) return 'PROJECT.md anchors: already in place'
+  fs.writeFileSync(f, after)
+  return 'PROJECT.md anchors: added (invisible keys, labels untouched)'
+}
+
 // Paths the project template already wrote per project/config/PROJECT.md: the core does not overwrite them.
 function protectedTemplatePaths(root, existingTemplate) {
   const protectedPaths = new Set()
@@ -516,7 +529,7 @@ function printVerify(root) {
 
 // install: core, engines, template, board; returns the report lines and the board result
 function install(root, choice) {
-  const migrationLine = [migrateLayout(root), migrateConfig(root), migrateOps(root)].join('\n')
+  const migrationLine = [migrateLayout(root), migrateConfig(root), migrateOps(root), migrateAnchors(root)].join('\n')
   const existingTemplate = readProjectTemplate(root)
   const protectedPaths = protectedTemplatePaths(root, existingTemplate)
   const core = installCore(root, protectedPaths)

@@ -1,0 +1,19 @@
+{
+  "_meta.name": "English",
+  "ready.agents_missing_role": "agents: no {name}.md",
+  "ready.agents_no_executor": "agents: no executor (run-*.md)",
+  "ready.agents_no_dir": "agents: no .claude/agents folder",
+  "ready.thresholds_incomplete": "PROJECT.md: not all thresholds are filled in",
+  "ready.language_unset": "PROJECT.md: project language is not set",
+  "ready.roadmap_missing": "ROADMAP.md: no project map",
+  "ready.roadmap_unfilled": "ROADMAP.md: the map is not filled in",
+  "ready.vars_missing": "VARS/: no values folder",
+  "ready.goal_no_file": "{dir}: no GOAL.md",
+  "ready.parity_drift": "environment parity: rule drift detected (.claude/scripts/sync-engines.cjs --diff)",
+  "ready.notes_header": "Unchecked items: {n}",
+  "gate.header": "START STOP — the cycle does not open, interview the human first (AGENTS.md §3):",
+  "gate.goal_not_formed": "goal-{goal}: the goal image is not formed by the human (draft)",
+  "gate.thresholds": "PROJECT.md: both thresholds must be set (attempts, cycle volume)",
+  "gate.translation_pending": "the project/ scaffold is not translated (.forma/translation-pending.json): do the \"Scaffold translation\" step of the forma skill first",
+  "gate.service_limit": "PROJECT.md: a paid service has no per-cycle limit set"
+}
