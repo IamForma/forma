@@ -88,7 +88,7 @@ function connectorRows(tools, configured) {
 const rel = (root, file) => path.relative(root, file).split(path.sep).join('/');
 
 /** Роль из markdown с фронтматтером; `skillsKey` — ключ со скиллами (`uses` у узлов, `.forma/skills` у ролей Run). */
-function mdRoleRow(root, file, name, skillsKey, configured) {
+function mdRoleRow(root, file, { name, skillsKey, configured }) {
   const fm = parseFrontmatter(fs.readFileSync(file, 'utf8'));
   const tools = splitTools(fm.tools);
   return {
@@ -128,13 +128,13 @@ function readMdCatalog(root, { title, rolesDir, mcpFiles }) {
   const configured = configuredServers(mcpFiles || []);
   const nodes = NODE_ORDER.map((label) => {
     const file = path.join(dir, `${label.toLowerCase()}.md`);
-    return fs.existsSync(file) ? mdRoleRow(root, file, label, 'uses', configured) : null;
+    return fs.existsSync(file) ? mdRoleRow(root, file, { name: label, skillsKey: 'uses', configured }) : null;
   }).filter(Boolean);
   const runDir = path.join(dir, 'run');
   const runExists = fs.existsSync(runDir);
   const runRoles = runExists
     ? fs.readdirSync(runDir).filter((f) => f.endsWith('.md')).sort()
-      .map((f) => mdRoleRow(root, path.join(runDir, f), null, '.forma/skills', configured))
+      .map((f) => mdRoleRow(root, path.join(runDir, f), { name: null, skillsKey: '.forma/skills', configured }))
     : [];
   return { title, nodes, runRoles, runNote: runExists ? null : { key: 'fm.runNote.noDir', vars: { dir: rolesDir } }, rolesMissing: false };
 }
