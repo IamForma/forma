@@ -70,10 +70,10 @@ const stats = { written: 0, kept: 0 }
 const owned = new Set() // files written by the installer in this pass: the install manifest is built from them
 // live counter of installed files (terminal only, so piped output and tests stay clean)
 function progress() {
-  if (process.stdout.isTTY && stats.written % 5 === 0) process.stdout.write(`  installing files: ${stats.written}`)
+  if (process.stdout.isTTY && stats.written % 5 === 0) process.stdout.write(`\r  installing files: ${stats.written}`)
 }
 function progressDone() {
-  if (process.stdout.isTTY) process.stdout.write(`  installing files: ${stats.written} — done
+  if (process.stdout.isTTY) process.stdout.write(`\r  installing files: ${stats.written} — done
 `)
 }
 function copyFile(src, dst, { overwrite = true } = {}) {
