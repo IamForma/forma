@@ -33,11 +33,6 @@ it('в economy.js нет кириллицы вне комментариев', ()
   assert.equal(hit, null, 'кириллица в коде: ' + (hit && hit[0]));
 });
 
-const stub = () => new Proxy(function () {}, {
-  get: (_, k) => (k === 'classList' ? { toggle() {}, contains: () => false } : k === 'dataset' ? {} : k === Symbol.toPrimitive ? () => '' : stub()),
-  set: () => true, apply: () => stub(),
-});
-
 function load(lang) {
   const out = { html: '' };
   const el = { set innerHTML(v) { out.html = v; }, get innerHTML() { return out.html; }, querySelectorAll: () => [] };

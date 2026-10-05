@@ -1,0 +1,22 @@
+# Окончания строк: в репозитории и в рабочей копии — только LF, на любой ОС.
+# CRLF ломает bash-хуки (`$'do\r'`) у пользователей на macOS/Linux и роняет тесты.
+* text=auto eol=lf
+
+# Исходники с управляющими символами внутри строк (сырой CR, NUL в регулярке):
+# эвристика git считает их двоичными — объявляем текстом явно, чтобы нормализация их не пропускала.
+*.cjs  text eol=lf
+*.mjs  text eol=lf
+*.js   text eol=lf
+*.sh   text eol=lf
+*.ps1  text eol=lf
+
+# Двоичные файлы — без преобразований и без текстового diff.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pyc  binary
