@@ -250,7 +250,8 @@ function wearTables(manual, toBone, boneHits) {
 }
 
 // Итоговый файл: три корпуса, счётчики, износ правил, голые понятия и сами крепления.
-function assembleReport(src, toBone, toMuscle, boneHits, toBoneEngine) {
+function assembleReport(src, links) {
+  const { toBone, toMuscle, boneHits, toBoneEngine } = links;
   const { manual, project, cards, proh, engine } = src;
   const engFiles = engineFiles(engine);
   // Правило, которого ни одна карточка не коснулась. Это не приговор ему: либо
@@ -324,7 +325,7 @@ function main() {
   const toBoneEngine = [];   // файл движка → правило («реализует правило»)
   matchEngineBones(src.engine, src.manual, src.proh, toBoneEngine);
 
-  const out = assembleReport(src, toBone, toMuscle, boneHits, toBoneEngine);
+  const out = assembleReport(src, { toBone, toMuscle, boneHits, toBoneEngine });
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(OUT, JSON.stringify(out, null, 2), 'utf8');
   printSummary(out);
