@@ -35,6 +35,12 @@ async function startSession(loc, name) {
   return { dir, port, log, stop };
 }
 
+/** Ждёт, пока в stdout сервера наберётся `n` строк: ответ HTTP может прийти раньше, чем строка из пайпа. */
+async function waitLines(log, n, ms = 5000) {
+  const until = Date.now() + ms;
+  while (log.out.trim().split('\n').length < n && Date.now() < until) await new Promise((r) => setTimeout(r, 20));
+}
+
 for (const loc of LOCATIONS) {
   const label = loc.slice(0, -2).join('/');
 
@@ -123,6 +129,7 @@ for (const loc of LOCATIONS) {
       assert.deepEqual(lines[0].actions, actions);
       assert.ok(!Number.isNaN(Date.parse(lines[0].at)));
 
+      await waitLines(s.log, 3);
       const stdout = s.log.out.trim().split('\n').slice(1).map((l) => JSON.parse(l));
       assert.deepEqual(stdout.map((e) => e.seq), [1, 2], 'то же событие печатается в stdout');
       const events = await request(s.port, 'GET', '/events');
@@ -161,6 +168,7 @@ for (const loc of LOCATIONS) {
       const lines = fs.readFileSync(path.join(t.dir, 'events.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
       assert.deepEqual(lines[0].actions, [{ type: 'upload', file: 'evil.png', bytes: Buffer.byteLength('данные'), q: 'q2', note: 'заметка' }]);
       assert.deepEqual(lines[1].actions, [{ type: 'upload', file: 'evil-2.png', bytes: Buffer.byteLength('второй') }]);
+      await waitLines(t.log, lines.length + 1);
       const stdout = t.log.out.trim().split('\n').slice(1);
       assert.equal(stdout.length, lines.length, 'каждая загрузка будит агента');
     } finally { await t.stop(); }
