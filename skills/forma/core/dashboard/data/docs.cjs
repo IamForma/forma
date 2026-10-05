@@ -31,17 +31,18 @@ function walkMd(dir, base, out) {
   return out;
 }
 
-// Обходит дерево TOC, на каждом листе (есть `page`) зовёт onLeaf(item, trail-заголовков, адрес-для-ошибки).
+// Обходит дерево TOC, на каждом листе (есть `page`) зовёт walk.onLeaf(item, trail-заголовков, адрес-для-ошибки);
+// walk.sourceLabel — имя файла TOC для сообщения об ошибке.
 // Ни `page`, ни `items` на узле — сломанный пункт, адресом и падаем, это тоже «ссылка на несуществующее».
-function walkToc(items, trail, sourceLabel, addrPrefix, onLeaf) {
+function walkToc(items, trail, addrPrefix, walk) {
   items.forEach((item, i) => {
     const addr = `${addrPrefix}[${i}]`;
     if (item.items) {
-      walkToc(item.items, [...trail, item.title], sourceLabel, addr + '.items', onLeaf);
+      walkToc(item.items, [...trail, item.title], addr + '.items', walk);
     } else if (item.page) {
-      onLeaf(item, trail, addr);
+      walk.onLeaf(item, trail, addr);
     } else {
-      throw new Error(`${sourceLabel} ${addr} — item has neither "page" nor "items"`);
+      throw new Error(`${walk.sourceLabel} ${addr} — item has neither "page" nor "items"`);
     }
   });
 }
@@ -59,12 +60,12 @@ function buildProjectBook(projectRoot) {
 
   const pages = {};
   const referenced = new Set();
-  walkToc(toc.items || [], [], 'project/docs/_toc.json', 'items', (item, trail, addr) => {
+  walkToc(toc.items || [], [], 'items', { sourceLabel: 'project/docs/_toc.json', onLeaf: (item, trail, addr) => {
     const file = path.join(root, item.page);
     if (!fs.existsSync(file)) throw new Error(`project/docs/_toc.json ${addr}.page — file not found: ${item.page}`);
     referenced.add(item.page);
     pages[item.page] = { page: item.page, title: item.title, breadcrumbs: [...trail, item.title], text: fs.readFileSync(file, 'utf8') };
-  });
+  } });
   const all = walkMd(root, root, []);
   const unlisted = all.filter((p) => p !== '_toc.json' && !referenced.has(p));
   return { id, title: toc.title || fallbackTitle, toc, pages, unlisted };
@@ -83,14 +84,14 @@ function buildManualBook(projectRoot) {
 
   const pages = { en: {}, ru: {} };
   const referenced = new Set();
-  walkToc(toc.items || [], [], '.forma/manual/_toc.json', 'items', (item, trail, addr) => {
+  walkToc(toc.items || [], [], 'items', { sourceLabel: '.forma/manual/_toc.json', onLeaf: (item, trail, addr) => {
     referenced.add(item.page);
     for (const lang of ['en', 'ru']) {
       const file = path.join(root, lang, item.page);
       if (!fs.existsSync(file)) throw new Error(`.forma/manual/_toc.json ${addr}.page — file not found: ${lang}/${item.page}`);
       pages[lang][item.page] = { page: item.page, title: item.title, breadcrumbs: [...trail, item.title], text: fs.readFileSync(file, 'utf8') };
     }
-  });
+  } });
   const unlisted = {};
   for (const lang of ['en', 'ru']) {
     const all = walkMd(path.join(root, lang), path.join(root, lang), []);
