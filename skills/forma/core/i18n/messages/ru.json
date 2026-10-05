@@ -1,0 +1,19 @@
+{
+  "_meta.name": "Русский",
+  "ready.agents_missing_role": "agents: нет {name}.md",
+  "ready.agents_no_executor": "agents: нет ни одного исполнителя (run-*.md)",
+  "ready.agents_no_dir": "agents: папки .claude/agents нет",
+  "ready.thresholds_incomplete": "PROJECT.md: пороги заполнены не все",
+  "ready.language_unset": "PROJECT.md: язык проекта не указан",
+  "ready.roadmap_missing": "ROADMAP.md: карты проекта нет",
+  "ready.roadmap_unfilled": "ROADMAP.md: карта не заполнена",
+  "ready.vars_missing": "VARS/: папки величин нет",
+  "ready.goal_no_file": "{dir}: нет GOAL.md",
+  "ready.parity_drift": "паритет сред: обнаружен дрейф правил (.claude/scripts/sync-engines.cjs --diff)",
+  "ready.notes_header": "Непроверенных мест: {n}",
+  "gate.header": "СТОП СТАРТА — круг не открывается, сначала интервью с человеком (AGENTS.md §3):",
+  "gate.goal_not_formed": "goal-{goal}: образ цели не сформирован человеком (draft)",
+  "gate.thresholds": "PROJECT.md: заданы не оба порога (заходы, объём)",
+  "gate.translation_pending": "каркас project/ не переведён (.forma/translation-pending.json): сначала шаг «Перевод каркаса» скилла forma",
+  "gate.service_limit": "PROJECT.md: у платного сервиса не задан предел на круг"
+}

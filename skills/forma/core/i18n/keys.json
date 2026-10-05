@@ -1,0 +1,32 @@
+{
+  "_doc": "Machine keys of the protocol. A key is always English; the labels are only a fallback for documents written without anchors (`<!-- k:KEY -->`). A new language needs no parser change: add its labels here.",
+  "languages": {
+    "en": ["english"],
+    "ru": ["russian", "русский"]
+  },
+  "labels": {
+    "language": { "match": "prefix", "en": ["Project language"], "ru": ["Язык проекта"] },
+    "template": { "match": "prefix", "en": ["Project template"], "ru": ["Шаблон проекта"] },
+    "name": { "match": "exact", "en": ["Name"], "ru": ["Имя"] },
+    "source": { "match": "exact", "en": ["Source"], "ru": ["Источник"] },
+    "status": { "match": "exact", "en": ["Status"], "ru": ["Статус"] },
+    "thresholds": { "match": "prefix", "en": ["Thresholds", "Threshold"], "ru": ["Пороги", "Порог"] },
+    "attempts": { "match": "prefix", "en": ["Attempts"], "ru": ["Заходов"] },
+    "volume": { "match": "prefix", "en": ["Cycle volume", "Volume"], "ru": ["Объём"] },
+    "release": { "match": "prefix", "en": ["Protocol release"], "ru": ["Выпуск протокола"] },
+    "epics": { "match": "prefix", "en": ["Project epics"], "ru": ["Эпики проекта"] },
+    "services": { "match": "prefix", "en": ["External services"], "ru": ["Внешние сервисы"] },
+    "service": { "match": "exact", "en": ["Service"], "ru": ["Сервис"] },
+    "tooling": { "match": "prefix", "en": ["Node tooling"], "ru": ["Оснастка узлов"] },
+    "references": { "match": "prefix", "en": ["Project references"], "ru": ["Справочники проекта"] },
+    "zone.task": { "match": "exact", "en": ["Task"], "ru": ["Задача"] },
+    "zone.kit": { "match": "exact", "en": ["Kit"], "ru": ["Снаряжение"] },
+    "zone.history": { "match": "exact", "en": ["History"], "ru": ["История"] },
+    "zone.result": { "match": "exact", "en": ["Result"], "ru": ["Результат"] }
+  },
+  "phrases": {
+    "unset": ["not set", "не задан"],
+    "attempt": ["attempt", "заход"],
+    "roadmap_placeholder": ["<The whole>", "<name of a part of the product>", "<Целое>", "<имя>"]
+  }
+}
