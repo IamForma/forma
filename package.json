@@ -16,6 +16,7 @@
   "files": [
     "bin/",
     "scripts/initialize-project-git.cjs",
+    "scripts/layout/",
     "skills/",
     "templates/"
   ],

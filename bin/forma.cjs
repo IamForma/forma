@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict'
-// Установщик протокола «Форма»: `npx github:IamForma/forma init`.
-// Node без зависимостей. Ставит ядро всегда, затем три шага: движки, шаблон проекта, Kanban Markdown.
-// Повторный запуск = обновление: конфигурация схемы перезаписывается, `project/`, доска и `.forma/living/` не трогаются.
+// Installer of the Forma protocol: `npx github:IamForma/forma init`.
+// Dependency-free Node. Always installs the core, then three steps: engines, project template, Kanban Markdown.
+// A rerun is an update: the schema configuration is overwritten; `project/`, the board and `.forma/living/` are left alone.
 
 const fs = require('node:fs')
 const path = require('node:path')
@@ -25,7 +25,7 @@ const ENGINES = [
   { id: 'gemini', label: 'Gemini (Antigravity)' },
 ]
 
-// ---------- аргументы ----------
+// ---------- arguments ----------
 function parseArgs(argv) {
   const { opts, rest } = parseLong(argv, ['help', 'yes'])
   const o = { cmd: 'init', dir: process.cwd(), ...opts }
@@ -34,21 +34,21 @@ function parseArgs(argv) {
   return o
 }
 
-const HELP = `forma init — установка/обновление протокола «Форма» в текущую папку
+const HELP = `forma init — install/update the Forma protocol in the current folder
 
-  npx github:IamForma/forma init [флаги]
+  npx github:IamForma/forma init [flags]
 
-  --engines  claude[,codex,gemini]   движки (codex, gemini — бета, в разработке, но ставятся)
-  --template <имя>|none              шаблон проекта из templates/ (по умолчанию none)
-  --board    auto|skip               Kanban Markdown: найти CLI редакторов и поставить (по умолчанию auto)
-  --lang     en|ru                   язык документов проекта (по умолчанию en; ru — перевод каркаса агентом после установки)
-  --dir      <путь>                  корень проекта (по умолчанию текущая папка)
-  --yes                              без вопросов, недостающее — по умолчанию
+  --engines  claude[,codex,gemini]   engines (codex, gemini — beta, in development, but installable)
+  --template <name>|none             project template from templates/ (default: none)
+  --board    auto|skip               Kanban Markdown: find editor CLIs and install (default: auto)
+  --lang     en|ru                   project document language (default: en; ru — the agent translates the scaffold after install)
+  --dir      <path>                  project root (default: current folder)
+  --yes                              no questions, defaults for anything missing
 
-Все четыре флага заданы (или --yes, или нет терминала) — меню не показывается.
+All four flags set (or --yes, or no terminal) — the menu is not shown.
 `
 
-// ---------- ввод ----------
+// ---------- input ----------
 function makeAsk() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
   const lines = []
@@ -63,14 +63,23 @@ function makeAsk() {
   return ask
 }
 
-// ---------- файлы ----------
+// ---------- files ----------
 const stats = { written: 0, kept: 0 }
-const owned = new Set() // файлы, записанные установщиком в этот проход: из них строится опись установки
+const owned = new Set() // files written by the installer in this pass: the install manifest is built from them
+// live counter of installed files (terminal only, so piped output and tests stay clean)
+function progress() {
+  if (process.stdout.isTTY && stats.written % 5 === 0) process.stdout.write(`  installing files: ${stats.written}`)
+}
+function progressDone() {
+  if (process.stdout.isTTY) process.stdout.write(`  installing files: ${stats.written} — done
+`)
+}
 function copyFile(src, dst, { overwrite = true } = {}) {
   if (fs.existsSync(dst) && !overwrite) { stats.kept++; return false }
   fs.mkdirSync(path.dirname(dst), { recursive: true })
   fs.copyFileSync(src, dst)
   stats.written++
+  progress()
   owned.add(dst)
   return true
 }
@@ -93,7 +102,7 @@ function ensureLine(file, line, comment) {
   fs.appendFileSync(file, (text && !text.endsWith('\n') ? '\n' : '') + (comment ? `# ${comment}\n` : '') + line + '\n')
 }
 
-// ---------- шаг 0: Git ----------
+// ---------- step 0: Git ----------
 function gitBoundary(root) {
   const r = spawnSync(process.execPath, [path.join(PKG, 'scripts', 'initialize-project-git.cjs'), root], { encoding: 'utf8' })
   if (r.status !== 0) {
@@ -103,11 +112,10 @@ function gitBoundary(root) {
   return r.stdout.trim()
 }
 
-// ---------- миграция со старой раскладки ----------
-// Проект, установленный до v0.4.182 (`board/`, `dashboard/`, `living/`, `manual/`, `skills/`,
-// `templates/`, `protocol/` в корне) — набор layout-* переносит их в `.forma/` и правит
-// текстовые ссылки. `project/` и `.devtool/` — зона человека, их содержимое не читает та же логика
-// переезда ничего не трогает (`--exclude`).
+// ---------- migration from the old layout ----------
+// A project installed before the `.forma/` layout (`board/`, `dashboard/`, `living/`, `manual/`, `skills/`,
+// `templates/`, `protocol/` in the root) — the layout-* scripts move them into `.forma/` and fix
+// text references. `project/` and `.devtool/` are the human zone: the move touches nothing there (`--exclude`).
 const LAYOUT = path.join(PKG, 'scripts', 'layout')
 const LAYOUT_MAP = path.join(LAYOUT, 'layout-map.json')
 
@@ -117,9 +125,9 @@ function oldLayoutMoves(root) {
   return moves.filter((m) => fs.existsSync(path.join(root, m.from)) && !fs.existsSync(path.join(root, m.to)))
 }
 
-// Файл под перенесённым каталогом, которого нет в эталоне ядра/шаблонов — положен человеком
-// в старую раскладку самостоятельно; переезжает вместе с каталогом (git mv), здесь — только для
-// отчёта. `protocol/` своего эталона внутри PKG не имеет — пропускается.
+// A file under a moved directory that is absent from the core/templates reference was put there
+// by a human in the old layout; it moves with the directory (git mv) and is only listed in the
+// report. `protocol/` has no reference inside PKG — skipped.
 function userFilesAfterMove(root, moved) {
   const refFor = (from) => (from === 'templates' ? TEMPLATES : from === 'protocol' ? null : path.join(CORE, from))
   const extra = []
@@ -138,36 +146,36 @@ function userFilesAfterMove(root, moved) {
 
 function migrateLayout(root) {
   const moved = oldLayoutMoves(root)
-  if (!moved.length) return 'перенос со старой раскладки: не требуется (ничего не изменено)'
+  if (!moved.length) return 'old layout migration: not needed (nothing changed)'
   const r = spawnSync(process.execPath, [
     path.join(LAYOUT, 'layout-rewrite.cjs'), '--map', LAYOUT_MAP, '--root', root, '--apply',
     '--exclude', 'project/', '--exclude', '.devtool/',
   ], { encoding: 'utf8' })
-  if (r.status !== 0) throw new Error('СТОП: перенос со старой раскладки упал:\n' + (r.stdout || '') + (r.stderr || ''))
+  if (r.status !== 0) throw new Error('STOP: old layout migration failed:\n' + (r.stdout || '') + (r.stderr || ''))
   const extra = userFilesAfterMove(root, moved)
-  const lines = ['перенос со старой раскладки: ' + r.stdout.trim().split('\n')[0]]
-  if (extra.length) lines.push('  файлы пользователя сохранены: ' + extra.join(', '))
+  const lines = ['old layout migration: ' + r.stdout.trim().split('\n')[0]]
+  if (extra.length) lines.push('  user files preserved: ' + extra.join(', '))
   return lines.join('\n')
 }
 
-// Статичные конфиги проекта (`PROJECT.md`, `CONFIG.md`, `SETUP.md`, `ROUTE.md`, `SITE.md`) лежали в `project/`;
-// теперь — в `project/config/`. Те же layout-*: переносит файлы и правит точные пути в тексте
-// (история — карточки, `JOURNAL`/`CHANGELOG`, чужие движки — в исключениях карты).
+// Static project configs (`PROJECT.md`, `CONFIG.md`, `SETUP.md`, `ROUTE.md`, `SITE.md`) used to live in `project/`;
+// now they live in `project/config/`. Same layout-* scripts: they move the files and fix exact paths in text
+// (history — cards, `JOURNAL`/`CHANGELOG`, other engines — is in the map exclusions).
 const CONFIG_MAP = path.join(LAYOUT, 'layout-config-map.json')
 
 function migrateMap(root, mapFile, label) {
   const { moves } = JSON.parse(fs.readFileSync(mapFile, 'utf8'))
   const pending = moves.filter((m) => fs.existsSync(path.join(root, m.from)) && !fs.existsSync(path.join(root, m.to)))
-  if (!pending.length) return `перенос ${label}: не требуется (ничего не изменено)`
+  if (!pending.length) return `${label} migration: not needed (nothing changed)`
   const r = spawnSync(process.execPath, [path.join(LAYOUT, 'layout-rewrite.cjs'), '--map', mapFile, '--root', root, '--apply'], { encoding: 'utf8' })
-  if (r.status !== 0) throw new Error(`СТОП: перенос ${label} упал:\n` + (r.stdout || '') + (r.stderr || ''))
-  return `перенос ${label}: ` + pending.map((m) => path.basename(m.from)).join(', ') + '. ' + r.stdout.trim().split('\n')[0]
+  if (r.status !== 0) throw new Error(`STOP: ${label} migration failed:\n` + (r.stdout || '') + (r.stderr || ''))
+  return `${label} migration: ` + pending.map((m) => path.basename(m.from)).join(', ') + '. ' + r.stdout.trim().split('\n')[0]
 }
-const migrateConfig = (root) => migrateMap(root, CONFIG_MAP, 'конфигурации в project/config/')
+const migrateConfig = (root) => migrateMap(root, CONFIG_MAP, 'config to project/config/')
 const OPS_MAP = path.join(LAYOUT, 'layout-ops-map.json')
-const migrateOps = (root) => migrateMap(root, OPS_MAP, 'служебных файлов в project/ops/')
+const migrateOps = (root) => migrateMap(root, OPS_MAP, 'service files to project/ops/')
 
-// ---------- ядро ----------
+// ---------- core ----------
 function installCore(root, protectedPaths) {
   const skip = (d) => protectedPaths.has(path.resolve(d))
   const forma = path.join(root, '.forma')
@@ -176,27 +184,27 @@ function installCore(root, protectedPaths) {
   copyTree(path.join(CORE, 'board'), path.join(forma, 'board'))
   copyTree(path.join(CORE, 'verify'), path.join(forma, 'verify'))
   copyTree(path.join(CORE, 'skills'), path.join(forma, 'skills'), { skip })
-  // дашборд: код перезаписывается, настройки человека — нет
+  // dashboard: code is overwritten, the human's settings are not
   copyTree(path.join(CORE, 'dashboard'), path.join(forma, 'dashboard'), {
     skip: (d) => /graphify\.config\.json$/.test(d) && fs.existsSync(d),
   })
-  // живое — только довезти недостающее
+  // living files — only add what is missing
   copyTree(path.join(CORE, 'living'), path.join(forma, 'living'), { overwrite: false })
   const features = path.join(root, '.devtool', 'features')
-  const boardState = fs.existsSync(features) ? 'стояла, не тронута' : 'создана'
+  const boardState = fs.existsSync(features) ? 'already present, untouched' : 'created'
   if (!fs.existsSync(features)) copyTree(path.join(CORE, '.devtool', 'features'), features)
-  // project/ — только на первой установке
+  // project/ — first install only
   const projectDir = path.join(root, 'project')
-  let projectState = 'уже был, не тронут'
+  let projectState = 'already existed, untouched'
   if (!fs.existsSync(projectDir)) {
     copyTree(path.join(CORE, 'project'), projectDir)
-    projectState = 'создан каркас'
+    projectState = 'scaffold created'
   }
-  ensureLine(path.join(root, '.gitignore'), '.forma/dashboard/.cache/', 'Forma: рантайм дашборда')
-  return { boardState, projectState, projectCreated: projectState === 'создан каркас' }
+  ensureLine(path.join(root, '.gitignore'), '.forma/dashboard/.cache/', 'Forma: dashboard runtime')
+  return { boardState, projectState, projectCreated: projectState === 'scaffold created' }
 }
 
-// ---------- адаптер Claude ----------
+// ---------- Claude adapter ----------
 const CLAUDE_HOOKS = {
   PreToolUse: [{ hooks: ['guard-delete.sh', 'tool-usage.sh'] }],
   UserPromptSubmit: [{ hooks: ['unlock-delete.sh'] }],
@@ -207,7 +215,7 @@ function mergeClaudeSettings(root) {
   const file = path.join(root, '.claude', 'settings.json')
   let s = {}
   if (fs.existsSync(file)) {
-    try { s = JSON.parse(fs.readFileSync(file, 'utf8')) } catch { throw new Error(`.claude/settings.json не читается как JSON — поправьте вручную и повторите`) }
+    try { s = JSON.parse(fs.readFileSync(file, 'utf8')) } catch { throw new Error(`.claude/settings.json is not valid JSON — fix it by hand and rerun`) }
   }
   s.env = s.env || {}
   if (!s.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW) s.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '200000'
@@ -235,27 +243,27 @@ function installClaude(root, protectedPaths) {
   const A = path.join(ADAPTERS, 'claude')
   const C = path.join(root, '.claude')
   const skip = (d) => protectedPaths.has(path.resolve(d))
-  copyFile(path.join(A, 'forma-adapter.cjs'), path.join(C, 'forma-adapter.cjs')) // граница ядро — адаптер: ядро находит его по имени файла
-  copyFile(path.join(A, 'verify-profile.cjs'), path.join(C, 'verify-profile.cjs')) // профиль сверки установки: ядро находит его по описи
+  copyFile(path.join(A, 'forma-adapter.cjs'), path.join(C, 'forma-adapter.cjs')) // core/adapter boundary: the core finds it by file name
+  copyFile(path.join(A, 'verify-profile.cjs'), path.join(C, 'verify-profile.cjs')) // install verify profile: the core finds it via the manifest
   copyTree(path.join(A, 'rules'), path.join(C, 'rules'))
   copyTree(path.join(A, 'agents'), path.join(C, 'agents'))
   copyTree(path.join(A, 'hooks'), path.join(C, 'hooks'))
   for (const f of fs.readdirSync(path.join(C, 'hooks'))) {
-    if (f.endsWith('.sh')) try { fs.chmodSync(path.join(C, 'hooks', f), 0o755) } catch { /* права на исполнение не ставятся на ФС без chmod (Windows) — хук запустит bash */ }
+    if (f.endsWith('.sh')) try { fs.chmodSync(path.join(C, 'hooks', f), 0o755) } catch { /* exec bits cannot be set on filesystems without chmod (Windows) — bash will run the hook */ }
   }
   copyTree(path.join(A, 'scripts'), path.join(C, 'scripts'), { skip })
   copyTree(path.join(A, 'skills'), path.join(C, 'skills'), { skip })
-  // доставка интервью из ядра — копией без правок
+  // interview delivered from the core — a copy, no edits
   copyTree(path.join(CORE, 'skills'), path.join(C, 'skills'), { skip })
   copyTree(path.join(A, 'dashboard'), path.join(root, '.forma', 'dashboard'))
   mergeClaudeSettings(root)
   const rootClaude = path.join(root, 'CLAUDE.md')
   return fs.existsSync(rootClaude)
-    ? 'в корне найден CLAUDE.md — он затеняет чтение AGENTS.md; перенесите уникальное в .claude/rules/claude-8.md и удалите'
+    ? 'CLAUDE.md found in the root — it shadows reading AGENTS.md; move anything unique into .claude/rules/claude-8.md and delete it'
     : null
 }
 
-// ---------- шаблоны ----------
+// ---------- templates ----------
 function listTemplates() {
   if (!fs.existsSync(TEMPLATES)) return []
   return fs.readdirSync(TEMPLATES, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => {
@@ -273,7 +281,7 @@ function readProjectTemplate(root) {
   return name && name !== '—' && name !== 'нет' && name !== 'none' ? name : null
 }
 function templateFiles(name) {
-  // что шаблон кладёт в проект: [источник, путь в проекте]
+  // what a template puts into the project: [source, path in the project]
   const T = path.join(TEMPLATES, name, 'skills')
   const out = []
   const own = path.join(T, name, 'template')
@@ -314,85 +322,85 @@ function runCli(cli, args) {
   const extra = process.env.FORMA_EXTENSIONS_DIR ? ['--extensions-dir', process.env.FORMA_EXTENSIONS_DIR] : []
   const win = process.platform === 'win32'
   const all = [...extra, ...args]
-  // Windows: CLI редакторов — .cmd-обёртки, запускаются только через оболочку; аргументы — наши константы и путь в кавычках
+  // Windows: editor CLIs are .cmd wrappers and run only through the shell; arguments are our constants and a quoted path
   return win
     ? spawnSync([cli, ...all.map((a) => (/\s/.test(a) ? `"${a}"` : a))].join(' '), { encoding: 'utf8', shell: true, timeout: 180000 })
     : spawnSync(cli, all, { encoding: 'utf8', timeout: 180000 })
 }
 function board(mode) {
   const lines = []
-  if (mode === 'skip') return [`пропущено (--board skip); поставьте сами: code --install-extension ${EXT_ID}`]
+  if (mode === 'skip') return [`skipped (--board skip); install it yourself: code --install-extension ${EXT_ID}`]
   let found = 0
   for (const cli of EDITOR_CLIS) {
     const list = runCli(cli, ['--list-extensions'])
     if (list.error || list.status !== 0) continue
     found++
-    if (list.stdout.toLowerCase().split(/\r?\n/).includes(EXT_ID.toLowerCase())) { lines.push(`${cli}: ✓ ок`); continue }
+    if (list.stdout.toLowerCase().split(/\r?\n/).includes(EXT_ID.toLowerCase())) { lines.push(`${cli}: ✓ ok`); continue }
     const inst = runCli(cli, ['--install-extension', EXT_ID])
     const again = runCli(cli, ['--list-extensions'])
-    if (inst.status === 0 && again.stdout.toLowerCase().includes(EXT_ID.toLowerCase())) lines.push(`${cli}: ✓ установлено`)
-    else lines.push(`${cli}: ✗ не удалось — выполните вручную: ${cli} --install-extension ${EXT_ID}`)
+    if (inst.status === 0 && again.stdout.toLowerCase().includes(EXT_ID.toLowerCase())) lines.push(`${cli}: ✓ installed`)
+    else lines.push(`${cli}: ✗ failed — run manually: ${cli} --install-extension ${EXT_ID}`)
   }
-  if (!found) lines.push(`CLI редактора не найден (${EDITOR_CLIS.join(', ')}). Поставьте расширение сами: code --install-extension ${EXT_ID} (или из магазина расширений: Kanban Markdown, LachyFS)`)
+  if (!found) lines.push(`No editor CLI found (${EDITOR_CLIS.join(', ')}). Install the extension yourself: code --install-extension ${EXT_ID} (or from the extensions marketplace: Kanban Markdown, LachyFS)`)
   return lines
 }
 
-/// шаг 1: движки — флагом, из меню или по умолчанию claude; неизвестный — выход 2
+/// step 1: engines — by flag, from the menu, or claude by default; an unknown one exits with 2
 async function chooseEngines(o, ask) {
   let engines = o.engines
   if (!engines && ask) {
-    console.log('\n[1/4] Движки:')
-    ENGINES.forEach((e, i) => console.log(`  ${i + 1}. ${e.label}${e.id === 'claude' ? '' : ' — бета'}`))
-    const a = await ask('Номера через запятую [1]: ')
+    console.log('\n[1/4] Engines:')
+    ENGINES.forEach((e, i) => console.log(`  ${i + 1}. ${e.label}${e.id === 'claude' ? '' : ' — beta'}`))
+    const a = await ask('Numbers, comma-separated [1]: ')
     engines = (a.trim() || '1').split(/[\s,]+/).map((x) => (ENGINES[Number(x) - 1] || {}).id || x).join(',')
   }
   engines = (engines || 'claude').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean)
-  for (const e of engines) if (!ENGINES.some((x) => x.id === e)) { console.error(`Неизвестный движок: ${e}`); process.exit(2) }
+  for (const e of engines) if (!ENGINES.some((x) => x.id === e)) { console.error(`Unknown engine: ${e}`); process.exit(2) }
   return engines
 }
 
-// шаг 2: шаблон — флагом, из меню или none; неизвестный — выход 2
+// step 2: template — by flag, from the menu, or none; an unknown one exits with 2
 async function chooseTemplate(o, ask, templates) {
   let template = o.template
   if (!template && ask) {
-    console.log('\n[2/4] Шаблон проекта:')
-    console.log('  0. без шаблона — маршрут вырабатывается в интервью (по умолчанию)')
+    console.log('\n[2/4] Project template:')
+    console.log('  0. no template — the route is worked out in the interview (default)')
     templates.forEach((t, i) => console.log(`  ${i + 1}. ${t.name}${t.title ? ' — ' + t.title : ''}`))
-    const a = (await ask('Номер [0]: ')).trim()
+    const a = (await ask('Number [0]: ')).trim()
     template = !a || a === '0' ? 'none' : ((templates[Number(a) - 1] || {}).name || a)
   }
   template = template || 'none'
-  if (template !== 'none' && !templates.some((t) => t.name === template)) { console.error(`Нет шаблона: ${template}. Есть: ${templates.map((t) => t.name).join(', ') || '—'}`); process.exit(2) }
+  if (template !== 'none' && !templates.some((t) => t.name === template)) { console.error(`No such template: ${template}. Available: ${templates.map((t) => t.name).join(', ') || '—'}`); process.exit(2) }
   return template
 }
 
-// шаг 3: доска — флагом, из меню или auto
+// step 3: board — by flag, from the menu, or auto
 async function chooseBoard(o, ask) {
   let boardMode = o.board
   if (!boardMode && ask) {
-    console.log('\n[3/4] Канбан-доска — расширение Kanban Markdown в редакторе:')
-    const a = (await ask('Найти редакторы и поставить? [Y/n]: ')).trim().toLowerCase()
+    console.log('\n[3/4] Kanban board — the Kanban Markdown editor extension:')
+    const a = (await ask('Find editors and install it? [Y/n]: ')).trim().toLowerCase()
     boardMode = a === 'n' || a === 'н' || a === 'no' ? 'skip' : 'auto'
   }
   return boardMode || 'auto'
 }
 
-// шаг 4: язык документов проекта — флагом, из меню или en; неизвестный — выход 2
-const LANGS = [{ id: 'en', label: 'English (по умолчанию)' }, { id: 'ru', label: 'Русский — каркас переведёт агент после установки' }]
+// step 4: project document language — by flag, from the menu, or en; an unknown one exits with 2
+const LANGS = [{ id: 'en', label: 'English (default)' }, { id: 'ru', label: 'Russian — the agent translates the scaffold after install' }]
 async function chooseLang(o, ask) {
   let lang = o.lang
   if (!lang && ask) {
-    console.log('\n[4/4] Язык документов проекта:')
+    console.log('\n[4/4] Project document language:')
     LANGS.forEach((l, i) => console.log(`  ${i + 1}. ${l.label}`))
-    const a = (await ask('Номер [1]: ')).trim()
+    const a = (await ask('Number [1]: ')).trim()
     lang = !a ? 'en' : ((LANGS[Number(a) - 1] || {}).id || a)
   }
   lang = String(lang || 'en').toLowerCase()
-  if (!LANGS.some((l) => l.id === lang)) { console.error(`Язык не поддерживается: ${lang}. Есть: ${LANGS.map((l) => l.id).join(', ')}`); process.exit(2) }
+  if (!LANGS.some((l) => l.id === lang)) { console.error(`Language not supported: ${lang}. Available: ${LANGS.map((l) => l.id).join(', ')}`); process.exit(2) }
   return lang
 }
 
-// Язык проекта: поле в PROJECT.md и, для не-английского, метка «перевод ждёт» — перевод делает агент, не установщик.
+// Project language: a field in PROJECT.md and, for non-English, a "translation pending" marker — the agent translates, not the installer.
 const LANG_NAMES = { en: 'English', ru: 'Russian' }
 function applyLanguage(root, lang) {
   const f = projectFile(root, 'PROJECT.md')
@@ -410,7 +418,7 @@ function applyLanguage(root, lang) {
   return files.length
 }
 
-// Пути, которые шаблон проекта уже записал в project/config/PROJECT.md: ядро их не перезаписывает.
+// Paths the project template already wrote per project/config/PROJECT.md: the core does not overwrite them.
 function protectedTemplatePaths(root, existingTemplate) {
   const protectedPaths = new Set()
   if (existingTemplate && fs.existsSync(path.join(TEMPLATES, existingTemplate))) {
@@ -419,8 +427,8 @@ function protectedTemplatePaths(root, existingTemplate) {
   return protectedPaths
 }
 
-// Codex (бета): .codex/ и зеркало скиллов .agents/skills из адаптера; config.toml проекта не перезаписывается (в нём MCP проекта);
-// затем sync-codex --apply пересобирает роли и зеркало из .claude/ (нужен установленный Claude Code).
+// Codex (beta): .codex/ and the .agents/skills mirror from the adapter; the project config.toml is not overwritten (it holds the project MCP);
+// then sync-codex --apply rebuilds roles and the mirror from .claude/ (Claude Code must be installed).
 function installCodex(root, protectedPaths) {
   const A = path.join(ADAPTERS, 'codex')
   const skip = (d) => protectedPaths.has(path.resolve(d))
@@ -428,18 +436,18 @@ function installCodex(root, protectedPaths) {
   const hadCfg = fs.existsSync(cfg)
   copyTree(path.join(A, '.codex'), path.join(root, '.codex'), { skip: (d) => skip(d) || (hadCfg && path.resolve(d) === path.resolve(cfg)) })
   copyTree(path.join(A, '.agents', 'skills'), path.join(root, '.agents', 'skills'), { skip })
-  const out = ['Codex (бета): .codex/ (роли, агенты, хуки, тесты, §8) и .agents/skills — установлены' + (hadCfg ? '; config.toml проекта сохранён' : '')]
+  const out = ['Codex (beta): .codex/ (roles, agents, hooks, tests, §8) and .agents/skills — installed' + (hadCfg ? '; project config.toml kept' : '')]
   const sync = path.join(root, '.codex', 'scripts', 'sync-codex.cjs')
   if (!fs.existsSync(path.join(root, '.claude', 'agents'))) {
-    out.push('  ! .claude/agents не найден — установите Claude Code (--engines claude,codex), затем: node .codex/scripts/sync-codex.cjs --apply --plugin <skills/forma>')
+    out.push('  ! .claude/agents not found — install Claude Code (--engines claude,codex), then: node .codex/scripts/sync-codex.cjs --apply --plugin <skills/forma>')
   } else {
     const r = require('child_process').spawnSync(process.execPath, [sync, '--apply', '--root', root, '--plugin', SKILL], { encoding: 'utf8' })
-    out.push(r.status === 0 ? '  sync-codex --apply: роли и зеркало скиллов собраны' : '  ! sync-codex --apply завершился с кодом ' + r.status + ': ' + ((r.stdout || '') + (r.stderr || '')).trim().split(/\r?\n/).slice(-3).join(' | '))
+    out.push(r.status === 0 ? '  sync-codex --apply: roles and skills mirror built' : '  ! sync-codex --apply exited with code ' + r.status + ': ' + ((r.stdout || '') + (r.stderr || '')).trim().split(/\r?\n/).slice(-3).join(' | '))
   }
   return out
 }
 
-// Gemini (бета, Antigravity): обёртка с §8, плагин, роли узлов; mcp_config.json — пустая заготовка, существующий не трогается.
+// Gemini (beta, Antigravity): §8 wrapper, plugin, node roles; mcp_config.json is an empty stub, an existing one is not touched.
 function installGemini(root) {
   const A = path.join(ADAPTERS, 'gemini')
   const P = path.join(root, '.agents', 'plugins', 'forma')
@@ -448,14 +456,14 @@ function installGemini(root) {
   copyFile(path.join(A, 'plugin.json'), path.join(P, 'plugin.json'))
   copyTree(path.join(A, 'agents'), path.join(P, 'agents'))
   copyFile(path.join(A, 'mcp_config.json'), path.join(P, 'mcp_config.json'), { overwrite: false })
-  return ['Gemini (Antigravity, бета): .agents/rules, .agents/plugins/forma (роли, plugin.json) — установлены']
+  return ['Gemini (Antigravity, beta): .agents/rules, .agents/plugins/forma (roles, plugin.json) — installed']
 }
 
 function installEngines(root, engines, protectedPaths, report) {
   for (const e of engines) {
     if (e === 'claude') {
       const warn = installClaude(root, protectedPaths)
-      report.push('Claude Code: .claude/rules, agents, hooks, scripts, skills, settings.json (хуки) — синхронизированы')
+      report.push('Claude Code: .claude/rules, agents, hooks, scripts, skills, settings.json (hooks) — synced')
       if (warn) report.push('  ! ' + warn)
     } else if (e === 'codex') {
       report.push(...installCodex(root, protectedPaths))
@@ -467,16 +475,16 @@ function installEngines(root, engines, protectedPaths, report) {
 
 function installTemplateStep({ root, template, existingTemplate }, core, report) {
   if (template === 'none') {
-    report.push(`шаблон: ${existingTemplate ? `оставлен записанный «${existingTemplate}» (его файлы ядро не перезаписывает)` : 'нет (project/config/PROJECT.md, «Шаблон проекта» — меняется в любой момент)'}`)
+    report.push(`template: ${existingTemplate ? `kept the recorded «${existingTemplate}» (the core does not overwrite its files)` : 'none (project/config/PROJECT.md, "Project template" — can be changed any time)'}`)
   } else if (existingTemplate && existingTemplate !== template) {
-    report.push(`шаблон: в project/config/PROJECT.md уже записан «${existingTemplate}» — «${template}» не ставлю, project/ не трогается`)
+    report.push(`template: project/config/PROJECT.md already records «${existingTemplate}» — not installing «${template}», project/ untouched`)
   } else {
     const t = installTemplate(root, template, core.projectCreated)
-    report.push(`шаблон ${template}: записано ${t.written}, оставлено как есть ${t.kept}${core.projectCreated ? '' : ' (project/ уже был — его файлы шаблона не трогаются)'}`)
+    report.push(`template ${template}: written ${t.written}, left as is ${t.kept}${core.projectCreated ? '' : ' (project/ already existed — its template files are untouched)'}`)
   }
 }
 
-// Опись установки: что записал установщик и что должно быть проведено у каждого готового движка.
+// Install manifest: what the installer wrote and what must be wired for each ready engine.
 function claudeExpect() {
   const hooks = []
   for (const [event, groups] of Object.entries(CLAUDE_HOOKS)) {
@@ -489,24 +497,24 @@ function claudeExpect() {
 }
 function writeManifest(root, { engines, lang, template, projectCreated }) {
   let previous = null
-  try { previous = verifyInstall.readManifest(root) } catch { /* битая прежняя опись пересоздаётся */ }
+  try { previous = verifyInstall.readManifest(root) } catch { /* a broken earlier manifest is recreated */ }
   const rows = engines.map((id) => (id === 'claude'
     ? { id, profile: '.claude/verify-profile.cjs', expect: claudeExpect() }
-    : { id, note: 'бета — профиля сверки пока нет' }))
+    : { id, note: 'beta — no verify profile yet' }))
   const manifest = verifyInstall.buildManifest(root, { owned, projectCreated, previous, engines: rows, lang, version: require('../package.json').version, template })
   const f = path.join(root, verifyInstall.MANIFEST)
   fs.mkdirSync(path.dirname(f), { recursive: true })
   fs.writeFileSync(f, JSON.stringify(manifest, null, 2) + '\n')
 }
 
-// Сверка целостности установки: главный движок — красное останавливает; второстепенные — предупреждения.
+// Install integrity check: red on the main engine stops; secondary engines only warn.
 function printVerify(root) {
   const res = verifyInstall.verify(root)
-  console.log('Целостность установки (node .forma/verify/verify-install.cjs): ' + verifyInstall.format(res))
+  console.log('Install integrity (node .forma/verify/verify-install.cjs): ' + verifyInstall.format(res))
   return res.ok
 }
 
-// установка: ядро, движки, шаблон, доска; возвращает строки отчёта и итог по доске
+// install: core, engines, template, board; returns the report lines and the board result
 function install(root, choice) {
   const migrationLine = [migrateLayout(root), migrateConfig(root), migrateOps(root)].join('\n')
   const existingTemplate = readProjectTemplate(root)
@@ -514,30 +522,30 @@ function install(root, choice) {
   const core = installCore(root, protectedPaths)
   const report = []
   report.push(migrationLine)
-  report.push(`ядро: AGENTS.md, .forma/manual/, .forma/board/, .forma/skills/, .forma/dashboard/ синхронизированы; .forma/living/ — довезено недостающее; доска .devtool/features/ — ${core.boardState}; project/ — ${core.projectState}`)
+  report.push(`core: AGENTS.md, .forma/manual/, .forma/board/, .forma/skills/, .forma/dashboard/ synced; .forma/living/ — missing files added; board .devtool/features/ — ${core.boardState}; project/ — ${core.projectState}`)
   installEngines(root, choice.engines, protectedPaths, report)
   installTemplateStep({ root, template: choice.template, existingTemplate }, core, report)
   if (core.projectCreated) {
     const n = applyLanguage(root, choice.lang)
-    report.push(n === null ? 'язык документов: English' : `язык документов: ${LANG_NAMES[choice.lang]} — перевод ждёт агента: ${n} файлов (.forma/translation-pending.json; шаг в SKILL.md «Перевод каркаса»)`)
-  } else if (choice.lang !== 'en') report.push('язык: project/ уже был — не переводится (язык выбирается только при первой установке)')
+    report.push(n === null ? 'document language: English' : `document language: ${LANG_NAMES[choice.lang]} — translation awaits the agent: ${n} files (.forma/translation-pending.json; step in SKILL.md "Scaffold translation")`)
+  } else if (choice.lang !== 'en') report.push('language: project/ already existed — not translated (language is chosen on first install only)')
   writeManifest(root, { engines: choice.engines, lang: choice.lang, template: choice.template === 'none' ? (existingTemplate || 'none') : choice.template, projectCreated: core.projectCreated })
   return { report, boardLines: board(choice.boardMode) }
 }
 
 function printReport({ report, boardLines }) {
-  console.log('\nИтог:')
+  console.log('\nSummary:')
   for (const l of report) console.log('  ' + l)
-  console.log(`  файлов записано ${stats.written}, оставлено ${stats.kept}`)
+  console.log(`  files written ${stats.written}, kept ${stats.kept}`)
   console.log('Kanban Markdown:')
   for (const l of boardLines) console.log('  ' + l)
 }
 
-// ---------- главное ----------
+// ---------- main ----------
 async function main() {
   const o = parseArgs(process.argv.slice(2))
   if (o.help || o.cmd === 'help') { process.stdout.write(HELP); return }
-  if (o.cmd !== 'init') { console.error(`Неизвестная команда: ${o.cmd}\n\n${HELP}`); process.exit(2) }
+  if (o.cmd !== 'init') { console.error(`Unknown command: ${o.cmd}\n\n${HELP}`); process.exit(2) }
   const root = o.dir
   if (!fs.existsSync(root)) fs.mkdirSync(root, { recursive: true })
   const templates = listTemplates()
@@ -546,7 +554,7 @@ async function main() {
   const ask = menu ? makeAsk() : null
   const installedBefore = fs.existsSync(path.join(root, 'AGENTS.md'))
 
-  console.log(`Форма → ${root}${installedBefore ? ' (обновление)' : ''}`)
+  console.log(`Forma → ${root}${installedBefore ? ' (update)' : ''}`)
   console.log(`Git: ${gitBoundary(root)}`)
 
   const engines = await chooseEngines(o, ask)
@@ -555,10 +563,13 @@ async function main() {
   const lang = await chooseLang(o, ask)
   if (ask) ask.close()
 
-  printReport(install(root, { engines, template, boardMode, lang }))
+  console.log('Installing…')
+  const result = install(root, { engines, template, boardMode, lang })
+  progressDone()
+  printReport(result)
   const ok = printVerify(root)
-  if (!ok) { console.error('\nУстановка нарушена — исправьте перечисленное и повторите (повторный запуск безопасен).'); process.exit(1) }
-  if (!installedBefore) console.log('\nДальше: откройте папку в Claude Code — Intent поведёт подготовку по project/config/SETUP.md, начиная с интервью.')
+  if (!ok) { console.error('\nInstall is broken — fix the items above and rerun (rerunning is safe).'); process.exit(1) }
+  if (!installedBefore) console.log('\nNext: open the folder in Claude Code — Intent will lead the setup per project/config/SETUP.md, starting with the interview.')
 }
 
 main().catch((e) => { console.error(e.message || e); process.exit(1) })
