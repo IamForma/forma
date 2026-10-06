@@ -26,6 +26,8 @@ Without questions: `npx github:IamForma/forma init --engines claude --template n
 
 Running it again is an **update**: the scheme is overwritten; `project/`, the board and `living/` are left untouched. The package is not on the npm registry (the name `forma` is taken there) — use `github:` only.
 
+**If the first `npx` run prints nothing and installs nothing** (seen on Windows): the npx cache was likely left half-downloaded. Run the command again; if it still does nothing, delete the cache folder (`%LOCALAPPDATA%\npm-cache\_npx` on Windows, `~/.npm/_npx` elsewhere) and retry.
+
 ### Way 2 — git clone
 
 ```
