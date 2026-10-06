@@ -18,7 +18,7 @@ Clean zone: no card codes, dates or project names here (`AGENTS.md`, prohibition
 | Leak | Lever | Where | State |
 |---|---|---|---|
 | A card is created empty, then edited in several turns (task fields, route reason, stage line) | Create it complete in one call: `--delivers --criterion --budget --next --why --why-detail --stage` | `board/new-card.cjs` | in place |
-| Handing a card to the next node (status/assignee + stage line + check) is done by hand, 3–4 turns | One call: `card-move.cjs <card> --to kit\|run\|intent\|accept\|close --note` | `board/card-move.cjs`, `kit.md`/`run.md`/`intent.md` | in place |
+| Handing a card to the next node (status/assignee + stage line + check) is done by hand, 3–4 turns | One call: `card-move.cjs <card> --to kit\|run\|intent\|accept\|close --note`; the "Kit"/"Result" zones and the spend line go in the same call (`--kit`, `--result`, `--tokens`) | `board/card-move.cjs`, `kit.md`/`run.md`/`intent.md` | in place |
 | Number, epic name, goal label looked up and typed by hand | The script takes them from `PROJECT.md` and the board | `board/new-card.cjs` | in place |
 | A broken card is found late, at a commit or a cycle check | The board check runs on the card at creation and on every write | `new-card.cjs` (step 6), `check-card.sh` hook | in place |
 | Role files loaded in full on every request | Rare rules moved to on-demand files, read at the moment they apply | `agents/on-demand/` | in place |
