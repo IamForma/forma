@@ -65,3 +65,51 @@ test('card-move: расход — строка attempt перед строкой
     assert.equal(run(f, [MOVE, '001', '--to', 'accept', '--note', 'x', '--tokens', 'abc', '--duration-ms', '1', '--agent-id', 'z']).status, 2);
   } finally { f.cleanup(); }
 });
+
+// --kit / --result: тело зоны пишется тем же вызовом, что и передача (без отдельной правки карточки).
+const { spawnSync } = require('node:child_process');
+const withFx = (fn) => { const f = makeFixture(); try { fn(f); } finally { f.cleanup(); } };
+const move = (f, args, input) => spawnSync(process.execPath, [MOVE, ...args], { cwd: f.root, encoding: 'utf8', env: f.env, input });
+const cardText = (f) => fs.readFileSync(path.join(f.root, '.devtool', 'features', ID + '.md'), 'utf8');
+const zoneOf = (text, head) => text.split(/\n## /).find((z) => z.startsWith(head)) || '';
+
+test('card-move: --kit из stdin и --result строкой — зоны заполнены, проверка доски чистая', () => withFx((f) => {
+  assert.equal(move(f, ['001', '--to', 'kit', '--note', 'открыл']).status, 0);
+  const r1 = move(f, ['001', '--to', 'run', '--note', 'комплект готов', '--kit', '-'], '- Role: run-text\n- Channel: internal\n');
+  assert.equal(r1.status, 0, r1.stdout + r1.stderr);
+  let text = cardText(f);
+  assert.match(zoneOf(text, 'Снаряжение'), /- Role: run-text\n- Channel: internal/);
+  assert.match(text, /^status: "in-progress"$/m);
+  const r2 = move(f, ['001', '--to', 'intent', '--note', 'готово', '--result', 'Создано: https://example.test/n/1']);
+  assert.equal(r2.status, 0, r2.stdout + r2.stderr);
+  text = cardText(f);
+  assert.match(zoneOf(text, 'Результат'), /Создано: https:\/\/example\.test\/n\/1/);
+  assert.match(text, /^status: "review"$/m);
+  assert.equal(spawnSync(process.execPath, ['.forma/board/check-board.cjs'], { cwd: f.root, encoding: 'utf8', env: f.env }).status, 0);
+}));
+
+test('card-move: --kit заменяет тело зоны, а не дописывает', () => withFx((f) => {
+  move(f, ['001', '--to', 'kit', '--note', 'a']);
+  move(f, ['001', '--to', 'run', '--note', 'b', '--kit', 'ПЕРВЫЙ']);
+  assert.equal(move(f, ['001', '--to', 'run', '--note', 'c', '--kit', 'ВТОРОЙ']).status, 0);
+  const kit = zoneOf(cardText(f), 'Снаряжение');
+  assert.match(kit, /ВТОРОЙ/);
+  assert.doesNotMatch(kit, /ПЕРВЫЙ/);
+}));
+
+test('card-move: --kit/--result — только на своих передачах, без пустоты и без «## »; файл не тронут', () => withFx((f) => {
+  const before = cardText(f);
+  const bad = [
+    [['001', '--to', 'accept', '--note', 'x', '--kit', 'z'], /--kit пишется только при --to run/],
+    [['001', '--to', 'run', '--note', 'x', '--result', 'z'], /--result пишется только при --to intent/],
+    [['001', '--to', 'run', '--note', 'x', '--kit', ''], /пустое значение/],
+    [['001', '--to', 'run', '--note', 'x', '--kit', 'a\n## Чужая зона\nb'], /строка, начинающаяся с «## »/],
+  ];
+  for (const [args, re] of bad) {
+    const r = move(f, args);
+    assert.equal(r.status, 2, args.join(' '));
+    assert.match(r.stderr, re);
+  }
+  assert.equal(move(f, ['001', '--to', 'run', '--note', 'x', '--kit', '-'], '  \n').status, 2, 'пустой stdin');
+  assert.equal(cardText(f), before);
+}));
