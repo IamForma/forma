@@ -1,9 +1,10 @@
 #!/bin/sh
 # SessionStart: feeds §8 "Engine architecture in Claude Code" from .claude/rules/claude-8.md into the session.
 #
-# Why a hook. Claude Code has no always-on rules directory: a file under .claude/ is not picked up by itself
-# (unlike .agents/rules/ in Antigravity and .codex/ in Codex). The engine reads §1-7 natively from AGENTS.md,
-# and §8 is delivered from here: printed to stdout, which lands in the context.
+# Why a hook. This is a FALLBACK. Claude Code >= v2.1.277 loads .claude/rules/*.md (without `paths:`) and AGENTS.md
+# natively (verified live on 2.1.291: §1-7 and §8 each arrive once, from the root and from any subdirectory).
+# Register this hook only where native reading fails (older versions, Bedrock, telemetry disabled): registered while
+# native reading works, it delivers §8 twice.
 #
 # No double delivery: while a CLAUDE.md sits in the root it carries §8 itself and the hook stays silent. That also
 # makes the switch reversible: bring CLAUDE.md back and the hook turns off without any edit.

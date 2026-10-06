@@ -46,11 +46,12 @@ function isNonCanonical(line) {
   return /[Ѐ-ӿ]/.test(s.slice(d, cut === -1 ? s.length : cut));
 }
 
-// Группы: 1 узел, 2 дата, 3 токены (число или unknown), 4 кэш-чтение, 5 секунды, 6 $, 7 провайдер, 8 хвост до тире.
+// Группы: 1 узел, 2 дата, 3 токены (число или unknown), 4 кэш-чтение, 5 секунды, 6 turns, 7 $, 8 провайдер, 9 хвост до тире.
 const SPEND_SOURCE =
   '`([^`]+)`,\\s*(\\d{4}-\\d{2}-\\d{2}):\\s*attempt,\\s*(' + DIGITS + '|unknown)\\s*tokens?(?![A-Za-z])' +
   '(?:\\s*\\(\\s*(' + DIGITS + ')\\s*cache-read\\s*\\)|\\s*\\(\\s*cache-read unknown\\s*\\))?' +
   '(?:,\\s*(\\d+|unknown)\\s*s(?![A-Za-z]))?' +
+  '(?:,\\s*(\\d+)\\s*turns?(?![A-Za-z]))?' +
   '(?:,\\s*\\$([\\d.]+)\\s*\\(([^)]+)\\))?' +
   '([^\\n—]*)';
 
@@ -65,7 +66,7 @@ const toInt = (s) => parseInt(String(s).replace(/[\s  ]/g, ''), 10);
 /**
  * Каноническая запись → строка расхода (без ведущего «- »). Движок-нейтрально: запись
  * приносит адаптер движка (для Claude — claude-economy.cjs). `null` → маркер `unknown`, не 0.
- * rec: node, date, tokens, cache_read, duration_s, call_id, engine, desc.
+ * rec: node, date, tokens, cache_read, duration_s, turns, call_id, engine, desc.
  */
 function formatSpendLine(rec) {
   const g = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -73,9 +74,10 @@ function formatSpendLine(rec) {
   const N = known(rec.tokens) ? `${g(rec.tokens)} tokens` : 'unknown tokens';
   const R = known(rec.cache_read) ? `(${g(rec.cache_read)} cache-read)` : '(cache-read unknown)';
   const T = known(rec.duration_s) ? `${rec.duration_s} s` : 'unknown s';
+  const K = known(rec.turns) ? `, ${rec.turns} turns` : '';
   const id = rec.call_id ? `\`${rec.call_id}\`` : '`id unknown`';
   const tail = (rec.engine ? `${rec.engine}: ` : '') + (rec.desc || '');
-  return `\`${rec.node}\`, ${rec.date}: attempt, ${N} ${R}, ${T}, ${id} — ${tail}`;
+  return `\`${rec.node}\`, ${rec.date}: attempt, ${N} ${R}, ${T}${K}, ${id} — ${tail}`;
 }
 
 /**

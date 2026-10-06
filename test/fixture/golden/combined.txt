@@ -95,7 +95,7 @@ exit 1
     · Codex (сведение, не нарушение): .codex/roles/extractor.md: нет адаптера роли
     · Codex (сведение, не нарушение): .codex/CODEX-8.md: нет §8 этой среды — роли ссылаются в пустоту
     · Codex (сведение, не нарушение): .codex/config.toml: нет конфигурации Codex
-    · Codex (сведение, не нарушение): .codex/roles/on-demand/: слоя «по требованию» у Codex нет, у Claude — 23. Закон ссылается на эти файлы по голому имени — узел Codex не найдёт то, на что его послали
+    · Codex (сведение, не нарушение): .codex/roles/on-demand/: слоя «по требованию» у Codex нет, у Claude — 24. Закон ссылается на эти файлы по голому имени — узел Codex не найдёт то, на что его послали
     · Codex (сведение, не нарушение): .agents/skills/excalidraw-diagrams: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/forma-grill-with-ui: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/graph-build: нет зеркала навыка Claude
@@ -115,6 +115,7 @@ exit 1
 | Agent: Extractor          | .claude/agents/extractor.md         | .agents/plugins/forma/agents/extractor.md     | ✗ Дрейф (missing_gemini) |
 | On-Demand: Citing Schema To Human | .claude/agents/on-demand/citing-schema-to-human.md | .agents/plugins/forma/agents/on-demand/citing-schema-to-human.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Cycle Closing | .claude/agents/on-demand/intent-cycle-closing.md | .agents/plugins/forma/agents/on-demand/intent-cycle-closing.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Intent Documentation | .claude/agents/on-demand/intent-documentation.md | .agents/plugins/forma/agents/on-demand/intent-documentation.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Emergency | .claude/agents/on-demand/intent-emergency.md | .agents/plugins/forma/agents/on-demand/intent-emergency.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Goal Opening | .claude/agents/on-demand/intent-goal-opening.md | .agents/plugins/forma/agents/on-demand/intent-goal-opening.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Housekeeping | .claude/agents/on-demand/intent-housekeeping.md | .agents/plugins/forma/agents/on-demand/intent-housekeeping.md | ✗ Дрейф (missing_gemini) |
@@ -179,6 +180,10 @@ Missing .agents/plugins/forma/agents/on-demand/citing-schema-to-human.md
 
 --- [ On-Demand: Intent Cycle Closing ] ---
 Missing .agents/plugins/forma/agents/on-demand/intent-cycle-closing.md
+----------------------------------------------------------------------
+
+--- [ On-Demand: Intent Documentation ] ---
+Missing .agents/plugins/forma/agents/on-demand/intent-documentation.md
 ----------------------------------------------------------------------
 
 --- [ On-Demand: Intent Emergency ] ---

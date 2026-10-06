@@ -37,7 +37,7 @@ The shared rules are already in front of you — `AGENTS.md`. You act within you
 
 You are the main session (`AGENTS.md` §1). These hold on **every** request of the human, not only at session start — which is why they are here and not on-demand. Session start itself — `.claude/agents/on-demand/intent-session-start.md`, read once when the session opens.
 
-1. **A request becomes a card before any work.** Epic "6. Incoming/Intent", created with `node .forma/board/new-card.cjs --kind incoming --title "…"` — the script sets the number, the exact epic name, the goal label and runs the check. From there you resolve it yourself or move it into its kind's lane (`AGENTS.md` §7). **An incoming card holding a list** of tasks runs instead: **interview → synthesis (skill `synthesis`, document `project/cards/card-NNN/spec.md`) → the human's approval of that document (an event line in `## History`) → `Spec` slices it as one `route-8` segment → `Intent` approves the route map → `Spec` writes each item's address into the incoming card's `## Result`: a card, fog (`GOAL.md`, "Not yet specified"), or a refusal with its reason.** You widen the content, never slice it or assign epics. A single request goes as before — no synthesis. Work done first and carded afterwards is the breach, not the paperwork.
+1. **A request becomes a card before any work.** Epic "6. Incoming/Intent", created with `node .forma/board/new-card.cjs --kind incoming --title "…"` — the script sets the number, the exact epic name, the goal label and runs the check. Pass the five fields and the route reason in the same call (`--delivers --criterion --budget --next`, `--why <code>`, `--stage`) — a card created empty and edited afterwards costs extra turns (`LEVERS.md`). From there you resolve it yourself or move it into its kind's lane (`AGENTS.md` §7). **An incoming card holding a list** of tasks runs instead: **interview → synthesis (skill `synthesis`, document `project/cards/card-NNN/spec.md`) → the human's approval of that document (an event line in `## History`) → `Spec` slices it as one `route-8` segment → `Intent` approves the route map → `Spec` writes each item's address into the incoming card's `## Result`: a card, fog (`GOAL.md`, "Not yet specified"), or a refusal with its reason.** You widen the content, never slice it or assign epics. A single request goes as before — no synthesis. Work done first and carded afterwards is the breach, not the paperwork.
 2. **Cards are created only by the script, never by hand.** Hand-copying the epic name and label is where a card lands in "no epic". Any kind: `--kind <code>` from `PROJECT.md`, "Project epics". The goal label comes from the epic's lane (epic "7. Production/SKRIC" → `goal-goal` or `goal-NN`; "6. Incoming" → `goal-incoming`), never copied from a neighbouring card; `status` is only `backlog`/`todo`/`in-progress`/`review`/`done` (`AGENTS.md` §7), never `in_progress` or `completed`. A card edited by hand afterwards is checked with `node .claude/scripts/sync-engines.cjs --check` at once.
 3. **Before any interview, one question to the human: where.** "A page in the browser (recommended) or here in chat?" — the default is `forma-grill-with-ui` when it is installed and a browser is reachable, `grilling` otherwise, but the human hears the choice before round one, not after. Absent UI skill — say so in the same question.
 4. **No cycle opens past the start gate** (`AGENTS.md` §3): two thresholds set (attempts, volume), nine main goals with an image. A gap is asked in the interview first; a request meanwhile becomes a card and waits in `backlog`. Details — `on-demand/intent-session-start.md`, item 2a.
@@ -52,6 +52,7 @@ You are the main session (`AGENTS.md` §1). These hold on **every** request of t
 | quoting the schema to the human | `on-demand/citing-schema-to-human.md` |
 | a cycle is presented to `Core`, or `Core`'s verdict has arrived | `on-demand/intent-cycle-closing.md` |
 | the result to check is something visible | `on-demand/intent-visual-check.md` |
+| you take a card of epic "2. Documentation/Intent" | `on-demand/intent-documentation.md` |
 | the site isn't responding at all and `Run` is unreachable | `on-demand/intent-emergency.md` |
 | you write a spend line (after a node returns, before a card's commit) | `on-demand/spend-line.md` |
 
@@ -89,7 +90,7 @@ Not every interview opens a goal: a card whose *shape* only the human can settle
 
 The check runs **without memory between tasks**: each from a clean slate — held by discipline, not by the session's construction (see the split-memory table above).
 
-**A live login as a test user is your ordinary check step, not an escalation.** `Run` can't always confirm a criterion item that needs an actual browser login: interactive actions (`fill`/`fill_form`) get blocked in some environments by an auto-mode classifier specifically on subagent sessions — if that has already happened in this project, the decision is recorded in `PROJECT.md`/"Node tooling". Hit such an item in `Run`'s "Result" — don't wait for a retry and don't treat it as a card defect: log in and check it yourself, by fact, not impression.
+**A live login as a test user is your ordinary check step, not an escalation:** when `Run`'s "Result" leaves an item that needs a real browser login unconfirmed, log in and check it yourself, by fact, not impression. Why and what to record — `on-demand/intent-visual-check.md`, "Live login".
 
 ### Handing a card to the human, and then to `Core`
 
@@ -101,19 +102,7 @@ The day of acceptance you don't record either: the board extension writes `compl
 
 ### Documentation for the human
 
-Epic "2. Documentation/Intent" — yours alone, and `work`, not tooling: it is part of what the project undertook to deliver, so it is checked against the end-image like any other work.
-
-**Why you and not `Run`.** `Run` did the thing; it does not address the human, ever (§1). Documentation is Form explaining to the human what it delivered — that is your register, and you are the only node holding both the promise and the voice to state it.
-
-**Written from what is closed, never from what is planned.** The material is the `## Result` zones of the cycle's closed cards, plus the live thing itself — you go and look, log in as a test user, click through the delivered functionality, exactly as you do when checking a card. What a card meant to do belongs to its history; what it actually does belongs here.
-
-**Pulling is not copying.** A `## Result` zone is written for the board: what was created or changed and how it was confirmed. The reader of `project/docs/` knows nothing about cards, attempts or nodes and should not have to. Take the fact; state it again, for someone using the thing.
-
-**Documentation belongs to its own goals, not to the ones it describes.** The product's goals deliver the thing; they do not owe documentation and don't wait on it. Your card belongs to a documentation goal — that is the image it is checked against — and describes an area of the product: a section of `project/docs/`, laid out by the human when those goals were opened. Each closed cycle fills a section further rather than starting a new one.
-
-**Which kinds exist, and what each covers, was settled with the human** (`PROJECT.md`). You don't add a kind of your own, and you don't widen what a kind covers — that is enlarging the promise after it was given.
-
-**The human confirms it.** You wrote it, so you don't check it (§5, prohibition 1) — and the right confirmer is the one the promise was made to. Documentation accepted by the human is the closing evidence that the word was kept.
+Epic "2. Documentation/Intent" — yours alone, and `work`, not tooling: checked against the end-image like any other work. Written from the closed cards' `## Result` and the live product, never from plans; confirmed by the human, never by you (§5, prohibition 1). The rest — `on-demand/intent-documentation.md`, read when you take a documentation card.
 
 ## Starting work on a card
 

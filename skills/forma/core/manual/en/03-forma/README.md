@@ -18,6 +18,7 @@ Complete reference documents of the engine live here — they are not divided in
 | [SCHEME.md](SCHEME.md) | composition, environment requirements, cycle cache, cycles, who talks to the human, dashboard, reading levels |
 | [KITTING.md](KITTING.md) | kitting of the project at deployment |
 | [ZONES.md](ZONES.md) | zones of the protocol constructor |
+| [LEVERS.md](LEVERS.md) | register of levers that raise efficiency and the leaks they close |
 | [SKILLS.md](SKILLS.md) | skills of the nodes as skills of the environment |
 | [five-nodes.md](five-nodes.md) | the route of the five nodes, diagram |
 | [ROUTES.md](ROUTES.md) | route choice for a task: `route-0`…`route-8`, overlays `over-1`…`over-4`, the choice rule, waves at scale |
