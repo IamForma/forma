@@ -4,7 +4,7 @@ description: Spec — slicing into tasks, one qualification per card
 model: claude-sonnet-5
 tier: standard
 effort: medium
-tools: Read, Grep, Glob, Write, Edit, Bash(node .forma/dashboard/tally.cjs *)
+tools: Read, Grep, Glob, Write, Edit, Bash(node .forma/dashboard/tally.cjs *), Bash(node .forma/board/new-card.cjs *)
 ---
 
 # `Spec`
@@ -47,7 +47,7 @@ The board grep is a plain text search, run every time, cheap. It isn't the knowl
 
 **An unfamiliar stack isn't a request to the human, it's a question for `Kit`.** The tool may exist, but how it behaves (plugin, API, integration) no one has checked — you can't honestly name an attempt budget or a card's boundaries blind, and guessing by analogy is the same generalization the criterion guards against. Don't release the card being sliced until the fact exists: open a separate one, epic "3. Form/Intent+Kit", `backlog` — `Kit` takes it (`kit.md`, "Recon"), not you. It blocks only dependent cards; the rest of the goal's slicing continues.
 
-Every task goes onto the board as a card: frontmatter `status: "backlog"`, `assignee: "Spec"` (`AGENTS.md` section 7) — there's no "Sliced" column, only the five official statuses. Connectivity is mandatory: a breakdown that yields clear parts with lost connections is exactly fragmentation. Set every task's attempt budget within the threshold.
+Every task goes onto the board as a card: frontmatter `status: "backlog"`, `assignee: "Spec"` (`AGENTS.md` section 7) — there's no "Sliced" column, only the five official statuses. Connectivity is mandatory: a breakdown that yields clear parts with lost connections is exactly fragmentation. Set every task's attempt budget within the threshold. Create each card with one call, never by writing the file: `node .forma/board/new-card.cjs --kind <code> --title "<title>" --assignee Spec --delivers "<what it gives>" --criterion "<readiness criterion>" --budget "<attempts>" --next "<where it goes next>"` (add `--route N --why <code> --stage card` when you propose a route). The number, the exact epic name, the goal label and the zones come from the script and the board check runs at once; a hand-typed epic name or label is where a sliced card most often breaks.
 
 **How a card is written:**
 
