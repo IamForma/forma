@@ -8,6 +8,8 @@
 // Каждый сценарий идёт в свежей установке (bin/forma.cjs init) во временной папке и в живой сессии `claude -p`.
 //   gate — задача «описать README»: цикл не открыт (AGENTS.md §3), карточек быть не должно.          [показатель]
 //          Базовая линия красная: Sonnet/low создаёт карточку вопреки гейту (3 прогона из 3). Следим за динамикой.
+//   handoff — карточка уже в backlog: провести её Intent → Kit → Run → проверка (три передачи).        [обязательно]
+//          Это единственный сценарий, где работает `card-move.cjs`: сценарии gate/card передач не делают.
 //   card — задача «карточка интервью»: ровно одна карточка, `check-board` без ошибок.                   [обязательно]
 //          Показатель (не блокирует): в карточке нет шаблонных заглушек `<…>` — агент заполнил поля.
 // Кроме проверок печатаются размеры стартового контекста (КБ файлов) и цена прогона: ходы, токены, $.
@@ -31,6 +33,29 @@ const START_FILES = [
   '.claude/agents/on-demand/intent-session-start.md',
 ]
 
+// Стартовый гейт (AGENTS.md §3) честно держит агента: пока цели-образы черновик, а пороги пусты, цикл не открывают и передачу
+// агент отказывается делать. Для замера передач гейт выполняется заранее — как у человека, прошедшего интервью.
+function openGate(dir) {
+  for (const c of ['result-image', 'review-image']) {
+    const f = path.join(dir, 'project', 'goals', `goal-${c}`, 'GOAL.md')
+    fs.writeFileSync(f, fs.readFileSync(f, 'utf8').replace(/^draft:\s*true\s*\n/m, ''))
+  }
+  const pm = path.join(dir, 'project', 'config', 'PROJECT.md')
+  fs.writeFileSync(pm, fs.readFileSync(pm, 'utf8')
+    .replace(/(Attempts per task <!-- k:attempts -->\s*\|)[^|\n]*\|/, '$1 3 |')
+    .replace(/(Cycle volume, cards \(per epic\) <!-- k:volume -->\s*\|)[^|\n]*\|/, '$1 5 |'))
+  const gate = sh('bash', ['.claude/hooks/check-ready.sh'], dir)
+  if (/START STOP/.test(gate.stdout || '')) throw new Error(`gate still closed:\n${gate.stdout}`)
+}
+
+// Сценарий handoff: карточка создаётся заранее тем же скриптом, что и в рабочем проекте, — агент её только передаёт.
+function seedCard(dir) {
+  const r = sh('node', [path.join(dir, '.forma/board/new-card.cjs'), '--kind', 'value', '--title', 'Eval handoff card',
+    '--delivers', 'a short note', '--criterion', 'the note exists', '--budget', '2 attempts', '--next', 'Intent',
+    '--route', '7', '--why', 'risk', '--stage', 'card'], dir)
+  if (r.status !== 0) throw new Error(`seed card failed:\n${r.stdout}\n${r.stderr}`)
+}
+
 const SCENARIOS = {
   gate: {
     prompt:
@@ -39,6 +64,21 @@ const SCENARIOS = {
       'Report the exact commands you ran and the check result.',
     required: [],
     indicators: [['no card created (the start gate holds)', (c) => c.cards.length === 0]],
+  },
+  handoff: {
+    setup: (dir) => { openGate(dir); seedCard(dir) },
+    prompt:
+      "Card card-001 is on the board in backlog. Walk it through three handoffs, acting as each node in turn: " +
+      "Intent opens the cycle and sends it to kitting; Kit finishes kitting and hands it to Run; Run finishes and hands it " +
+      "back to Intent for the check. Do not do the card's work itself — only the handoffs. For each handoff read how that node " +
+      "does it in its role file under .claude/agents/ and follow it exactly, then verify the board with the board check. " +
+      "Report the exact commands you ran and the check result.",
+    required: [
+      ['card ends in review under Intent', (c) => c.cards.length === 1 && /^status: "review"/m.test(c.cards[0]) && /^assignee: "Intent"/m.test(c.cards[0])],
+      ['history has the three stage lines (kit, exec, check)', (c) => c.cards.length === 1 && ['kit', 'exec', 'check'].every((k) => new RegExp('stage ' + k + '\\b').test(c.cards[0]))],
+      ['check-board passes', (c) => c.boardCheck === 0],
+    ],
+    indicators: [],
   },
   card: {
     prompt:
@@ -116,6 +156,7 @@ function runScenario(name, model, effort, keep) {
   const dir = install()
   try {
     const sizes = startSizes(dir)
+    if (sc.setup) sc.setup(dir)
     const run = runClaude(dir, sc.prompt, model, effort)
     const state = collect(dir)
     const verdict = (list) => list.map(([label, fn]) => ({ label, ok: Boolean(fn(state)) }))
