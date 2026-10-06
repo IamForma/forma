@@ -52,7 +52,7 @@ function openGate(dir) {
 function seedCard(dir) {
   const r = sh('node', [path.join(dir, '.forma/board/new-card.cjs'), '--kind', 'value', '--title', 'Eval handoff card',
     '--delivers', 'a short note', '--criterion', 'the note exists', '--budget', '2 attempts', '--next', 'Intent',
-    '--route', '3', '--why', 'ready', '--stage', 'card'], dir)
+    '--route', '7', '--why', 'risk', '--stage', 'card'], dir)
   if (r.status !== 0) throw new Error(`seed card failed:\n${r.stdout}\n${r.stderr}`)
 }
 
