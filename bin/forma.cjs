@@ -8,10 +8,12 @@ const fs = require('node:fs')
 const path = require('node:path')
 const readline = require('node:readline')
 const { spawnSync } = require('node:child_process')
+const os = require('node:os')
 const { walk, projectFile } = require('../skills/forma/core/dashboard/lib/fs.cjs')
 const i18n = require('../skills/forma/core/i18n/index.cjs')
 const { parseLong } = require('../skills/forma/core/dashboard/lib/cli.cjs')
 const verifyInstall = require('../skills/forma/core/verify/verify-install.cjs')
+const { findBash } = require('../skills/forma/adapters/claude/verify-profile.cjs')
 
 const PKG = path.resolve(__dirname, '..')
 const VERSION = require('../package.json').version
@@ -46,6 +48,8 @@ const HELP = `forma ${VERSION} init — install/update the Forma protocol in the
   --lang     <code>                  project document language (default: en). Catalogs shipped: en, ru; any other code (fr, de, ...)
                                      works too: the agent translates the scaffold after install, hook messages stay English
   --dir      <path>                  project root (default: current folder)
+  --compact  <n>|off                 Claude Code auto-compact window for this project (default: 250000); off — leave
+                                     Claude Code's default. Your own value (env, ~/.claude, settings.local.json) is never changed
   --yes                              no questions, defaults for anything missing
   --version                          print the installer version and exit
 
@@ -216,14 +220,47 @@ const CLAUDE_HOOKS = {
   SessionStart: [{ matcher: 'startup', hooks: ['check-ready.sh', ['check-plugin-update.sh', 15], 'check-dashboard.sh', 'intent-start.sh'] }],
   PostToolUse: [{ matcher: 'Write|Edit', hooks: ['check-card.sh'] }],
 }
-function mergeClaudeSettings(root) {
+// Auto-compact window. Forma proposes COMPACT_DEFAULT and asks first; the human's own value always wins:
+// found in the environment, ~/.claude/settings.json or .claude/settings.local.json, Forma writes nothing. A project
+// settings.json value that Forma itself wrote (an old unasked default or the current one) is Forma's to change.
+const COMPACT_KEY = 'CLAUDE_CODE_AUTO_COMPACT_WINDOW'
+const COMPACT_DEFAULT = '250000'
+const COMPACT_OURS = ['200000', COMPACT_DEFAULT] // 200000 was written unasked before the question existed
+function envValue(file) {
+  try { return (JSON.parse(fs.readFileSync(file, 'utf8')).env || {})[COMPACT_KEY] || null } catch { return null }
+}
+function ownCompact(root) {
+  if (process.env[COMPACT_KEY]) return { value: process.env[COMPACT_KEY], where: 'environment variable' }
+  const places = [[path.join(os.homedir(), '.claude', 'settings.json'), '~/.claude/settings.json'], [path.join(root, '.claude', 'settings.local.json'), '.claude/settings.local.json']]
+  for (const [file, where] of places) { const value = envValue(file); if (value) return { value, where } }
+  const project = envValue(path.join(root, '.claude', 'settings.json'))
+  if (project && !COMPACT_OURS.includes(String(project))) return { value: project, where: '.claude/settings.json' }
+  return null
+}
+/** Applies the choice to settings.env; returns the summary line. `compact`: a number string, 'off', or { own }. */
+function applyCompact(env, compact) {
+  const ours = COMPACT_OURS.includes(String(env[COMPACT_KEY]))
+  if (compact.own) {
+    if (ours && compact.own.where !== '.claude/settings.json') delete env[COMPACT_KEY]
+    return `auto-compact window: your ${compact.own.value} (${compact.own.where}) — left as is`
+  }
+  if (compact === 'off') { // reached only without a value of the human's own, or by the explicit --compact off
+    delete env[COMPACT_KEY]
+    return 'auto-compact window: Claude Code default (not set by Forma)'
+  }
+  env[COMPACT_KEY] = compact
+  return `auto-compact window: ${compact} (.claude/settings.json; change it with --compact <n|off>)`
+}
+
+function mergeClaudeSettings(root, compact) {
   const file = path.join(root, '.claude', 'settings.json')
   let s = {}
   if (fs.existsSync(file)) {
     try { s = JSON.parse(fs.readFileSync(file, 'utf8')) } catch { throw new Error(`.claude/settings.json is not valid JSON — fix it by hand and rerun`) }
   }
   s.env = s.env || {}
-  if (!s.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW) s.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '200000'
+  const compactLine = applyCompact(s.env, compact)
+  if (!Object.keys(s.env).length) delete s.env
   s.hooks = s.hooks || {}
   for (const [event, groups] of Object.entries(CLAUDE_HOOKS)) {
     s.hooks[event] = s.hooks[event] || []
@@ -243,8 +280,9 @@ function mergeClaudeSettings(root) {
   }
   fs.mkdirSync(path.dirname(file), { recursive: true })
   fs.writeFileSync(file, JSON.stringify(s, null, 2) + '\n')
+  return compactLine
 }
-function installClaude(root, protectedPaths) {
+function installClaude(root, protectedPaths, compact) {
   const A = path.join(ADAPTERS, 'claude')
   const C = path.join(root, '.claude')
   const skip = (d) => protectedPaths.has(path.resolve(d))
@@ -261,11 +299,12 @@ function installClaude(root, protectedPaths) {
   // interview delivered from the core — a copy, no edits
   copyTree(path.join(CORE, 'skills'), path.join(C, 'skills'), { skip })
   copyTree(path.join(A, 'dashboard'), path.join(root, '.forma', 'dashboard'))
-  mergeClaudeSettings(root)
+  const compactLine = mergeClaudeSettings(root, compact)
   const rootClaude = path.join(root, 'CLAUDE.md')
-  return fs.existsSync(rootClaude)
+  const warn = fs.existsSync(rootClaude)
     ? 'CLAUDE.md found in the root — it shadows reading AGENTS.md; move anything unique into .claude/rules/claude-8.md and delete it'
     : null
+  return { warn, compactLine }
 }
 
 // ---------- templates ----------
@@ -354,7 +393,7 @@ function board(mode) {
 async function chooseEngines(o, ask) {
   let engines = o.engines
   if (!engines && ask) {
-    console.log('\n[1/4] Engines:')
+    console.log('\n[1/5] Engines:')
     ENGINES.forEach((e, i) => console.log(`  ${i + 1}. ${e.label}${e.id === 'claude' ? '' : ' — beta'}`))
     const a = await ask('Numbers, comma-separated [1]: ')
     engines = (a.trim() || '1').split(/[\s,]+/).map((x) => (ENGINES[Number(x) - 1] || {}).id || x).join(',')
@@ -368,7 +407,7 @@ async function chooseEngines(o, ask) {
 async function chooseTemplate(o, ask, templates) {
   let template = o.template
   if (!template && ask) {
-    console.log('\n[2/4] Project template:')
+    console.log('\n[2/5] Project template:')
     console.log('  0. no template — the route is worked out in the interview (default)')
     templates.forEach((t, i) => console.log(`  ${i + 1}. ${t.name}${t.title ? ' — ' + t.title : ''}`))
     const a = (await ask('Number [0]: ')).trim()
@@ -383,7 +422,7 @@ async function chooseTemplate(o, ask, templates) {
 async function chooseBoard(o, ask) {
   let boardMode = o.board
   if (!boardMode && ask) {
-    console.log('\n[3/4] Kanban board — the Kanban Markdown editor extension:')
+    console.log('\n[3/5] Kanban board — the Kanban Markdown editor extension:')
     const a = (await ask('Find editors and install it? [Y/n]: ')).trim().toLowerCase()
     boardMode = a === 'n' || a === 'н' || a === 'no' ? 'skip' : 'auto'
   }
@@ -401,7 +440,7 @@ async function chooseLang(o, ask) {
   const known = catalogLangs()
   let lang = o.lang
   if (!lang && ask) {
-    console.log('\n[4/4] Project document language:')
+    console.log('\n[4/5] Project document language:')
     known.forEach((id, i) => console.log(`  ${i + 1}. ${langName(id)}${id === 'en' ? ' (default)' : ' — the agent translates the scaffold after install'}`))
     console.log('  or type another language code (fr, de, ...): the agent translates the scaffold, hook messages stay English')
     const a = (await ask('Number or code [1]: ')).trim()
@@ -481,12 +520,19 @@ function installGemini(root) {
   return ['Gemini (Antigravity, beta): .agents/rules, .agents/plugins/forma (roles, plugin.json) — installed']
 }
 
-function installEngines(root, engines, protectedPaths, report) {
-  for (const e of engines) {
+// Claude Code runs every hook as `bash .claude/hooks/<name>.sh`: without a working bash the delete guard, the card check
+// and the session start all stay silent - the protocol looks installed and enforces nothing.
+const NO_BASH = process.platform === 'win32'
+  ? 'no working bash found: Claude Code hooks (delete guard, card check, session start) will not run. Install Git for Windows (https://git-scm.com/download/win) and rerun'
+  : 'no working bash found: Claude Code hooks (delete guard, card check, session start) will not run. Install bash and rerun'
+function installEngines(root, choice, protectedPaths, report) {
+  for (const e of choice.engines) {
     if (e === 'claude') {
-      const warn = installClaude(root, protectedPaths)
+      const { warn, compactLine } = installClaude(root, protectedPaths, choice.compact)
       report.push('Claude Code: .claude/rules, agents, hooks, scripts, skills, settings.json (hooks) — synced')
+      report.push('  ' + compactLine)
       if (warn) report.push('  ! ' + warn)
+      if (!findBash()) report.push('  ! ' + NO_BASH)
     } else if (e === 'codex') {
       report.push(...installCodex(root, protectedPaths))
     } else if (e === 'gemini') {
@@ -545,7 +591,7 @@ function install(root, choice) {
   const report = []
   report.push(migrationLine)
   report.push(`core: AGENTS.md, .forma/manual/, .forma/board/, .forma/skills/, .forma/dashboard/ synced; .forma/living/ — missing files added; board .devtool/features/ — ${core.boardState}; project/ — ${core.projectState}`)
-  installEngines(root, choice.engines, protectedPaths, report)
+  installEngines(root, choice, protectedPaths, report)
   installTemplateStep({ root, template: choice.template, existingTemplate }, core, report)
   if (core.projectCreated) {
     const n = applyLanguage(root, choice.lang)
@@ -553,6 +599,24 @@ function install(root, choice) {
   } else if (choice.lang !== 'en') report.push('language: project/ already existed — not translated (language is chosen on first install only)')
   writeManifest(root, { engines: choice.engines, lang: choice.lang, template: choice.template === 'none' ? (existingTemplate || 'none') : choice.template, projectCreated: core.projectCreated })
   return { report, boardLines: board(choice.boardMode) }
+}
+
+// step 5: auto-compact window — only for Claude Code and only when the human has no value of their own
+async function chooseCompact(o, ask, root, engines) {
+  if (!engines.includes('claude')) return 'off'
+  const flag = o.compact ? String(o.compact).trim().toLowerCase() : null
+  if (flag && flag !== 'off' && !/^[1-9]\d{4,6}$/.test(flag)) {
+    console.error(`--compact: a number of tokens (for example ${COMPACT_DEFAULT}) or off, got: ${o.compact}`); process.exit(2)
+  }
+  // the flag governs the project's settings.json only; env, ~/.claude and settings.local.json stay the human's
+  const own = ownCompact(root)
+  if (own && !(flag && own.where === '.claude/settings.json')) return { own }
+  if (flag) return flag
+  if (!ask) return COMPACT_DEFAULT
+  console.log(`\n[5/5] Auto-compact window for Claude Code in this project: ${COMPACT_DEFAULT} tokens`)
+  console.log('      (the conversation is compacted when it grows past it; your own setting is never changed)')
+  const a = (await ask('Set it? [Y/n]: ')).trim().toLowerCase()
+  return a === 'n' || a === 'н' || a === 'no' ? 'off' : COMPACT_DEFAULT
 }
 
 function printReport({ report, boardLines }) {
@@ -584,13 +648,15 @@ async function main() {
   const template = await chooseTemplate(o, ask, templates)
   const boardMode = await chooseBoard(o, ask)
   const lang = await chooseLang(o, ask)
+  const compact = await chooseCompact(o, ask, root, engines)
   if (ask) ask.close()
 
   console.log('Installing…')
-  const result = install(root, { engines, template, boardMode, lang })
+  const result = install(root, { engines, template, boardMode, lang, compact })
   progressDone()
   printReport(result)
   const ok = printVerify(root)
+  if (engines.includes('claude') && !findBash()) console.error('\n! ' + NO_BASH)
   if (!ok) { console.error('\nInstall is broken — fix the items above and rerun (rerunning is safe).'); process.exit(1) }
   if (!installedBefore) console.log('\nNext: open the folder in Claude Code — Intent will lead the setup per project/config/SETUP.md, starting with the interview.')
 }
