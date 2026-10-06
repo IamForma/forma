@@ -44,10 +44,14 @@ function run(hook, root, input, envPath) {
 const BLOCK = [
   'rm -rf .claude', 'rm -rf .claude/', 'rm -rf .devtool', 'rm -rf .forma', 'rm -rf .forma/manual', 'rm AGENTS.md',
   'git clean -fdx', 'git clean -fd', 'find . -delete', 'find .claude -delete', 'rm -rf .', 'rm -rf *',
+  `node -e "require('fs').rmSync('.claude',{recursive:true})"`, `python3 -c "import shutil; shutil.rmtree('.devtool')"`,
+  `perl -e 'unlink("AGENTS.md")'`, 'mv .claude /tmp/x', 'mv -f AGENTS.md ../x', 'cd build && mv ../.forma/manual /tmp',
+  'Move-Item .devtool C:\\tmp', 'mv .claude .claude.bak',
 ];
 const PASS = [
   'rm -rf node_modules', 'rm -f build/out.js', 'git clean -fd build/', "git commit -m 'clean up'", 'npm run clean',
   'echo rm -rf .claude', 'rm -rf .forma/board/tmp', 'ls .claude', 'find build -delete', 'rm -rf .claude-plugin',
+  `node -e "console.log(1)"`, 'node scripts/build.js', 'mv build/a.js build/b.js', 'mv notes.txt .forma/board/notes.txt', 'echo mv .claude /tmp',
 ];
 
 const withJq = which('jq') ? process.env.PATH : null;
