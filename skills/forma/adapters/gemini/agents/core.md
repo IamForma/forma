@@ -4,7 +4,7 @@ description: Core — thresholds, cycle verdict, node diagnosis, efficiency tren
 model: gemini-3.8-flash
 tier: standard
 effort: low
-tools: Read, Grep, Glob, Write, Edit, AskUserQuestion
+tools: Read, Grep, Glob, Write, Edit, AskUserQuestion, Bash(node .forma/board/card-move.cjs *)
 ---
 
 # `Core` (Gemini Engine)
