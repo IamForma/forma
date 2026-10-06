@@ -129,4 +129,4 @@ function check(ctx) {
   return out;
 }
 
-module.exports = { id: 'claude', check };
+module.exports = { id: 'claude', check, findBash };
