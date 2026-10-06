@@ -3,6 +3,7 @@
 //
 //   node .forma/board/card-move.cjs <card> --to kit|run|intent|accept|close --note "<что сделано>" [--node <узел>] [--dry]
 //                                 [--tokens N --duration-ms MS --agent-id <id> [--cache-read R] [--turns K] [--engine claude-code]]
+//                                 [--kit "<текст>"|-] [--result "<текст>"|-]
 //
 // <card>  — «NNN» или «card-NNN»; карточка живая (в done/ — уже закрыта, передавать нечего).
 // --to    — куда передаём; таблица §7 → поля frontmatter, ключ этапа §6:
@@ -19,6 +20,11 @@
 //           --tokens N (итог вызова), --duration-ms MS (секунды округляются), --agent-id <id вызова>; нужны все три сразу.
 //           --cache-read R — иначе «(cache-read unknown)» с причиной в описании; --turns K — «K turns»; --engine — тег движка (claude-code).
 //           Строка расхода идёт от узла `--node` (того, чей вызов вернулся), перед строкой этапа. Без этих флагов расход не пишется.
+// Секции карточки — тем же вызовом, без отдельной правки файла:
+//           --kit    — тело зоны «Комплект» (шесть единиц, AGENTS.md §6); только с --to run: Kit записывает комплект при передаче.
+//           --result — тело зоны «Результат»; только с --to intent: исполнитель записывает итог при возврате на проверку.
+//           Значение «-» читает текст из stdin (многострочный текст — через heredoc); иначе берётся сам аргумент. Тело зоны заменяется
+//           целиком (при правке комплекта после возврата — новый комплект, а не дописывание). Только одно из двух может быть «-».
 // --dry   — показать изменения, файл не писать.
 // Пишет `modified` (на `close` — и `completedAt`), дописывает строку в «История», затем проверяет доску по этой карточке.
 // Часть ядра: одна для всех движков, путей движка не знает.
@@ -68,6 +74,23 @@ if (spendGiven) {
   if (!/^[a-z][\w-]*$/.test(engine)) die(`--engine "${engine}" — не тег движка`);
 }
 
+// Секции: только на «своих» передачах, чтобы текст не попал не в ту зону
+const kitText = arg('kit'), resultText = arg('result');
+for (const [k, v] of [['kit', kitText], ['result', resultText]]) {
+  if (process.argv.includes('--' + k) && (v == null || v === '')) die(`--${k}: пустое значение — нужен текст или «-» (stdin)`);
+}
+if (kitText != null && to !== 'run') die('--kit пишется только при --to run (комплект передаёт Kit исполнителю)');
+if (resultText != null && to !== 'intent') die('--result пишется только при --to intent (исполнитель возвращает итог на проверку)');
+if (kitText === '-' && resultText === '-') die('stdin один: «-» можно только у одного из --kit / --result');
+const zoneBody = (v, what) => {
+  const body = v === '-' ? fs.readFileSync(0, 'utf8') : v;
+  if (!String(body).trim()) die(`--${what}: пустой текст — зона не заполняется пустотой`);
+  if (/^##\s/m.test(body)) die(`--${what}: в тексте строка, начинающаяся с «## » — она сломала бы зоны карточки`);
+  return String(body).replace(/\r\n/g, '\n').replace(/\s+$/, '');
+};
+const kitBody = kitText != null ? zoneBody(kitText, 'kit') : null;
+const resultBody = resultText != null ? zoneBody(resultText, 'result') : null;
+
 // 1. Карточка: только живая
 const files = cardFiles(ROOT, (n) => n.startsWith(id + '-') && n.endsWith('.md'));
 if (!files.length) die(`карточки ${id} нет на доске`);
@@ -101,6 +124,19 @@ text = setField(text, 'status', `"${t.status}"`);
 text = setField(text, 'assignee', `"${assignee}"`);
 text = setField(text, 'modified', `"${now}"`);
 if (to === 'close') text = setField(text, 'completedAt', `"${now}"`);
+
+// 4б. Тело зоны «Комплект» / «Результат» — заголовок ищется по якорю или по словарю, на любом языке карточки
+const setZone = (src, key, body) => {
+  const head = i18n.headingRe('zone.' + key, '');
+  const lines = src.split('\n');
+  const i = lines.findIndex((l) => head.test(l.replace(/\r$/, '')));
+  if (i < 0) die(`в карточке нет зоны «${key}»`);
+  let end = lines.findIndex((l, k) => k > i && l.startsWith('## '));
+  if (end < 0) end = lines.length;
+  return lines.slice(0, i + 1).concat(['', ...body.split('\n'), ''], lines.slice(end)).join('\n');
+};
+if (kitBody != null) text = setZone(text, 'kit', kitBody);
+if (resultBody != null) text = setZone(text, 'result', resultBody);
 
 // 5. Строка этапа — в конец зоны «История» (перед зоной результата)
 const projectMd = fs.readFileSync(projectFile(ROOT, 'PROJECT.md'), 'utf8');
