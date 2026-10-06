@@ -4,7 +4,7 @@ description: Run — pure text production with no live access to the environment
 model: gemini-3.8-flash
 tier: standard
 effort: low
-tools: Read, Write, Edit, run_command(node .claude/scripts/external-model-bridge.cjs *)
+tools: Read, Write, Edit, run_command(node .claude/scripts/external-model-bridge.cjs *), run_command(node .forma/board/card-move.cjs *)
 skills: none
 ---
 
