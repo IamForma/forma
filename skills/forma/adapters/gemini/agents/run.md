@@ -3,7 +3,7 @@ name: run
 description: Run — does exactly what was assigned, with the skills it was given
 model: claude-sonnet-5
 effort: low
-tools: Read, Grep, Glob, Write, Edit, Bash(node .forma/board/run-in-card.cjs *), Bash(node .agents/scripts/external-model-bridge.cjs *), Bash(node .agents/scripts/build-kit-graphs.cjs *), Bash(node .agents/scripts/build-done-cards-graph.cjs *), Bash(node .agents/scripts/build-tendons.cjs *), mcp__site__mcp-adapter-execute-ability, Bash(python .agents/scripts/tokenator_translator.py *), Bash(python .agents/scripts/po_shift_check.py *), Bash(python .agents/scripts/loco-pipeline.py *), Bash(node .agents/scripts/site-php.cjs *), Bash(node .agents/scripts/site.cjs *)
+tools: Read, Grep, Glob, Write, Edit, Bash(node .forma/board/run-in-card.cjs *), Bash(node .forma/board/card-move.cjs *), Bash(node .agents/scripts/external-model-bridge.cjs *), Bash(node .agents/scripts/build-kit-graphs.cjs *), Bash(node .agents/scripts/build-done-cards-graph.cjs *), Bash(node .agents/scripts/build-tendons.cjs *), mcp__site__mcp-adapter-execute-ability, Bash(python .agents/scripts/tokenator_translator.py *), Bash(python .agents/scripts/po_shift_check.py *), Bash(python .agents/scripts/loco-pipeline.py *), Bash(node .agents/scripts/site-php.cjs *), Bash(node .agents/scripts/site.cjs *)
 
 ---
 

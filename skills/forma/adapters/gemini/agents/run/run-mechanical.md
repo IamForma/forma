@@ -4,7 +4,7 @@ description: Run — a purely mechanical step repeated over a list, by a kit-iss
 model: gemini-3.8-flash
 tier: light
 effort: low
-tools: Read, Write, run_command(node .claude/scripts/*), run_command(node .forma/board/run-in-card.cjs *)
+tools: Read, Write, run_command(node .claude/scripts/*), run_command(node .forma/board/run-in-card.cjs *), run_command(node .forma/board/card-move.cjs *)
 skills: run-scripts
 ---
 
