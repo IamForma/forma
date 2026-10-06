@@ -34,6 +34,7 @@ Clean zone: no card codes, dates or project names here (`AGENTS.md`, prohibition
 List here what is suspected but not yet measured or closed: write the symptom, how to measure it (which spend lines or `tally.cjs` cut), and who owns it. Do not add a lever before the leak is measured.
 
 - **Turns per card handoff.** Before: 3–4 calls per handoff (read the card, edit `status`/`assignee`, append the stage line, board check); after: 1 (`card-move.cjs`). Counted from the role procedures, not from live sessions. Metric: `K turns` in the spend line of the call that hands the card over, and `tally.cjs --routes` (turns column) per route/epic. Flip the register row to `in place` once live cards show handoff turns converging to 1; owner: `Intent`.
+- **Turn measurement — pending.** Run `node test/eval-start-context.cjs --scenario card --model sonnet --effort low` on `dev` ("after") and on commit `baedbfe` ("before"), same `--model` and `--effort`; record `K turns`, tokens, $ here. Until measured, the handoff and start-context levers stay `partial`; a batch `new-card` for `Spec` and on-demand sections of `kit.md` are decided by its result; owner is `Intent`.
 
 ## Rule for new entries
 
