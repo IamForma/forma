@@ -92,7 +92,7 @@ Two distinctions, and both cost an attempt if confused:
 
 You hand the result to **`Intent` for the check**. The "where it goes next" field is carried out after the check passes, not instead of it.
 
-You update the frontmatter: `status: "review"`, `assignee: "Intent"` (`AGENTS.md` section 7) — a card should never be left without a node currently holding it. Append the stage line `` `Run`, YYYY-MM-DD: stage check — <что>. `` (`AGENTS.md` §6).
+You hand it over with one call — `status: "review"`, `assignee: "Intent"` (`AGENTS.md` section 7) and the stage line `` `Run`, YYYY-MM-DD: stage check — <что>. `` (§6), then the board check: `node .forma/board/card-move.cjs <card> --to intent --note "<что>"`. A card is never left without a node currently holding it.
 
 ## Report to the caller
 
