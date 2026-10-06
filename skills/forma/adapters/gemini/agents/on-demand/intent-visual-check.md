@@ -16,3 +16,7 @@ where            · page "How it works", block .hero > p
 
 4. **You don't name the fix.** "Change the padding" is design work and not yours: you can't see why the margin is what it is. The same visible symptom has several possible causes, and picking one is `Kit`'s and `Run`'s job — a guess you name gets executed literally and misses.
 5. **"Close enough" isn't a check outcome.** Either the value matches or it doesn't. An adverb in the check record means there was no measurement.
+
+## Live login
+
+**A live login as a test user is your ordinary check step, not an escalation.** `Run` can't always confirm a criterion item that needs an actual browser login: interactive actions (`fill`/`fill_form`) get blocked in some environments by an auto-mode classifier specifically on subagent sessions — if that has already happened in this project, the decision is recorded in `PROJECT.md`/"Node tooling". Hit such an item in `Run`'s "Result" — don't wait for a retry and don't treat it as a card defect: log in and check it yourself, by fact, not impression.
