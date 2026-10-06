@@ -16,11 +16,13 @@ From the target project's folder:
 npx github:IamForma/forma init
 ```
 
-It installs the core (`AGENTS.md`, roles, hooks, board, dashboard, `manual/`) and asks three questions:
+It installs the core (`AGENTS.md`, roles, hooks, board, dashboard, `manual/`) and asks a few questions:
 
 1. **Engines** — `claude` (ready); `codex`, `gemini` — not ready yet.
 2. **Project template** — none (the route is worked out in the interview) or a ready one, e.g. `forma-wordpress-novamira`.
 3. **Kanban board** — find the editors and install Kanban Markdown, or skip.
+4. **Document language** — `en` (default), `ru` or another language code.
+5. **Auto-compact window** — for Claude Code, 250000 tokens by default (see "Version and updates").
 
 Without questions: `npx github:IamForma/forma init --engines claude --template none --board auto`.
 
@@ -87,6 +89,19 @@ The board `.devtool/features/` is where card status, history, results and spend 
 - Start preparation from `project/config/SETUP.md` — the interview is led by `Intent`, the main session.
 
 Optional companions: `skill-creator`, `context-mode`, `agentmemory` — see the full description.
+
+## Version and updates
+
+- **Which version is installed.** The first line of the installer's output is `Forma <version> → <folder>`. Without installing: `npx github:IamForma/forma --version`. In a project: the `version` field of `.forma/install-manifest.json`.
+- **Update notice.** Once a day, when a Claude Code session starts, a hook compares the installed version with the latest on GitHub and says so only when GitHub has a newer one. It works without `gh` (it falls back to a plain request) and stays silent when offline.
+- **Update.** Run `npx github:IamForma/forma init` in the project folder again — `project/`, the board and `living/` are kept.
+- **Auto-compact window.** The installer offers to set Claude Code's auto-compact window to 250000 tokens for the project (`.claude/settings.json`). It never overrides your own value (environment variable, `~/.claude/settings.json`, `.claude/settings.local.json`). Without questions: `--compact <tokens>` sets another value, `--compact off` leaves Claude Code's default.
+
+## If something does not work
+
+- **The installer printed nothing and returned to the prompt.** Run the same command again; if it repeats, delete the `_npx` folder inside the npm cache (`npm config get cache`) and retry. A stale `npx` cache is the usual cause.
+- **Hooks do nothing (no card check, no delete guard, no start message).** Claude Code runs every hook through `bash`. On Windows install Git for Windows (it brings Git Bash) and run the installer again — it prints a warning when no working `bash` is found. Check the result with `node .forma/verify/verify-install.cjs`.
+- **A command was blocked: "Blocked by the guard-delete hook".** The scheme's own folders and files (`.claude/`, `.agents/`, `.codex/`, `.devtool/`, `.forma/manual/`, `.forma/living/`, `AGENTS.md`, `PROJECT.md`, any `GOAL.md`) are protected from deletion and from being moved out. To allow exactly one such command, write the code phrase from `AGENTS.md` §2 in your own message; the permission is used up by the next command.
 
 ## What it is
 
