@@ -9,7 +9,6 @@
   "scripts": {
     "test": "node --test \"test/**/*.test.cjs\"",
     "lint": "eslint .",
-    "eval:live": "node test/eval-start-context.cjs",
     "baseline:save": "node test/baseline.cjs save",
     "baseline:diff": "node test/baseline.cjs diff",
     "check:release": "node scripts/check-release.cjs"

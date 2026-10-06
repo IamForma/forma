@@ -72,7 +72,7 @@ function checkOneFile(fileArg) {
     const found = scanCleanFile(rel, fs.readFileSync(abs, 'utf8'));
     if (found.length) console.log(found.join(NL));
   }
-  process.exitCode = 0;
+  process.exit(0);
 }
 
 /** Строка «Корневые правила»: формулировка зависит от устройства Claude-стороны — импорт из корня или подача §8 хуком. */
@@ -129,14 +129,14 @@ function runApply(args) {
     console.log(`\nСведения, требующие ручного шага: ${problems.length}`);
     for (const p of problems) console.log(`  — ${p.relFile}: ${p.reason}`);
   }
-  process.exitCode = problems.length ? 1 : 0;
+  process.exit(problems.length ? 1 : 0);
 }
 
 function main() {
   const args = process.argv.slice(2);
-  if (args.includes('--apply')) return runApply(args);
+  if (args.includes('--apply')) runApply(args);
   const fi = args.indexOf('--file');
-  if (fi >= 0) return checkOneFile(args[fi + 1]);
+  if (fi >= 0) checkOneFile(args[fi + 1]);
 
   const info = [];
   const problems = runChecks(CHECKS, { root: ROOT, info });
@@ -145,12 +145,11 @@ function main() {
   if (args.includes('--quiet')) {
     if (hasDrift) console.log(`DRIFT: корневые правила (${problems.length})`);
     else console.log('OK: AGENTS.md — единый закон, ядро цельно, адаптеры движков прошли тест соответствия.');
-    process.exitCode = hasDrift ? 1 : 0;
-    return;
+    process.exit(hasDrift ? 1 : 0);
   }
 
   printReport({ problems, info, results: parity.compareRoles(ROOT), isDiff: args.includes('--diff') });
-  process.exitCode = hasDrift ? 1 : 0;
+  process.exit(hasDrift ? 1 : 0);
 }
 
 main();
