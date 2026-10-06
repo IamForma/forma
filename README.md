@@ -26,8 +26,6 @@ Without questions: `npx github:IamForma/forma init --engines claude --template n
 
 Running it again is an **update**: the scheme is overwritten; `project/`, the board and `living/` are left untouched. The package is not on the npm registry (the name `forma` is taken there) — use `github:` only.
 
-**If the first `npx` run prints nothing and installs nothing** (seen on Windows): the npx cache was likely left half-downloaded. Run the command again; if it still does nothing, delete the cache folder (`%LOCALAPPDATA%\npm-cache\_npx` on Windows, `~/.npm/_npx` elsewhere) and retry.
-
 ### Way 2 — git clone
 
 ```
@@ -89,29 +87,6 @@ The board `.devtool/features/` is where card status, history, results and spend 
 - Start preparation from `project/config/SETUP.md` — the interview is led by `Intent`, the main session.
 
 Optional companions: `skill-creator`, `context-mode`, `agentmemory` — see the full description.
-
-### Try it: the demo card
-
-After the interview (goal images and thresholds are set — the start gate stays shut until then), put a ready card on the board:
-
-```
-node .forma/board/new-card.cjs --demo
-```
-
-Then tell `Intent`: *walk the demo card through its route*. It is a small card on `route-4` (`Intent → Kit → Intent`): `Kit` writes `project/docs/demo-overview.md`, `Intent` checks it against the criterion, then `Core` gives the cycle verdict. You answer "yes" to the card's five fields and accept the result — that is the human's part of the route. About 3–4 minutes.
-
-### How the law reaches the session
-
-Claude Code (v2.1.277+) reads `AGENTS.md` (§1–7) and `.claude/rules/claude-8.md` (§8) itself — the installer creates no root `CLAUDE.md` (it would shadow that reading). Checked live on 2.1.292: both arrive as project instructions.
-
-Where native reading fails (older Claude Code, Bedrock, telemetry disabled), register the fallback hook in `.claude/settings.json`:
-
-```json
-{ "hooks": { "SessionStart": [ { "matcher": "startup|resume|clear",
-  "hooks": [ { "type": "command", "command": "sh .claude/hooks/load-engine-section.sh" } ] } ] } }
-```
-
-It prints §8 into the session. Don't register it while native reading works — §8 would arrive twice.
 
 ## What it is
 

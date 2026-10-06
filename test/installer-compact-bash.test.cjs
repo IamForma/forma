@@ -39,19 +39,6 @@ test('auto-compact: 250000 by default, --compact sets or removes it', () => {
   assert.equal(r.status, 2, 'a value that is not a token count is refused');
 });
 
-test('auto-compact: an explicit off is remembered by a rerun, even with --yes; a number turns it back on', () => {
-  const dir = tmp('forma-c-'), home = tmp('forma-h-');
-  install(dir, home, ['--compact', 'off']);
-  let r = install(dir, home);
-  assert.equal(r.status, 0, r.out);
-  assert.equal(envOf(dir)[KEY], undefined, 'the rerun does not set the window again');
-  assert.match(r.out, /off \(your earlier choice/);
-  r = install(dir, home, ['--compact', '300000']);
-  assert.equal(envOf(dir)[KEY], '300000');
-  r = install(dir, home);
-  assert.equal(envOf(dir)[KEY], '300000', 'a number forgets the remembered off');
-});
-
 test("auto-compact: the human's own value is never changed nor shadowed", () => {
   const home = tmp('forma-h-');
   writeEnv(path.join(home, '.claude', 'settings.json'), '500000');

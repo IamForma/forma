@@ -83,13 +83,13 @@ function emit(   m,parts,j,hit){
 }
 END{ emit() }')
 
-# Moves: the source arguments (all but the last, flags dropped) must not be protected. With `-t DIR` /
-# `--target-directory DIR` the target is named by the flag, so every argument but DIR is a source.
+# Moves: the source arguments (all but the last, flags dropped) must not be protected. `mv -t dir src` and the like
+# are not parsed - the last argument is taken as the target.
 PROTRE='\.(claude|agents|codex|devtool)([^A-Za-z0-9_-]|$)|\.forma/?([^A-Za-z0-9_./-]|$)|(^|[^A-Za-z0-9_-])manual([^A-Za-z0-9_-]|$)|(^|[^A-Za-z0-9_-])living([^A-Za-z0-9_-]|$)|(^|[^A-Za-z0-9_-])VARS([^A-Za-z0-9_-]|$)|AGENTS\.md|CLAUDE\.md|gemini-8\.md|CODEX-8\.md|PROJECT\.md|GOAL\.md'
 MV_HIT=
 MVSRC=$(printf '%s\n' "$CAND" | grep '^MV:' | while IFS= read -r l; do
-  printf '%s\n' "$l" | sed 's/^MV://' | tr -d '"\047' | awk '{ n=0; t=0; for(i=1;i<=NF;i++){ if($i=="-t" || $i=="--target-directory"){ t=1; i++; continue } if($i ~ /^(-t.|--target-directory=)/) t=1; if($i ~ /^-/) continue; a[++n]=$i }
-    for(i=2;i<=(t?n:n-1);i++) print a[i] }'
+  printf '%s\n' "$l" | sed 's/^MV://' | tr -d '"\047' | awk '{ n=0; for(i=1;i<=NF;i++) if($i !~ /^-/) a[++n]=$i
+    for(i=2;i<n;i++) print a[i] }'
 done)
 [ -n "$MVSRC" ] && printf '%s\n' "$MVSRC" | grep -qiE "$PROTRE" && MV_HIT=1
 CAND=$(printf '%s\n' "$CAND" | grep -v '^MV:')
