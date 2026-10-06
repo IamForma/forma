@@ -47,3 +47,21 @@ test('card-move: ошибки ввода — код 2, файл не трону�
   assert.equal(run(fx, [MOVE, '001', '--to', 'kit']).status, 2, 'без --note');
   assert.equal(run(fx, [MOVE, '999', '--to', 'kit', '--note', 'x']).status, 2, 'нет карточки');
 });
+
+test('card-move: расход — строка attempt перед строкой этапа, tally её читает', () => {
+  const f = makeFixture();
+  try {
+    const p = path.join(f.root, '.devtool', 'features', ID + '.md');
+    const ok = run(f, [MOVE, '001', '--to', 'run', '--note', 'комплект готов', '--tokens', '52339', '--duration-ms', '41500',
+      '--agent-id', 'a1b2c3d4e5f60718', '--cache-read', '40100', '--turns', '7']);
+    assert.equal(ok.status, 0, ok.out);
+    const text = fs.readFileSync(p, 'utf8');
+    assert.match(text, /^- `Kit`, \d{4}-\d{2}-\d{2}: attempt, 52 339 tokens \(40 100 cache-read\), 42 s, 7 turns, `a1b2c3d4e5f60718` — claude-code: комплект готов\.\n- `Kit`, \d{4}-\d{2}-\d{2}: stage exec — комплект готов\.\n\n## Результат/m);
+    const noR = run(f, [MOVE, '001', '--to', 'intent', '--note', 'готово', '--tokens', '900', '--duration-ms', '3000', '--agent-id', 'c3d4e5f6a7b80912']);
+    assert.equal(noR.status, 0, noR.out);
+    assert.match(fs.readFileSync(p, 'utf8'), /attempt, 900 tokens \(cache-read unknown\), 3 s, `c3d4e5f6a7b80912` — claude-code: готово\. cache-read движок не вернул\./);
+    assert.equal(run(f, ['.forma/board/check-board.cjs']).status, 0);
+    assert.equal(run(f, [MOVE, '001', '--to', 'accept', '--note', 'x', '--tokens', '5']).status, 2, 'не все поля расхода');
+    assert.equal(run(f, [MOVE, '001', '--to', 'accept', '--note', 'x', '--tokens', 'abc', '--duration-ms', '1', '--agent-id', 'z']).status, 2);
+  } finally { f.cleanup(); }
+});
