@@ -19,7 +19,6 @@ Clean zone: no card codes, dates or project names here (`AGENTS.md`, prohibition
 |---|---|---|---|
 | A card is created empty, then edited in several turns (task fields, route reason, stage line) | Create it complete in one call: `--delivers --criterion --budget --next --why --why-detail --stage` | `board/new-card.cjs` | in place |
 | Handing a card to the next node (status/assignee + stage line + check) is done by hand, 3–4 turns | One call: `card-move.cjs <card> --to kit\|run\|intent\|accept\|close --note` | `board/card-move.cjs`, `kit.md`/`run.md`/`intent.md` | partial |
-| A role is told to hand the card over with `card-move.cjs`, but its `tools` allowlist does not permit the call, so the handoff falls back to hand edits (the 3–4 turns the row above removes) | Every `Run` role that can write the card also allows `card-move.cjs` | `tools:` of `run.md` and the `Run` catalog roles that write (`run-text`, `run-image`, `run-image-series`, `run-mechanical`), both engines | partial |
 | Number, epic name, goal label looked up and typed by hand | The script takes them from `PROJECT.md` and the board | `board/new-card.cjs` | in place |
 | A broken card is found late, at a commit or a cycle check | The board check runs on the card at creation and on every write | `new-card.cjs` (step 6), `check-card.sh` hook | in place |
 | Role files loaded in full on every request | Rare rules moved to on-demand files, read at the moment they apply | `agents/on-demand/` | in place |
@@ -35,7 +34,6 @@ Clean zone: no card codes, dates or project names here (`AGENTS.md`, prohibition
 List here what is suspected but not yet measured or closed: write the symptom, how to measure it (which spend lines or `tally.cjs` cut), and who owns it. Do not add a lever before the leak is measured.
 
 - **Turns per card handoff.** Before: 3–4 calls per handoff (read the card, edit `status`/`assignee`, append the stage line, board check); after: 1 (`card-move.cjs`). Counted from the role procedures, not from live sessions. Metric: `K turns` in the spend line of the call that hands the card over, and `tally.cjs --routes` (turns column) per route/epic. Flip the register row to `in place` once live cards show handoff turns converging to 1; owner: `Intent`.
-- **Spec writes cards by hand.** `Spec` has no `new-card.cjs` in `tools`, and the script rejects a newline in `--criterion`, while a `Spec` criterion is a checkbox list. Measure on live cards how many turns a sliced card takes before opening a lever; `Run` roles without `Write` (`run-site-build`, `run-site-php`, `run-visual-check`) leave the Result and the handoff to the caller — same measurement. Owner: `Intent`.
 - **Turn measurement — pending.** Run `node test/eval-start-context.cjs --scenario card --model sonnet --effort low` on `dev` ("after") and on commit `baedbfe` ("before"), same `--model` and `--effort`; record `K turns`, tokens, $ here. Until measured, the handoff and start-context levers stay `partial`; a batch `new-card` for `Spec` and on-demand sections of `kit.md` are decided by its result; owner is `Intent`.
 
 ## Rule for new entries

@@ -4,7 +4,7 @@ description: Run — a purely mechanical step repeated over a list, by a kit-iss
 model: haiku
 tier: light
 effort: low
-tools: Read, Write, Bash(node .claude/scripts/*), Bash(node .forma/board/run-in-card.cjs *), Bash(node .forma/board/card-move.cjs *)
+tools: Read, Write, Bash(node .claude/scripts/*), Bash(node .forma/board/run-in-card.cjs *)
 skills: run-scripts
 ---
 

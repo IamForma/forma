@@ -4,7 +4,7 @@ description: Run — generates a series or package of images in one consistent s
 model: claude-sonnet-5
 tier: standard
 effort: medium
-tools: Read, Write, mcp__claude_ai_Magnific__images_generate, mcp__claude_ai_Magnific__images_models_list, mcp__claude_ai_Magnific__simulate_cost, mcp__claude_ai_Magnific__creations_wait, mcp__claude_ai_Magnific__creations_get, mcp__claude_ai_Magnific__spaces_edit, mcp__claude_ai_Magnific__spaces_edit_status, mcp__claude_ai_Magnific__spaces_state, mcp__claude_ai_Magnific__spaces_run, mcp__claude_ai_Magnific__spaces_run_status, mcp__claude_ai_Magnific__account_balance, Bash(node .forma/board/card-move.cjs *)
+tools: Read, Write, mcp__claude_ai_Magnific__images_generate, mcp__claude_ai_Magnific__images_models_list, mcp__claude_ai_Magnific__simulate_cost, mcp__claude_ai_Magnific__creations_wait, mcp__claude_ai_Magnific__creations_get, mcp__claude_ai_Magnific__spaces_edit, mcp__claude_ai_Magnific__spaces_edit_status, mcp__claude_ai_Magnific__spaces_state, mcp__claude_ai_Magnific__spaces_run, mcp__claude_ai_Magnific__spaces_run_status, mcp__claude_ai_Magnific__account_balance
 skills: magnific-generate, magnific-spaces
 ---
 

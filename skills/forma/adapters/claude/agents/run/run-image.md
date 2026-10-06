@@ -4,7 +4,7 @@ description: Run — generates or edits a single image or visual asset from an i
 model: claude-sonnet-5
 tier: standard
 effort: low
-tools: Read, Write, imagegen, Bash(node .forma/board/card-move.cjs *)
+tools: Read, Write, imagegen
 ---
 
 # `run-image`
