@@ -1,0 +1,111 @@
+'use strict';
+// guard-delete.sh and check-plugin-update.sh: run as Claude Code runs them (JSON on stdin, project dir in env).
+// Each guard case runs twice: with jq on PATH and without it (Git Bash on Windows ships without jq).
+const { test } = require('node:test');
+const assert = require('node:assert');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const HOOKS = path.join(__dirname, '..', 'skills', 'forma', 'adapters', 'claude', 'hooks');
+const TOOLS = ['sh', 'bash', 'cat', 'grep', 'awk', 'tr', 'find', 'head', 'tail', 'sed', 'printf', 'node', 'rm', 'sort', 'ls', 'date'];
+
+function which(bin) {
+  const r = spawnSync('sh', ['-c', `command -v ${bin}`], { encoding: 'utf8' });
+  return r.status === 0 ? r.stdout.trim() : null;
+}
+
+/** A PATH directory holding only the given tools (symlinks), so a missing jq/gh/curl is real. */
+function toolDir(extra = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-bin-'));
+  for (const t of TOOLS) { const p = which(t); if (p) fs.symlinkSync(p, path.join(dir, t)); }
+  for (const [name, body] of Object.entries(extra)) fs.writeFileSync(path.join(dir, name), body, { mode: 0o755 });
+  return dir;
+}
+
+function project() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-hook-'));
+  for (const d of ['.claude/hooks', '.devtool/features', '.forma/manual', '.forma/board', 'build', 'project/goals/goal-a']) {
+    fs.mkdirSync(path.join(root, d), { recursive: true });
+  }
+  fs.writeFileSync(path.join(root, 'AGENTS.md'), '');
+  fs.writeFileSync(path.join(root, 'project/goals/goal-a/GOAL.md'), '');
+  return root;
+}
+
+function run(hook, root, input, envPath) {
+  return spawnSync('bash', [path.join(HOOKS, hook)], {
+    input: JSON.stringify(input), encoding: 'utf8',
+    env: { PATH: envPath, HOME: root, CLAUDE_PROJECT_DIR: root },
+  });
+}
+
+const BLOCK = [
+  'rm -rf .claude', 'rm -rf .claude/', 'rm -rf .devtool', 'rm -rf .forma', 'rm -rf .forma/manual', 'rm AGENTS.md',
+  'git clean -fdx', 'git clean -fd', 'find . -delete', 'find .claude -delete', 'rm -rf .', 'rm -rf *',
+];
+const PASS = [
+  'rm -rf node_modules', 'rm -f build/out.js', 'git clean -fd build/', "git commit -m 'clean up'", 'npm run clean',
+  'echo rm -rf .claude', 'rm -rf .forma/board/tmp', 'ls .claude', 'find build -delete', 'rm -rf .claude-plugin',
+];
+
+const withJq = which('jq') ? process.env.PATH : null;
+const noJq = toolDir();
+const modes = [['without jq', noJq], ...(withJq ? [['with jq', withJq]] : [])];
+
+for (const [mode, envPath] of modes) {
+  test(`guard-delete ${mode}: deleting a protected path is blocked`, () => {
+    const root = project();
+    for (const command of BLOCK) {
+      const r = run('guard-delete.sh', root, { tool_input: { command } }, envPath);
+      assert.equal(r.status, 2, `${command} must be blocked: ${r.stderr}`);
+    }
+  });
+
+  test(`guard-delete ${mode}: ordinary commands pass`, () => {
+    const root = project();
+    for (const command of PASS) {
+      const r = run('guard-delete.sh', root, { tool_input: { command } }, envPath);
+      assert.equal(r.status, 0, `${command} must pass: ${r.stderr}`);
+    }
+  });
+
+  test(`unlock-delete ${mode}: the code phrase lets exactly one deletion through`, () => {
+    const root = project();
+    const del = { tool_input: { command: 'rm -rf .claude' } };
+    run('unlock-delete.sh', root, { prompt: 'Подключи сенсорику' }, envPath);
+    assert.equal(run('guard-delete.sh', root, del, envPath).status, 2, '"Подключи" does not unlock');
+    run('unlock-delete.sh', root, { prompt: 'ок, отключи сенсорику' }, envPath);
+    assert.equal(run('guard-delete.sh', root, del, envPath).status, 0, 'first deletion after the phrase passes');
+    assert.equal(run('guard-delete.sh', root, del, envPath).status, 2, 'the permission does not linger');
+  });
+}
+
+function updateCase({ installed, cache, remote }) {
+  const root = project();
+  if (installed) fs.writeFileSync(path.join(root, '.forma/install-manifest.json'), JSON.stringify({ manifestVersion: 1, version: installed }));
+  if (cache) fs.mkdirSync(path.join(root, '.claude/plugins/cache/forma/forma', cache), { recursive: true });
+  const curl = remote ? `#!/bin/sh\necho '{"name": "forma", "version": "${remote}"}'\n` : null;
+  const bin = toolDir(curl ? { curl } : {});
+  const r = run('check-plugin-update.sh', root, {}, bin);
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stderr, '');
+  return r.stdout;
+}
+
+test('check-plugin-update: versions with a suffix are compared by their numbers', () => {
+  assert.match(updateCase({ installed: '0.4.185-alpha', remote: '0.4.186-alpha' }), /0\.4\.185-alpha.*0\.4\.186-alpha/);
+  assert.match(updateCase({ installed: '0.4.185-alpha', remote: '0.4.1000' }), /0\.4\.1000/);
+  assert.equal(updateCase({ installed: '0.4.186-alpha', remote: '0.4.186-alpha' }), '');
+  assert.equal(updateCase({ installed: '0.4.186-alpha', remote: '0.4.185-alpha' }), '', 'local ahead is not an update');
+});
+
+test('check-plugin-update: plugin cache is read when there is no install manifest', () => {
+  assert.match(updateCase({ cache: '0.4.186-alpha', remote: '0.5.0' }), /0\.4\.186-alpha.*0\.5\.0/);
+  assert.equal(updateCase({ remote: '0.5.0' }), '', 'nothing installed: silent');
+});
+
+test('check-plugin-update: no gh and no curl means silence, not an error', () => {
+  assert.equal(updateCase({ installed: '0.4.185-alpha' }), '');
+});
