@@ -21,6 +21,7 @@ exit 1
 | Agent: Extractor          | .claude/agents/extractor.md         | .agents/plugins/forma/agents/extractor.md     | ✗ Дрейф (missing_gemini) |
 | On-Demand: Citing Schema To Human | .claude/agents/on-demand/citing-schema-to-human.md | .agents/plugins/forma/agents/on-demand/citing-schema-to-human.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Cycle Closing | .claude/agents/on-demand/intent-cycle-closing.md | .agents/plugins/forma/agents/on-demand/intent-cycle-closing.md | ✗ Дрейф (missing_gemini) |
+| On-Demand: Intent Documentation | .claude/agents/on-demand/intent-documentation.md | .agents/plugins/forma/agents/on-demand/intent-documentation.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Emergency | .claude/agents/on-demand/intent-emergency.md | .agents/plugins/forma/agents/on-demand/intent-emergency.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Goal Opening | .claude/agents/on-demand/intent-goal-opening.md | .agents/plugins/forma/agents/on-demand/intent-goal-opening.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Housekeeping | .claude/agents/on-demand/intent-housekeeping.md | .agents/plugins/forma/agents/on-demand/intent-housekeeping.md | ✗ Дрейф (missing_gemini) |
@@ -85,6 +86,10 @@ Missing .agents/plugins/forma/agents/on-demand/citing-schema-to-human.md
 
 --- [ On-Demand: Intent Cycle Closing ] ---
 Missing .agents/plugins/forma/agents/on-demand/intent-cycle-closing.md
+----------------------------------------------------------------------
+
+--- [ On-Demand: Intent Documentation ] ---
+Missing .agents/plugins/forma/agents/on-demand/intent-documentation.md
 ----------------------------------------------------------------------
 
 --- [ On-Demand: Intent Emergency ] ---

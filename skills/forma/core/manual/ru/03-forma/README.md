@@ -19,6 +19,7 @@
 | [KITTING.md](KITTING.md) | снаряжение проекта при развёртывании |
 | [ROUTES.md](ROUTES.md) | выбор маршрута под задачу: `route-0`…`route-8`, надстройки `over-1`…`over-4`, правило выбора, волны на масштабе |
 | [ZONES.md](ZONES.md) | зоны конструктора протокола |
+| [LEVERS.md](LEVERS.md) | реестр рычагов эффективности и дыр, которые они закрывают |
 | [SKILLS.md](SKILLS.md) | умения узлов как скиллы среды |
 | [five-nodes.md](five-nodes.md) | маршрут пяти узлов, диаграмма |
 | [LOCALIZATION.md](LOCALIZATION.md) | локализация дашборда: два языка, словари, проверка `locale-parity` |

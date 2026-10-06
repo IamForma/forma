@@ -122,7 +122,7 @@ function attemptRecord(m, line) {
   // Тег движка — первое слово описания (AGENTS.md §3); нет тега — `untagged`.
   const tag = /—\s*([a-z][a-z0-9-]*):/.exec(english);
   // id вызова — чтобы один вызов, записанный в нескольких карточках, считался один раз (как в tally.cjs).
-  const idm = !ID_UNKNOWN_RE.test(english) && /`([^`\s]+)`\s*$/.exec(m[8] || '');
+  const idm = !ID_UNKNOWN_RE.test(english) && /`([^`\s]+)`\s*$/.exec(m[9] || '');
   const record = {
     callId: idm ? idm[1] : null,
     sessionSpend: /card-session-spend/.test(line),
@@ -140,9 +140,9 @@ function attemptRecord(m, line) {
     work: cacheRead != null && tokens != null ? Math.max(0, tokens - cacheRead) : null,
     seconds: n.seconds,
     secondsUnknown: n.secondsUnknown,
-    costUsd: m[6] ? parseFloat(m[6]) : 0,
-    provider: m[7] || null,
-    services: parseServices(m[8]),
+    costUsd: m[7] ? parseFloat(m[7]) : 0,
+    provider: m[8] || null,
+    services: parseServices(m[9]),
   };
   // Метка границы окна (строка основной сессии, `card-session-spend`): приращения одной сессии различаются ею.
   // Поле только при метке — записи без неё остаются прежними, снимок данных не меняется.
