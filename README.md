@@ -90,6 +90,16 @@ The board `.devtool/features/` is where card status, history, results and spend 
 
 Optional companions: `skill-creator`, `context-mode`, `agentmemory` — see the full description.
 
+### Try it: the demo card
+
+After the interview (goal images and thresholds are set — the start gate stays shut until then), put a ready card on the board:
+
+```
+node .forma/board/new-card.cjs --demo
+```
+
+Then tell `Intent`: *walk the demo card through its route*. It is a small card on `route-4` (`Intent → Kit → Intent`): `Kit` writes `project/docs/demo-overview.md`, `Intent` checks it against the criterion, then `Core` gives the cycle verdict. You answer "yes" to the card's five fields and accept the result — that is the human's part of the route. About 3–4 minutes.
+
 ### How the law reaches the session
 
 Claude Code (v2.1.277+) reads `AGENTS.md` (§1–7) and `.claude/rules/claude-8.md` (§8) itself — the installer creates no root `CLAUDE.md` (it would shadow that reading). Checked live on 2.1.292: both arrive as project instructions.

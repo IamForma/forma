@@ -5,7 +5,7 @@
 //                                     [--status backlog] [--assignee Intent] [--priority medium] [--lang ru|en] [--dry]
 //                                     [--route N] [--over N]… [--seg N] [--wave N] [--after NNN]… [--trial]
 //                                     [--delivers "<что даёт>"] [--criterion "<критерий>"] [--budget "<попытки>"] [--next "<куда дальше>"]
-//                                     [--why <код>] [--why-detail "<пояснение>"] [--stage card|approve]
+//                                     [--why <код>] [--why-detail "<пояснение>"] [--stage card|approve] [--demo]
 //
 // --kind   — код вида из PROJECT.md, «Эпики проекта» (value, docs, forma, result-image, core, incoming, goal, experience, review-image).
 //            Имя эпика подставляется точно из таблицы — поле `epic` (AGENTS.md §7).
@@ -14,6 +14,8 @@
 // --delivers/--criterion/--budget/--next — поля задачи (§6) сразу, без правки файла после записи; не заданное остаётся заготовкой <…>.
 // --why — причина маршрута (§6, коды: human|ready|scale|risk|decision|tooling): пишет в «История» строку `route route-N (why: …)`;
 //            --stage — строку `stage <ключ>` (card — задача пишется, approve — ждёт «да» человека). Без флага строка не пишется.
+// --demo   — демо-карточка для знакомства: готовая задача на route-4 (Intent → Kit → Intent) с заполненными полями;
+//            остальные флаги её переопределяют. Проходит весь маршрут за несколько минут (manual → DEMO).
 // Номер — следующий свободный `card-NNN` по доске и done/. Зоны — на языке проекта (§6).
 // После записи — проверка доски ядра (.forma/board/check-board.cjs) по этой карточке; ошибка по ней — код выхода 1.
 // Часть ядра: одна для всех движков, путей движка не знает.
@@ -30,7 +32,16 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const BOARD = path.join(ROOT, '.devtool', 'features');
 
 const cli = makeCli();
-const { arg, flag, values: args } = cli;
+const { flag, values: args } = cli;
+// Заготовка --demo: язык карточки — из --lang (по умолчанию ru, как у проекта-заготовки); явные флаги сильнее.
+const DEMO = {
+  ru: { title: 'Демо: описание проекта', delivers: 'файл project/docs/demo-overview.md — одна фраза о том, что это за проект',
+    criterion: 'файл существует, в нём не больше трёх строк, check-board проходит', budget: '2 попытки', next: 'Core закрывает круг' },
+  en: { title: 'Demo: project overview', delivers: 'file project/docs/demo-overview.md — one sentence on what this project is',
+    criterion: 'the file exists, has at most three lines, check-board passes', budget: '2 attempts', next: 'Core closes the cycle' },
+};
+const demo = flag('demo') ? { kind: 'forma', route: '4', why: 'tooling', ...DEMO[cli.arg('lang') === 'en' ? 'en' : 'ru'] } : {};
+const arg = (k, d) => { const v = cli.arg(k); return v !== undefined ? v : demo[k] !== undefined ? demo[k] : d; };
 const die = cli.die('new-card');
 
 // 1. Эпики из PROJECT.md
