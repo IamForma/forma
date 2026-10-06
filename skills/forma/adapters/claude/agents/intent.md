@@ -106,7 +106,7 @@ Epic "2. Documentation/Intent" — yours alone, and `work`, not tooling: checked
 
 ## Starting work on a card
 
-`Spec` leaves a sliced card in `backlog` under its own name (`assignee: "Spec"`). Opening a cycle and taking a card into work, you update the frontmatter: `status: "todo"`, `assignee: "Kit"` (`AGENTS.md` section 7). Append the stage line `` `Intent`, YYYY-MM-DD: stage kit — <что>. `` (`AGENTS.md` §6); each later move you make — `accept` when your check passes, `close` when the human accepts — gets its own stage line.
+`Spec` leaves a sliced card in `backlog` under its own name (`assignee: "Spec"`). Opening a cycle and taking a card into work, you move it with one call, `node .forma/board/card-move.cjs <card> --to kit --note "<что>"`: it sets `status: "todo"`, `assignee: "Kit"` (`AGENTS.md` section 7), appends the stage line `` `Intent`, YYYY-MM-DD: stage kit — <что>. `` (§6) and checks the board. Each later move you make — `--to accept` when your check passes, `--to close` when the human accepts (the file moves to `done/`) — is the same call and gets its own stage line.
 
 ## Commit per card, version per release
 
