@@ -13,12 +13,18 @@
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 
 INPUT=$(cat)
-CMD=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+# jq when present; otherwise node (always there: the installer runs on it). Git Bash on Windows ships without jq,
+# and an unparsed input used to mean an empty command - every deletion passed.
+if command -v jq >/dev/null 2>&1; then
+  CMD=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+else
+  CMD=$(printf '%s' "$INPUT" | node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{try{const c=JSON.parse(s).tool_input;if(c&&typeof c.command==="string")process.stdout.write(c.command)}catch(e){}})' 2>/dev/null)
+fi
 
 [ -z "$CMD" ] && exit 0
 
 # a destructive verb anywhere? (fast exit)
-echo "$CMD" | grep -qiE '\brm\b|\brmdir\b|\bdel\b|\berase\b|\brd\b|\bri\b|Remove-Item|Clear-Content|-delete\b' || exit 0
+echo "$CMD" | grep -qiE '\brm\b|\brmdir\b|\bdel\b|\berase\b|\brd\b|\bri\b|Remove-Item|Clear-Content|-delete\b|\bclean\b' || exit 0
 
 # Text versus command. Heredoc bodies (<<WORD ... WORD) and PowerShell here-strings (@' ... '@) are dropped; the rest
 # is cut into pipelines at ; && || & and at line breaks outside quotes. Then only a pipeline where a destructive
@@ -77,11 +83,19 @@ PROT=".claude .agents .codex .devtool manual living vars agents.md claude.md pro
 TOKS=$(printf '%s' "$CAND" | tr ' \t;|&()"<>'"'" '\n\n\n\n\n\n\n\n\n\n\n')
 REC=
 printf '%s' "$CAND" | grep -qiE '(^|[[:space:]])(-[a-z]*r[a-z]*|--recursive|-recurse)([[:space:]]|$)' && REC=1
+# find -delete and git clean are recursive by nature; `git clean` without a path works on the whole tree.
+printf '%s' "$CAND" | grep -qiE '(^|[^a-z])find[[:space:]].*-delete' && REC=1
+if printf '%s' "$CAND" | grep -qiE '(^|[^a-z])git[[:space:]]+([^|]*[[:space:]])?clean([[:space:]]|$)'; then
+  REC=1
+  printf '%s' "$CAND" | sed 's/.*clean//' | tr ' \t' '\n\n' | grep -qvE '^(-.*|)$' || TOKS="$TOKS ."
+fi
 for t in $TOKS; do
   case "$t" in -*|'['|'[['|']'|']]'|'$('*|'`'*) continue ;; esac
   if [ -n "$REC" ]; then
     d=${t%%[\*\?\[]*}; d=${d%/}; [ -z "$d" ] && d=.
     if [ -d "$d" ] && [ -n "$(find "$d" -iname GOAL.md 2>/dev/null | head -1)" ]; then GLOB_HIT=1; fi
+    # the directory holds a protected root itself (`rm -rf .`, `find . -delete`, `git clean -fdx`)
+    for r in .claude .agents .codex .devtool .forma AGENTS.md; do [ -e "$d/$r" ] && GLOB_HIT=1; done
   fi
   case "$t" in *[\*\?\[]*) ;; *) continue ;; esac
   t=$(printf '%s' "${t#./}" | tr '[:upper:]' '[:lower:]')
@@ -95,7 +109,7 @@ done
 set +f
 
 # aims at a protected path? (word boundaries, so "user-manual", "manually" and the like are not caught)
-echo "$CAND" | grep -qiE '\.claude/|\.agents/|\.codex/|\.devtool/|(^|[^A-Za-z0-9_-])manual([^A-Za-z0-9_-]|$)|(^|[^A-Za-z0-9_-])living([^A-Za-z0-9_-]|$)|(^|[^A-Za-z0-9_-])VARS([^A-Za-z0-9_-]|$)|AGENTS\.md|CLAUDE\.md|gemini-8\.md|CODEX-8\.md|PROJECT\.md|GOAL\.md' || [ -n "$GLOB_HIT" ] || exit 0
+echo "$CAND" | grep -qiE '\.(claude|agents|codex|devtool)([^A-Za-z0-9_-]|$)|\.forma/?([^A-Za-z0-9_./-]|$)|(^|[^A-Za-z0-9_-])manual([^A-Za-z0-9_-]|$)|(^|[^A-Za-z0-9_-])living([^A-Za-z0-9_-]|$)|(^|[^A-Za-z0-9_-])VARS([^A-Za-z0-9_-]|$)|AGENTS\.md|CLAUDE\.md|gemini-8\.md|CODEX-8\.md|PROJECT\.md|GOAL\.md' || [ -n "$GLOB_HIT" ] || exit 0
 
 MARKER="${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/.delete-unlock"
 
