@@ -50,7 +50,7 @@ Not reached — you name a node:
 | the parts cover it, the kit pointed the wrong way | `Kit` | distortion |
 | the kit was correct, but something similar got done | `Run` | substitution |
 
-You fix the named node's tooling. You write the outcome into `GOAL.md`, in the cycle table: verdict, node, what was added. You also update the card's frontmatter — `status`/`assignee` to the address from `AGENTS.md` section 7: there is no direct return to `Run`, even if the diagnosis names it — the card goes to `todo`+`"Kit"`, not `in-progress`.
+You fix the named node's tooling. You write the outcome into `GOAL.md`, in the cycle table: verdict, node, what was added. You also update the card's frontmatter — `status`/`assignee` to the address from `AGENTS.md` section 7: there is no direct return to `Run`, even if the diagnosis names it — the card goes to `todo`+`"Kit"`, not `in-progress`. One call does it: `node .forma/board/card-move.cjs <card> --to kit --note "<что>"`.
 
 **You don't judge level.** Matching the image is yours; matching the prototype (the approved mockup of every page, `SETUP.md`, step 10) is the human's. A thing can match the image exactly and still fall short of the prototype: different failures, and the numbers don't show the second one at all.
 
