@@ -24,6 +24,7 @@ function emptyAcc() {
     attempts: 0,
     tokens: 0, tokensUnknown: 0,
     seconds: 0, withSeconds: 0, secondsUnknown: 0,
+    turns: 0, withTurns: 0,
     cacheRead: 0, withCacheRead: 0, cacheUnknown: 0, tokensWithCacheRead: 0,
     work: 0,
     idUnknown: 0,
@@ -34,7 +35,7 @@ function emptyAcc() {
 
 /**
  * Одна попытка в накопитель. rec — канонические переменные:
- *   tokens (N, итог), cache_read (R), duration_s (T), call_id, usd, ext_units [{unit, service, amount}].
+ *   tokens (N, итог), cache_read (R), duration_s (T), turns, call_id, usd, ext_units [{unit, service, amount}].
  * Старое соглашение «R больше N» (N записан без R) приводится: по §3 N включает R.
  */
 function addAttempt(acc, rec) {
@@ -44,6 +45,7 @@ function addAttempt(acc, rec) {
   if (isNum(tokens)) acc.tokens += tokens; else if (isUnknown(tokens)) acc.tokensUnknown += 1;
   if (isNum(rec.duration_s)) { acc.seconds += rec.duration_s; acc.withSeconds += 1; }
   else if (isUnknown(rec.duration_s)) acc.secondsUnknown += 1;
+  if (isNum(rec.turns)) { acc.turns += rec.turns; acc.withTurns += 1; }
   if (isNum(rec.cache_read)) {
     acc.cacheRead += rec.cache_read;
     acc.withCacheRead += 1;

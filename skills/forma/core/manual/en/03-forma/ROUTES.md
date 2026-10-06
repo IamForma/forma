@@ -379,7 +379,7 @@ The `GOAL.md` of a `route-8` goal — section "Segments": segments → waves →
 
 | Script | What to change |
 |---|---|
-| `new-card.cjs` | flags `--route`, `--over`, `--seg`, `--wave`, `--after`, `--trial` → labels |
+| `new-card.cjs` | flags `--route`, `--over`, `--seg`, `--wave`, `--after`, `--trial` → labels; `--delivers/--criterion/--budget/--next`, `--why`, `--stage` → task fields and history lines |
 | `sync-engines.cjs --check` | exactly one `route-*` on a new card; a route without `Spec` lacking a human-approval line → breach; `after-card-*` points to an existing card; a dependency not from an earlier wave → breach |
 | `check-card.sh` | the same checks at the moment of writing |
 | `tally.cjs` | spend, returns, share of preparation — by `route-*`, `over-*`, `seg-*`, `wave-*` |

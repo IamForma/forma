@@ -91,13 +91,14 @@ function dedupKey(line, file, id, m) {
 // Строка → канонические переменные (.forma/manual/en/03-forma/ECONOMY.md); счёт — economy.cjs.
 // null — маркер `unknown` (отдельно), undefined — поле не записано.
 function attemptRecord(m, line, idMatch) {
-  const [, node, , tokensStr, cacheStr, secondsStr, costStr, , tail] = m;
+  const [, node, , tokensStr, cacheStr, secondsStr, turnsStr, costStr, , tail] = m;
   return {
     node,
     engine: engineKey(line),
     tokens: TOKENS_UNKNOWN_RE.test(line) ? null : toInt(tokensStr),
     cache_read: cacheStr != null ? toInt(cacheStr) : (CACHE_UNKNOWN_RE.test(line) ? null : undefined),
     duration_s: secondsStr == null ? undefined : (secondsStr === 'unknown' ? null : toInt(secondsStr)),
+    turns: turnsStr == null ? undefined : toInt(turnsStr),
     call_id: ID_UNKNOWN_RE.test(line) ? null : (idMatch ? idMatch[1] : undefined),
     usd: costStr ? parseFloat(costStr) : undefined,
     ext_units: serviceUnits(tail),
@@ -115,7 +116,7 @@ function readLine(raw, file, engine, seenIds) {
   // а строка уходит в unparsed — то есть называется файлом и текстом.
   if (!TOKENS_UNKNOWN_RE.test(line) && !Number.isFinite(toInt(m[3]))) return { unparsed: line };
   if (engine && (engineKey(line) || 'untagged') !== engine) return {};
-  const idMatch = callIdMatch(line, m[8]);
+  const idMatch = callIdMatch(line, m[9]);
   if (idMatch) {
     const key = dedupKey(line, file, idMatch[1], m);
     if (seenIds.has(key)) return { dup: true };
@@ -150,7 +151,7 @@ function absorb(st, file, res) {
 function summarizeNodes(byNode) {
   const services = {};
   for (const v of Object.values(byNode)) for (const [k, x] of Object.entries(v.services)) services[k] = (services[k] || 0) + x;
-  const total = { attempts: 0, tokens: 0, tokensUnknown: 0, seconds: 0, secondsUnknown: 0, usd: 0, services };
+  const total = { attempts: 0, tokens: 0, tokensUnknown: 0, seconds: 0, secondsUnknown: 0, turns: 0, usd: 0, services };
   const nodesOut = {};
   for (const [node, v] of Object.entries(byNode)) {
     nodesOut[node] = {
@@ -160,6 +161,8 @@ function summarizeNodes(byNode) {
       secondsUnknown: v.secondsUnknown,
       seconds: v.seconds,
       withSeconds: v.withSeconds,
+      turns: v.turns,
+      withTurns: v.withTurns,
       cacheRead: v.cacheRead,
       work: v.work,
       withCacheRead: v.withCacheRead,
@@ -174,6 +177,7 @@ function summarizeNodes(byNode) {
     total.tokensUnknown += v.tokensUnknown;
     total.secondsUnknown += v.secondsUnknown;
     total.seconds += v.seconds;
+    total.turns += v.turns;
     total.usd += v.usd;
   }
   total.usd = Number(total.usd.toFixed(6));
@@ -240,7 +244,7 @@ function readLabels(text) {
 
 function emptyRow(key) {
   return { key, cards: 0, attempts: 0, tokens: 0, tokensUnknown: 0, cacheRead: 0, cacheUnknown: 0,
-    seconds: 0, secondsUnknown: 0, returns: 0, prepTokens: 0, prepNodes: 'Spec+Kit' };
+    seconds: 0, secondsUnknown: 0, turns: 0, returns: 0, prepTokens: 0, prepNodes: 'Spec+Kit' };
 }
 
 function byRoute(targets, engine) {
@@ -271,6 +275,7 @@ function byRoute(targets, engine) {
         row.cacheUnknown += v.cacheUnknown;
         row.seconds += v.seconds;
         row.secondsUnknown += v.secondsUnknown;
+        row.turns += v.turns;
         if (prep.includes(node)) row.prepTokens += v.tokens;
         if (node === executor) row.returns += Math.max(0, v.attempts - 1);
       }
@@ -291,7 +296,7 @@ function routeReport(targets) {
   const t = byRoute(targets);
   const L = ['Расход по маршрутам (метки route-N / over-N / seg-N / wave-N)', '='.repeat(64)];
   const head = 'метка'.padEnd(14) + 'карт.'.padStart(6) + 'заход.'.padStart(7) + 'токены'.padStart(12) +
-    'cache-read'.padStart(12) + 'сек'.padStart(8) + 'возвр.'.padStart(7) + '  подготовка';
+    'cache-read'.padStart(12) + 'сек'.padStart(8) + 'обороты'.padStart(8) + 'возвр.'.padStart(7) + '  подготовка';
   for (const [name, title] of [['route', 'Маршруты'], ['over', 'Надстройки'], ['seg', 'Сегменты'], ['wave', 'Волны']]) {
     if (!t[name].length) continue;
     L.push('', title, head);
@@ -300,9 +305,10 @@ function routeReport(targets) {
       if (r.tokensUnknown) unk.push(`токены unknown: ${r.tokensUnknown}`);
       if (r.cacheUnknown) unk.push(`cache-read unknown: ${r.cacheUnknown}`);
       if (r.secondsUnknown) unk.push(`сек unknown: ${r.secondsUnknown}`);
+      const turnsStr = r.turns > 0 ? String(r.turns) : '—';
       L.push(r.key.padEnd(14) + String(r.cards).padStart(6) + String(r.attempts).padStart(7) +
         groups(r.tokens).padStart(12) + groups(r.cacheRead).padStart(12) + groups(r.seconds).padStart(8) +
-        String(r.returns).padStart(7) + '  ' + (r.prepShare == null ? NOT_RECORDED : `${r.prepShare}% (${r.prepNodes})`) +
+        turnsStr.padStart(8) + String(r.returns).padStart(7) + '  ' + (r.prepShare == null ? NOT_RECORDED : `${r.prepShare}% (${r.prepNodes})`) +
         (unk.length ? `\n${' '.repeat(14)}${unk.join('; ')} — отдельно, не нулём` : ''));
     }
   }
