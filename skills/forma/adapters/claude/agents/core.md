@@ -4,7 +4,7 @@ description: Core — thresholds, cycle verdict, node diagnosis, efficiency tren
 model: claude-sonnet-5
 tier: standard
 effort: medium
-tools: Read, Grep, Glob, Write, Edit, AskUserQuestion, Bash(node .forma/dashboard/tally.cjs *)
+tools: Read, Grep, Glob, Write, Edit, AskUserQuestion, Bash(node .forma/dashboard/tally.cjs *), Bash(node .forma/board/card-move.cjs *)
 ---
 
 # `Core`
