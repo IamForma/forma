@@ -2,6 +2,7 @@
 // Передача карточки следующему узлу одним вызовом: status + assignee + строка этапа + проверка доски (AGENTS.md §6–7).
 //
 //   node .forma/board/card-move.cjs <card> --to kit|run|intent|accept|close --note "<что сделано>" [--node <узел>] [--dry]
+//                                 [--tokens N --duration-ms MS --agent-id <id> [--cache-read R] [--turns K] [--engine claude-code]]
 //
 // <card>  — «NNN» или «card-NNN»; карточка живая (в done/ — уже закрыта, передавать нечего).
 // --to    — куда передаём; таблица §7 → поля frontmatter, ключ этапа §6:
@@ -14,6 +15,10 @@
 //           без «+Kit» (документация, входящие): `run` держит "Intent" (§7, исключения).
 // --note  — «что» в строке этапа; без него — ошибка: пустая строка этапа ничего не говорит.
 // --node  — чья строка; по умолчанию узел, который делает эту передачу (см. таблицу; для `intent` — прежний исполнитель).
+// Расход (AGENTS.md §3, ECONOMY.md) — вызывающий пишет его сразу после возврата узла; тот же вызов дописывает и строку расхода:
+//           --tokens N (итог вызова), --duration-ms MS (секунды округляются), --agent-id <id вызова>; нужны все три сразу.
+//           --cache-read R — иначе «(cache-read unknown)» с причиной в описании; --turns K — «K turns»; --engine — тег движка (claude-code).
+//           Строка расхода идёт от узла `--node` (того, чей вызов вернулся), перед строкой этапа. Без этих флагов расход не пишется.
 // --dry   — показать изменения, файл не писать.
 // Пишет `modified` (на `close` — и `completedAt`), дописывает строку в «История», затем проверяет доску по этой карточке.
 // Часть ядра: одна для всех движков, путей движка не знает.
@@ -26,6 +31,7 @@ const { normalize } = require('./run-in-card.cjs');
 const { checkBoard } = require('./check-board.cjs');
 const i18n = require('../i18n/index.cjs');
 const { projectFile } = require('../dashboard/lib/fs.cjs');
+const { formatSpendLine } = require('../dashboard/spend-line.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const BOARD = path.join(ROOT, '.devtool', 'features');
@@ -49,6 +55,18 @@ if (!id || !to) die(`нужны <card> и --to ${Object.keys(TARGETS).join('|')}
 if (!TARGETS[to]) die(`--to "${to}" — нет такого перехода (${Object.keys(TARGETS).join('|')})`);
 if (!note || /[\n]/.test(note)) die('нужен --note "<что сделано>" в одну строку');
 const t = TARGETS[to];
+
+// Расход: все три обязательных поля сразу или ни одного
+const tokens = arg('tokens'), durationMs = arg('duration-ms'), agentId = arg('agent-id');
+const cacheRead = arg('cache-read'), turns = arg('turns'), engine = arg('engine') || 'claude-code';
+const spendGiven = [tokens, durationMs, agentId].some((v) => v != null);
+if (spendGiven) {
+  if (tokens == null || durationMs == null || agentId == null) die('расход: нужны --tokens, --duration-ms и --agent-id вместе');
+  const num = { tokens, 'duration-ms': durationMs, ...(cacheRead != null && { 'cache-read': cacheRead }), ...(turns != null && { turns }) };
+  for (const [k, v] of Object.entries(num)) if (!/^\d+$/.test(v)) die(`--${k} "${v}" — нужно целое число`);
+  if (!/^[\w.:-]+$/.test(agentId)) die(`--agent-id "${agentId}" — не похоже на id вызова`);
+  if (!/^[a-z][\w-]*$/.test(engine)) die(`--engine "${engine}" — не тег движка`);
+}
 
 // 1. Карточка: только живая
 const files = cardFiles(ROOT, (n) => n.startsWith(id + '-') && n.endsWith('.md'));
@@ -97,7 +115,13 @@ const histAt = text.indexOf('\n## ' + zone.hist);
 const resAt = text.indexOf('\n## ' + zone.res, histAt + 1);
 const histEnd = resAt === -1 ? text.length : resAt;
 const body = text.slice(histAt, histEnd).replace(/\s*$/, '');
-text = text.slice(0, histAt) + body + '\n' + line + '\n' + (resAt === -1 ? '' : text.slice(resAt));
+const n = note.replace(/\.?\s*$/, '.');
+const spend = !spendGiven ? '' : formatSpendLine({
+  node, date: day, tokens: Number(tokens), cache_read: cacheRead != null ? Number(cacheRead) : null,
+  duration_s: Math.round(Number(durationMs) / 1000), turns: turns != null ? Number(turns) : undefined,
+  call_id: agentId, engine, desc: n + (cacheRead != null ? '' : ' cache-read движок не вернул.'),
+}).replace(/^/, '- ') + '\n';
+text = text.slice(0, histAt) + body + '\n' + spend + line + '\n' + (resAt === -1 ? '' : text.slice(resAt));
 
 // 6. Запись; на close файл уходит в done/ (расширение доски делает это само, без него — мы)
 const target = to === 'close' ? path.join(BOARD, 'done', cardId + '.md') : file;
