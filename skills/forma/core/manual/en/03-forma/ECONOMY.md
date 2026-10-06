@@ -32,7 +32,7 @@ The engine tag after the dash is the grouping key. Tokens of different engine ta
 
 ## Who writes the line, and where
 
-- **Who:** the caller, right after the return — never the node itself, never after the fact. **Where:** the card's `## History`.
+- **Who:** the caller, right after the return — never the node itself, never after the fact. **Where:** the card's `## History`. A card handoff writes it itself: `card-move.cjs … --tokens N --duration-ms MS --agent-id <id> [--cache-read R] [--turns K]` appends the spend line before the stage line; without `--cache-read` it writes `(cache-read unknown)` with the reason.
 - **Spend is counted by fact, not by impression.** A node doesn't know its own spend from inside — that knowledge is in the call's metadata, not in its context. **Field names:** which field of the engine's return fills which variable of the skeleton — §8 of the engine file; read, never estimated.
 
 ## The key part is English; the engine opens the description
