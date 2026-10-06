@@ -18,7 +18,7 @@ Clean zone: no card codes, dates or project names here (`AGENTS.md`, prohibition
 | Leak | Lever | Where | State |
 |---|---|---|---|
 | A card is created empty, then edited in several turns (task fields, route reason, stage line) | Create it complete in one call: `--delivers --criterion --budget --next --why --why-detail --stage` | `board/new-card.cjs` | in place |
-| Handing a card to the next node (status/assignee + stage line + check) is done by hand, 3–4 turns | One call: `card-move.cjs <card> --to kit\|run\|intent\|accept\|close --note` | `board/card-move.cjs`, `kit.md`/`run.md`/`intent.md` | partial |
+| Handing a card to the next node (status/assignee + stage line + check) is done by hand, 3–4 turns | One call: `card-move.cjs <card> --to kit\|run\|intent\|accept\|close --note` | `board/card-move.cjs`, `kit.md`/`run.md`/`intent.md` | in place |
 | Number, epic name, goal label looked up and typed by hand | The script takes them from `PROJECT.md` and the board | `board/new-card.cjs` | in place |
 | A broken card is found late, at a commit or a cycle check | The board check runs on the card at creation and on every write | `new-card.cjs` (step 6), `check-card.sh` hook | in place |
 | Role files loaded in full on every request | Rare rules moved to on-demand files, read at the moment they apply | `agents/on-demand/` | in place |
@@ -33,8 +33,8 @@ Clean zone: no card codes, dates or project names here (`AGENTS.md`, prohibition
 
 List here what is suspected but not yet measured or closed: write the symptom, how to measure it (which spend lines or `tally.cjs` cut), and who owns it. Do not add a lever before the leak is measured.
 
-- **Turns per card handoff.** Before: 3–4 calls per handoff (read the card, edit `status`/`assignee`, append the stage line, board check); after: 1 (`card-move.cjs`). Counted from the role procedures, not from live sessions. Metric: `K turns` in the spend line of the call that hands the card over, and `tally.cjs --routes` (turns column) per route/epic. Flip the register row to `in place` once live cards show handoff turns converging to 1; owner: `Intent`.
-- **Turn measurement — pending.** Run `node test/eval-start-context.cjs --scenario card --model sonnet --effort low` on `dev` ("after") and on commit `baedbfe` ("before"), same `--model` and `--effort`; record `K turns`, tokens, $ here. Until measured, the handoff and start-context levers stay `partial`; a batch `new-card` for `Spec` and on-demand sections of `kit.md` are decided by its result; owner is `Intent`.
+- **Turns per card handoff — measured.** Live run `node test/eval-start-context.cjs --scenario handoff --model sonnet --effort low`: a card in `backlog` is walked through three handoffs (Intent → Kit → Run → check), 3 runs each on `baedbfe` ("before", no `card-move`) and on `dev` ("after"). Turns: 20, 22, 20 → 18, 17, 15 (median 20 → 17, −15%); hand edits of the card file 7 → 1; cost per run $0.46 → $0.44 (−4%); all 6 runs finished the card. The effect is moderate: the agent spends about 15 turns in the scenario because it reads the role files and checks the protocol, not only because it moves fields — the manual editing went away, the reading stayed. Small sample (3 runs each), one model. Owner: `Intent`.
+- **What to decide next from the measurement.** Most of a handoff's turns are reading roles and checking the protocol, so the next lever is moving the rare sections of `kit.md` and `run.md` to on-demand files and a batch `new-card` for `Spec`; decide both from a new measurement with the same scenario. The start-context lever stays `partial`. The `handoff` scenario satisfies the start gate (`AGENTS.md` section 3) itself and uses `route-7`: without that the agent rightly refuses to open a cycle or waits for the human's approval. Owner: `Intent`.
 
 ## Rule for new entries
 
