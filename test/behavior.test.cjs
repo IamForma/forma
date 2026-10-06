@@ -53,6 +53,19 @@ test('new-card --dry: следующий номер, эпик и метки из
   assert.deepEqual(fs.readdirSync(path.join(fx.root, '.devtool', 'features')).sort(), before);
 });
 
+test('new-card --demo --dry: готовая карточка route-4 с заполненными полями, без заглушек', () => {
+  for (const lang of ['ru', 'en']) {
+    const r = run(fx, ['.forma/board/new-card.cjs', '--demo', '--dry', '--lang', lang]);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /^labels: \["goal-forma", "route-4"\]$/m);
+    assert.match(r.out, /route route-4 \(why: tooling\)/);
+    assert.match(r.out, /project\/docs\/demo-overview\.md/);
+    assert.doesNotMatch(r.out.replace('<ROOT>', ''), /<[^>\n]+>/, 'в демо-карточке нет заглушек <…>');
+  }
+  const own = run(fx, ['.forma/board/new-card.cjs', '--demo', '--dry', '--title', 'Свой заголовок']);
+  assert.match(own.out, /^# card-\d+ · Свой заголовок$/m, 'явный флаг сильнее заготовки');
+});
+
 test('sync-engines --check: чистая установка с фикстурой — зелёная', () => {
   const r = run(fx, ['.claude/scripts/sync-engines.cjs', '--check']);
   assert.equal(r.status, 0, r.out.slice(-3000));
