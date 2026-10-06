@@ -14,6 +14,7 @@ const { parseLong } = require('../skills/forma/core/dashboard/lib/cli.cjs')
 const verifyInstall = require('../skills/forma/core/verify/verify-install.cjs')
 
 const PKG = path.resolve(__dirname, '..')
+const VERSION = require('../package.json').version
 const SKILL = path.join(PKG, 'skills', 'forma')
 const CORE = path.join(SKILL, 'core')
 const ADAPTERS = path.join(SKILL, 'adapters')
@@ -28,14 +29,14 @@ const ENGINES = [
 
 // ---------- arguments ----------
 function parseArgs(argv) {
-  const { opts, rest } = parseLong(argv, ['help', 'yes'])
+  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version'])
   const o = { cmd: 'init', dir: process.cwd(), ...opts }
   if (rest[0]) o.cmd = rest[0]
   o.dir = path.resolve(o.dir)
   return o
 }
 
-const HELP = `forma init — install/update the Forma protocol in the current folder
+const HELP = `forma ${VERSION} init — install/update the Forma protocol in the current folder
 
   npx github:IamForma/forma init [flags]
 
@@ -46,6 +47,7 @@ const HELP = `forma init — install/update the Forma protocol in the current fo
                                      works too: the agent translates the scaffold after install, hook messages stay English
   --dir      <path>                  project root (default: current folder)
   --yes                              no questions, defaults for anything missing
+  --version                          print the installer version and exit
 
 All four flags set (or --yes, or no terminal) — the menu is not shown.
 `
@@ -521,7 +523,7 @@ function writeManifest(root, { engines, lang, template, projectCreated }) {
   const rows = engines.map((id) => (id === 'claude'
     ? { id, profile: '.claude/verify-profile.cjs', expect: claudeExpect() }
     : { id, note: 'beta — no verify profile yet' }))
-  const manifest = verifyInstall.buildManifest(root, { owned, projectCreated, previous, engines: rows, lang, version: require('../package.json').version, template })
+  const manifest = verifyInstall.buildManifest(root, { owned, projectCreated, previous, engines: rows, lang, version: VERSION, template })
   const f = path.join(root, verifyInstall.MANIFEST)
   fs.mkdirSync(path.dirname(f), { recursive: true })
   fs.writeFileSync(f, JSON.stringify(manifest, null, 2) + '\n')
@@ -565,6 +567,7 @@ function printReport({ report, boardLines }) {
 async function main() {
   const o = parseArgs(process.argv.slice(2))
   if (o.help || o.cmd === 'help') { process.stdout.write(HELP); return }
+  if (o.version || o.cmd === 'version') { console.log(VERSION); return }
   if (o.cmd !== 'init') { console.error(`Unknown command: ${o.cmd}\n\n${HELP}`); process.exit(2) }
   const root = o.dir
   if (!fs.existsSync(root)) fs.mkdirSync(root, { recursive: true })
@@ -574,7 +577,7 @@ async function main() {
   const ask = menu ? makeAsk() : null
   const installedBefore = fs.existsSync(path.join(root, 'AGENTS.md'))
 
-  console.log(`Forma → ${root}${installedBefore ? ' (update)' : ''}`)
+  console.log(`Forma ${VERSION} → ${root}${installedBefore ? ' (update)' : ''}`)
   console.log(`Git: ${gitBoundary(root)}`)
 
   const engines = await chooseEngines(o, ask)

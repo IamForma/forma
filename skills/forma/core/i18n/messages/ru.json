@@ -21,6 +21,7 @@
   "hook.clean_zone_user": "След проекта в чистой зоне (запрет 16):",
   "hook.clean_zone_agent": "Запись оставила след проекта в чистой зоне (запрет 16, AGENTS.md §5), убери сейчас:",
   "hook.plugin_update": "Плагин «Форма»: установлено {have}, на GitHub {want}.\nОбновить кэш: claude plugin marketplace update forma — затем попросите обновить протокол в этом проекте.",
+  "hook.plugin_update_npx": "Форма: в проекте {have}, на GitHub {want}.\nОбновить: npx github:IamForma/forma init в папке проекта (project/, доска и .forma/living/ сохраняются).",
   "hook.delete_blocked": "Заблокировано хуком guard-delete: команда похожа на удаление/затирание защищённого пути схемы ({cmd}). Нужна явная команда человека «Отключи сенсорику» перед этим действием — без неё Bash/PowerShell не может физически удалить .claude/, .agents/, .codex/, .devtool/, .forma/manual/, .forma/living/, VARS/, AGENTS.md, CLAUDE.md, PROJECT.md или GOAL.md.",
   "hook.intent_context": "Основная сессия — Intent (AGENTS.md §1). Роль и правила старта ниже; первый ответ начинается со ссылки на дашборд {url}.",
   "hook.dashboard_link": "Дашборд Формы: {url}",

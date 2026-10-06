@@ -21,6 +21,7 @@
   "hook.clean_zone_user": "Project trace in a clean zone (prohibition 16):",
   "hook.clean_zone_agent": "The write left a project trace in a clean zone (prohibition 16, AGENTS.md §5), remove it now:",
   "hook.plugin_update": "Plugin \"Forma\": installed {have}, on GitHub {want}.\nUpdate the cache: claude plugin marketplace update forma — then ask to update the protocol in this project.",
+  "hook.plugin_update_npx": "Forma: this project has {have}, GitHub has {want}.\nUpdate: run npx github:IamForma/forma init in the project folder (your project/, board and .forma/living/ are kept).",
   "hook.delete_blocked": "Blocked by the guard-delete hook: the command looks like deleting or overwriting a protected path of the scheme ({cmd}). The human must give the explicit code phrase \"Отключи сенсорику\" before this action — without it Bash/PowerShell cannot delete .claude/, .agents/, .codex/, .devtool/, .forma/manual/, .forma/living/, VARS/, AGENTS.md, CLAUDE.md, PROJECT.md or GOAL.md.",
   "hook.intent_context": "The main session is Intent (AGENTS.md §1). The role and the start rules are below; the first reply starts with a link to the dashboard {url}.",
   "hook.dashboard_link": "Forma dashboard: {url}",
