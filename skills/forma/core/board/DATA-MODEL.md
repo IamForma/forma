@@ -28,5 +28,5 @@
 ## Инструменты ядра
 
 - `.forma/board/new-card.cjs` — создать карточку (номер, эпик, метки, зоны), сразу проверить.
-- `.forma/board/card-move.cjs` — передать карточку узлу одним вызовом (`--to kit|run|intent|accept|close --note`): status, assignee, строка этапа, проверка.
+- `.forma/board/card-move.cjs` — передать карточку узлу одним вызовом (`--to kit|run|intent|accept|close --note`): status, assignee, строка этапа, проверка. С `--tokens --duration-ms --agent-id` (+ `--cache-read`, `--turns`, `--engine`) тем же вызовом пишет строку расхода узла.
 - `.forma/board/check-board.cjs [<card-id>]` — проверка доски; выход 1 при нарушениях. Движок вызывает её из своей сверки и из хука записи карточки.
