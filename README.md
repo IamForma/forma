@@ -90,6 +90,19 @@ The board `.devtool/features/` is where card status, history, results and spend 
 
 Optional companions: `skill-creator`, `context-mode`, `agentmemory` — see the full description.
 
+### How the law reaches the session
+
+Claude Code (v2.1.277+) reads `AGENTS.md` (§1–7) and `.claude/rules/claude-8.md` (§8) itself — the installer creates no root `CLAUDE.md` (it would shadow that reading). Checked live on 2.1.292: both arrive as project instructions.
+
+Where native reading fails (older Claude Code, Bedrock, telemetry disabled), register the fallback hook in `.claude/settings.json`:
+
+```json
+{ "hooks": { "SessionStart": [ { "matcher": "startup|resume|clear",
+  "hooks": [ { "type": "command", "command": "sh .claude/hooks/load-engine-section.sh" } ] } ] } }
+```
+
+It prints §8 into the session. Don't register it while native reading works — §8 would arrive twice.
+
 ## What it is
 
 ![Five nodes](assets/five-nodes.svg)
