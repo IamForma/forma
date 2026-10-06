@@ -33,6 +33,21 @@ const START_FILES = [
   '.claude/agents/on-demand/intent-session-start.md',
 ]
 
+// Стартовый гейт (AGENTS.md §3) честно держит агента: пока цели-образы черновик, а пороги пусты, цикл не открывают и передачу
+// агент отказывается делать. Для замера передач гейт выполняется заранее — как у человека, прошедшего интервью.
+function openGate(dir) {
+  for (const c of ['result-image', 'review-image']) {
+    const f = path.join(dir, 'project', 'goals', `goal-${c}`, 'GOAL.md')
+    fs.writeFileSync(f, fs.readFileSync(f, 'utf8').replace(/^draft:\s*true\s*\n/m, ''))
+  }
+  const pm = path.join(dir, 'project', 'config', 'PROJECT.md')
+  fs.writeFileSync(pm, fs.readFileSync(pm, 'utf8')
+    .replace(/(Attempts per task <!-- k:attempts -->\s*\|)[^|\n]*\|/, '$1 3 |')
+    .replace(/(Cycle volume, cards \(per epic\) <!-- k:volume -->\s*\|)[^|\n]*\|/, '$1 5 |'))
+  const gate = sh('bash', ['.claude/hooks/check-ready.sh'], dir)
+  if (/START STOP/.test(gate.stdout || '')) throw new Error(`gate still closed:\n${gate.stdout}`)
+}
+
 // Сценарий handoff: карточка создаётся заранее тем же скриптом, что и в рабочем проекте, — агент её только передаёт.
 function seedCard(dir) {
   const r = sh('node', [path.join(dir, '.forma/board/new-card.cjs'), '--kind', 'value', '--title', 'Eval handoff card',
@@ -51,7 +66,7 @@ const SCENARIOS = {
     indicators: [['no card created (the start gate holds)', (c) => c.cards.length === 0]],
   },
   handoff: {
-    setup: seedCard,
+    setup: (dir) => { openGate(dir); seedCard(dir) },
     prompt:
       "Card card-001 is on the board in backlog. Walk it through three handoffs, acting as each node in turn: " +
       "Intent opens the cycle and sends it to kitting; Kit finishes kitting and hands it to Run; Run finishes and hands it " +
