@@ -18,6 +18,7 @@ Clean zone: no card codes, dates or project names here (`AGENTS.md`, prohibition
 | Leak | Lever | Where | State |
 |---|---|---|---|
 | A card is created empty, then edited in several turns (task fields, route reason, stage line) | Create it complete in one call: `--delivers --criterion --budget --next --why --why-detail --stage` | `board/new-card.cjs` | in place |
+| Handing a card to the next node (status/assignee + stage line + check) is done by hand, 3–4 turns | One call: `card-move.cjs <card> --to kit\|run\|intent\|accept\|close --note` | `board/card-move.cjs`, `kit.md`/`run.md`/`intent.md` | partial |
 | Number, epic name, goal label looked up and typed by hand | The script takes them from `PROJECT.md` and the board | `board/new-card.cjs` | in place |
 | A broken card is found late, at a commit or a cycle check | The board check runs on the card at creation and on every write | `new-card.cjs` (step 6), `check-card.sh` hook | in place |
 | Role files loaded in full on every request | Rare rules moved to on-demand files, read at the moment they apply | `agents/on-demand/` | in place |
@@ -31,6 +32,8 @@ Clean zone: no card codes, dates or project names here (`AGENTS.md`, prohibition
 ## Open leaks (to investigate)
 
 List here what is suspected but not yet measured or closed: write the symptom, how to measure it (which spend lines or `tally.cjs` cut), and who owns it. Do not add a lever before the leak is measured.
+
+- **Turns per card handoff.** Before: 3–4 calls per handoff (read the card, edit `status`/`assignee`, append the stage line, board check); after: 1 (`card-move.cjs`). Counted from the role procedures, not from live sessions. Metric: `K turns` in the spend line of the call that hands the card over, and `tally.cjs --routes` (turns column) per route/epic. Flip the register row to `in place` once live cards show handoff turns converging to 1; owner: `Intent`.
 
 ## Rule for new entries
 

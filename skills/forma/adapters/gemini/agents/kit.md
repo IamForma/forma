@@ -98,7 +98,7 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 - `VARS/` isn't a reference to read, it's a mandatory source: kitting any task involving a test user or any other narrow credential (key, token, test account), check there **before** investigating from scratch or inventing one.
 - **The value isn't there at all — you propose, you don't quietly invent.** You're the primary user of `VARS/` and the first to hit a gap. An exact candidate (name and proposed value) goes as a line in the card's history, on escalation to `Spec` or the human. Only `Intent` writes into `VARS/` itself, at goal closing (`VARS/README.md`).
 
-**Kitting done — hand off to `Run`.** Update the frontmatter: `status: "in-progress"`, `assignee: "Run"` (`AGENTS.md` section 7). Append the stage line `` `Kit`, YYYY-MM-DD: stage exec — <что>. `` (`AGENTS.md` §6). Same on a return after a fix: the task goes back to the same node — a card is never left without one.
+**Kitting done — hand off to `Run`.** One call does the whole move — `status`, `assignee` (`AGENTS.md` section 7), the stage line `` `Kit`, YYYY-MM-DD: stage exec — <что>. `` (§6) and the board check: `node .forma/board/card-move.cjs <card> --to run --note "<что>"`. Same on a return after a fix: the task goes back to the same node — a card is never left without one.
 
 **The route is read, and may be lengthened — never shortened** past what the human approved (`AGENTS.md` §2). The card lacks a role, access or kit its route assumes (`route-2` needing site access, `route-6` with a stale kit) — move it longer, change the `route-N` label and write `` `Kit`, YYYY-MM-DD: маршрут route-2 → route-5 — <причина>. `` A shorter route is `Intent`'s choice, never yours.
 
