@@ -90,6 +90,19 @@ code --install-extension LachyFS.kanban-markdown
 
 По желанию: `skill-creator`, `context-mode`, `agentmemory` — см. полное описание.
 
+### Как закон попадает в сессию
+
+Claude Code (v2.1.277+) сам читает `AGENTS.md` (§1–7) и `.claude/rules/claude-8.md` (§8) — установщик не создаёт корневой `CLAUDE.md` (он заслонил бы это чтение). Проверено вживую на 2.1.292: оба файла приходят как инструкции проекта.
+
+Если нативное чтение не работает (старый Claude Code, Bedrock, отключённая телеметрия), зарегистрируйте запасной хук в `.claude/settings.json`:
+
+```json
+{ "hooks": { "SessionStart": [ { "matcher": "startup|resume|clear",
+  "hooks": [ { "type": "command", "command": "sh .claude/hooks/load-engine-section.sh" } ] } ] } }
+```
+
+Хук выводит §8 в сессию. Пока нативное чтение работает, хук не регистрируйте — §8 придёт дважды.
+
 ## Что это
 
 ![Пять узлов](assets/five-nodes.svg)
