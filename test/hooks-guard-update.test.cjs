@@ -109,3 +109,26 @@ test('check-plugin-update: plugin cache is read when there is no install manifes
 test('check-plugin-update: no gh and no curl means silence, not an error', () => {
   assert.equal(updateCase({ installed: '0.4.185-alpha' }), '');
 });
+
+// Codex runs its hooks with PowerShell; the same update logic, checked where pwsh is installed (GitHub runners have it).
+const pwsh = which('pwsh');
+test('check-plugin-update.ps1 (Codex): compares by numbers, says how to update, stays silent otherwise', { skip: !pwsh && 'no pwsh' }, () => {
+  const hook = path.join(__dirname, '..', 'skills', 'forma', 'adapters', 'codex', '.codex', 'hooks', 'check-plugin-update.ps1');
+  const gh = (v) => `#!/bin/sh\necho '{"name": "forma", "version": "${v}"}'\n`;
+  const runPs = (installed, remote) => {
+    const root = project();
+    fs.mkdirSync(path.join(root, '.codex', 'hooks'), { recursive: true });
+    fs.copyFileSync(hook, path.join(root, '.codex', 'hooks', 'check-plugin-update.ps1'));
+    if (installed) fs.writeFileSync(path.join(root, '.forma/install-manifest.json'), JSON.stringify({ version: installed }));
+    const bin = toolDir({ gh: gh(remote) });
+    fs.symlinkSync(pwsh, path.join(bin, 'pwsh'));
+    const r = spawnSync(pwsh, ['-NoProfile', '-File', '.codex/hooks/check-plugin-update.ps1'], { cwd: root, encoding: 'utf8', env: { PATH: bin, HOME: root } });
+    assert.equal(r.status, 0, r.stderr);
+    return r.stdout;
+  };
+  assert.match(runPs('0.4.185-alpha', '0.4.187-alpha'), /0\.4\.185-alpha.*0\.4\.187-alpha.*npx github:IamForma\/forma init/s);
+  assert.match(runPs('0.4.185-alpha', '0.4.1000'), /0\.4\.1000/);
+  assert.equal(runPs('0.4.187-alpha', '0.4.187-alpha'), '');
+  assert.equal(runPs('0.5.0', '0.4.187-alpha'), '', 'local ahead is not an update');
+  assert.equal(runPs(null, '0.5.0'), '', 'no install manifest: silent');
+});
