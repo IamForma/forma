@@ -4,11 +4,16 @@
 //   node .forma/board/new-card.cjs --kind <код> --title "<заголовок>" [--goal goal-NN] [--type дело|оснастка|решение]
 //                                     [--status backlog] [--assignee Intent] [--priority medium] [--lang ru|en] [--dry]
 //                                     [--route N] [--over N]… [--seg N] [--wave N] [--after NNN]… [--trial]
+//                                     [--delivers "<что даёт>"] [--criterion "<критерий>"] [--budget "<попытки>"] [--next "<куда дальше>"]
+//                                     [--why <код>] [--why-detail "<пояснение>"] [--stage card|approve]
 //
 // --kind   — код вида из PROJECT.md, «Эпики проекта» (value, docs, forma, result-image, core, incoming, goal, experience, review-image).
 //            Имя эпика подставляется точно из таблицы — поле `epic` (AGENTS.md §7).
 // --goal   — метка цели; по умолчанию главная цель вида `goal-<код>` (AGENTS.md §6, ровно одна метка).
 // --route/--over/--seg/--wave/--after/--trial — метки маршрута (AGENTS.md §6; ROUTES.md §9). --over и --after повторяемы.
+// --delivers/--criterion/--budget/--next — поля задачи (§6) сразу, без правки файла после записи; не заданное остаётся заготовкой <…>.
+// --why — причина маршрута (§6, коды: human|ready|scale|risk|decision|tooling): пишет в «История» строку `route route-N (why: …)`;
+//            --stage — строку `stage <ключ>` (card — задача пишется, approve — ждёт «да» человека). Без флага строка не пишется.
 // Номер — следующий свободный `card-NNN` по доске и done/. Зоны — на языке проекта (§6).
 // После записи — проверка доски ядра (.forma/board/check-board.cjs) по этой карточке; ошибка по ней — код выхода 1.
 // Часть ядра: одна для всех движков, путей движка не знает.
@@ -68,6 +73,17 @@ const Z = {
   types: lang === 'ru' ? ['дело', 'оснастка', 'решение'] : ['work', 'tooling', 'decision'],
 };
 const type = arg('type', Z.types[kind === 'goal' ? 0 : 1]);
+const fields = [['delivers', '<что даёт>'], ['criterion', '<критерий готовности>'], ['budget', '<бюджет попыток>'], ['next', '<куда дальше>']]
+  .map(([k, ph]) => { const v = arg(k); if (v !== undefined && /[|\n]/.test(v)) die(`--${k}: символ | и перевод строки не допускаются — поля разделены «|»`); return v || ph; });
+
+// 3б. Строки истории: причина маршрута и этап (§6)
+const WHY_CODES = ['human', 'ready', 'scale', 'risk', 'decision', 'tooling'];
+const STAGE_KEYS = ['card', 'approve'];
+const why = arg('why'), stage = arg('stage');
+if (why !== undefined && !WHY_CODES.includes(why)) die(`--why "${why}" — нет такого кода (${WHY_CODES.join('|')})`);
+if (stage !== undefined && !STAGE_KEYS.includes(stage)) die(`--stage "${stage}" — при создании только ${STAGE_KEYS.join('|')}`);
+const routeLabel = routeLabels.find(l => l.startsWith('route-'));
+if (why !== undefined && !routeLabel) die('--why требует --route N: причина пишется для метки маршрута');
 
 // 4. Статус и исполнитель по маршруту (AGENTS.md §7): backlog держит Spec на производстве, на остальных дорожках — Intent
 const noSpec = kind !== 'goal'; // Spec режет только производство (7); прочие дорожки открывает Intent
@@ -84,6 +100,12 @@ const slug = title.toLowerCase().split('').map(c => TR[c] ?? c).join('')
   .replace(/[^a-z0-9 -]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 50).replace(/-$/, '');
 const id = `card-${num}-${slug || 'task'}`;
 const now = new Date().toISOString();
+const day = now.slice(0, 10);
+const detail = arg('why-detail');
+const history = [
+  why !== undefined ? `- \`Intent\`, ${day}: route ${routeLabel} (why: ${why})${detail ? ' — ' + detail.replace(/\.?$/, '.') : '.'}` : '',
+  stage !== undefined ? `- \`Intent\`, ${day}: stage ${stage} — карточка создана.` : '',
+].filter(Boolean).join('\n');
 
 const text = `---
 id: "${id}"
@@ -101,12 +123,12 @@ order: "a0"
 # card-${num} · ${title}
 
 ## ${Z.task}
-${num} · ${type} | <что даёт> | <критерий готовности> | <бюджет попыток> | <куда дальше>
+${num} · ${type} | ${fields.join(' | ')}
 
 ## ${Z.kit}
 
 ## ${Z.hist}
-
+${history ? history + '\n' : ''}
 ## ${Z.res}
 `;
 

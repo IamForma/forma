@@ -11,6 +11,7 @@ One contract for every engine. The core counts; an engine adapter only extracts.
 | `cache_read` | input read from cache (R) | tokens | yes on a card line | `(cache-read unknown)` |
 | `cache_write` | input written into cache | tokens | per call, transcript | — |
 | `duration_s` | call duration (T) | whole seconds | yes on a card line | `unknown s` |
+| `turns` | number of turns / round trips the call took | count | no | — |
 | `call_id` | id of that one call; session id for main-session work | string | yes on a card line | `` `id unknown` `` |
 | `tool_uses` | tool reaches of the call | count | no | — |
 | `ext_units` | paid external service, its own unit | `N <unit> (service/operation)` | when used | — |
@@ -25,7 +26,7 @@ A card line records the total **N = tokens_in + cache_write + cache_read + token
 
 ## Line skeleton (card `## History`, `AGENTS.md` §3)
 
-`` `Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s[, $X (provider/model)][, N <unit> (service/op)], `<call_id>` — <engine>: <what was done>. ``
+`` `Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s[, K turns][, $X (provider/model)][, N <unit> (service/op)], `<call_id>` — <engine>: <what was done>. ``
 
 The engine tag after the dash is the grouping key. Tokens of different engine tags are never summed; engines are compared only by shared fields — attempts, time, accepted cards.
 
@@ -39,10 +40,11 @@ The engine tag after the dash is the grouping key. Tokens of different engine ta
 - **Language.** The key part — everything before the dash: `attempt`, `tokens`, `cache-read`, `s`, the markers, the external-model and external-service segments — is written **in English, in every project, whatever its language**; the description after the dash is in the card's language (`AGENTS.md` §6). The key part is what the counters parse: one encoding keeps them reading every project the same. Lines written earlier in another language stay as they are (prohibition 5) and are still read; a new one written so is reported by `sync-engines --check`.
 - **Engine.** The description after the dash **opens with the engine that did the work** — `claude-code:`, `codex:`, `gemini:` — so a card shows who executed it and who left its spend unrecorded.
 
-## T, R and the call id
+## T, R, K and the call id
 
 - **T:** the call's duration in whole seconds.
 - **R:** the call's cache-read counter, read straight from the call's own result, no separate call. R is almost always fixed overhead (loading these rules and the role), not the work itself; it isn't split finer, because nothing inside one call separates card content from the work proper without adding another call.
+- **K:** the number of turns or round trips the call took — optional. Present only when the call or its transcript records this number. Cards without turns data are not counted in turn averages and display `—` (not 0).
 - **Call id:** the identifier of that one call, read straight from the call's own result like the numbers beside it — never composed, never guessed. Which field of the return carries it is named in §8 of the engine file, like every other spend field. It stands **last in the spend block, immediately before the dash**, after any external-model or external-service segment: the numbers stay where the eye already looks for them, and the opaque token sits where the eye passes over it into the prose. **No separate call — the session id**: work done inside the shared session takes its numbers and its id from the engine's transcript of that session (see "`Intent` in the shared session" below).
 - **A continuation of the same `Run` (`AGENTS.md` §2) reuses that call's id on purpose.** `Kit` sending a written correction to a live call is still one call, read and recorded the same way as any other — the line marks itself `attempt (continuation)` so two lines sharing one `call_id` on the same card read as one call extended, not as a duplicate or a mistake.
 
