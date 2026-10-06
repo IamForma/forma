@@ -563,13 +563,13 @@ function claudeExpect() {
   }
   return { hooks }
 }
-function writeManifest(root, { engines, lang, template, projectCreated }) {
+function writeManifest(root, { engines, lang, template, projectCreated, compact }) {
   let previous = null
   try { previous = verifyInstall.readManifest(root) } catch { /* a broken earlier manifest is recreated */ }
   const rows = engines.map((id) => (id === 'claude'
     ? { id, profile: '.claude/verify-profile.cjs', expect: claudeExpect() }
     : { id, note: 'beta — no verify profile yet' }))
-  const manifest = verifyInstall.buildManifest(root, { owned, projectCreated, previous, engines: rows, lang, version: VERSION, template })
+  const manifest = verifyInstall.buildManifest(root, { owned, projectCreated, previous, engines: rows, lang, version: VERSION, template, compact })
   const f = path.join(root, verifyInstall.MANIFEST)
   fs.mkdirSync(path.dirname(f), { recursive: true })
   fs.writeFileSync(f, JSON.stringify(manifest, null, 2) + '\n')
@@ -597,7 +597,7 @@ function install(root, choice) {
     const n = applyLanguage(root, choice.lang)
     report.push(n === null ? 'document language: English' : `document language: ${langName(choice.lang)} — translation awaits the agent: ${n} files (.forma/translation-pending.json; step in SKILL.md "Scaffold translation")${catalogLangs().includes(choice.lang) ? '' : `; no message catalog for "${choice.lang}": hook messages stay English (add core/i18n/messages/${choice.lang}.json)`}`)
   } else if (choice.lang !== 'en') report.push('language: project/ already existed — not translated (language is chosen on first install only)')
-  writeManifest(root, { engines: choice.engines, lang: choice.lang, template: choice.template === 'none' ? (existingTemplate || 'none') : choice.template, projectCreated: core.projectCreated })
+  writeManifest(root, { engines: choice.engines, lang: choice.lang, template: choice.template === 'none' ? (existingTemplate || 'none') : choice.template, projectCreated: core.projectCreated, compact: choice.engines.includes('claude') && choice.compact === 'off' ? 'off' : null })
   return { report, boardLines: board(choice.boardMode) }
 }
 
@@ -612,6 +612,13 @@ async function chooseCompact(o, ask, root, engines) {
   const own = ownCompact(root)
   if (own && !(flag && own.where === '.claude/settings.json')) return { own }
   if (flag) return flag
+  // an earlier explicit «off» is remembered in the manifest: a rerun (even with --yes) does not set the window again
+  let previous = null
+  try { previous = verifyInstall.readManifest(root) } catch { /* a broken manifest remembers nothing */ }
+  if (previous && previous.compact === 'off') {
+    console.log('\nAuto-compact window: off (your earlier choice; enable with --compact <n>)')
+    return 'off'
+  }
   if (!ask) return COMPACT_DEFAULT
   console.log(`\n[5/5] Auto-compact window for Claude Code in this project: ${COMPACT_DEFAULT} tokens`)
   console.log('      (the conversation is compacted when it grows past it; your own setting is never changed)')

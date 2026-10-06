@@ -46,12 +46,13 @@ const BLOCK = [
   'git clean -fdx', 'git clean -fd', 'find . -delete', 'find .claude -delete', 'rm -rf .', 'rm -rf *',
   `node -e "require('fs').rmSync('.claude',{recursive:true})"`, `python3 -c "import shutil; shutil.rmtree('.devtool')"`,
   `perl -e 'unlink("AGENTS.md")'`, 'mv .claude /tmp/x', 'mv -f AGENTS.md ../x', 'cd build && mv ../.forma/manual /tmp',
-  'Move-Item .devtool C:\\tmp', 'mv .claude .claude.bak',
+  'Move-Item .devtool C:\\tmp', 'mv .claude .claude.bak', 'mv -t /tmp .claude', 'mv --target-directory=/tmp AGENTS.md', 'mv -t /tmp/x .forma/manual a.txt',
 ];
 const PASS = [
   'rm -rf node_modules', 'rm -f build/out.js', 'git clean -fd build/', "git commit -m 'clean up'", 'npm run clean',
   'echo rm -rf .claude', 'rm -rf .forma/board/tmp', 'ls .claude', 'find build -delete', 'rm -rf .claude-plugin',
   `node -e "console.log(1)"`, 'node scripts/build.js', 'mv build/a.js build/b.js', 'mv notes.txt .forma/board/notes.txt', 'echo mv .claude /tmp',
+  'mv -t .forma/board/x notes.txt', 'mv -t build a.js b.js',
 ];
 
 const withJq = which('jq') ? process.env.PATH : null;
@@ -135,4 +136,23 @@ test('check-plugin-update.ps1 (Codex): compares by numbers, says how to update, 
   assert.equal(runPs('0.4.187-alpha', '0.4.187-alpha'), '');
   assert.equal(runPs('0.5.0', '0.4.187-alpha'), '', 'local ahead is not an update');
   assert.equal(runPs(null, '0.5.0'), '', 'no install manifest: silent');
+});
+
+// Codex guard-delete.ps1 is regex-based and runs where pwsh may be absent: its two patterns are lifted out of the
+// script and checked here as JS regexes (the syntax used is common to .NET and JS). Same cases as Claude's guard.
+test('guard-delete.ps1 (Codex): the verbs and protected paths of the Claude guard are covered', () => {
+  const src = fs.readFileSync(path.join(__dirname, '..', 'skills', 'forma', 'adapters', 'codex', '.codex', 'hooks', 'guard-delete.ps1'), 'utf8');
+  const pat = (name) => {
+    const m = src.match(new RegExp('\\$' + name + " = \\$command -match '\\(\\?i\\)(.*)'$", 'm'));
+    assert.ok(m, `no pattern for $${name}`);
+    return new RegExp(m[1], 'i');
+  };
+  const destructive = pat('destructive'), protectedRe = pat('protected');
+  const blocked = (c) => destructive.test(c) && protectedRe.test(c);
+  for (const c of [...BLOCK.filter((x) => !/^(rm -rf \*|rm -rf \.|find \. -delete|git clean)/.test(x))]) {
+    assert.ok(blocked(c), `must block: ${c}`);
+  }
+  for (const c of ['rm -rf node_modules', 'ls .claude', 'node scripts/build.js', 'mv build/a.js build/b.js', 'git commit -m "move the card"']) {
+    assert.ok(!blocked(c), `must pass: ${c}`);
+  }
 });
