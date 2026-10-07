@@ -10,6 +10,7 @@
   "ready.vars_missing": "VARS/: папки величин нет",
   "ready.goal_no_file": "{dir}: нет GOAL.md",
   "ready.parity_drift": "паритет сред: обнаружен дрейф правил (.claude/scripts/sync-engines.cjs --diff)",
+  "ready.demo_not_done": "демонстрационный круг ещё не предлагался: доска пуста, ворота старта закрыты — предложите короткую демонстрацию (on-demand/intent-demo.md)",
   "ready.notes_header": "Непроверенных мест: {n}",
   "gate.header": "СТОП СТАРТА — круг не открывается, сначала интервью с человеком (AGENTS.md §3):",
   "gate.goal_not_formed": "goal-{goal}: образ цели не сформирован человеком (draft)",
