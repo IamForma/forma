@@ -85,12 +85,12 @@ test('statistics: the directory walk skips demo cards, a card named explicitly i
   const board = path.join(dir, '.devtool', 'features');
   const spend = '- `Run`, 2020-01-01: attempt, 1200 tokens (800 cache-read), 40 s, `abc123` — eng-x: done.\n';
   const write = (name, labels) => fs.writeFileSync(path.join(board, name), `---\nid: "${name}"\nstatus: "done"\nlabels: [${labels}]\n---\n# ${name}\n\n## History\n${spend}\n`);
-  write('card-901-real.md', '"goal-goal", "route-7"');
-  write('card-902-demo.md', '"goal-goal", "route-7", "demo"');
+  write('card-007-real.md', '"goal-goal", "route-7"');
+  write('card-008-demo.md', '"goal-goal", "route-7", "demo"');
   const { tally } = require(path.join(dir, '.forma', 'dashboard', 'tally.cjs'));
   const all = tally([board]);
-  const one = tally([path.join(board, 'card-902-demo.md')]);
-  const real = tally([path.join(board, 'card-901-real.md')]);
+  const one = tally([path.join(board, 'card-008-demo.md')]);
+  const real = tally([path.join(board, 'card-007-real.md')]);
   const attempts = (t) => Object.values(t.byNode).reduce((s, v) => s + v.attempts, 0);
   assert.equal(attempts(all), attempts(real), 'the walk counts the real card only');
   assert.equal(attempts(one), attempts(real), 'a demo card named explicitly is counted');
