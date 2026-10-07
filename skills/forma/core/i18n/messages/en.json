@@ -10,6 +10,7 @@
   "ready.vars_missing": "VARS/: no values folder",
   "ready.goal_no_file": "{dir}: no GOAL.md",
   "ready.parity_drift": "environment parity: rule drift detected (.claude/scripts/sync-engines.cjs --diff)",
+  "ready.demo_not_done": "the demo cycle was never offered: the board is empty and the start gate is closed — offer a short demonstration (on-demand/intent-demo.md)",
   "ready.notes_header": "Unchecked items: {n}",
   "gate.header": "START STOP — the cycle does not open, interview the human first (AGENTS.md §3):",
   "gate.goal_not_formed": "goal-{goal}: the goal image is not formed by the human (draft)",
