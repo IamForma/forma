@@ -10,11 +10,7 @@ const fs = require("fs");
 const read = p => { try { return fs.readFileSync(p, "utf8"); } catch { return ""; } };
 const role = read(".claude/agents/intent.md").replace(/^---[\s\S]*?---\n/, "");
 const start = read(".claude/agents/on-demand/intent-session-start.md");
-// the dashboard port is dynamic: the live server writes it to server.json; the default only if there is no file
-const port = (() => {
-  try { const p = Number(JSON.parse(read(".forma/dashboard/.cache/server.json")).port); if (p > 0) return p; } catch { /* no server yet */ }
-  try { return require(process.cwd() + "/.forma/dashboard/port.cjs").DEFAULT_PORT; } catch { return 5050; }
-})();
+const port = (() => { try { return require(process.cwd() + "/.forma/dashboard/port.cjs").DEFAULT_PORT; } catch { return 5050; } })();
 const url = "http://localhost:" + port + "/";
 let text = (code, params) => code;
 try {

@@ -84,20 +84,6 @@ for (const [mode, envPath] of modes) {
     assert.equal(run('guard-delete.sh', root, del, envPath).status, 0, 'first deletion after the phrase passes');
     assert.equal(run('guard-delete.sh', root, del, envPath).status, 2, 'the permission does not linger');
   });
-
-  test(`unlock-delete ${mode}: the code phrase works in other languages`, () => {
-    const del = { tool_input: { command: 'rm -rf .claude' } };
-    const phrases = ['Disable the sensors', 'disable sensors', 'Disable sensorics', 'Вимкни сенсорику', 'Sensorik deaktivieren',
-      'Désactive les capteurs', 'Desactiva los sensores', '请关闭传感器'];
-    for (const prompt of phrases) {
-      const root = project();
-      run('unlock-delete.sh', root, { prompt }, envPath);
-      assert.equal(run('guard-delete.sh', root, del, envPath).status, 0, `"${prompt}" unlocks`);
-    }
-    const root = project();
-    run('unlock-delete.sh', root, { prompt: 'Enable the sensors; do not disable anything' }, envPath);
-    assert.equal(run('guard-delete.sh', root, del, envPath).status, 2, 'a phrase about something else does not unlock');
-  });
 }
 
 function updateCase({ installed, cache, remote }) {

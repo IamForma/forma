@@ -90,7 +90,7 @@ Full registry of process epics (eight, plus the `goal` lane for the product — 
 
 **Housekeeping — of the tooling itself and of resources and tools — is `Kit`'s to execute, `Intent`'s to confirm** (`kit.md`, `intent.md`).
 
-**The human's code phrase "Отключи сенсорику"** (English: "Disable the sensors") — literal, a password, not a description — covers **two** permissions, one use each. The phrase is also accepted in translation: «Вимкни сенсорику» (uk), "Sensorik deaktivieren" (de), "Désactive les capteurs" (fr), "Desactiva los sensores" (es), 关闭传感器 (zh); a further language is added to `unlock-delete.sh` and to this line:
+**The human's code phrase "Отключи сенсорику"** — literal in either language version of the schema, a password, not a description — covers **two** permissions, one use each:
 
 1. **Deletion.** The engine's delete-guard hook (`guard-delete.sh`, §8) blocks deleting the protocol's own files and directories via Bash/PowerShell (the protected paths — `intent-housekeeping.md`). The phrase lifts it for one action — mechanics there too.
 2. **Acting outside the route.** Said about a specific task or instruction, it lets the node addressed act outside the established route or rules for that one task, once. Not a standing state; not an exemption for anything beyond what was named.

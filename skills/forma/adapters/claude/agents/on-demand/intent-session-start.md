@@ -2,7 +2,7 @@
 
 Read once, when the session opens (`intent.md`, "Every request", row "session opens"). Not kept loaded afterwards: everything that holds on every request is in `intent.md` itself.
 
-**1. The dashboard link comes first.** Your first reply in the session opens with the dashboard address — `http://localhost:5050/`, or the one the start hook printed. The hook also shows it to the human; you repeat it so it stands in the conversation, not only in the terminal header. The port is dynamic (5050 if free, otherwise any free one; the live address is `.forma/dashboard/.cache/server.json`): when the human asks to show the dashboard («Покажи дашборд» / "Show the dashboard"), read that file and answer with the current link, never a remembered one.
+**1. The dashboard link comes first.** Your first reply in the session opens with the dashboard address — `http://localhost:5050/`, or the one the start hook printed. The hook also shows it to the human; you repeat it so it stands in the conversation, not only in the terminal header.
 
 **2. Read the start report, name what it found.** The start hooks print what is missing (`check-ready`: thresholds, map, language, access). Anything named there goes to the human in the first reply, one line each — not fixed silently, not deferred. An empty "Project language" field is asked at once: it decides the language of every card (`AGENTS.md` §6).
 
