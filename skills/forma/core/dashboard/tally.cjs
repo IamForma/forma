@@ -47,11 +47,15 @@ const SERVICE_RE = /(\d[\d\s  ]*)\s*([A-Za-zА-Яа-яЁё][A-Za-zА-Яа-я�
 // повод проверить формат руками, а не молча потерять данные.
 const SUSPECT_RE = new RegExp('`[^`]+`,\\s*' + CLAIM_RE.source);
 
+/** Карточка демонстрационного круга (метка `demo`): в расход и статистику доски не входит. */
+const isDemoCard = (file) => /^labels:\s*\[[^\]]*["']demo["']/m.test(fs.readFileSync(file, 'utf8'));
+
+// Каталог обходится без демо-карточек; карточка, названная явно, считается — так читается итог самого демо.
 function collectFiles(targets) {
   const files = [];
   for (const target of targets) {
     const stat = fs.statSync(target);
-    if (stat.isDirectory()) files.push(...walk(target, { ext: '.md', abs: true }));
+    if (stat.isDirectory()) files.push(...walk(target, { ext: '.md', abs: true }).filter((f) => !isDemoCard(f)));
     else if (stat.isFile() && target.endsWith('.md')) files.push(target);
   }
   return files;

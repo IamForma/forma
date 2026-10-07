@@ -65,6 +65,7 @@
   "board.wave": "wave {n}",
   "board.noGoal": "no goal",
   "board.trial": "trial",
+  "board.demo": "demo",
   "board.unit.role": "Role",
   "board.unit.skill": "Skill",
   "board.unit.tool": "Tool",

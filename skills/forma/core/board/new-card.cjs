@@ -3,7 +3,7 @@
 //
 //   node .forma/board/new-card.cjs --kind <код> --title "<заголовок>" [--goal goal-NN] [--type дело|оснастка|решение]
 //                                     [--status backlog] [--assignee Intent] [--priority medium] [--lang ru|en] [--dry]
-//                                     [--route N] [--over N]… [--seg N] [--wave N] [--after NNN]… [--trial]
+//                                     [--route N] [--over N]… [--seg N] [--wave N] [--after NNN]… [--trial] [--demo]
 //                                     [--delivers "<что даёт>"] [--criterion "<критерий>"] [--budget "<попытки>"] [--next "<куда дальше>"]
 //                                     [--why <код>] [--why-detail "<пояснение>"] [--stage card|approve]
 //
@@ -11,6 +11,7 @@
 //            Имя эпика подставляется точно из таблицы — поле `epic` (AGENTS.md §7).
 // --goal   — метка цели; по умолчанию главная цель вида `goal-<код>` (AGENTS.md §6, ровно одна метка).
 // --route/--over/--seg/--wave/--after/--trial — метки маршрута (AGENTS.md §6; ROUTES.md §9). --over и --after повторяемы.
+// --demo  — метка `demo`: карточка демонстрационного круга (intent-demo.md); не идёт в расход и статистику, под черновиком цели допустима.
 // --delivers/--criterion/--budget/--next — поля задачи (§6) сразу, без правки файла после записи; не заданное остаётся заготовкой <…>.
 // --why — причина маршрута (§6, коды: human|ready|scale|risk|decision|tooling): пишет в «История» строку `route route-N (why: …)`;
 //            --stage — строку `stage <ключ>` (card — задача пишется, approve — ждёт «да» человека). Без флага строка не пишется.
@@ -60,6 +61,7 @@ for (const o of args('over')) { if (!/^[1-4]$/.test(o || '')) die(`наложе�
 for (const k of ['seg', 'wave']) { const v = arg(k); if (v === undefined) continue; if (!/^[1-9]\d*$/.test(v)) die(`--${k} "${v}" — нужно натуральное число`); routeLabels.push(k + '-' + v); }
 for (const a of args('after')) { const n = (a || '').replace(/^card-/, ''); if (!/^\d+$/.test(n)) die(`--after "${a}" — нужен номер карточки NNN`); routeLabels.push('after-card-' + n.padStart(3, '0')); }
 if (flag('trial')) routeLabels.push('trial');
+if (flag('demo')) routeLabels.push('demo');
 
 // 3. Language: --lang, else the project language field; a language without a card set (work/tooling/decision) is English
 let lang = arg('lang');
