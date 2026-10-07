@@ -77,6 +77,7 @@
   "board.wave": "волна {n}",
   "board.noGoal": "без цели",
   "board.trial": "пробная",
+  "board.demo": "демо",
   "board.unit.role": "Роль",
   "board.unit.skill": "Скилл",
   "board.unit.tool": "Инструмент",

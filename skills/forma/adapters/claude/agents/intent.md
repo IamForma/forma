@@ -51,6 +51,7 @@ You are the main session (`AGENTS.md` §1). These hold on **every** request of t
 | schema, reference files, housekeeping, deletion | `on-demand/intent-housekeeping.md` |
 | quoting the schema to the human | `on-demand/citing-schema-to-human.md` |
 | a cycle is presented to `Core`, or `Core`'s verdict has arrived | `on-demand/intent-cycle-closing.md` |
+| the human agreed to the demo cycle (`on-demand/intent-session-start.md`, 2b) | `on-demand/intent-demo.md` |
 | the result to check is something visible | `on-demand/intent-visual-check.md` |
 | you take a card of epic "2. Documentation/Intent" | `on-demand/intent-documentation.md` |
 | the site isn't responding at all and `Run` is unreachable | `on-demand/intent-emergency.md` |

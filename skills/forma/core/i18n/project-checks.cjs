@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const i18n = require('./index.cjs');
+const demo = require('./demo.cjs');
 
 const exists = (root, rel) => fs.existsSync(path.join(root, rel));
 /** Working project: files in the root; the protocol repository: under project/. */
@@ -52,6 +53,9 @@ function readyNotes(root) {
       if (d.isDirectory() && !exists(root, path.join(goals, d.name, 'GOAL.md'))) add('ready.goal_no_file', { dir: path.join(goals, d.name) + '/' });
     }
   }
+
+  // A fresh project: the gate is closed, nothing is on the board, the demo cycle was never offered.
+  if (demo.readDemo(root).state === 'none' && demo.boardEmpty(root) && startGate(root).length) add('ready.demo_not_done');
 
   const sync = path.join(root, '.claude', 'scripts', 'sync-engines.cjs');
   if (fs.existsSync(sync) && spawnSync(process.execPath, [sync, '--quiet'], { cwd: root }).status !== 0) add('ready.parity_drift');

@@ -5,7 +5,7 @@
 // --- Подписи доски: коды (route-N, backlog, stage, why) не переводятся, переводится только их показ ---
 const BOARD_T = {
   card: n => t('board.card', {n}), route: n => t('board.route', {n}), over: n => t('board.over', {n}), seg: n => t('board.seg', {n}), wave: n => t('board.wave', {n}),
-  get noGoal() { return t('board.noGoal'); }, get trial() { return t('board.trial'); },
+  get noGoal() { return t('board.noGoal'); }, get trial() { return t('board.trial'); }, get demo() { return t('board.demo'); },
   get status() { return bdKeyed('board.status.', ['backlog', 'todo', 'in-progress', 'review', 'done']); },
   get stage() { return bdKeyed('board.stage.', ['card', 'approve', 'kit', 'exec', 'check', 'accept', 'close', 'closed']); },
   get why() { return bdKeyed('board.why.', ['human', 'ready', 'scale', 'risk', 'decision', 'tooling']); },
@@ -42,7 +42,7 @@ function boardRoutes() {
 // Код карточки и цели в данных прежний (card-NNN, goal-<код>); на доске — подпись.
 const bdCl = code => String(code).replace(/^card-(\d+)$/, (_, n) => BOARD_T.card(n));
 const bdGl = (B, g) => g ? (B.DATA.goals[g] ? B.DATA.goals[g].split('·').pop().trim() : g) : BOARD_T.noGoal;
-const bdLbl = l => { if (!l) return '—'; const m = l.match(/^(route|over|seg|wave)-(\d+)$/); return m ? BOARD_T[m[1]](m[2]) : l === 'trial' ? BOARD_T.trial : l; };
+const bdLbl = l => { if (!l) return '—'; const m = l.match(/^(route|over|seg|wave)-(\d+)$/); return m ? BOARD_T[m[1]](m[2]) : l === 'trial' ? BOARD_T.trial : l === 'demo' ? BOARD_T.demo : l; };
 // Этап и причина — из строк истории (AGENTS.md §6): последняя «stage <ключ>», все «route … (why: <код>)».
 const bdStageLine = c => { let k = null; c.history.forEach(l => { const m = l.match(/:\s*stage\s+(\w+)/); if (m) k = m[1]; }); return k; };
 const bdWhyCodes = c => c.history.map(l => l.match(/:\s*route (route-\d[^(—]*)\(why:\s*(\w+)\)/)).filter(Boolean).map(m => [m[1].trim(), m[2]]);
@@ -218,7 +218,7 @@ function bdCardHtml(B, c) {
   return `<div class="card" style="--c:var(${st[2]})" data-code="${c.code}">
     <div class="code" title="${c.code}">${bdCl(c.code)} · ${esc(c.kind)} · ${esc(c.assignee ?? '—')}</div>
     <div class="t">${esc(c.title)}</div>
-    <div class="tags"><span class="tag goal click goalt" title="${esc(c.goal || '')}">${esc(bdGl(B, c.goal))}</span><span class="tag click epict">${esc(c.epic)}</span>${c.route ? `<span class="tag click routet" title="${c.route}">${bdLbl(c.route)}</span>` : ''}${c.labels.filter(l => /^(over|seg|wave)-|^trial$/.test(l)).map(l => `<span class="tag" title="${l}">${bdLbl(l)}</span>`).join('')}</div>
+    <div class="tags"><span class="tag goal click goalt" title="${esc(c.goal || '')}">${esc(bdGl(B, c.goal))}</span><span class="tag click epict">${esc(c.epic)}</span>${c.route ? `<span class="tag click routet" title="${c.route}">${bdLbl(c.route)}</span>` : ''}${c.labels.filter(l => /^(over|seg|wave)-|^(trial|demo)$/.test(l)).map(l => `<span class="tag" title="${l}">${bdLbl(l)}</span>`).join('')}</div>
     ${bdPips(B, c)}${bdWaitHtml(B, c)}
   </div>`;
 }

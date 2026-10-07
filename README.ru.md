@@ -86,6 +86,7 @@ code --install-extension LachyFS.kanban-markdown
 
 - Дашборд: установщик запускает его в фоне, если запущен в терминале, и печатает ссылку (`--dashboard` — запустить принудительно, `--no-dashboard` — не запускать); он же стартует с каждой сессией Claude Code. Вручную: `node .forma/dashboard/ensure-running.js` — адрес в `.forma/dashboard/.cache/server.json` (обычно `http://localhost:5050/`).
 - Версия: установщик печатает `Forma <версия> installed` или `updated <старая> → <новая>`; позже — `npx github:IamForma/forma --version` или `.forma/install-manifest.json`.
+- В первой сессии `Intent` предлагает короткую демонстрацию всего маршрута на двух небольших карточках (начать / пропустить / позже); карточки помечены `demo`, не попадают в статистику и удаляются после.
 - Задайте два порога (заходы, объём) в `project/config/PROJECT.md`.
 - Начните подготовку по `project/config/SETUP.md` — интервью ведёт `Intent`, основная сессия.
 
