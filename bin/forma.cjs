@@ -31,7 +31,7 @@ const ENGINES = [
 
 // ---------- arguments ----------
 function parseArgs(argv) {
-  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version'])
+  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version', 'dashboard', 'no-dashboard'])
   const o = { cmd: 'init', dir: process.cwd(), ...opts }
   if (rest[0]) o.cmd = rest[0]
   o.dir = path.resolve(o.dir)
@@ -51,6 +51,7 @@ const HELP = `forma ${VERSION} init — install/update the Forma protocol in the
   --compact  <n>|off                 Claude Code auto-compact window for this project (default: 250000); off — leave
                                      Claude Code's default. Your own value (env, ~/.claude, settings.local.json) is never changed
   --yes                              no questions, defaults for anything missing
+  --dashboard / --no-dashboard       start the dashboard at the end (default: start it when run in a terminal); print the link either way
   --version                          print the installer version and exit
 
 All four flags set (or --yes, or no terminal) — the menu is not shown.
@@ -575,6 +576,45 @@ function writeManifest(root, { engines, lang, template, projectCreated }) {
   fs.writeFileSync(f, JSON.stringify(manifest, null, 2) + '\n')
 }
 
+// The version line at the end of an install: first install, update (from -> to) or a refresh of the same version.
+function versionLine(before, now) {
+  if (!before) return `✓ Forma ${now} installed.`
+  if (before === now) return `✓ Forma ${now} — already this version, files refreshed.`
+  return `✓ Forma updated: ${before} → ${now}.`
+}
+function installedVersion(root) {
+  try { return verifyInstall.readManifest(root).version || null } catch { return null }
+}
+
+// Dashboard: `ensure-running.js` starts it in the background and is safe to repeat; the real address (the port is dynamic)
+// is the one the server writes to `.forma/dashboard/.cache/server.json`. Returns the address, or null if it did not come up.
+const DASHBOARD_START = 'node .forma/dashboard/ensure-running.js'
+function dashboardUrl(root) {
+  try { return JSON.parse(fs.readFileSync(path.join(root, '.forma', 'dashboard', '.cache', 'server.json'), 'utf8')).url || null } catch { return null }
+}
+function startDashboard(root) {
+  const script = path.join(root, '.forma', 'dashboard', 'ensure-running.js')
+  if (!fs.existsSync(script)) return null
+  spawnSync(process.execPath, [script], { cwd: root, stdio: 'ignore', timeout: 15000 })
+  for (let i = 0; i < 30; i++) { // up to ~3 s for the server to write its address
+    const url = dashboardUrl(root)
+    if (url) return url
+    spawnSync(process.execPath, ['-e', 'setTimeout(() => {}, 100)'], { stdio: 'ignore' })
+  }
+  return null
+}
+function printDashboard(root, o) {
+  const start = o.dashboard || (!o['no-dashboard'] && process.stdout.isTTY === true)
+  if (start) {
+    const url = startDashboard(root)
+    if (url) { console.log(`Dashboard: ${url}  (running in the background; it also starts with every Claude Code session)`); return }
+    console.log(`Dashboard did not start in time — start it by hand: ${DASHBOARD_START}`)
+    return
+  }
+  const known = dashboardUrl(root)
+  console.log(`Dashboard: ${DASHBOARD_START}  (starts it in the background${known ? `; last address: ${known}` : '; the link is then in .forma/dashboard/.cache/server.json, usually http://localhost:5050/'})`)
+}
+
 // Install integrity check: red on the main engine stops; secondary engines only warn.
 function printVerify(root) {
   const res = verifyInstall.verify(root)
@@ -640,6 +680,7 @@ async function main() {
   const menu = interactive && (!o.engines || !o.template || !o.board || !o.lang)
   const ask = menu ? makeAsk() : null
   const installedBefore = fs.existsSync(path.join(root, 'AGENTS.md'))
+  const versionBefore = installedVersion(root)
 
   console.log(`Forma ${VERSION} → ${root}${installedBefore ? ' (update)' : ''}`)
   console.log(`Git: ${gitBoundary(root)}`)
@@ -658,6 +699,8 @@ async function main() {
   const ok = printVerify(root)
   if (engines.includes('claude') && !findBash()) console.error('\n! ' + NO_BASH)
   if (!ok) { console.error('\nInstall is broken — fix the items above and rerun (rerunning is safe).'); process.exit(1) }
+  console.log('\n' + versionLine(versionBefore, VERSION))
+  printDashboard(root, o)
   if (!installedBefore) console.log('\nNext: open the folder in Claude Code — Intent will lead the setup per project/config/SETUP.md, starting with the interview.')
 }
 
