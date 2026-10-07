@@ -3,6 +3,8 @@
 // Entry for shell hooks: `node .forma/i18n/cli.cjs <command> [--root <dir>]`
 //   ready                 notes about unchecked places (empty output when everything is in place)
 //   gate                  start stop (AGENTS.md §3); empty when the cycle may open
+//   demo [value]          the demo-cycle marker: print it, or set none|declined|done|later:<n>
+//   demo-tick             one session start passed: `later:<n>` counts down
 //   lang                  language code of the project documents (FORMA_LANG overrides)
 //   msg <code> [k=v ...]  message in the project language, English as the fallback
 //   hook-output <event> <user-code> <agent-code>   hook JSON: the details come from stdin, shown to the human and given to the agent
@@ -12,6 +14,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const i18n = require('./index.cjs');
 const checks = require('./project-checks.cjs');
+const demo = require('./demo.cjs');
 
 const argv = process.argv.slice(2);
 const at = argv.indexOf('--root');
@@ -20,6 +23,13 @@ const [cmd, ...rest] = argv;
 
 if (cmd === 'ready') process.stdout.write(checks.readyText(root));
 else if (cmd === 'gate') process.stdout.write(checks.gateText(root));
+else if (cmd === 'demo') {
+  try {
+    if (rest[0] !== undefined) demo.writeDemo(root, rest[0]);
+  } catch (e) { process.stderr.write(e.message + '\n'); process.exit(2); }
+  const d = demo.readDemo(root);
+  process.stdout.write((d.state === 'later' ? `later:${d.n}` : d.state) + '\n');
+} else if (cmd === 'demo-tick') demo.tickDemo(root);
 else if (cmd === 'lang') process.stdout.write(i18n.projectLang(root) + '\n');
 else if (cmd === 'msg' && rest[0]) {
   const params = Object.fromEntries(rest.slice(1).map((kv) => { const i = kv.indexOf('='); return [kv.slice(0, i), kv.slice(i + 1)]; }));
@@ -32,6 +42,6 @@ else if (cmd === 'msg' && rest[0]) {
     hookSpecificOutput: { hookEventName: rest[0], additionalContext: i18n.message(rest[2], {}, lang) + '\n' + details },
   }));
 } else {
-  process.stderr.write('usage: cli.cjs ready|gate|lang|msg <code> [k=v ...]|hook-output <event> <user-code> <agent-code> [--root <dir>]\n');
+  process.stderr.write('usage: cli.cjs ready|gate|demo [value]|demo-tick|lang|msg <code> [k=v ...]|hook-output <event> <user-code> <agent-code> [--root <dir>]\n');
   process.exit(2);
 }

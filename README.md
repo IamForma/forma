@@ -86,6 +86,7 @@ The board `.devtool/features/` is where card status, history, results and spend 
 
 - Dashboard: the installer starts it in the background when run in a terminal and prints the link (`--dashboard` forces it, `--no-dashboard` skips it); it also starts with every Claude Code session. By hand: `node .forma/dashboard/ensure-running.js` — the address is in `.forma/dashboard/.cache/server.json` (usually `http://localhost:5050/`).
 - Version: the installer prints `Forma <version> installed` or `updated <old> → <new>`; later, `npx github:IamForma/forma --version` or `.forma/install-manifest.json`.
+- In the first session `Intent` offers a short demo of the whole route on two small cards (start / skip / later); its cards are labelled `demo`, stay out of the statistics and are removed afterwards.
 - Set the two thresholds (attempts, volume) in `project/config/PROJECT.md`.
 - Start preparation from `project/config/SETUP.md` — the interview is led by `Intent`, the main session.
 

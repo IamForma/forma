@@ -78,7 +78,9 @@ function cardProblems(name, text, model) {
   const problems = [];
   const kind = model.kindOf.get(g);
   // Производство под черновиком цели — стоп старта. Интервью и прочие виды можно: они и формируют образ. Закрытые не трогаем.
-  if (kind === 'goal' && model.draft.has(g) && !/^status:\s*"done"/m.test(text)) {
+  // Исключение — демонстрационный круг (метка demo): человек согласился на него при закрытых воротах.
+  const demo = labelsOf(text).includes('demo');
+  if (kind === 'goal' && model.draft.has(g) && !demo && !/^status:\s*"done"/m.test(text)) {
     problems.push(`${name}: производство под целью ${g} в черновике — сначала образ цели (GOAL.md draft: false)`);
   }
   if (kind && epic !== model.laneOf.get(kind) && epic !== model.laneOf.get('incoming')) {

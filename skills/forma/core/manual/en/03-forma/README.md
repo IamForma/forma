@@ -23,3 +23,7 @@ Complete reference documents of the engine live here — they are not divided in
 | [five-nodes.md](five-nodes.md) | the route of the five nodes, diagram |
 | [ROUTES.md](ROUTES.md) | route choice for a task: `route-0`…`route-8`, overlays `over-1`…`over-4`, the choice rule, waves at scale |
 | [LOCALIZATION.md](LOCALIZATION.md) | dashboard localization: two languages, dictionaries, the `locale-parity` check |
+
+## Demo cycle
+
+A fresh project (start gate closed, empty board) gets one offer in the first session: a short demonstration of the whole route on two small cards. The human answers **start**, **skip** or **later**; the answer is kept in `project/config/DEMO` (`none`, `declined`, `later:<n>`, `done`), so it is asked once. The demo cards carry the label `demo`: they are the only cards allowed under a closed gate, they stay out of the dashboard's spend and statistics, and the demo ends with a node-by-node table (attempts, tokens, time) and a clean-up — remove or keep. Procedure: `intent-demo.md`.

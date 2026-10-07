@@ -87,6 +87,7 @@ function readSpendCards(projectRoot) {
     const raw = fs.readFileSync(file, 'utf8');
     const fm = parseFrontmatter(raw);
     if (!fm.id) continue;
+    if ((fm.labels || []).includes('demo')) continue; // демонстрационный круг — не расход проекта
     cards.push(spendCard({ projectRoot, file, raw, fm }, seen));
   }
   return cards;

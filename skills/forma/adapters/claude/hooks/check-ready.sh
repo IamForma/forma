@@ -11,6 +11,8 @@ I18N=.forma/i18n/cli.cjs
 # cycle count per epic and unpushed protocol commits (AGENTS.md §7)
 [ -f .claude/scripts/cycle-status.cjs ] && node .claude/scripts/cycle-status.cjs 2>/dev/null
 
+# a postponed demo (later:<n>) counts this session start; at zero it is offered again
+node "$I18N" demo-tick
 node "$I18N" gate
 node "$I18N" ready
 exit 0
