@@ -1,6 +1,6 @@
 {
   "name": "forma",
-  "version": "0.4.192-alpha",
+  "version": "0.4.193-alpha",
   "description": "Установщик протокола «Форма»: npx github:IamForma/forma init",
   "license": "MIT",
   "bin": {
