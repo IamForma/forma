@@ -627,6 +627,21 @@ function printReport({ report, boardLines }) {
   for (const l of boardLines) console.log('  ' + l)
 }
 
+// Shown first, before the questions: the two phrases the human can say to the agent once Forma is installed.
+// The code phrase list must match unlock-delete.sh (Claude hook) and AGENTS.md §2.
+function printCommandsBanner() {
+  console.log(`
+You can say two things to the agent in this project, any time:
+  • «Покажи дашборд» / "Show the dashboard"
+      the link to the dashboard (http://localhost:<port>/). The port is picked automatically — 5050 if free,
+      otherwise any free one — so ask rather than guess; the agent reads the current address.
+  • «Отключи сенсорику» / "Disable the sensors"
+      lifts the delete-guard for ONE action (or one bypass of the route for one task). It is a code phrase:
+      say it exactly, once per action. Also understood: «Вимкни сенсорику» (uk), "Sensorik deaktivieren" (de),
+      "Désactive les capteurs" (fr), "Desactiva los sensores" (es), 关闭传感器 (zh).
+`)
+}
+
 // ---------- main ----------
 async function main() {
   const o = parseArgs(process.argv.slice(2))
@@ -643,6 +658,7 @@ async function main() {
 
   console.log(`Forma ${VERSION} → ${root}${installedBefore ? ' (update)' : ''}`)
   console.log(`Git: ${gitBoundary(root)}`)
+  printCommandsBanner()
 
   const engines = await chooseEngines(o, ask)
   const template = await chooseTemplate(o, ask, templates)
