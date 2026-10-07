@@ -31,7 +31,7 @@ const ENGINES = [
 
 // ---------- arguments ----------
 function parseArgs(argv) {
-  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version'])
+  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version', 'open', 'no-open'])
   const o = { cmd: 'init', dir: process.cwd(), ...opts }
   if (rest[0]) o.cmd = rest[0]
   o.dir = path.resolve(o.dir)
@@ -51,6 +51,8 @@ const HELP = `forma ${VERSION} init — install/update the Forma protocol in the
   --compact  <n>|off                 Claude Code auto-compact window for this project (default: 250000); off — leave
                                      Claude Code's default. Your own value (env, ~/.claude, settings.local.json) is never changed
   --yes                              no questions, defaults for anything missing
+  --open | --no-open                 start the dashboard and open it in the browser at the end (default: only in a terminal,
+                                     never in CI; --open forces it, --no-open skips it)
   --version                          print the installer version and exit
 
 All four flags set (or --yes, or no terminal) — the menu is not shown.
@@ -642,6 +644,61 @@ You can say two things to the agent in this project, any time:
 `)
 }
 
+
+// ---------- dashboard at the end of the install ----------
+// Starts the dashboard supervisor (idempotent, detached) and waits for the live address in server.json.
+function startDashboard(root) {
+  const dash = path.join(root, '.forma', 'dashboard')
+  const ensure = path.join(dash, 'ensure-running.js')
+  if (!fs.existsSync(ensure)) return Promise.resolve(null)
+  spawnSync(process.execPath, [ensure], { cwd: root, stdio: 'ignore', timeout: 15000 })
+  const serverFile = path.join(dash, '.cache', 'server.json')
+  const started = Date.now()
+  return new Promise((resolve) => {
+    const tick = () => {
+      try {
+        const info = JSON.parse(fs.readFileSync(serverFile, 'utf8'))
+        const port = Number(info.port)
+        const pid = Number(info.pid)
+        let alive = false
+        try { process.kill(pid, 0); alive = true } catch (e) { alive = e.code === 'EPERM' }
+        if (port > 0 && alive) return resolve(`http://localhost:${port}/`)
+      } catch { /* not written yet */ }
+      if (Date.now() - started > 8000) return resolve(null)
+      setTimeout(tick, 250)
+    }
+    tick()
+  })
+}
+
+// Opens the URL in the human's browser: $BROWSER first (VS Code / Antigravity remote set it), then the OS opener.
+// Returns false when there is nothing to open with (headless box, no opener) — the link is printed anyway.
+function openInBrowser(url) {
+  const win = process.platform === 'win32'
+  const cmd = process.env.BROWSER ? [process.env.BROWSER, [url]]
+    : process.platform === 'darwin' ? ['open', [url]]
+    : win ? ['cmd', ['/c', 'start', '', url]]
+    : (process.env.DISPLAY || process.env.WAYLAND_DISPLAY) ? ['xdg-open', [url]] : null
+  if (!cmd) return false
+  try {
+    const r = spawnSync(cmd[0], cmd[1], { stdio: 'ignore', timeout: 5000, shell: Boolean(process.env.BROWSER) && win })
+    return !r.error && r.status === 0
+  } catch { return false }
+}
+
+// The closing block: version, dashboard link, next step.
+function printFinish({ engines, installedBefore, url, opened }) {
+  console.log(`\n${'─'.repeat(60)}`)
+  console.log(`Forma ${VERSION} ${installedBefore ? 'updated' : 'installed'}  (protocol: ${VERSION}, engines: ${engines.join(', ')})`)
+  if (url) console.log(`Dashboard: ${url}${opened ? '  (opened in the browser)' : ''}`)
+  else console.log('Dashboard: not started — run  node .forma/dashboard/ensure-running.js  and read the address in .forma/dashboard/.cache/server.json')
+  if (!installedBefore) {
+    console.log('\nNext: open this folder in VS Code / Antigravity and start Claude Code (terminal: `claude`, or the Claude Code panel).')
+    console.log('Intent will lead the setup per project/config/SETUP.md, starting with the interview.')
+  }
+  console.log('─'.repeat(60))
+}
+
 // ---------- main ----------
 async function main() {
   const o = parseArgs(process.argv.slice(2))
@@ -674,7 +731,14 @@ async function main() {
   const ok = printVerify(root)
   if (engines.includes('claude') && !findBash()) console.error('\n! ' + NO_BASH)
   if (!ok) { console.error('\nInstall is broken — fix the items above and rerun (rerunning is safe).'); process.exit(1) }
-  if (!installedBefore) console.log('\nNext: open the folder in Claude Code — Intent will lead the setup per project/config/SETUP.md, starting with the interview.')
+  const wantDash = o.open || (!o['no-open'] && process.stdout.isTTY && !process.env.CI)
+  let url = null
+  let opened = false
+  if (wantDash) {
+    url = await startDashboard(root)
+    if (url && (!process.env.SSH_CONNECTION || process.env.BROWSER)) opened = openInBrowser(url)
+  }
+  printFinish({ engines, installedBefore, url, opened })
 }
 
 main().catch((e) => { console.error(e.message || e); process.exit(1) })
