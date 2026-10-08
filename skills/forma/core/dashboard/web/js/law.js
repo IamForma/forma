@@ -123,6 +123,6 @@ function lawInit({ DATA, esc, T, lbl, ROUTES }) {
     L.settingsTab = 'law';
     if (a.dataset.law === '8') { L.tab = 'engine'; lawSetView(L, 'settings', 'law'); } else lawSetView(L, 'settings', 'law', 's' + a.dataset.law);
   });
-  { const h = location.hash.slice(1); if (['settings', 'interview', 'nodes', 'docs', 'economy', 'graphs'].includes(h)) lawSetView(L, h); }
+  { const h = location.hash.slice(1); if (['settings', 'dash', 'interview', 'nodes', 'docs', 'economy', 'graphs'].includes(h)) lawSetView(L, h); }
   return { linkLaw };
 }
