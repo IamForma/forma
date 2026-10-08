@@ -3,7 +3,7 @@
 let latestData = null;
 
 // --- Панели рабочего дашборда: данные — общий срез generate.js (data.json / SSE) ---
-const LX_PANELS = ["interview","nodes","docs","economy","graphs"];
+const LX_PANELS = ["dash","interview","nodes","docs","economy","graphs"];
 function renderPanels(d) {
   latestData = d;
   document.getElementById('interview').innerHTML = interviewHtml(d.interview);
@@ -22,7 +22,7 @@ function renderPanels(d) {
     showGraph(graphShown = '.forma/manual');
   }
 }
-function renderAll(d) { renderPanels(d); boardInit(d.board); }
+function renderAll(d) { renderPanels(d); boardInit(d.board); dashInit(d); }
 i18nInit().then(() => fetch('./data.json')).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(renderAll)
   .catch(err => { document.getElementById('main').textContent = t('app.loadFail', {err: String(err)}); });
 // Смена языка — перерисовка последнего среза данных на новом языке.
