@@ -11,11 +11,36 @@
 </head>
 <body>
 <header>
-  <h1><span id="proj"></span></h1><nav class="tabs"><span class="tab on" data-view=".forma/board" data-i18n="tab.board">Kanban</span><span class="tab" data-view="interview" data-i18n="tab.interview">Interview</span><span class="tab" data-view="nodes" data-i18n="tab.nodes">Form</span><span class="tab" data-view="docs" data-i18n="tab.docs">Documentation</span><span class="tab" data-view="economy" data-i18n="tab.economy">Economy</span><span class="tab" data-view="graphs" data-i18n="tab.graphs">Graphs</span><span class="tab" data-view="settings" data-i18n="tab.settings">Settings</span></nav>
+  <h1><span id="proj"></span></h1><nav class="tabs"><span class="tab on" data-view="dash" data-i18n="tab.dashboard">Dashboard</span><span class="tab" data-view=".forma/board" data-i18n="tab.board">Kanban</span><span class="tab" data-view="interview" data-i18n="tab.interview">Interview</span><span class="tab" data-view="nodes" data-i18n="tab.nodes">Form</span><span class="tab" data-view="docs" data-i18n="tab.docs">Documentation</span><span class="tab" data-view="economy" data-i18n="tab.economy">Economy</span><span class="tab" data-view="graphs" data-i18n="tab.graphs">Graphs</span><span class="tab" data-view="settings" data-i18n="tab.settings">Settings</span></nav>
   <select id="lang" class="lang" aria-label="Language"></select>
   <span class="meta" id="gen"></span>
 </header>
-<div id="view-board">
+<div id="view-dash" class="lx"><div class="wrap" id="dash">
+  <section class="tiles" id="dash-kpi"></section>
+  <div class="grid2">
+    <section class="e-card">
+      <h3 data-i18n="dash.epics.title">Progress by epic</h3>
+      <div id="dash-epics"></div>
+    </section>
+    <section class="e-card">
+      <h3 data-i18n="dash.crit.title">Critical path</h3>
+      <ol class="crit" id="dash-crit"></ol>
+    </section>
+  </div>
+  <section class="e-card">
+    <div class="tbl-head">
+      <h3 data-i18n="dash.table.title">Cards</h3>
+      <div class="tbl-tools">
+        <input type="search" id="dash-q" data-i18n-ph="dash.search.ph" placeholder="Search by code, title…">
+        <span class="e-seg" id="dash-switch"><span class="on" data-view="table" data-i18n="dash.view.table">Table</span><span data-view="kanban" data-i18n="dash.view.kanban">Kanban</span></span>
+      </div>
+    </div>
+    <div id="dash-filters"></div>
+    <div id="dash-table"></div>
+    <div id="dash-kanban" hidden></div>
+  </section>
+</div></div>
+<div id="view-board" hidden>
 <div class="bar" id="bar">
   <div class="bar-head"><input type="search" class="hq" id="q" data-i18n-ph="board.search" placeholder="Find: number (107), code, title… Enter — open"><span class="meta" id="qn"></span><div class="stats" id="stats"></div></div>
   <div class="bar-sel"><button type="button" class="bar-toggle" id="bar-toggle">Filters ▾</button><span class="bar-sum" id="bar-sum"></span></div>
@@ -64,6 +89,7 @@
 <script src="web/js/forma.js"></script>
 <script src="web/js/law.js"></script>
 <script src="web/js/board.js"></script>
+<script src="web/js/dash.js"></script>
 <script src="web/js/app.js"></script>
 </body>
 </html>
