@@ -2,6 +2,6 @@
   "name": "forma",
   "displayName": "Форма",
   "description": "Пятиузловой протокол управления проектом (Intent/Spec/Kit/Run/Core) — устанавливается скиллом forma в целевой проект как AGENTS.md (закон, один файл на все среды) + §8 движка (CLAUDE.md в корне либо .claude/rules/claude-8.md, .agents/rules/gemini-8.md) + .claude/agents/ + .claude/hooks/",
-  "version": "0.4.195-alpha",
+  "version": "0.4.196-alpha",
   "license": "MIT"
 }

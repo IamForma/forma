@@ -1,9 +1,9 @@
 ---
 name: run-site-php
 description: Run — site-side PHP probes and scripted writes through the site CLI, read before write
-model: claude-sonnet-5
-tier: standard
-effort: low
+model: claude-haiku-5-5
+tier: light
+effort: medium
 tools: Read, Bash(node .claude/scripts/site-php.cjs *), mcp__site__mcp-adapter-execute-ability
 skills: novamira-wp-deploy
 ---

@@ -1,9 +1,9 @@
 ---
 name: run-text
 description: Run — pure text production with no live access to the environment, draft/wording/analysis
-model: claude-sonnet-5
-tier: standard
-effort: low
+model: claude-haiku-5-5
+tier: light
+effort: medium
 tools: Read, Write, Edit, Bash(node .claude/scripts/external-model-bridge.cjs *)
 ---
 

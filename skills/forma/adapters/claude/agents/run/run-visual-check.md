@@ -1,9 +1,9 @@
 ---
 name: run-visual-check
 description: Run — compares a live page or screenshot against a reference or criterion, before/after
-model: claude-sonnet-5
-tier: standard
-effort: low
+model: claude-haiku-5-5
+tier: light
+effort: medium
 tools: Read, mcp__chrome-devtools__new_page, mcp__chrome-devtools__take_snapshot, mcp__chrome-devtools__close_page
 ---
 
