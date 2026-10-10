@@ -9,6 +9,7 @@
  *
  *   node .codex/scripts/codex-usage.cjs --file <rollout.jsonl> --complete --card <card.md>
  *   node .codex/scripts/codex-usage.cjs --file <rollout.jsonl> --complete --continuation --after <prior-token-count-timestamp> --card <card.md>
+ *   node .codex/scripts/codex-usage.cjs --file <rollout.jsonl> --complete --card <card.md> --split <K> --share <I> --desc <description>
  *   node .codex/scripts/codex-usage.cjs --report --write-cache
  */
 const fs = require('fs');
@@ -22,6 +23,18 @@ const args = process.argv.slice(2);
 const value = flag => { const i = args.indexOf(flag); return i < 0 ? null : args[i + 1] || null; };
 const date = iso => String(iso || new Date().toISOString()).slice(0, 10);
 const group = n => new Intl.NumberFormat('en-US').format(n).replace(/,/g, ' ');
+function positiveInteger(flag) {
+  const raw = value(flag);
+  if (raw == null) return null;
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 1) throw new Error(`${flag} must be a positive integer.`);
+  return parsed;
+}
+function splitShare(number, total, share) {
+  if (number == null) return null;
+  const base = Math.floor(number / total);
+  return base + (share <= number % total ? 1 : 0);
+}
 
 async function readTranscript(file, continuationAfter = null) {
   let meta = null, metaAt = null, first = null, last = null, usage = null;
@@ -86,7 +99,9 @@ function line(row) {
   const r = row.cacheRead == null ? '(cache-read unknown)' : `(${group(row.cacheRead)} cache-read)`;
   const s = row.seconds == null ? 'unknown' : String(row.seconds);
   const attempt = row.continuation ? 'attempt (continuation)' : 'attempt';
-  return `- \`${row.node}\`, ${date(row.last || row.first)}: ${attempt}, ${group(row.tokens)} tokens ${r}, ${s} s, \`${row.id}\` — codex: measured ${row.continuation ? 'continuation segment' : row.kind + ' transcript'}.`;
+  const description = row.description || `measured ${row.continuation ? 'continuation segment' : row.kind + ' transcript'}`;
+  const batch = row.batch ? ` (batch ${row.batch.share}/${row.batch.total})` : '';
+  return `- \`${row.node}\`, ${date(row.last || row.first)}: ${attempt}, ${group(row.tokens)} tokens ${r}, ${s} s, \`${row.id}\` — codex: ${description}${batch}.`;
 }
 function segmentMarker(row) {
   if (!row.last) return null;
@@ -138,6 +153,18 @@ function append(card, row) {
   if (continuation !== Boolean(after)) throw new Error('Continuation requires both --continuation and --after <prior-token-count-timestamp>.');
   if (continuation && !args.includes('--complete')) throw new Error('Continuation measurement requires --complete after the continued child has returned.');
   const row = await readTranscript(path.resolve(file), after);
+  const split = positiveInteger('--split');
+  const share = positiveInteger('--share');
+  if ((split == null) !== (share == null)) throw new Error('Batch spend requires both --split <K> and --share <I>.');
+  if (split != null && share > split) throw new Error('--share must be between 1 and --split.');
+  if (split != null) {
+    row.tokens = splitShare(row.tokens, split, share);
+    row.cacheRead = splitShare(row.cacheRead, split, share);
+    row.seconds = splitShare(row.seconds, split, share);
+    row.batch = { total: split, share };
+  }
+  const description = value('--desc');
+  if (description != null) row.description = description;
   const card = value('--card');
   if (card && !args.includes('--complete')) throw new Error('Card attachment requires --complete after the caller has received the finished child turn.');
   if (card && row.kind !== 'subagent') throw new Error('Card attachment accepts a completed subagent transcript only; main Intent ↔ human belongs in the separate report.');

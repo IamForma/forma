@@ -53,6 +53,15 @@ try {
   const normalAfterFurtherGrowth = run(normal);
   if (normalAfterFurtherGrowth.status !== 0) throw new Error(`further-grown normal usage fixture: ${normalAfterFurtherGrowth.stdout}${normalAfterFurtherGrowth.stderr}`);
 
+  const batchCard = path.join(fixture, 'batch-card.md');
+  fs.writeFileSync(batchCard, '# batch\n\n## History\n\n## Result\n');
+  const batch = run(['--file', transcript, '--complete', '--card', batchCard, '--split', '3', '--share', '1', '--desc', 'kitted this card']);
+  if (batch.status !== 0) throw new Error(`batch usage fixture: ${batch.stdout}${batch.stderr}`);
+  const batchHistory = fs.readFileSync(batchCard, 'utf8');
+  if (!batchHistory.includes(`\`Run\`, ${day}: attempt, 100 tokens (34 cache-read), 3 s, \`usage-child-1\` — codex: kitted this card (batch 1/3).`)) {
+    throw new Error('batch usage fixture did not split measured N/R/T or mark the share');
+  }
+
   const history = fs.readFileSync(card, 'utf8');
   if ((history.match(/attempt, 100 tokens/g) || []).length !== 1 || !history.includes(`\`Run\`, ${day}: attempt, 100 tokens (20 cache-read), 3 s, \`usage-child-1\` — codex: measured subagent transcript.`)) {
     throw new Error('fresh usage fixture did not retain the completed initial snapshot once');

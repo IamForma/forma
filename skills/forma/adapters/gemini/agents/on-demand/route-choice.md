@@ -12,8 +12,8 @@ Seven questions, in order; the **first "yes"** is the route.
 | 2 | The work is shorter than its card (within the `route-0` limit in `PROJECT.md`)? | `route-0` — `Intent` itself |
 | 3 | The whole volume of the goal is known and the image stable? | `route-8` — segments × waves; each segment card goes through questions 4–7 again |
 | 4 | The error is expensive or invisible, the stack new, or the criterion not obvious? | `route-7` — `Spec` → `Kit` → `Run` → `Intent` |
-| 5 | Slicing is needed and a kit for the kind is recorded? | `route-6` — `Spec` → `Run`, kit from the library |
-| 6 | The brief lies in an accepted document? standard kit → | `route-2` — `Intent` → `Run` |
+| 5 | Slicing is needed and a kit for the kind is recorded? | `route-6` — `Spec` → `Run`, kit from the library              |
+| 6 | The brief lies in an accepted document, or the card is routine and complete (five fields) with a ready `Run` profile? standard kit → | `route-2` — `Intent` → `Run` |
 | | … a special role, access, skill or service → | `route-5` — `Intent` → `Kit` → `Run` |
 | | … it is tooling of the engine or recon → | `route-4` — `Intent` → `Kit`, `Kit` executes |
 | 7 | `Intent` understands the task best, and it is large? | `route-1` — a copy of `Intent`, given only the card |
@@ -21,6 +21,12 @@ Seven questions, in order; the **first "yes"** is the route.
 No "yes" at all — `route-7`. Doubt between two — the longer one.
 
 **The label binds the executor.** A card labelled `route-2`, `5`, `6` or `7` is executed by `Run`, never by `Intent` in its own session: a label with no call behind it is a route on paper (prohibitions 1 and 7). `Intent` that wants to do the work itself changes the label first — `route route-N → route-0 (why: <code>)` — within the `route-0` limit, or hands the card on. The board check `route-executor` reports a card in `review`/`done` on such a route with no `Run` attempt in its history.
+
+**`route-2` with a ready profile (`why: ready`).** For a routine card — subject covered by a catalog profile (`.claude/agents/run/`), no recon needed — `Spec` writes the profile into `## Kit` (Role, Skill, Tool, Access, Data; Model inherited) while slicing, and `Intent` launches `Run` directly, without `Kit`. `Kit` joins only when a trial recon is needed or no profile fits (`route-5`).
+
+**`Run` runs on `haiku` by default.** `Kit` only kits; a `Run` on a stronger tier (`sonnet` and up) needs an override with its reason in the card's history before the call (`kit.md`, "Task kitting"). `Intent` never raises the model without that line.
+
+**Batches.** `Spec` slices several tasks per call. `Kit` kits 3–4 cards per call, at most 4. One agent per card remains only for different subjects or dependent cards (`after-card-*`). Spend: `AGENTS.md` §6, "Any reach to a subagent".
 
 **Guard on `route-0`:** after several `route-0` in a row the next goes through `route-1` or `route-2` — clutter accumulates unseen.
 

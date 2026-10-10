@@ -35,7 +35,7 @@ if (!fs.existsSync(templateSource)) throw new Error('Forma plugin template not f
 const hasPackaged = true;
 const fixturePlugin = path.join(fixture, 'plugin');
 const packaged = 'plugin/' + templateRel;
-for (const rel of ['.claude/agents', '.claude/skills', '.codex', '.agents/skills']) copy(rel);
+for (const rel of ['.claude/agents', '.claude/skills', '.codex', '.agents/skills', '.forma/i18n']) copy(rel);
 copyTree(templateSource, path.join(fixturePlugin, templateRel));
 const command = path.join(fixture, '.codex', 'scripts', 'sync-codex.cjs');
 const claudeTemplate = path.join(pluginSource, modern ? 'adapters/claude' : 'template');
@@ -73,6 +73,12 @@ try {
     copyTree(path.join(fixture, '.claude', 'skills', 'graph-build'), path.join(fixture, '.agents', 'skills', 'graph-build'));
   }
   check(true, 'clean Codex fixture');
+  const sharedSkill = path.join(fixture, '.agents', 'skills', 'graph-build', 'SKILL.md');
+  const sharedSkillBefore = fs.readFileSync(sharedSkill, 'utf8');
+  const codexOnly = cp.spawnSync(process.execPath, [command, '--apply', '--codex-only', '--root', fixture, '--plugin', fixturePlugin], { encoding: 'utf8' });
+  if (codexOnly.status !== 0 || fs.readFileSync(sharedSkill, 'utf8') !== sharedSkillBefore) {
+    throw new Error(`Codex-only apply must not write .agents/skills: ${codexOnly.stdout}${codexOnly.stderr}`);
+  }
   const cases = [
     ['model tier', path.join(fixture, '.codex/agents/intent.toml'), s => s.replace('model_reasoning_effort = "low"', 'model_reasoning_effort = "medium"')],
     ['role link', path.join(fixture, '.codex/roles/kit.md'), s => s.replace('.claude/agents/kit.md', '.claude/agents/not-kit.md')],

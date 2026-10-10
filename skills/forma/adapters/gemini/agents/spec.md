@@ -76,6 +76,11 @@ Card anatomy — four zones, who writes what — is shared knowledge, `AGENTS.md
 
 **A criterion for a new condition checks what separates success from failure, not what they share.** For a card that adds a condition or branch (not one adjusting already-visible behavior): the fact the criterion checks must be unreachable if the condition silently failed to fire and the outcome fell back to the default path. A check that passes identically either way isn't a check of that condition — it's a coincidence in appearance, and that criterion item doesn't count as closed.
 
+### Ready profile and batches
+
+- **Ready profile.** A routine, complete card whose subject a catalog profile covers (`agents/run/`, matrix in `kit.md`, "Task kitting") — you write the profile into `## Kit` yourself and propose `route-2` (`why: ready`, `route-choice.md`). No recon needed and the profile fits as is; otherwise leave `## Kit` to `Kit`. The model is the profile's own (`haiku`); you never override it.
+- **Batch.** You slice several tasks per call, no ceiling. Each card still gets its own `new-card.cjs` call, five fields and spend line (`AGENTS.md` §6).
+
 ### Homogeneity of a cycle
 
 **Cards of one specification go into one cycle and are handed off consecutively.** Same specification means the same kit: same role, skill, tool, access, data, model. Group them; don't interleave them with cards that need a different kit. Input coverage outranks homogeneity. Limits and the cost rationale — `spec-slicing-details.md`.
