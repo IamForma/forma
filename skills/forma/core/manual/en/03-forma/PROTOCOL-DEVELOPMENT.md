@@ -26,7 +26,7 @@ Any project can improve the protocol, not only receive it. An improvement made a
 8. **Commit in the clone:** `git -C .forma/protocol add -A && git -C .forma/protocol commit -m "<version>: <what changed>"`, then `node .forma/protocol/scripts/engine-to-protocol.cjs --mark` (records the base for the next dry run).
 9. **Before the push:** `git -C .forma/protocol pull --rebase`, then `node .forma/protocol/scripts/engine-to-protocol.cjs --before-push` — stops if the version is not above the published one or the branch is behind. The same version on both sides merges silently; this check catches it.
 10. **Push:** `git -C .forma/protocol push origin dev`. Only on the human's word — an agent never pushes on its own. The release to `main` is a separate step.
-11. **Other projects:** `git -C .forma/protocol pull`, then "read `.forma/protocol/.forma/skills/forma/SKILL.md` and update the Forma protocol by it". Pulling alone updates the clone, not the engine in `.claude/`. The author then runs `--mark`.
+11. **Other projects:** `git -C .forma/protocol pull`, then "read `.forma/protocol/skills/forma/SKILL.md` and update the Forma protocol by it". Pulling alone updates the clone, not the engine in `.claude/`. The author then runs `--mark`.
 
 `node .forma/protocol/scripts/forma-commit.cjs "<message>"` chains the checks, the transfer and the commits in one call and stops on a conflict; use it when the project is the author's main one.
 

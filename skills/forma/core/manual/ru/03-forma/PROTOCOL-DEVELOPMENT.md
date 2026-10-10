@@ -26,7 +26,7 @@
 8. **Коммит в клоне:** `git -C .forma/protocol add -A && git -C .forma/protocol commit -m "<версия>: <что изменено>"`, затем `node .forma/protocol/scripts/engine-to-protocol.cjs --mark` (записывает базу для следующего прогона).
 9. **Перед пушем:** `git -C .forma/protocol pull --rebase`, затем `node .forma/protocol/scripts/engine-to-protocol.cjs --before-push` — стоп, если версия не выше опубликованной или ветка отстала. Одинаковый номер версии на обеих сторонах git сливает молча; эта проверка его ловит.
 10. **Пуш:** `git -C .forma/protocol push origin dev`. Только по слову человека — агент сам не пушит. Выпуск в `main` — отдельный шаг.
-11. **Остальные проекты:** `git -C .forma/protocol pull`, затем «прочитай `.forma/protocol/.forma/skills/forma/SKILL.md` и обнови по нему протокол Форма». Один `pull` обновит клон, но не движок в `.claude/`. После этого автор запускает `--mark`.
+11. **Остальные проекты:** `git -C .forma/protocol pull`, затем «прочитай `.forma/protocol/skills/forma/SKILL.md` и обнови по нему протокол Форма». Один `pull` обновит клон, но не движок в `.claude/`. После этого автор запускает `--mark`.
 
 `node .forma/protocol/scripts/forma-commit.cjs "<сообщение>"` связывает проверки, перенос и коммиты в один вызов и останавливается на конфликте; подходит, когда проект — основной у автора.
 
