@@ -23,6 +23,7 @@
 | [SKILLS.md](SKILLS.md) | умения узлов как скиллы среды |
 | [five-nodes.md](five-nodes.md) | маршрут пяти узлов, диаграмма |
 | [LOCALIZATION.md](LOCALIZATION.md) | локализация дашборда: два языка, словари, проверка `locale-parity` |
+| [PROTOCOL-DEVELOPMENT.md](PROTOCOL-DEVELOPMENT.md) | разработка протокола из проекта: клон, сверка движков, перенос, проверка следов, пуш |
 
 ## Демонстрационный круг
 
