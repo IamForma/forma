@@ -1,0 +1,9 @@
+name = "run-script"
+description = "Run — executes a card's own pre-written script (project/cards/card-NNN/scripts/), no site write"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Read AGENTS.md, .codex/CODEX-8.md and .codex/CLAUDE-COMPAT.md first. Read .claude/agents/run.md and .codex/roles/run.md as the base role, then .codex/roles/run/run-script.md and its canonical profile completely. Ignore Claude frontmatter; follow the profile boundary and the clean card and kit. Return to the caller without accepting your own work.
+"""

@@ -1,7 +1,7 @@
 ---
 name: extractor
 description: Extractor — text-in/text-out extraction, no routing decisions, no schema knowledge
-model: haiku
+model: claude-haiku-5-5
 effort: medium
 tools: Read, Glob, Grep, Write
 omitClaudeMd: true
