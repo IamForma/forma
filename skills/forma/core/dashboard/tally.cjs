@@ -86,10 +86,19 @@ const callIdMatch = (line, tail) => !ID_UNKNOWN_RE.test(line) && /`([^`\s]+)`\s*
 // Старые строки без метки (накопительные) по-прежнему схлопываются в первую.
 // Обычные строки: id вызова плюс числа захода. Один вызов, записанный в двух карточках теми же числами, —
 // дубль; общий id сессии с разными числами — разные окна, считаются все (раньше вторая и далее терялись).
+//
+// Пакетный вызов (Spec без потолка, Kit до 4 карточек за раз — kit.md, «Task kitting»):
+// расход делится между карточками (claude-economy.cjs `--split K --share I`), и доля на карточку
+// может случайно совпасть у двух карточек (чётное деление). Метка `batch I/K` в хвосте строки —
+// ключ дедупликации берёт файл карточки и саму долю, а не числа: иначе совпавшие по случайности
+// доли схлопнулись бы в одну и карточки лишились бы своего расхода, хотя дублем не были.
+const BATCH_SHARE_RE = /\(batch\s+(\d+)\/(\d+)\)/;
+
 function dedupKey(line, file, id, m) {
-  return /card-session-spend/.test(line)
-    ? path.basename(file) + "|" + id + "|" + (sessionWindowEnd(line) ?? "")
-    : [id, m[3], m[4] ?? "", m[5] ?? ""].join("|");
+  if (/card-session-spend/.test(line)) return path.basename(file) + "|" + id + "|" + (sessionWindowEnd(line) ?? "");
+  const batch = BATCH_SHARE_RE.exec(line);
+  if (batch) return path.basename(file) + "|" + id + "|batch|" + batch[1] + "/" + batch[2];
+  return [id, m[3], m[4] ?? "", m[5] ?? ""].join("|");
 }
 
 // Строка → канонические переменные (.forma/manual/en/03-forma/ECONOMY.md); счёт — economy.cjs.

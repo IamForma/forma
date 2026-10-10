@@ -29,6 +29,8 @@ The configured reasoning efforts are Intent/Spec/Core `low`, Kit `medium`, Run/E
 
 Codex writes cumulative measured counters into its rollout transcript: the final `event_msg.payload.info.total_token_usage` carries `total_tokens` and `cached_input_tokens`. After a child returns, the caller runs `node .codex/scripts/codex-usage.cjs --file <rollout.jsonl> --complete --card <card.md>`. It takes only the final cumulative record, measures duration from `session_meta` to that record, reads the call id from `session_meta.payload.id`, rejects a duplicate id already in that card, and writes the common-law history line with the `codex:` tag. `session_meta.payload.source.subagent.thread_spawn` supplies the canonical child node name; a transcript without it is the main `Intent` session. `--report --write-cache` filters by the transcript cwd of this project, keeps main `Intent ↔ human` and subagent totals separate in `.forma/dashboard/.cache/codex-usage.json`, and marks every session unassigned until a caller binds it to a card. It never guesses a card. A field that the transcript did not return uses the markers in `AGENTS.md` §3, row "Unknown" and is counted separately, never as zero.
 
+For one batch call, bind each touched card separately with the same transcript and `--split K --share I --desc "<what this card received>"`. The utility divides measured N, R and T by K using exact integer shares (the remainder goes to the first shares) and appends `(batch I/K)` to every description. `Spec` may slice several cards in one call; `Kit` may kit up to four independent related cards. This is Codex transcript accounting, never a Claude usage reader.
+
 ### Continuation of a live child
 
 The choice between continuation and reassembly is canonical in `.claude/agents/kit.md`, "Return". Kit writes the correction and returns it to the main session; Kit never calls collaboration tools. The main session uses `collaboration.list_agents` to confirm the same still-running call, then sends only the address, expected value and boundary through `collaboration.send_message`. A returned, closed, idle, lost or errored call requires reassembly. `followup_task` is not the canonical live-call exception.
@@ -59,7 +61,7 @@ Run `.codex/tests/verify-config.ps1` after changing Codex configuration. It chec
 
 ## Zone of edits
 
-Role adapters under `.codex/roles/` are carried over from Claude Code mechanically by `node .claude/scripts/sync-engines.cjs --apply` (Claude → Codex: a missing adapter is created from the standard template; existing adapters are not touched) — that carry-over is sanctioned; no other engine edits `.codex/` by hand.
+Role adapters under `.codex/roles/` are carried over from Claude Code mechanically by `node .claude/scripts/sync-engines.cjs --apply` (Claude → Codex: a missing adapter is created from the standard template; existing adapters are not touched) — that carry-over is sanctioned; no other engine edits `.codex/` by hand. For a Codex-only refresh use `node .codex/scripts/sync-codex.cjs --apply --codex-only`; it writes only generated `.codex/` role and agent files and never writes the shared `.agents/skills/` mirror.
 
 ## Main session = `Intent` (§1)
 

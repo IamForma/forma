@@ -9,6 +9,7 @@ module.exports = [
   require('./route-labels.cjs'),
   require('./route-stage.cjs'),
   require('./route-executor.cjs'),
+  require('./run-model-override.cjs'),
   require('./status-values.cjs'),
   require('./card-materials.cjs'),
   require('./spend-language.cjs'),

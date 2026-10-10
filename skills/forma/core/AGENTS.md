@@ -230,7 +230,7 @@ Kind matters at check time: a tooling task is checked against its own criterion 
 
 Prohibition 16 names the clean zones this keeps clean; the release check (`check-release.cjs --traces`) catches only pattern-matched traces (card codes, dates, domains, emails, hashes) in layers 1–2 or in the protocol source — not every product fact.
 
-**Any reach to a subagent is tied to a card — no exceptions.** A production node (`Spec`/`Kit`/`Run`/`Core`) or a one-off helper call (checking a fact, a piece of documentation, whether something is alive): the card is opened before the call — the five fields, or for a light one-off check at minimum the task statement and the readiness criterion — and filled in after it returns, with the result and the spend (§3). Nothing invoked as a subagent goes unrecorded. **Not retroactive:** a one-off call made before this rule existed doesn't get a card invented afterwards — `.forma/living/CHANGELOG.md`.
+**Any reach to a subagent is tied to a card — no exceptions.** A production node (`Spec`/`Kit`/`Run`/`Core`) or a one-off helper call (checking a fact, a piece of documentation, whether something is alive): the card is opened before the call — the five fields, or for a light one-off check at minimum the task statement and the readiness criterion — and filled in after it returns, with the result and the spend (§3). Nothing invoked as a subagent goes unrecorded. **One call may serve several cards** — a batch (`Spec` slices several tasks per call, `Kit` kits up to 4 cards per call): every card of the batch is opened before the call and filled after it, each with its own spend line, the call's spend split between them and the split named. One agent per card remains for different subjects or dependent cards. **Not retroactive:** a one-off call made before this rule existed doesn't get a card invented afterwards — `.forma/living/CHANGELOG.md`.
 
 **A card is a file on the board, in four zones, each under its own heading, in this order:**
 
@@ -255,7 +255,7 @@ Prohibition 16 names the clean zones this keeps clean; the release check (`check
 | Zone | Written by | Note |
 | --- | --- | --- |
 | `## Task` | `Spec` | the five fields, nothing added beyond them |
-| `## Kit` | `Kit` | details — `kit.md`, "Task kitting" |
+| `## Kit` | `Kit`, or `Spec` when a ready `Run` profile from the catalog fits a routine card | details — `kit.md`, "Task kitting"; the ready-profile route — `route-choice.md` |
 | `## History` | `Spec`, `Kit`, `Intent`; for an external-model attempt, the calling node | each appends a line on their own event — **never overwrites someone else's, only adds** |
 | `## Result` | `Run`, once done | what actually came out: what was created or changed, how it was confirmed — not a timeline |
 

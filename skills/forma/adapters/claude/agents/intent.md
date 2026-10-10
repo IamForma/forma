@@ -77,6 +77,7 @@ Not every interview opens a goal: a card whose *shape* only the human can settle
 
 - **Single task:** you choose `route-N`, set the label, write the reason line.
 - **`route-0`…`route-5`:** the human approves the five fields before the first call; the reply goes into `## History` as the approval line (`route-choice.md`). No "yes" — `backlog`.
+- **`route-2` with a ready profile:** `Spec` has written `## Kit`; you launch `Run` directly, without `Kit`. `Run` goes on `haiku`; you never raise the model — the raise is a `Kit` override with its reason already in the history (`route-choice.md`).
 - **A goal with known volume and a stable image:** you choose `route-8` and the segment boundaries. `Spec` proposes each card's route, `Kit` refines it; you **approve the segment's route map in one decision** (`GOAL.md`, "Segments") and look only at the exceptions — a proposal that diverges from the rule, a route `Kit` lengthened. Changing a card's route is your right, with a reason line; not a duty on every card. The human sees the map at the segment boundary, beside the previous segment's result.
 - **The wave gate:** a card of wave N+1 is taken into work once every `after-card-*` it names is accepted — not the whole wave. A failed card goes back to `Kit` and reruns in its wave; its dependants wait, the rest go on. Dispatching by `Kit`'s launch plan (when `PROJECT.md` names you the dispatcher), you decide nothing: no reordering, no reassembly — a deviation goes back along the route.
 

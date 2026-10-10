@@ -87,7 +87,9 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 
 - **Role** = the catalog file's `name`, picked by the task's subject above — never bare `run.md` (base template, not a role).
 - **Model and Tool are inherited** from the role's own frontmatter (`model`, `effort`, `tools`) — not re-chosen per task.
-- **Override** (a different model/tool than the role carries) — a history line with the reason, before handoff; the card's kit block then shows the override, not the inherited default.
+- **`Run` is `haiku` by default; you only kit.** **Override** (a different model/tool than the role carries, e.g. `sonnet` and up) — a history line with the reason, before handoff; the card's kit block then shows the override, not the inherited default. No reason — no override.
+- **Batch: up to 4 cards per call**, same or related subjects, none dependent on another (`after-card-*`); each card gets its own kit and history line. More than 4, different subjects or dependent cards — separate calls.
+- **A card whose `## Kit` already holds a ready profile** (written by `Spec`, `route-choice.md`) — check it against the matrix and leave it; kit anew only when it doesn't fit.
 - **No catalog role fits the subject** — don't force one: open a `tooling` card for a new role, label the task card `after-card-NNN`, task waits.
 - **One asset or a light edit → `run-image`; a series or a package (several assets, one style) → `run-image-series`.**
 - **A prototype built from a reference** (page, screen, layout, an exact-match criterion): the kit carries a `run-visual-check` pass before the card's `stage check`, and the criterion names the tolerance. A deviation beyond it is not recorded as "accepted with deviations" inside the result — it becomes its own fix card, or the human changes the criterion. "Similar" never closes an "exact" criterion.
@@ -107,14 +109,15 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 
 ## Return — from a form check or from a check
 
-0. **First, before any fix**, write a line in the **card's history**: the discrepancy as it was named, verbatim — one or two factual sentences, not a re-telling of context from scratch (the card is open in full). History is the card's third zone; you read it right there — if the same fix has already been tried, a second one is forbidden (below).
+0. **First, before any fix**, write a line in the **card's history**: the discrepancy as it was named, verbatim — one or two factual sentences, not a re-telling of context from scratch (the card is open in full). History is the card's third zone; you read it right there — if the same fix has already been tried, a second one is forbidden (below). **While you're there, count attempts** — each prior reassembly (B) and each continuation (A) is one (`AGENTS.md` §3) — against the card's stated budget. Already at or past it: skip straight to step 2's "exhausted" branch, don't spend an attempt deciding A or B first.
 1. Re-read **your own kit for this task** in the card against the named discrepancy.
-2. **Classify the discrepancy, then choose A or B** (table below). Write the class (`slip`/`kit`/`card`/`approach`) and the choice into the same history line as step 0, or the next one.
-3. **A — continue the same `Run`.** Change **at least one** of the six units — the written correction you hand to your caller is the changed unit (Data: a new, narrower input alongside the original card). No fresh assembly, no clean kit; `AGENTS.md` prohibition 7's exception.
-4. **B — reassemble, launch a new `Run`.** Change **at least one** of the six units as before. Changing the doer is a change of role and model — there's no separate action for it.
-5. Translate the discrepancy into a constraint: what goes down is "align left, shadow is mandatory," not "you missed three times" — true for both A and B, and especially for A: the correction reads as a boundary, never as a tally of misses.
-6. Fix the kit block in the card and write a history line: what changed, what it was translated into, where it went (A: the correction's text and the call id it went to; B: the new kit and the new call).
-7. **Nothing to name as changed — escalate to `Spec`**: the issue isn't the kit.
+2. **Budget exhausted (prohibition 4) — neither A nor B.** Stop, write the count against the budget in the same history line, and escalate to `Spec` for a new budget (`AGENTS.md` §2, "Attempt budget exhausted") — never a silent extra try, never widened on your own say.
+3. **Otherwise, classify the discrepancy, then choose A or B** (table below). Write the class (`slip`/`kit`/`card`/`approach`) and the choice into the same history line as step 0, or the next one.
+4. **A — continue the same `Run`.** Change **at least one** of the six units — the written correction you hand to your caller is the changed unit (Data: a new, narrower input alongside the original card). No fresh assembly, no clean kit; `AGENTS.md` prohibition 7's exception.
+5. **B — reassemble, launch a new `Run`.** Change **at least one** of the six units as before. Changing the doer is a change of role and model — there's no separate action for it.
+6. Translate the discrepancy into a constraint: what goes down is "align left, shadow is mandatory," not "you missed three times" — true for both A and B, and especially for A: the correction reads as a boundary, never as a tally of misses.
+7. Fix the kit block in the card and write a history line: what changed, what it was translated into, where it went (A: the correction's text and the call id it went to; B: the new kit and the new call). **This line, and the one from step 0, follow `AGENTS.md` §3's template exactly** — `attempt,` not a bare number, the dash before the engine tag (`on-demand/spend-line.md`); a malformed line breaks `tally.cjs`/`check-board.cjs` parsing for the whole card, silently.
+8. **Nothing to name as changed — escalate to `Spec`**: the issue isn't the kit.
 
 ### Classifying the discrepancy: A or B
 
@@ -205,7 +208,7 @@ The store is `project/experience/` — one file per subject, named the way someo
 - `kit-experience.md` — read when promoting an experience line into `project/config/CONFIG.md`, or on a weeding card.
 - `kit-limits.md` — read when a skill, tool, access or model kind is missing, or `Run` returns "the tool can't do that".
 - `kit-route8.md` — read when kitting a `route-8` segment.
-- `spend-line.md` — read when you write a spend line yourself (the external bridge you called, `kit-graphs.md`).
+- `spend-line.md` — read when you write a spend line yourself: a continuation line (`AGENTS.md` §2's exception) or the external bridge you called (`kit-graphs.md`).
 
 ## Before you kit — four checks
 
