@@ -1,9 +1,9 @@
 ---
 name: run-image
 description: Run — generates or edits a single image or visual asset from an issued prompt
-model: claude-sonnet-5
-tier: standard
-effort: low
+model: claude-haiku-5-5
+tier: light
+effort: medium
 tools: Read, Write, imagegen
 ---
 

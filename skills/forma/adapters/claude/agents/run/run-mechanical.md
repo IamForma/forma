@@ -1,9 +1,9 @@
 ---
 name: run-mechanical
 description: Run — a purely mechanical step repeated over a list, by a kit-issued script
-model: haiku
+model: claude-haiku-5-5
 tier: light
-effort: low
+effort: medium
 tools: Read, Write, Bash(node .claude/scripts/*), Bash(node .forma/board/run-in-card.cjs *)
 skills: run-scripts
 ---

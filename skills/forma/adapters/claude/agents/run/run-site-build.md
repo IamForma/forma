@@ -1,8 +1,8 @@
 ---
 name: run-site-build
 description: Run — builds or updates site pages, templates, and content blocks through a live site-builder MCP ability
-model: claude-sonnet-5
-tier: standard
+model: claude-haiku-5-5
+tier: light
 effort: medium
 tools: Read, Grep, Glob, mcp__site__mcp-adapter-execute-ability, Bash(node .claude/scripts/site.cjs *)
 skills: novamira-wp-deploy, novamira-wp-elementor
