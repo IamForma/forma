@@ -1,11 +1,7 @@
 ---
 name: run-image-series
 description: Run — generates a series or package of images in one consistent style via Magnific
-model: claude-haiku-5-5
-tier: light
-effort: medium
-tools: Read, Write, mcp__claude_ai_Magnific__images_generate, mcp__claude_ai_Magnific__images_models_list, mcp__claude_ai_Magnific__simulate_cost, mcp__claude_ai_Magnific__creations_wait, mcp__claude_ai_Magnific__creations_get, mcp__claude_ai_Magnific__spaces_edit, mcp__claude_ai_Magnific__spaces_edit_status, mcp__claude_ai_Magnific__spaces_state, mcp__claude_ai_Magnific__spaces_run, mcp__claude_ai_Magnific__spaces_run_status, mcp__claude_ai_Magnific__account_balance
-skills: magnific-generate, magnific-spaces
+engine: codex
 ---
 
 # `run-image-series`
@@ -27,3 +23,8 @@ Follow the chosen skill's chain step by step (model pick → cost check → conf
 `magnific-generate` and `magnific-spaces` are **global** skills (`~/.claude/skills/`, not `.claude/skills/` of this project) — read-only reference, not owned by this repo.
 
 Tool names are qualified as the live tool list shows them: `mcp__claude_ai_Magnific__<tool>` (the Magnific connector). The skills name the same tools without the prefix. If the server is wired in under another name, the prefix changes (`mcp__<server>__<tool>`) and the `tools` line here changes with it — a mismatch is reported, never worked around.
+
+
+## Codex mechanics
+
+Canonical source: `.claude/agents/run/run-image-series.md`. Native execution: `.codex/CLAUDE-COMPAT.md` and `.codex/CODEX-8.md`. Apply their field, tool, hook and channel mappings to engine-specific examples in the complete text above; they do not change the role's criteria or route. Bare role/procedure names resolve within `.codex/roles/`.

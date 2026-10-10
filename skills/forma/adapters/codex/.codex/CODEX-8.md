@@ -21,9 +21,9 @@ The project cap is **three child threads at once**. Together with the main sessi
 | Core | `gpt-5.6-sol` | `low` |
 | Extractor | `gpt-5.6-luna` | `low` |
 
-The configured tiers are Intent/Spec/Core `low`, Kit `medium`, Run/Extractor `low`. Raising effort is an explicit per-task kitting decision and is recorded on the card.
+The configured reasoning efforts are Intent/Spec/Core `low`, Kit `medium`, Run/Extractor `low`. Raising effort is an explicit per-task kitting decision and is recorded on the card.
 
-`gpt-5.6` is not a valid selectable model on the current ChatGPT-backed Codex host. The selected models and tiers above are engine mappings, not changes to canonical Claude roles.
+`gpt-5.6` is not a valid selectable model on the current ChatGPT-backed Codex host. The selected models and reasoning efforts above are engine mappings, not changes to canonical Claude roles.
 
 ## Spend (§3)
 
@@ -31,9 +31,9 @@ Codex writes cumulative measured counters into its rollout transcript: the final
 
 ### Continuation of a live child
 
-The choice between continuation and reassembly is canonical in `.claude/agents/kit.md`, "Return". For a permitted continuation, `Kit` first uses `list_agents` to confirm that the recorded child target is present. A running target receives the written correction through `send_message(target, message)`. A present target whose completed turn is reported as `completed`, or which is reported as idle, receives it through `followup_task(target, message)`, which starts its next turn in that same child context. The message contains only the correction required by the canonical role: the address, expected value, and boundary.
+The choice between continuation and reassembly is canonical in `.claude/agents/kit.md`, "Return". Kit writes the correction and returns it to the main session; Kit never calls collaboration tools. The main session uses `collaboration.list_agents` to confirm the same still-running call, then sends only the address, expected value and boundary through `collaboration.send_message`. A returned, closed, idle, lost or errored call requires reassembly. `followup_task` is not the canonical live-call exception.
 
-The target is the agent id or canonical child name recorded when `Run` was started. It is distinct from the rollout `session_meta.payload.id` used as the spend-line call id; the caller records the pair and does not infer one from the other. `followup_task` addresses the existing child by that preserved id or name; a completed turn therefore does not itself mean a closed or lost context. Only a target positively present as running, idle, or completed can be continued. An absent, lost, or errored target takes reassembly with a new `Run`. A send result and a later running snapshot are not evidence of a completed attempt: the caller waits for the child return before checking it.
+The agent target id recorded at invocation is distinct from the rollout `session_meta.payload.id` used for spend. The caller records their verified pair and never infers one from the other. The caller waits for the child return before checking the attempt.
 
 Before sending the correction, record the timestamp of the latest `token_count` snapshot from the completed prior child turn. After the continued turn returns, write its spend with `node .codex/scripts/codex-usage.cjs --file <rollout.jsonl> --complete --continuation --after <prior-token-count-timestamp> --card <card.md>`. The script subtracts the named prior cumulative snapshot from the final returned one, keeps that transcript's call id, writes `attempt (continuation)` with the `codex:` tag, and stores an idempotence marker for that id-and-boundary segment. The boundary must be the end of the most recently recorded segment with that call id on the card. Its duration is the measured wall-clock span between those snapshots. It never records the full cumulative call a second time. If the target-to-transcript pair or the prior completed snapshot cannot be confirmed, it writes no measured continuation line: the missing measurement is recorded as `unknown` under §3, or the route stops, without an estimate.
 
@@ -65,3 +65,5 @@ Role adapters under `.codex/roles/` are carried over from Claude Code mechanical
 
 The main Codex session is `Intent`. Before its first reply it reads `.claude/agents/intent.md` through the Codex adapter and, at session start, `.claude/agents/on-demand/intent-session-start.md`. The `SessionStart` hook `.codex/hooks/intent-start.ps1` injects both canonical bodies as `additionalContext` and shows the human the dashboard link (`systemMessage`); the `PostToolUse` hook `.codex/hooks/check-card.ps1` (matcher `apply_patch`) runs `sync-engines --check` on a board card the moment it is written. Both are thin wrappers over `.codex/scripts/codex-hooks.cjs`; registered in `.codex/hooks.json`. Cards are created with `node .forma/board/new-card.cjs`.
 Kit selects one canonical Run profile and supplies its profile body together with the supported Codex `run` agent's base and adapter. The dashboard listing of the seven canonical profile source files does not create dynamic custom-agent roles; profiles are not declared automatically as custom agents.
+
+Only the main session dispatches Run through `collaboration.spawn_agent` and sends a correction through `collaboration.send_message` to the same still-running call. Kit returns the finished six-unit kit or written correction to the main session and never invokes collaboration tools itself. A returned or closed call requires reassembly; `followup_task` is not the live-call exception.

@@ -1,11 +1,7 @@
 ---
 name: run-mechanical
 description: Run — a purely mechanical step repeated over a list, by a kit-issued script
-model: claude-haiku-5-5
-tier: light
-effort: medium
-tools: Read, Write, Bash(node .claude/scripts/*), Bash(node .forma/board/run-in-card.cjs *)
-skills: run-scripts
+engine: codex
 ---
 
 # `run-mechanical`
@@ -19,3 +15,8 @@ A card whose work is running a script already written and verified by `Kit` over
 ## Boundary
 
 Run only the exact command named in the kit; a step needing a decision the script doesn't cover is a different task — return to `Kit`, don't improvise around it. Read the script's own report file for detail, never paste its full output into the card.
+
+
+## Codex mechanics
+
+Canonical source: `.claude/agents/run/run-mechanical.md`. Native execution: `.codex/CLAUDE-COMPAT.md` and `.codex/CODEX-8.md`. Apply their field, tool, hook and channel mappings to engine-specific examples in the complete text above; they do not change the role's criteria or route. Bare role/procedure names resolve within `.codex/roles/`.

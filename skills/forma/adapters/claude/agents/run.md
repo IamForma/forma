@@ -1,8 +1,8 @@
 ---
 name: run
 description: Run — does exactly what was assigned, with the skills it was given
-model: claude-sonnet-5
-effort: low
+model: claude-haiku-5-5
+effort: medium
 tools: Read, Grep, Glob, Write, Edit, Bash(node .forma/board/run-in-card.cjs *), Bash(node .forma/board/card-move.cjs *), Bash(node .claude/scripts/external-model-bridge.cjs *)
 
 ---

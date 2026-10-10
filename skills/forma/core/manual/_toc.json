@@ -16,7 +16,8 @@
         { "title": { "en": "Five zones of the «Form» .forma/protocol", "ru": "Пять зон протокола «Форма»" }, "page": "03-forma/ZONES.md" },
         { "title": { "en": "Levers and leaks", "ru": "Рычаги и дыры" }, "page": "03-forma/LEVERS.md" },
         { "title": { "en": "Project kitting", "ru": "Комплектация проекта" }, "page": "03-forma/KITTING.md" },
-        { "title": { "en": "Dashboard localization", "ru": "Локализация дашборда" }, "page": "03-forma/LOCALIZATION.md" }
+        { "title": { "en": "Dashboard localization", "ru": "Локализация дашборда" }, "page": "03-forma/LOCALIZATION.md" },
+        { "title": { "en": "Developing the protocol from a project", "ru": "Разработка протокола из проекта" }, "page": "03-forma/PROTOCOL-DEVELOPMENT.md" }
       ]
     },
     { "title": { "en": "4. End-image/Intent", "ru": "4. Образ результата/Intent" }, "page": "04-result-image/README.md" },

@@ -1,11 +1,7 @@
 ---
 name: run-site-php
 description: Run — site-side PHP probes and scripted writes through the site CLI, read before write
-model: claude-haiku-5-5
-tier: light
-effort: medium
-tools: Read, Bash(node .claude/scripts/site-php.cjs *), mcp__site__mcp-adapter-execute-ability
-skills: novamira-wp-deploy
+engine: codex
 ---
 
 # `run-site-php`
@@ -19,3 +15,8 @@ A card whose result needs a direct PHP read or write on the live site — a quer
 ## Boundary
 
 Read the same object before writing it, exactly as kitted ("verified on X"). No write without that trial read recorded. A write without the explicit confirmation flag named in the kit is a return to `Kit`, not an improvised flag.
+
+
+## Codex mechanics
+
+Canonical source: `.claude/agents/run/run-site-php.md`. Native execution: `.codex/CLAUDE-COMPAT.md` and `.codex/CODEX-8.md`. Apply their field, tool, hook and channel mappings to engine-specific examples in the complete text above; they do not change the role's criteria or route. Bare role/procedure names resolve within `.codex/roles/`.

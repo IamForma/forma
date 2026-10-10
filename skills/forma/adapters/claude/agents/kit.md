@@ -82,6 +82,7 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 | `run-image-series` | many assets, one style/package — Magnific (`images_generate`, `spaces_*`) |
 | `run-text` | pure text, no live access — draft/wording/analysis |
 | `run-mechanical` | mechanical step over a list, by a kit-issued script |
+| `run-script` | one pre-written script from `project/cards/card-NNN/scripts/`, no site write |
 | `run-visual-check` | before/after or screenshot vs. reference |
 
 - **Role** = the catalog file's `name`, picked by the task's subject above — never bare `run.md` (base template, not a role).
@@ -100,6 +101,8 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 
 **Kitting done — hand off to `Run`.** One call does the whole move — `status`, `assignee` (`AGENTS.md` section 7), the stage line `` `Kit`, YYYY-MM-DD: stage exec — <что>. `` (§6) and the board check: `node .forma/board/card-move.cjs <card> --to run --note "<что>"`. The kit goes into the card in the same call — `--kit "<text>"`, or `--kit -` with the text on stdin (a heredoc) for several lines; it replaces the "Kit" zone body, so a fixed kit is written the same way, without a separate edit. Same on a return after a fix: the task goes back to the same node — a card is never left without one.
 
+**You never call `Run` yourself.** In Claude Code only the main session holds the `Agent` tool (`claude-8.md`, "Execution"); your own tool list carries no `Agent`. The call above updates the board and writes the kit — it does not launch anything. Once it's done, you return to your caller, the main session, which performs the `Agent` call that actually starts `Run` against the card you just kitted. Exception: the short route of the marked epics (`AGENTS.md` §7, "Infrastructure" below) — there you execute the task yourself and this handoff never happens.
+
 **The route is read, and may be lengthened — never shortened** past what the human approved (`AGENTS.md` §2). The card lacks a role, access or kit its route assumes (`route-2` needing site access, `route-6` with a stale kit) — move it longer, change the `route-N` label and write `` `Kit`, YYYY-MM-DD: маршрут route-2 → route-5 — <причина>. `` A shorter route is `Intent`'s choice, never yours.
 
 ## Return — from a form check or from a check
@@ -107,7 +110,7 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 0. **First, before any fix**, write a line in the **card's history**: the discrepancy as it was named, verbatim — one or two factual sentences, not a re-telling of context from scratch (the card is open in full). History is the card's third zone; you read it right there — if the same fix has already been tried, a second one is forbidden (below).
 1. Re-read **your own kit for this task** in the card against the named discrepancy.
 2. **Classify the discrepancy, then choose A or B** (table below). Write the class (`slip`/`kit`/`card`/`approach`) and the choice into the same history line as step 0, or the next one.
-3. **A — continue the same `Run`.** Change **at least one** of the six units — the written correction you send is the changed unit (Data: a new, narrower input alongside the original card). No fresh assembly, no clean kit; `AGENTS.md` prohibition 7's exception.
+3. **A — continue the same `Run`.** Change **at least one** of the six units — the written correction you hand to your caller is the changed unit (Data: a new, narrower input alongside the original card). No fresh assembly, no clean kit; `AGENTS.md` prohibition 7's exception.
 4. **B — reassemble, launch a new `Run`.** Change **at least one** of the six units as before. Changing the doer is a change of role and model — there's no separate action for it.
 5. Translate the discrepancy into a constraint: what goes down is "align left, shadow is mandatory," not "you missed three times" — true for both A and B, and especially for A: the correction reads as a boundary, never as a tally of misses.
 6. Fix the kit block in the card and write a history line: what changed, what it was translated into, where it went (A: the correction's text and the call id it went to; B: the new kit and the new call).
@@ -122,7 +125,7 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 | `card` | the criterion didn't require what's missing, or allows two readings | neither: escalate to `Spec` |
 | `approach` | `Run` fitted the result to the criterion instead of doing the work (substitution) | **B** |
 
-**A is the exception, never the default.** All five conditions of `slip` must hold at once — one missing (second discrepancy on the same point, call closed or its id lost, over-2 external-model task, role/model/tool would change) flips the choice to B outright; prohibition 14 (a second identical diagnosis is a stop, not a third try) applies the same under A as under B. Mechanism — `SendMessage` to the call's own id; no id, or the call already closed, means B — it is never retried as A (`claude-8.md`).
+**A is the exception, never the default.** All five conditions of `slip` must hold at once — one missing (second discrepancy on the same point, call closed or its id lost, over-2 external-model task, role/model/tool would change) flips the choice to B outright; prohibition 14 (a second identical diagnosis is a stop, not a third try) applies the same under A as under B. Mechanism — `Kit` writes the correction, the main session sends it via `SendMessage` to the call's own id (`Kit` holds neither `Agent` nor `SendMessage` itself, `claude-8.md`); no id, or the call already closed, means B — it is never retried as A.
 
 **Two dry-run examples, same table, different outcomes:**
 
@@ -131,7 +134,7 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 
 ### The written correction (A)
 
-A short addition, not a retelling of the card: the address of what's off, the expected value, and the boundary it sets ("align left, shadow mandatory") — nothing about the count of misses. Sent via `SendMessage` to the live call's id; the correction itself is the card's "Data" unit for this attempt, so prohibition 10 is held without renumbering anything.
+A short addition, not a retelling of the card: the address of what's off, the expected value, and the boundary it sets ("align left, shadow mandatory") — nothing about the count of misses. `Kit` writes it and hands it to the main session, which sends it via `SendMessage` to the live call's id; the correction itself is the card's "Data" unit for this attempt, so prohibition 10 is held without renumbering anything.
 
 **A discrepancy in conditional logic — run the deciding function on real data first, then read the code.** Routing, visibility, any branching on stored data: reading the source confirms what the code is *supposed* to do; a direct call with real stored data in the right context shows what it *actually* does — cheaper, and more precise when the suspicion falls not on the logic but on the shape of the input (a mismatched format, an unexpected value). Code reading supplements that call; it doesn't replace it.
 

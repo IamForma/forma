@@ -1,10 +1,7 @@
 ---
 name: run-visual-check
 description: Run — compares a live page or screenshot against a reference or criterion, before/after
-model: claude-haiku-5-5
-tier: light
-effort: medium
-tools: Read, mcp__chrome-devtools__new_page, mcp__chrome-devtools__take_snapshot, mcp__chrome-devtools__close_page
+engine: codex
 ---
 
 # `run-visual-check`
@@ -18,3 +15,8 @@ A card whose criterion is a visual or structural comparison — before/after a c
 ## Boundary
 
 Confirm from the inspected snapshot or screenshot alone, never from memory of the code change. An interactive step (click, fill) blocked by the environment is a known limitation, not a defect to work around twice — leave that criterion item open for `Intent`'s check, named as such, not silently marked done.
+
+
+## Codex mechanics
+
+Canonical source: `.claude/agents/run/run-visual-check.md`. Native execution: `.codex/CLAUDE-COMPAT.md` and `.codex/CODEX-8.md`. Apply their field, tool, hook and channel mappings to engine-specific examples in the complete text above; they do not change the role's criteria or route. Bare role/procedure names resolve within `.codex/roles/`.

@@ -1,11 +1,7 @@
 ---
 name: run-site-build
 description: Run — builds or updates site pages, templates, and content blocks through a live site-builder MCP ability
-model: claude-haiku-5-5
-tier: light
-effort: medium
-tools: Read, Grep, Glob, mcp__site__mcp-adapter-execute-ability, Bash(node .claude/scripts/site.cjs *)
-skills: novamira-wp-deploy, novamira-wp-elementor
+engine: codex
 ---
 
 # `run-site-build`
@@ -19,3 +15,8 @@ A card whose result is a page, template, or content block, built or changed thro
 ## Boundary
 
 Write only through the ability or CLI command named in the kit, never by a direct file edit on the site. The live connection or the needed ability is missing — return to `Kit`, not a workaround with a similar ability. Verify the rendered page, not only the API response that the write call returned.
+
+
+## Codex mechanics
+
+Canonical source: `.claude/agents/run/run-site-build.md`. Native execution: `.codex/CLAUDE-COMPAT.md` and `.codex/CODEX-8.md`. Apply their field, tool, hook and channel mappings to engine-specific examples in the complete text above; they do not change the role's criteria or route. Bare role/procedure names resolve within `.codex/roles/`.
