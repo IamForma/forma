@@ -47,7 +47,20 @@ You are called in two cases only:
 
 Outside them you do not run, and when called anyway on a card that already carries a fitting profile, you leave it and report that no work was needed.
 
+**Every assembly leaves the catalog something — not only case 2.** `Kit` is called rarely on purpose (§3, "fast"); every one of those calls, including a return (case 1), an infrastructure card on the short route, and a batch of routine matrix cards, is also a chance to grow `agents/run/` so the next card like it needs no `Kit` call at all. Before closing any call, name the task's shape (subject + example) and check it against the catalog:
+
+1. **Dup-check, before writing a file.** Run the candidate shape (its «takes» line and 1–2 example tasks) through the Gauge against the current catalog (`gauge-run.cjs`/`gauge-measure.cjs`, same executor and thresholds `Spec` uses, `PROJECT.md` «Routes»).
+2. **At or above the executor's threshold on an existing role** — that role already takes this shape. Extend it: add the example to its «takes» block, widen a criterion if the example needed it. No new file.
+3. **Below threshold** — no existing role takes this shape. Write the new profile, with an explicit «does not take» line naming the nearest neighbor by role name (the boundary the Gauge needs to keep telling them apart).
+4. **No catalog role fits a card's subject at all (replaces the old fork at the foot of the matrix below)** — don't open a separate tooling card and don't make the card wait: create the role inline, same call, by steps 1–3 above, then kit the card against it.
+
+This is also why kit.md:111's old fork is gone: a missing role was a stop-and-wait; now it is a step of the same call.
+
+Outside them you do not run, and when called anyway on a card that already carries a fitting profile, you leave it and report that no work was needed.
+
 **Your result is a role, not a retelling.** A call ends with a new or corrected profile in `agents/run/` (matrix below) or a written correction (A/B below). You do not re-read the whole card to restate it, do not research what the card already states, and do not open recon the card does not need. A call whose output is only a paraphrase of the card is spend with no contribution — the trend `Core` reads (`tally.cjs`).
+
+**A startup pass, on a goal's freshly sliced cards.** Once `Spec` finishes slicing a goal (or a wave of `route-8`), `Kit` may run one pass over the batch's cards — dup-check and leave-a-role only, no kitting and no execution — before any of them is taken into work. This front-loads the catalog for the whole batch so later per-card `Kit` calls, one at a time as `Run` reaches them, mostly find a fit already there. Not mandatory on every batch; worth it when the batch is large or the subject is new to the catalog.
 
 ## Cutting `Run`'s work
 
@@ -100,6 +113,7 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 | `run-script` | one pre-written script from `project/cards/card-NNN/scripts/`, no site write |
 | `run-python` | run a card's own Python script, local files only, no site write |
 | `run-visual-check` | before/after or screenshot vs. reference |
+| `run-vector` | one hand-authored vector asset (SVG markup), no prompt-based generation |
 
 Profiles that exist only for one product are not in this table: they live in the project's `agents/run/` and are listed in `PROJECT.md`, «Профили Run проекта» — read that list as part of the catalog and pick by the same subject rule.
 
@@ -108,7 +122,7 @@ Profiles that exist only for one product are not in this table: they live in the
 - **`Run` is `haiku` by default; you only kit.** **Override** (a different model/tool than the role carries, e.g. `sonnet` and up) — a history line with the reason, before handoff; the card's kit block then shows the override, not the inherited default. No reason — no override.
 - **Batch: up to 4 cards per call**, same or related subjects, none dependent on another (`after-card-*`); each card gets its own kit and history line. More than 4, different subjects or dependent cards — separate calls.
 - **A card whose `## Kit` already holds a ready profile** (written by `Spec`, `route-choice.md`) — check it against the matrix and leave it; kit anew only when it doesn't fit.
-- **No catalog role fits the subject** — don't force one: open a `tooling` card for a new role, label the task card `after-card-NNN`, task waits.
+- **No catalog role fits the subject** — create it inline, same call (see "Every assembly leaves the catalog something" above); no separate tooling card, no `after-card-NNN` wait.
 - **One asset or a light edit → `run-image`; a series or a package (several assets, one style) → `run-image-series`.**
 - **A prototype built from a reference** (page, screen, layout, an exact-match criterion): the kit carries a `run-visual-check` pass before the card's `stage check`, and the criterion names the tolerance. A deviation beyond it is not recorded as "accepted with deviations" inside the result — it becomes its own fix card, or the human changes the criterion. "Similar" never closes an "exact" criterion.
 
@@ -217,6 +231,16 @@ The store is `project/experience/` — one file per subject, named the way someo
 **Writing — one line, and only when the method was non-obvious or cost attempts.** A gotcha, a constraint of the environment, what didn't work and why. The finding in one or two sentences, the date, the source card. The subject already has a file — you add a line to it and never start a second one.
 
 **Each file carries a "Used by" list — the cards that leaned on it.** This is what makes the store a meeting point: two nodes coming at the same subject from different goals, under card titles that share no words, land in the same file and see each other there. A board grep can't do that — it matches wording, and wording is invented separately by each node.
+
+## For `Core`: share of cards through `Kit`
+
+The point of "leave a role" (above) is that this share falls over time as the catalog grows — fewer cards need a `Kit` call at all, not just a faster one. Computed from `## History` lines (`AGENTS.md` §3), no new script:
+
+```sh
+node .forma/dashboard/tally.cjs .devtool/features
+```
+
+— read the JSON's `byNode.Kit.files` (cards carrying at least one `Kit` attempt line) against `cardsWithAttempt` (every card with any recorded attempt, any node). Share = `byNode.Kit.files / cardsWithAttempt`. `route-4`/`route-5` cards count in the numerator too — `Kit` is the executor there, not a detour. A rising numerator with a flat or shrinking role catalog points at a dup-check being skipped, not at more work existing; `Core` reads it as a trend, the same way it reads `tally.cjs --routes`.
 
 ## On demand
 
