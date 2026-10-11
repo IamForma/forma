@@ -22,7 +22,7 @@ No "yes" at all — `route-7`. Doubt between two — the longer one.
 
 **The label binds the executor.** A card labelled `route-2`, `5`, `6` or `7` is executed by `Run`, never by `Intent` in its own session: a label with no call behind it is a route on paper (prohibitions 1 and 7). `Intent` that wants to do the work itself changes the label first — `route route-N → route-0 (why: <code>)` — within the `route-0` limit, or hands the card on. The board check `route-executor` reports a card in `review`/`done` on such a route with no `Run` attempt in its history.
 
-**`route-2` with a ready profile (`why: ready`).** For a routine card — subject covered by a catalog profile (`.claude/agents/run/`), no recon needed — `Spec` writes the profile into `## Kit` (Role, Skill, Tool, Access, Data; Model inherited) while slicing, and `Intent` launches `Run` directly, without `Kit`. `Kit` joins only when a trial recon is needed or no profile fits (`route-5`).
+**`route-2` with a role confirmed by the Gauge (`why: gauge`).** For a routine card, `Spec` calls the Gauge (`spec.md`, "Role routing — the Gauge"); when the reading clears the thresholds in `PROJECT.md`, `Spec` writes the profile into `## Kit` (Role, Skill, Tool, Access, Data; Model inherited) and `Intent` launches `Run` directly, without `Kit`. Below the thresholds the card goes to `Kit`, which creates the role (`route-5`). A card the human or `Intent` wrote complete with its kit already set keeps `why: ready`.
 
 **`Run` runs on `haiku` by default.** `Kit` only kits; a `Run` on a stronger tier (`sonnet` and up) needs an override with its reason in the card's history before the call (`kit.md`, "Task kitting"). `Intent` never raises the model without that line.
 
@@ -70,7 +70,8 @@ Set in `labels` beside the goal label (`new-card.cjs --route N`); never as front
 
 Key part in English; the description after the dash in the card's language (`AGENTS.md` §3, §6).
 
-- Choice: `` `Intent`, YYYY-MM-DD: route route-N (why: <code>) — <причина>. `` (`Spec` on a segment card writes its own name.) Code — `human` · `ready` · `scale` · `risk` · `decision` · `tooling` (`AGENTS.md` §6). `ready`: the five fields and the kit are already set — the route goes straight to the executor.
+- Choice: `` `Intent`, YYYY-MM-DD: route route-N (why: <code>) — <причина>. `` (`Spec` on a segment card writes its own name.) Code — `human` · `ready` · `scale` · `risk` · `decision` · `tooling` · `gauge` (`AGENTS.md` §6).
+- Gauge reading, by `Spec` right after the call: the call's spend line with the reading in its description: `` `Gauge`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<call id>` — claude-code: role <name>, N % (gap G, clarity C), <executor>, <fits / below threshold / returned>. `` (`AGENTS.md` §6). `ready`: the five fields and the kit are already set — the route goes straight to the executor.
 - Change: `` `Kit`, YYYY-MM-DD: route route-2 → route-5 (why: <code>) — <причина>. ``
 - Stage, on every move along the route: `` `Node`, YYYY-MM-DD: stage <key> — <что>. `` Keys `card` · `approve` · `kit` · `exec` · `check` · `accept` · `close`; the last line is where the card stands (`AGENTS.md` §6).
 - Human approval (`route-0`…`route-5`): `` `Intent`, YYYY-MM-DD: human approved the five fields, 0 tokens, 0 s — <что одобрено>. `` No call id — nothing returned one.

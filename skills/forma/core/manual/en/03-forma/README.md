@@ -21,6 +21,7 @@ Complete reference documents of the engine live here — they are not divided in
 | [LEVERS.md](LEVERS.md) | register of levers that raise efficiency and the leaks they close |
 | [SKILLS.md](SKILLS.md) | skills of the nodes as skills of the environment |
 | [five-nodes.md](five-nodes.md) | the route of the five nodes, diagram |
+| [GAUGE.md](GAUGE.md) | the Gauge: role-fit measure between slicing and execution, executors, scrubbing, what `Core` reads |
 | [ROUTES.md](ROUTES.md) | route choice for a task: `route-0`…`route-8`, overlays `over-1`…`over-4`, the choice rule, waves at scale |
 | [LOCALIZATION.md](LOCALIZATION.md) | dashboard localization: two languages, dictionaries, the `locale-parity` check |
 | [PROTOCOL-DEVELOPMENT.md](PROTOCOL-DEVELOPMENT.md) | developing the protocol from a project: clone, engine alignment, transfer, trace check, push |
