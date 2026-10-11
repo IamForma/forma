@@ -30,6 +30,8 @@ A decision model that writes no text and explains nothing. Three typed readings,
 
 Set by `gauge` in `PROJECT.md`. Default — the built-in small model (`gauge-haiku`), nothing leaves the model family. Recommended — an external decision model, behind the scrubbing script. A missing key, an error or a scrubbing refusal falls back to the built-in one, the reason goes into the card's history.
 
+**`jev` (Claude Code).** The driver `gauge-run.cjs` scrubs the task and the role catalog, then calls the OpenRouter Decisions API (`typesafe/jev-1.13`) through the bridge: a typed `questions`+`state` request, not `chat/completions` — the model answers `choice`/`score`/`noul` directly, one call. On a missing key, a bridge error or a scrub refusal it prints a fallback marker instead of calling Jev; the caller then runs the built-in executor and records that attempt as such, the reason named — never as a `jev` reading that didn't happen. The one-time switch `gauge-switch.cjs` flips only the `gauge` selector in `PROJECT.md`; it stops without writing anything when the key is absent, and never sets the cycle's call limit or jev's own thresholds — the human sets both.
+
 ## Scrubbing (prohibition 17)
 
 A script, not a model, fail-closed: only the five `## Task` fields; values from `VARS/` and `.env` replaced by their names; patterns (addresses, tokens, numbers, paths, IPs) masked; the site domain masked; a secret-like residue means no send. Personal data and secrets live only in `VARS/` and `.env` — never in a card.
@@ -41,6 +43,15 @@ A script, not a model, fail-closed: only the five `## Task` fields; values from 
 3. The executor reads the scrubbed task and the role catalog (each profile's «takes / does not take») and returns `choice`, `score`, `noul`.
 4. `Spec` compares with the thresholds, writes the role into `## Kit` or leaves it empty, and the call's spend line (with the reading) into `## History`.
 5. Fits → `Run`. Below → `Kit` creates or corrects the role and re-tests it with the same call. Low clarity → `Spec` restates once.
+
+## Measuring an executor
+
+The script only prepares and scores; the engine's own executor does the reading, so any engine measures its own.
+
+1. `node .claude/scripts/gauge-measure.cjs prepare <outDir>` — scrubbed tasks of closed cards (`batch.json`), the role catalog (`catalog.md`), the roles actually used (`truth.json`).
+2. The engine's built-in executor gets `catalog.md` and `batch.json` in one batched call and returns, per card, `choice` (role, probabilities, confidence), `score` (clarity), `noul`. Saved as `results.json` (`[{id, choice, score, noul}]`).
+3. `node .claude/scripts/gauge-measure.cjs score <outDir> results.json --executor <name>` — strict match, match at confidence ≥ 80, the misses.
+4. Whoever measured reports the numbers to the human; thresholds per executor are set in `PROJECT.md` only on the human's decision.
 
 ## Settings (`PROJECT.md`, «Routes»)
 
@@ -57,6 +68,8 @@ A script, not a model, fail-closed: only the five `## Task` fields; values from 
 | `gauge-scrub.cjs` | scrubs a card's task; `--site` adds hosts to mask; exits 2 on a refusal; test: `gauge-scrub.test.cjs` |
 | `gauge-measure.cjs` | `prepare` builds a batch from closed cards (role used = ground truth), `score` compares an executor's answers to it |
 | `gauge-haiku` | the built-in executor, a subagent with the `Read` tool only |
+| `gauge-run.cjs` | Claude Code's `jev` driver: scrub → OpenRouter Decisions API (`typesafe/jev-1.13`) via the bridge → `{choice, score, noul}`, or a fallback marker on a missing key / bridge error / scrub refusal |
+| `gauge-switch.cjs` | flips the `gauge` selector in `PROJECT.md`; stops without writing when the key is absent; never sets the call limit or jev's thresholds |
 
 An executor earns the right to decide alone only after a measurement on closed cards: the match with the role actually used, and the match at the confidence threshold, both recorded in `PROJECT.md`.
 

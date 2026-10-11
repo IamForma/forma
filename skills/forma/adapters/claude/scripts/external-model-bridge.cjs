@@ -38,6 +38,10 @@ const PRICING = {
     'qwen/qwen3.7-flash': { input: 0.03 / 1e6, output: 0.13 / 1e6 },
     // Цена — openrouter.ai
     'deepseek/deepseek-v4-flash': { input: 0.049 / 1e6, output: 0.097 / 1e6 },
+    // Цена — openrouter.ai/typesafe/jev-1.13: вход $0.042/1M, выход бесплатный (Decisions API
+    // берёт плату только за входные токены — openrouter.ai/docs/guides/community/jev,
+    // «How much does Jev cost?»). Ответ `usage.cost` предпочтительнее этой оценки, см. estimateCostUsd.
+    'typesafe/jev-1.13': { input: 0.042 / 1e6, output: 0 },
   },
 };
 
@@ -73,6 +77,62 @@ function loadEnvKey(name) {
     throw new Error(`${name} пуст или не найден в .env`);
   }
   return m[1].trim();
+}
+
+// Та же проверка, но без исключения — для вызывающих, которым отсутствие ключа
+// само по себе не ошибка, а повод откатиться на встроенный исполнитель (gauge-run.cjs).
+function loadEnvKeyOptional(name, root) {
+  try {
+    const envPath = root ? path.join(root, '.env') : path.join(__dirname, '..', '..', '.env');
+    if (!fs.existsSync(envPath)) return null;
+    const text = fs.readFileSync(envPath, 'utf8');
+    const re = new RegExp(`^${name}=(.*)$`, 'm');
+    const m = text.match(re);
+    return m && m[1].trim() ? m[1].trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+// Вызов Decisions API (typesafe/jev-1.13) — типизированный выход choice/score/noul напрямую,
+// без прогона через chat/completions (другая форма запроса: questions+state, не messages).
+// openrouter.ai/docs/api/api-reference/alphadecisions/submit-a-decisions-request
+function callDecisions({ apiKey, model, questions, state, timeoutMs }) {
+  const body = JSON.stringify({ model, questions, state });
+  const options = {
+    hostname: 'openrouter.ai',
+    path: '/api/alpha/decisions',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Length': Buffer.byteLength(body),
+    },
+  };
+  const TIMEOUT_MS = timeoutMs || 60000;
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        if (res.statusCode !== 200) {
+          reject(new Error(`decisions API ${res.statusCode}: ${data.slice(0, 500)}`));
+          return;
+        }
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(new Error(`не удалось разобрать ответ decisions API: ${e.message}`));
+        }
+      });
+    });
+    req.setTimeout(TIMEOUT_MS, () => {
+      req.destroy(new Error(`decisions API: нет ответа за ${TIMEOUT_MS / 1000} с (таймаут)`));
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
 }
 
 // Дефолт (project/config/CONFIG.md #deepseek-extraction-quality):
@@ -226,7 +286,11 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error('Ошибка bridge-скрипта:', err.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('Ошибка bridge-скрипта:', err.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { loadEnvKey, loadEnvKeyOptional, callChatCompletions, callDecisions, estimateCostUsd, PRICING };
