@@ -515,10 +515,11 @@ function installGemini(root) {
   const P = path.join(root, '.agents', 'plugins', 'forma')
   copyTree(path.join(A, 'rules'), path.join(root, '.agents', 'rules'))
   copyFile(path.join(A, 'forma-adapter.cjs'), path.join(root, '.agents', 'forma-adapter.cjs'))
+  copyTree(path.join(A, 'tests'), path.join(root, '.agents', 'tests')) // test-gemini-adapter.cjs: adapter-conformance.cjs looks for it here
   copyFile(path.join(A, 'plugin.json'), path.join(P, 'plugin.json'))
   copyTree(path.join(A, 'agents'), path.join(P, 'agents'))
   copyFile(path.join(A, 'mcp_config.json'), path.join(P, 'mcp_config.json'), { overwrite: false })
-  return ['Gemini (Antigravity, beta): .agents/rules, .agents/plugins/forma (roles, plugin.json) — installed']
+  return ['Gemini (Antigravity, beta): .agents/rules, .agents/tests, .agents/plugins/forma (roles, plugin.json) — installed']
 }
 
 // Claude Code runs every hook as `bash .claude/hooks/<name>.sh`: without a working bash the delete guard, the card check
