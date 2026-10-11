@@ -59,6 +59,7 @@ const scanTraces = (dir) => scan(dir, TRACES);
 /** Следы проекта в сообщениях коммитов: [{ message, rule, why }]. Даты в сообщении допустимы. */
 function scanMessages(messages) {
   const found = [];
+  for (const m of messages) if (/[А-Яа-яЁё]/.test(m)) found.push({ message: m.split('\n')[0].slice(0, 100), rule: 'language', why: 'protocol commit messages are English only (AGENTS.md, prohibition 18)' });
   for (const m of messages) for (const r of TRACES) if (r.id !== 'date' && r.re.test(m)) found.push({ message: m.split('\n')[0].slice(0, 100), rule: r.id, why: r.why });
   return found;
 }

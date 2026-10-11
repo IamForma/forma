@@ -84,7 +84,7 @@ function release() {
   const pkj = fs.readFileSync(pk, 'utf8');
   fs.writeFileSync(pk, pkj.replace(/"version": "[^"]*"/, `"version": "${nv}"`));
   pgit('add', '-A');
-  r = pgit('commit', '-q', '-m', `v${nv} — ${list.length} коммит(ов)\n\n${list.reverse().map((s) => '- ' + s).join('\n')}\n\n${CO}`);
+  r = pgit('commit', '-q', '-m', `v${nv} — ${list.length} commit(s)\n\n${list.reverse().map((s) => '- ' + s).join('\n')}\n\n${CO}`);
   if (r.code) stop('выпуск: коммит слияния не прошёл:\n' + r.out);
   ok(`protocol/ выпуск: ${v} → ${nv}, коммитов ${list.length}`);
   const bp = node(E2P, '--before-push');
@@ -100,7 +100,7 @@ function release() {
   if (mk.code) console.error('! --mark не записал базу (движок и шаблон расходятся) — следующая сверка покажет ложные конфликты:\n' + mk.out);
   ok('protocol/ отправлен: main и dev');
   git('add', '.forma/protocol');
-  if (git('diff', '--cached', '--quiet').code) git('commit', '-q', '-m', `Выпуск протокола v${nv}: ${list.length} коммит(ов)\n\n${CO}`);
+  if (git('diff', '--cached', '--quiet').code) git('commit', '-q', '-m', `Protocol release v${nv}: ${list.length} commit(s)\n\n${CO}`);
 }
 const ENG = '.claude/scripts/sync-engines.cjs';
 const CDX = '.codex/scripts/sync-codex.cjs';
@@ -218,7 +218,7 @@ if (pgit('status', '--porcelain').out.trim()) {
   pgit('add', '-A');
   const ft = scanTraces(proto), mt = scanMessages([protoMsg]);
   if (ft.length || mt.length) { pgit('reset', '-q'); stopTraces(ft, mt); }
-  const c = pgit('commit', '-q', '-m', `${protoMsg}\n\nПеренесено из движка forma-commit.cjs.\n\n${CO}`);
+  const c = pgit('commit', '-q', '-m', `${protoMsg}\n\nCarried over from the engine by forma-commit.cjs.\n\n${CO}`);
   if (c.code) stop('коммит protocol/ не прошёл:\n' + c.out);
   node(E2P, '--mark');
   ok(`protocol/ dev: в выпуске ${pending().length}/${RELEASE_N}`);

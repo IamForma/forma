@@ -183,6 +183,8 @@ Phrased affirmatively — what must hold, not what's forbidden. Numbering is fix
 
 17. Only the scrubbed leaves the model family. Whatever goes to an external model or service — the Gauge's external executor included — first passes a scrubbing script, not a model: an allow-list of fields, values from `VARS/` and `.env` replaced by their names, patterns (addresses, tokens, numbers, paths), the project domain masked, and a refusal to send if a secret-like residue remains. Personal data and secrets live only where prohibition 15 puts them, so they are never in a card to begin with. The refusal is fail-closed: the call falls back to the in-family executor, it is never sent unscrubbed.
 
+18. Commit messages of the protocol repository are English only. The protocol is published, and its history reads in one language for everyone; the project repository keeps its own language. A message with Cyrillic is a stop in `forma-commit.cjs` and in the pre-push check, never a warning.
+
 **Narrow exception to prohibition 1 — a short mechanical task:** `Intent` may execute a change of literally named values across an explicitly listed set of files, within epics "3. Form" or "8. Experience", without `Kit` and without a separate confirming node. A card is still opened and its history names the exception; outside this case, doer and confirmer remain separate nodes. Conditions and record — `intent-housekeeping.md`.
 
 ---
