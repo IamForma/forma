@@ -16,6 +16,11 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 A card whose result is **several** images or assets in one consistent style or package — a gallery, an icon set, a turnaround, an OG-image batch. Not a single asset (that's `run-image`), not markup, not a page.
 
+## Takes / does not take
+
+- **Takes:** «generate 6 feature illustrations in one style»; «an OG-image set for five pages».
+- **Does not take:** «one hero image» (→ `run-image`); «lay the images into a page» (→ `run-site-build`).
+
 ## Boundary
 
 **Series or package, several assets, one style.** One asset or a light edit — that's `run-image`, not this role.

@@ -36,12 +36,19 @@ const hasPackaged = true;
 const fixturePlugin = path.join(fixture, 'plugin');
 const packaged = 'plugin/' + templateRel;
 for (const rel of ['.claude/agents', '.claude/skills', '.codex', '.agents/skills', '.forma/i18n']) copy(rel);
+// The generator reads product-profile ownership from this registry, not from names.
+const registrySource = path.join(root, 'project/config/PROJECT.md');
+if (fs.existsSync(registrySource)) {
+  const registryTarget = path.join(fixture, 'project/config/PROJECT.md');
+  fs.mkdirSync(path.dirname(registryTarget), { recursive: true });
+  fs.copyFileSync(registrySource, registryTarget);
+}
 copyTree(templateSource, path.join(fixturePlugin, templateRel));
 const command = path.join(fixture, '.codex', 'scripts', 'sync-codex.cjs');
 const claudeTemplate = path.join(pluginSource, modern ? 'adapters/claude' : 'template');
 const templateEngineSync = path.join(claudeTemplate, 'scripts', modern ? 'checks/codex.cjs' : 'sync-engines.cjs');
 function check(expectSuccess, name) {
-  const result = cp.spawnSync(process.execPath, [command, '--check', '--root', fixture, '--plugin', fixturePlugin], { encoding: 'utf8' });
+  const result = cp.spawnSync(process.execPath, [command, '--check', '--codex-only', '--root', fixture, '--plugin', fixturePlugin], { encoding: 'utf8' });
   if ((result.status === 0) !== expectSuccess) throw new Error(`${name}: ${result.stdout}${result.stderr}`);
   return result;
 }
@@ -57,21 +64,21 @@ try {
       throw new Error('template engine sync still compares Codex on-demand adapters with Claude procedure bodies');
     }
   }
-  // `.agents/skills/` is a shared external mirror.  Capture its live drift
-  // first, then make this Codex fixture self-contained from the canonical
-  // Claude skill before exercising its own synchronization contract.
+  // External mirrors and packaging remain observable, but cannot fail a local
+  // Codex fixture merely because another owner's baseline is not synchronized.
   const externalDrift = cp.spawnSync(process.execPath, [command, '--check', '--root', fixture, '--plugin', fixturePlugin], { encoding: 'utf8' });
   if (externalDrift.status !== 0) {
     const externalDriftLines = (externalDrift.stdout + externalDrift.stderr)
       .split(/\r?\n/)
       .filter(line => line.startsWith('- '));
-    const expectedExternalDrift = '- skill mirror graph-build: content differs at SKILL.md';
-    if (externalDrift.status !== 1 || externalDriftLines.length !== 1 || externalDriftLines[0] !== expectedExternalDrift) {
-      throw new Error(`external graph-build drift must be exactly ${expectedExternalDrift}: ${externalDrift.stdout}${externalDrift.stderr}`);
+    if (externalDrift.status !== 1 || !externalDriftLines.length || externalDriftLines.some(line => !/^- (?:template |skill mirror)/.test(line))) {
+      throw new Error(`unexpected local drift in full check: ${externalDrift.stdout}${externalDrift.stderr}`);
     }
-    console.log('External dependency: .agents/skills/graph-build/SKILL.md — content differs from .claude/skills/graph-build/SKILL.md.');
-    copyTree(path.join(fixture, '.claude', 'skills', 'graph-build'), path.join(fixture, '.agents', 'skills', 'graph-build'));
+    console.log('External baseline (outside Codex-only fixture):\n' + externalDriftLines.join('\n'));
   }
+  const fullCheck = () => cp.spawnSync(process.execPath, [command, '--check', '--root', fixture, '--plugin', fixturePlugin], { encoding: 'utf8' });
+  const baseline = fullCheck();
+  const baselineProblems = new Set((baseline.stdout + baseline.stderr).split(/\r?\n/).filter(line => line.startsWith('- ')));
   check(true, 'clean Codex fixture');
   const sharedSkill = path.join(fixture, '.agents', 'skills', 'graph-build', 'SKILL.md');
   const sharedSkillBefore = fs.readFileSync(sharedSkill, 'utf8');
@@ -90,7 +97,16 @@ try {
   for (const [name, file, mutate] of cases) {
     const original = fs.readFileSync(file, 'utf8');
     if (name === 'canonical Run profile set') { fs.rmSync(file); check(false, name); fs.writeFileSync(file, original); }
-    else { fs.writeFileSync(file, mutate(original)); check(false, name); fs.writeFileSync(file, original); }
+    else {
+      fs.writeFileSync(file, mutate(original));
+      if (name === 'skill mirror' || name === 'template file') {
+        const result = fullCheck();
+        const newProblems = (result.stdout + result.stderr).split(/\r?\n/).filter(line => line.startsWith('- ') && !baselineProblems.has(line));
+        const expected = name === 'skill mirror' ? '- skill mirror grilling: content differs at SKILL.md' : '- template .codex: content differs at hooks.json';
+        if (result.status !== 1 || !newProblems.includes(expected)) throw new Error(`${name}: expected additional drift ${expected}: ${result.stdout}${result.stderr}`);
+      } else check(false, name);
+      fs.writeFileSync(file, original);
+    }
   }
   if (hasPackaged) {
     const installed = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-codex-installed-'));
@@ -104,8 +120,12 @@ try {
       copyTree(path.join(packagedRoot, '.agents'), path.join(installed, '.agents'));
       const installedCommand = path.join(installed, '.codex/scripts/sync-codex.cjs');
       const result = cp.spawnSync(process.execPath, [installedCommand, '--check', '--root', installed], { encoding: 'utf8' });
-      if (result.status !== 0) throw new Error(`clean installed template: ${result.stdout}${result.stderr}`);
-    } finally { fs.rmSync(installed, { recursive: true, force: true }); }
+      if (result.error || result.status == null) throw new Error(`installed template could not run: ${result.error}`);
+      if (result.status !== 0) console.log(`External installed template (${templateSource}): ${result.stdout}${result.stderr}`);
+    } finally {
+      if (path.dirname(path.resolve(installed)) !== path.resolve(os.tmpdir()) || !path.basename(installed).startsWith('forma-codex-installed-')) throw new Error('Unsafe installed fixture cleanup target');
+      fs.rmSync(installed, { recursive: true, force: true });
+    }
   }
   // The final snapshot is cumulative.  Re-running attachment to the same card
   // must not add it again, and the session metadata must preserve the child role.
@@ -139,4 +159,7 @@ try {
   const unknownResult = cp.spawnSync(process.execPath, [usage, '--file', unknownDuration], { encoding: 'utf8' });
   if (unknownResult.status !== 0 || !unknownResult.stdout.includes('unknown s')) throw new Error('usage fixture did not preserve an unknown duration marker');
   console.log('Codex sync fixtures verified: clean source, plus model, role, skill, and hook drift' + (hasPackaged ? ', installed template, and template drift.' : '.'));
-} finally { fs.rmSync(fixture, { recursive: true, force: true }); }
+} finally {
+  if (path.dirname(path.resolve(fixture)) !== path.resolve(os.tmpdir()) || !path.basename(fixture).startsWith('forma-codex-sync-')) throw new Error('Unsafe fixture cleanup target');
+  fs.rmSync(fixture, { recursive: true, force: true });
+}

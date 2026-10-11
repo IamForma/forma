@@ -10,7 +10,7 @@ const { runTestFile } = require('../../../.forma/dashboard/lib/checks.cjs');
 const ADAPTERS = [
   { name: 'Claude Code', eight: '.claude/rules/claude-8.md', test: '.claude/scripts/claude-economy.test.cjs' },
   { name: 'Codex', eight: '.codex/CODEX-8.md', test: '.codex/tests/test-codex-usage.cjs' },
-  { name: 'Gemini (Antigravity)', eight: '.agents/rules/gemini-8.md', test: null },
+  { name: 'Gemini (Antigravity)', eight: '.agents/rules/gemini-8.md', test: '.agents/tests/test-gemini-adapter.cjs' },
 ];
 
 /** Один адаптер: нарушения — в `problems`, сведения — в `info`. Файла §8 нет — адаптер не установлен, молчание. */
