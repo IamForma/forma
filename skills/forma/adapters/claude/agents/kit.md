@@ -98,10 +98,10 @@ Write the channel explicitly into the kit — `Run` doesn't choose it. (The brid
 | `run-text` | pure text, no live access — draft/wording/analysis |
 | `run-mechanical` | mechanical step over a list, by a kit-issued script |
 | `run-script` | one pre-written script from `project/cards/card-NNN/scripts/`, no site write |
-| `run-site-upload` | upload a binary file to the site by replacing its path (`create-upload-link` + multipart `curl.exe`), checksum check |
-| `run-pillow-translate` | translate text on a raster image with Pillow/OpenCV by a card's own script, local output only |
 | `run-python` | run a card's own Python script, local files only, no site write |
 | `run-visual-check` | before/after or screenshot vs. reference |
+
+Profiles that exist only for one product are not in this table: they live in the project's `.claude/agents/run/` and are listed in `PROJECT.md`, «Профили Run проекта» — read that list as part of the catalog and pick by the same subject rule.
 
 - **Role** = the catalog file's `name`, picked by the task's subject above — never bare `run.md` (base template, not a role).
 - **Model and Tool are inherited** from the role's own frontmatter (`model`, `effort`, `tools`) — not re-chosen per task.

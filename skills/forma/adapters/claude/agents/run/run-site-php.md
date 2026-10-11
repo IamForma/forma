@@ -19,7 +19,7 @@ A card whose result needs a direct PHP read or write on the live site — a quer
 ## Takes / does not take
 
 - **Takes:** «read the option values via PHP and report»; «write the translated field for these posts through the site CLI, read first».
-- **Does not take:** «build a page with the builder» (→ `run-site-build`); «upload an image» (→ `run-site-upload`); «run a local script with no site access» (→ `run-script`).
+- **Does not take:** «build a page with the builder» (→ `run-site-build`); «upload a binary file» (→ the project's upload profile); «run a local script with no site access» (→ `run-script`).
 
 ## Boundary
 

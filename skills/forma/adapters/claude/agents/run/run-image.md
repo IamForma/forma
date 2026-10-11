@@ -18,7 +18,7 @@ A card whose result is **one** image or asset — a draft, a reference, a demo a
 ## Takes / does not take
 
 - **Takes:** «generate one hero illustration from this prompt»; «one light edit (crop, recolor) on an existing PNG».
-- **Does not take:** «generate 8 icons in one style» (→ `run-image-series`); «translate the text on this PNG» (→ `run-pillow-translate`); «put the image on the site» (→ `run-site-upload`).
+- **Does not take:** «generate 8 icons in one style» (→ `run-image-series`); «put the image on the site» (→ `run-site-php`, or the project's upload profile).
 
 ## Boundary
 

@@ -19,7 +19,7 @@ A card whose result is **several** images or assets in one consistent style or p
 ## Takes / does not take
 
 - **Takes:** «generate 6 feature illustrations in one style»; «an OG-image set for five pages».
-- **Does not take:** «one hero image» (→ `run-image`); «translate text on existing PNGs» (→ `run-pillow-translate`); «lay the images into a page» (→ `run-site-build`).
+- **Does not take:** «one hero image» (→ `run-image`); «lay the images into a page» (→ `run-site-build`).
 
 ## Boundary
 
