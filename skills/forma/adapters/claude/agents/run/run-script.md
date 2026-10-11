@@ -13,7 +13,12 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 ## When to take
 
-A card whose work is running one script already written and verified by `Kit`, living in `project/cards/card-NNN/scripts/` — reads the site via CLI, writes local files, no judgment call beyond the script's own output contract.
+A card whose work is running one script already written and verified by `Kit` — living in `project/cards/card-NNN/scripts/` or in the shared repo tooling (`.claude/scripts/*`, including its own `*.test.cjs` tests) — reads the site via CLI, writes local files, no judgment call beyond the script's own output contract.
+
+## Takes / does not take
+
+- **Takes:** «run the card's Node script that reads the site through the CLI and writes a local report»; «run the card's extraction script and report counts»; «run a repo script or test under `.claude/scripts/*` as-is and report its last line / exit code».
+- **Does not take:** «write or fix the script» (→ `Kit`); «a script that writes to the site» (→ `run-site-php`); «draft or reword text» (→ `run-text`); «a Python script» (→ `run-python`).
 
 ## Boundary
 

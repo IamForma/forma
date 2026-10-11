@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { cardFiles, createdDay } = require('../../dashboard/lib/card.cjs');
 
-const WHY_CODES = ['human', 'ready', 'scale', 'risk', 'decision', 'tooling'];
+const WHY_CODES = ['human', 'ready', 'scale', 'risk', 'decision', 'tooling', 'gauge'];
 const STAGE_KEYS = ['card', 'approve', 'kit', 'exec', 'check', 'accept', 'close'];
 const STAGE_BY_STATUS = { backlog: ['card', 'approve'], todo: ['kit'], 'in-progress': ['kit', 'exec'], review: ['check', 'accept'], done: ['accept', 'close'] };
 

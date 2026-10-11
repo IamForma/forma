@@ -13,7 +13,7 @@
 // --route/--over/--seg/--wave/--after/--trial — метки маршрута (AGENTS.md §6; ROUTES.md §9). --over и --after повторяемы.
 // --demo  — метка `demo`: карточка демонстрационного круга (intent-demo.md); не идёт в расход и статистику, под черновиком цели допустима.
 // --delivers/--criterion/--budget/--next — поля задачи (§6) сразу, без правки файла после записи; не заданное остаётся заготовкой <…>.
-// --why — причина маршрута (§6, коды: human|ready|scale|risk|decision|tooling): пишет в «История» строку `route route-N (why: …)`;
+// --why — причина маршрута (§6, коды: human|ready|scale|risk|decision|tooling|gauge): пишет в «История» строку `route route-N (why: …)`;
 //            --stage — строку `stage <ключ>` (card — задача пишется, approve — ждёт «да» человека). Без флага строка не пишется.
 // Номер — следующий свободный `card-NNN` по доске и done/. Зоны — на языке проекта (§6).
 // После записи — проверка доски ядра (.forma/board/check-board.cjs) по этой карточке; ошибка по ней — код выхода 1.
@@ -79,7 +79,7 @@ const fields = [['delivers', '<что даёт>'], ['criterion', '<критер�
   .map(([k, ph]) => { const v = arg(k); if (v !== undefined && /[|\n]/.test(v)) die(`--${k}: символ | и перевод строки не допускаются — поля разделены «|»`); return v || ph; });
 
 // 3б. Строки истории: причина маршрута и этап (§6)
-const WHY_CODES = ['human', 'ready', 'scale', 'risk', 'decision', 'tooling'];
+const WHY_CODES = ['human', 'ready', 'scale', 'risk', 'decision', 'tooling', 'gauge'];
 const STAGE_KEYS = ['card', 'approve'];
 const why = arg('why'), stage = arg('stage');
 if (why !== undefined && !WHY_CODES.includes(why)) die(`--why "${why}" — нет такого кода (${WHY_CODES.join('|')})`);
