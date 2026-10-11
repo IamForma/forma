@@ -4,7 +4,7 @@
 /**
  * test-gemini-adapter.cjs — Тест соответствия адаптера Gemini (Antigravity).
  * Проверяет:
- *  1. Наличие и валидность .agents/rules/gemini-8.md (наличие импорта @AGENTS.md, раздел §8, описание Gauge, тег gemini:);
+ *  1. Наличие и валидность .agents/rules/gemini-8.md (наличие импорта @AGENTS.md, раздел §8, описание Plumb, тег gemini:);
  *  2. Паритет ролей Gemini с каноническими ролями (.claude/);
  *  3. Отсутствие проектных профилей Run в чистой зоне .agents/;
  *  4. Формирование и разбор строк расхода с тегом gemini: по контракту ECONOMY.md;
@@ -30,14 +30,14 @@ let passed = 0;
 const it = (name, fn) => { fn(); passed += 1; console.log('ok  ' + name); };
 
 // 1. Проверка gemini-8.md
-it('.agents/rules/gemini-8.md существует и содержит регламент Gauge и правила движка', () => {
+it('.agents/rules/gemini-8.md существует и содержит регламент Plumb и правила движка', () => {
   assert.ok(fs.existsSync(gemini8Path), 'gemini-8.md должен существовать');
   const txt = fs.readFileSync(gemini8Path, 'utf8');
   assert.match(txt, /^@AGENTS\.md/m, 'должен быть импорт @AGENTS.md');
   assert.match(txt, /#\s*8\.\s*Engine architecture in Antigravity/, 'должен быть заголовок §8');
-  assert.match(txt, /###\s*The Gauge/, 'должен быть раздел The Gauge');
-  assert.match(txt, /gemini-3\.8-flash/, 'должна быть указана модель для встроенного Gauge');
-  assert.match(txt, /gauge-scrub\.cjs/, 'должен быть указан скрипт очистки');
+  assert.match(txt, /###\s*The Plumb/, 'должен быть раздел The Plumb');
+  assert.match(txt, /gemini-3\.8-flash/, 'должна быть указана модель для встроенного Plumb');
+  assert.match(txt, /plumb-scrub\.cjs/, 'должен быть указан скрипт очистки');
   assert.match(txt, /gemini:/, 'должен быть указан тег движка');
 });
 
@@ -71,7 +71,7 @@ it('строки расхода gemini: формируются и разбира
   });
 
   const unknownLine = formatSpendLine({
-    node: 'Gauge',
+    node: 'Plumb',
     date: d,
     engine: 'gemini',
     tokens: null,
@@ -89,9 +89,9 @@ it('строки расхода gemini: формируются и разбира
     assert.equal(t.byNode.Run.tokens, 1500);
     assert.equal(t.byNode.Run.cacheRead, 500);
     assert.equal(t.byNode.Run.seconds, 12);
-    assert.equal(t.byNode.Gauge.attempts, 1);
-    assert.equal(t.byNode.Gauge.tokensUnknown, 1);
-    assert.equal(t.byNode.Gauge.idUnknown, 1);
+    assert.equal(t.byNode.Plumb.attempts, 1);
+    assert.equal(t.byNode.Plumb.tokensUnknown, 1);
+    assert.equal(t.byNode.Plumb.idUnknown, 1);
   } finally {
     fs.rmSync(path.dirname(fixture), { recursive: true, force: true });
   }

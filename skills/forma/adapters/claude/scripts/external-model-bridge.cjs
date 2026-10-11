@@ -80,7 +80,7 @@ function loadEnvKey(name) {
 }
 
 // Та же проверка, но без исключения — для вызывающих, которым отсутствие ключа
-// само по себе не ошибка, а повод откатиться на встроенный исполнитель (gauge-run.cjs).
+// само по себе не ошибка, а повод откатиться на встроенный исполнитель (plumb-run.cjs).
 function loadEnvKeyOptional(name, root) {
   try {
     const envPath = root ? path.join(root, '.env') : path.join(__dirname, '..', '..', '.env');

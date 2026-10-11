@@ -65,8 +65,8 @@ Spend in tokens and elapsed time are statistics, not thresholds: they are writte
 | `over-4` (batch acceptance) | |
 | `Run` parallelism in a wave | |
 | Dispatcher | |
-| Gauge `gauge` (AGENTS.md §2, "The Gauge") | `haiku` (default; `haiku` \| `jev`). Profile `.claude/agents/gauge-haiku.md`; scrubbing — `.claude/scripts/gauge-scrub.cjs`; `jev` — only after measurement (`gauge-measure.cjs`). Thresholds (starting, separate per executor, revised by `Core` only through a stop with a report): leader ≥ —, gap to the second ≥ —, leader's noul ≥ —, clarity ≥ — of 4 |
-| External model for the gauge | provider and model — ; key name in `.env` — ; the site's domain is masked; cycle call limit — number of calls, the human sets the value (never dollars) |
+| Plumb `plumb` (AGENTS.md §2, "The Plumb") | `haiku` (default; `haiku` \| `jev`). Profile `.claude/agents/plumb-haiku.md`; scrubbing — `.claude/scripts/plumb-scrub.cjs`; `jev` — only after measurement (`plumb-measure.cjs`). Thresholds (starting, separate per executor, revised by `Core` only through a stop with a report): leader ≥ —, gap to the second ≥ —, leader's noul ≥ —, clarity ≥ — of 4 |
+| External model for the plumb | provider and model — ; key name in `.env` — ; the site's domain is masked; cycle call limit — number of calls, the human sets the value (never dollars) |
 | An epic's default route | marker `/Intent+Kit` in the epic name (table "Project epics"); a card's own `route-N` label overrides it |
 
 **Node qualification** — not a separate field, not filled in beforehand. Each node has its own source of level, read on the spot when the node actually looks at a task:

@@ -42,7 +42,7 @@ You don't start until all five are met:
 
 An item is missing — **return to `Kit`**, naming exactly which one.
 
-**Your role came from the Gauge or from `Kit`; either way its «takes / does not take» block is your boundary.** If the task falls under «does not take», or needs what the profile lacks, that is the same return to `Kit` — with the address and the expected value (prohibition 13) — so `Core` can read the Gauge's miss as a profile defect, not as your slip.
+**Your role came from the Plumb or from `Kit`; either way its «takes / does not take» block is your boundary.** If the task falls under «does not take», or needs what the profile lacks, that is the same return to `Kit` — with the address and the expected value (prohibition 13) — so `Core` can read the Plumb's miss as a profile defect, not as your slip.
 
 **This check costs nothing — a return here is explicitly not an attempt (§3: a reassembly that never reaches check doesn't count as one).** You have the right to make this return before touching a single file, the moment the card and the issued kit don't match (wrong tool, wrong access, wrong data) — not only after the fact, discovered mid-work.
 

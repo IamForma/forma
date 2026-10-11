@@ -27,20 +27,28 @@ const exists = p => fs.existsSync(p);
 const text = p => fs.readFileSync(p, 'utf8');
 const digest = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const sameText = (a,b) => a.replace(/\r/g,'') === b.replace(/\r/g,'');
+function projectRunProfiles() {
+  const projectFile = path.join(ROOT, 'project', 'config', 'PROJECT.md');
+  const project = exists(projectFile) ? text(projectFile) : '';
+  const section = /(?:\*\*|^#{1,6}\s*)(?:Профили Run проекта|Project Run profiles)[\s\S]*?(?=^#{1,6}\s|\n\*\*|(?![\s\S]))/m.exec(project)?.[0] || '';
+  return new Set([...section.matchAll(/\|\s*`(run-[\w-]+)`\s*\|/g)].map(m => m[1]));
+}
 function files(dir, prefix = '') { if (!exists(dir)) return []; return fs.readdirSync(dir,{withFileTypes:true}).flatMap(e => { const rel=path.posix.join(prefix,e.name); return e.isDirectory()?files(path.join(dir,e.name),rel):e.isFile()?[rel]:[]; }).sort(); }
 function copyTree(src,dst) { for (const rel of files(src)) { const out=path.join(dst,rel); fs.mkdirSync(path.dirname(out),{recursive:true}); fs.copyFileSync(path.join(src,rel),out); } }
 function sameTree(a,b,label) { const af=files(a), bf=files(b); if (af.join('\n')!==bf.join('\n')) { problems.push(`${label}: file set differs`); return; } for (const rel of af) if (digest(path.join(a,rel))!==digest(path.join(b,rel))) problems.push(`${label}: content differs at ${rel}`); }
 function codexMechanics(name, onDemand) {
   const key = `${onDemand ? 'on-demand/' : ''}${name}`;
   const rules = {
-    spec: 'For a ready routine profile, write the complete six-unit Run kit while slicing and choose `route-2` with `why: ready`; Intent then dispatches Run directly. One Spec call may slice any number of independent cards; record its measured spend share on every card.',
-    kit: 'Run inherits `gpt-5.6-luna`/`low` from its matching Codex TOML. A stronger model or effort needs a reason in the card history before dispatch. One Kit call may kit at most four related independent cards; after return, record each measured share with the Codex batch procedure.',
-    intent: 'On `route-2` with a ready profile, dispatch Run directly without Kit. Run inherits `gpt-5.6-luna`/`low`; do not raise its model or effort without the Kit history reason. Record each shared batch spend through the Codex procedure.',
-    run: 'Run inherits `gpt-5.6-luna`/`low` from its matching Codex TOML. A stronger model or effort is valid only when Kit recorded its reason in the card history before dispatch.',
-    'on-demand/route-choice': 'A ready routine profile uses `route-2` (`why: ready`): Spec writes its complete kit and Intent dispatches Run directly. Run inherits `gpt-5.6-luna`/`low`; a stronger model or effort needs Kit\'s prior history reason. Spec batches independent slicing without a cap; Kit batches at most four related independent cards.',
-    'on-demand/spend-line': 'Do not use Claude usage fields or readers. For a completed Codex rollout, bind each batch card with `node .codex/scripts/codex-usage.cjs --file <rollout.jsonl> --complete --card <card.md> --split K --share I --desc "<what this card received>"`; it splits measured N/R/T and adds `(batch I/K)`.',
+    spec: 'After slicing, request Plumb through Intent as specified in CODEX-8.md. Decide from choice, score and noul using configured thresholds for the actual executor; do not borrow Claude calibration for the Codex model. A fitting leader and gap, sufficient noul and clarity: write all six kit units, inherit the profile model, route-2 with why: plumb. Below fit thresholds: leave Kit empty and send to Kit to create the exact role. Low clarity: restate once, measure again, then return the named ambiguity to Intent. Write the Plumb reading immediately with measured Codex spend and the codex: tag. Batch slicing spend is split across its cards.',
+    kit: 'In role routing, Kit is called only for a below-threshold Plumb reading or a return. First create or correct the exact portable profile in .codex/roles/run/ with tools, access, boundaries and Takes / does not take examples; request the same Plumb through Intent to test it before issuing the kit. Card ambiguity returns to Spec. Product-only profiles are read from PROJECT.md, never copied into portable Codex files. Run inherits gpt-5.6-luna/low; overrides need a prior history reason. Kit batches at most four independent related cards and returns the kit or correction to Intent, never dispatching agents itself. Approved tooling routes still allow Kit to execute infrastructure work.',
+    intent: 'Run Plumb on behalf of Spec (or Kit retesting a role): scrub with the shared script, dispatch the isolated Codex helper, return typed readings and measured call metadata to the requesting node. Spec decides and writes the Plumb line. Plumb is not a sixth node and never confirms work. A Plumb-confirmed route-2 (why: plumb) goes directly to Run after the required human approval; why: ready remains for an already complete card and kit. Run inherits gpt-5.6-luna/low; only a recorded Kit override changes it. Apply external-service cycle limits and fail-closed fallback from CODEX-8.md.',
+    run: 'Read the assigned profile, including Takes / does not take, before the form check. A task outside that boundary returns to Kit by address and expected scope even when Plumb confirmed it. run.md is the base, never a selectable catalog profile. The Plumb reading does not waive the form check or confirm the result. Run inherits gpt-5.6-luna/low; an override needs Kit\'s prior history reason.',
+    core: 'Read eight efficiency measures at cycle closing, including Plumb agreement (measure 8), from recorded card facts. Do not call Plumb. Compare Plumb ↔ Spec ↔ Kit ↔ Run and first-time acceptance per row: low clarity or small gap → Spec; confident role but different kit → Kit; confirmed profile rejecting the task → Kit profile correction; unaccepted result → the ordinary return table. Divergent executors require threshold/catalog review through a recorded stop. Calibration is executor-specific; Plumb agreement never replaces Intent\'s check.',
+    'on-demand/route-choice': 'A routine profile confirmed by Plumb uses route-2 (why: plumb): Spec writes the six-unit kit and Intent dispatches Run directly after the required approval. Below fit thresholds → Kit, route-5 subject to enabled routes and approval; low clarity → Spec once. why: ready is reserved for an already complete card and kit. Run inherits gpt-5.6-luna/low; overrides need Kit\'s prior history reason. Plumb readings use the codex: tag and the actual executor name; see CODEX-8.md. Spec batches slicing; Kit batches at most four independent related cards.',
+    'on-demand/spend-line': 'Do not use Claude usage fields or readers. For a completed Codex rollout, bind each batch card with `node .codex/scripts/codex-usage.cjs --file <rollout.jsonl> --complete --card <card.md> --split K --share I --desc "<what this card received>"`; it splits measured N/R/T and adds `(batch I/K)`. For the Plumb helper, Spec uses the same reader without batch flags and --desc "role <name>, N % (gap G, clarity C), <executor>, <fits / below threshold / returned>; scrub <types and counts>". The helper is attributed to Plumb, with the codex: tag. External spend uses the provider response, with its own-unit segment before the call id and dash; unknown fields require inspection of that call\'s transcript, never estimation.',
   };
-  return rules[key] ? `\n## Codex mechanics\n\n${rules[key]}\n` : '';
+  const catalogGrowth = 'Every call, including returns, infrastructure and batches, leaves or extends a role in .codex/roles/run/. Before writing, name the task shape (subject, takes line and 1–2 examples) and dup-check it through the same Plumb, executor and thresholds Spec uses. At or above threshold on an existing role, extend its examples or criterion instead of creating a file. Create a new profile only when every existing role is below threshold; name the nearest neighbor in its does-not-take boundary and retest through the same Plumb. Create a missing role inline in the same call, without a separate tooling card. Core reads the share of cards through Kit from `node .forma/dashboard/tally.cjs .devtool/features`: `byNode.Kit.files / cardsWithAttempt`, including route-4/route-5. This share should fall as the catalog grows; a rising share with a flat or shrinking catalog calls for checking whether dup-check was skipped.';
+  return rules[key] ? `\n## Codex mechanics\n\n${rules[key]}\n${key === 'kit' ? `\n${catalogGrowth}\n` : ''}` : '';
 }
 function adapter(name,onDemand=false) { const source=onDemand?`.claude/agents/on-demand/${name}.md`:`.claude/agents/${name}.md`; const title=onDemand?`${name} · Codex procedure adapter`:`${name[0].toUpperCase()}${name.slice(1)} · Codex role`; return `# ${title}\n\nCanonical ${onDemand?'procedure':'role'}: \`${source}\`. Read it completely; this file is only its Codex adapter.\n\n- Ignore Claude YAML frontmatter and apply \`.codex/CLAUDE-COMPAT.md\` to Claude tools, skills, scripts, MCP, and subagent references.\n- Codex mechanics and model settings come from \`.codex/CODEX-8.md\` and the matching agent TOML; they never replace the canonical body.\n- An unavailable live tool is an environment limitation and follows the route; it is never silently substituted.\n${codexMechanics(name,onDemand)}`; }
 function syncRoleLayer() {
@@ -48,7 +56,8 @@ function syncRoleLayer() {
   const source=path.join(claudeAgents,'on-demand'); for(const rel of files(source).filter(f=>f.endsWith('.md'))) { const target=path.join(codex,'roles','on-demand',rel), desired=adapter(rel.slice(0,-3),true); if(rel==='intent-documentation.md' && exists(target)){if(!text(target).includes(`.claude/agents/on-demand/${rel}`)||!text(target).includes('.codex/CLAUDE-COMPAT.md'))problems.push(`procedure link drift: ${rel}`);continue;} if(APPLY){fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,desired);} if(!exists(target)||!sameText(text(target),desired))problems.push(`procedure link drift: ${rel}`); }
 }
 function syncSkills() {
-  const names=exists(claudeSkills)?fs.readdirSync(claudeSkills,{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>e.name).sort():[]; const manifest=path.join(codex,'generated-skill-mirror.json'); const old=exists(manifest)?JSON.parse(text(manifest)).skills||[]:[];
+  const excluded=projectRunProfiles();
+  const names=exists(claudeSkills)?fs.readdirSync(claudeSkills,{withFileTypes:true}).filter(e=>e.isDirectory()&&!excluded.has(e.name)).map(e=>e.name).sort():[]; const manifest=path.join(codex,'generated-skill-mirror.json'); const old=exists(manifest)?JSON.parse(text(manifest)).skills||[]:[];
   if(APPLY){for(const n of old.filter(n=>!names.includes(n)))fs.rmSync(path.join(agentSkills,n),{recursive:true,force:true});for(const n of names){fs.rmSync(path.join(agentSkills,n),{recursive:true,force:true});copyTree(path.join(claudeSkills,n),path.join(agentSkills,n));}fs.writeFileSync(manifest,JSON.stringify({skills:names},null,2)+'\n');}
   if(!exists(manifest)||JSON.stringify(JSON.parse(text(manifest)).skills||[])!==JSON.stringify(names))problems.push('skill mirror manifest drift'); for(const n of names){const target=path.join(agentSkills,n);if(!exists(target))problems.push(`skill mirror missing: ${n}`);else sameTree(path.join(claudeSkills,n),target,`skill mirror ${n}`);}
 }
@@ -63,6 +72,13 @@ function checkStatic() {
   const hooks=exists(path.join(codex,'hooks.json'))?text(path.join(codex,'hooks.json')):'';for(const v of ['SessionStart','PreToolUse','check-ready.ps1','check-dashboard.ps1','check-plugin-update.ps1','guard-delete.ps1','tool-usage.ps1'])if(!hooks.includes(v))problems.push(`hook declaration drift: ${v}`);
   if(!exists(path.join(codex,'hooks','tool-usage.ps1')))problems.push('hook implementation missing: tool-usage.ps1');
   const guard=exists(path.join(codex,'hooks','guard-delete.ps1'))?text(path.join(codex,'hooks','guard-delete.ps1')):'';for(const v of ['.claude','.agents','.codex','.devtool','AGENTS\\.md','GOAL\\.md'])if(!guard.includes(v))problems.push(`guard protected-path drift: ${v}`);
+  const plumbFile=path.join(codex,'agents','plumb.toml');
+  const plumb=exists(plumbFile)?text(plumbFile):'';
+  for(const line of ['name = "plumb"','model = "gpt-5.6-luna"','model_reasoning_effort = "low"','sandbox_mode = "read-only"'])
+    if(!plumb.includes(line))problems.push('Plumb declaration drift: '+line);
+  const contract=path.join(codex,'roles','plumb.md');
+  for(const value of ['not a sixth node','choice','score','noul','Takes / does not take'])
+    if(!exists(contract)||!text(contract).includes(value))problems.push('Plumb contract drift: '+value);
 }
 // The packaged template is a generic, hand-kept copy: it carries no project MCP servers and only
 // the protocol's own skills. So it is never generated from a project (that leaked site-specific
@@ -81,20 +97,63 @@ function syncTemplate() {
   for(const n of names){if(!exists(path.join(targetSkills,n,'SKILL.md')))problems.push(`template skill missing: ${n}`);}
 }
 function checkProfiles() {
+  const excluded=projectRunProfiles();
+  const manifestFile=path.join(codex,'generated-skill-mirror.json');
+  const manifest=exists(manifestFile)?JSON.parse(text(manifestFile)).skills||[]:[];
+  for(const name of excluded) {
+    const nativeRole = path.join(codex, 'roles', 'run', name + '.md');
+    const nativeOwned = exists(nativeRole) && /^origin: codex$/m.test(text(nativeRole));
+    for(const rel of [`roles/run/${name}.md`,`roles/${name}.md`,`agents/${name}.toml`])
+      if(exists(path.join(codex,rel)) && !(nativeOwned && rel !== `roles/${name}.md`))problems.push('Product Run profile in portable Codex layer: '+rel);
+    if(manifest.includes(name))problems.push('Product Run profile in skill manifest: '+name);
+  }
   const source=path.join(claudeAgents,'run');
   const names=files(source).filter(f=>f.endsWith('.md'));
   for(const rel of files(path.join(codex,'roles','run')).filter(f=>f.endsWith('.md'))) {
-    if(!names.includes(rel))problems.push('Run profile canonical source missing: '+rel);
+    const body=text(path.join(codex,'roles','run',rel));
+    if(/^origin: codex$/m.test(body)) {
+      if(!body.includes('## Takes / does not take')||!body.includes('## Boundary'))problems.push('Native Run profile criteria missing: '+rel);
+      const nativeAgent=path.join(codex,'agents',rel.slice(0,-3)+'.toml');
+      if(!exists(nativeAgent)||!/^model = "gpt-5.6-luna"$/m.test(text(nativeAgent))||!/^model_reasoning_effort = "low"$/m.test(text(nativeAgent)))problems.push('Native Run profile model drift: '+rel);
+    } else if(!names.includes(rel))problems.push('Run profile canonical source missing: '+rel);
   }
   for(const rel of names) {
     const role=path.join(codex,'roles','run',rel), agent=path.join(codex,'agents',rel.slice(0,-3)+'.toml');
+    if(exists(role)&&/^origin: codex$/m.test(text(role)))continue;
     // Generic installations supply profiles through the base Run agent; explicit project profiles are checked when present.
     if(!exists(role)&&!exists(agent))continue;
     if(!exists(role)||!text(role).includes('.claude/agents/run/'+rel)||!text(role).includes('.codex/CLAUDE-COMPAT.md'))problems.push('Run profile link drift: '+rel);
     if(!exists(agent)||!/^model = "gpt-5.6-luna"$/m.test(text(agent))||!/^model_reasoning_effort = "low"$/m.test(text(agent)))problems.push('Run profile model drift: '+rel);
   }
 }
+function syncProfiles() {
+  const projectProfiles = projectRunProfiles();
+  for (const rel of files(path.join(claudeAgents, 'run')).filter(f => f.endsWith('.md'))) {
+    const name = rel.slice(0, -3);
+    if (projectProfiles.has(name)) continue;
+    const existing = path.join(codex, 'roles', 'run', rel);
+    if (exists(existing) && /^origin: codex$/m.test(text(existing))) continue;
+    const source = `.claude/agents/run/${rel}`;
+    let body = text(path.join(ROOT, source)).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
+    body = body.replaceAll('.claude/agents/', '.codex/roles/')
+      .replaceAll('~/.claude/skills/', '~/.agents/skills/')
+      .replaceAll('`mcp__claude_ai_Magnific__<tool>`', 'the connected Magnific tool name')
+      .replaceAll('`.claude/skills/` of this project', '`.agents/skills/` of this project');
+    const desired = `---\nname: ${name}\nengine: codex\n---\n\n${body.trim()}\n\n## Codex mechanics\n\nCanonical source: \`${source}\`. Read with base \`.codex/roles/run.md\`; apply \`.codex/CLAUDE-COMPAT.md\` and \`.codex/CODEX-8.md\`. Model: \`gpt-5.6-luna\`, effort: \`low\`, inherited from the matching TOML. Use only tools present in the live Codex session; return missing access or tools to Kit.\n`;
+    const target = path.join(codex, 'roles', 'run', rel);
+    const agent = path.join(codex, 'agents', name + '.toml');
+    if (APPLY) {
+      fs.mkdirSync(path.dirname(target), {recursive:true});
+      fs.writeFileSync(target, desired);
+      if (!exists(agent)) fs.writeFileSync(agent, text(path.join(codex, 'agents', 'run.toml'))
+        .replace('name = "run"', `name = "${name}"`)
+        .replace('Follow the Run form-check', `Read .codex/roles/run/${rel} and follow the Run form-check`));
+    }
+    if (!exists(target) || !sameText(text(target), desired)) problems.push('Run profile criteria drift: ' + rel);
+  }
+}
 syncRoleLayer();
+syncProfiles();
 if (!CODEX_ONLY) { syncSkills(); syncTemplate(); }
 checkStatic();checkProfiles();
 if(problems.length){console.error('Codex sync drift:\n- '+problems.join('\n- '));process.exit(1);}
