@@ -4,6 +4,7 @@
 //   node .claude/scripts/gauge-measure.cjs prepare <outDir> [--dir cardsDir ...]
 //     -> <outDir>/catalog.md, <outDir>/batch.json ([{id, task}]), <outDir>/truth.json ({id: role})
 //   node .claude/scripts/gauge-measure.cjs score <outDir> <results.json>
+//   node .claude/scripts/gauge-measure.cjs score <outDir> <results.json> --executor <name>   (name goes into the report line)
 //     results.json: [{id, choice:{role,probabilities,confidence}, score:{clarity}, noul:{...}}]
 // Tasks are scrubbed by gauge-scrub (prohibition 17); no value is printed.
 
@@ -51,7 +52,7 @@ function prepare(outDir, dirs) {
   console.log(`prepared ${batch.length} cards, refused by scrubbing: ${refused.length}`);
 }
 
-function score(outDir, resultsFile) {
+function score(outDir, resultsFile, executor) {
   const truth = JSON.parse(fs.readFileSync(path.join(outDir, 'truth.json'), 'utf8'));
   const results = JSON.parse(fs.readFileSync(resultsFile, 'utf8'));
   let hit = 0, n = 0, confHit = 0, confN = 0; const miss = [];
@@ -62,6 +63,7 @@ function score(outDir, resultsFile) {
     if (role === truth[r.id]) hit++; else miss.push(`${r.id}: truth ${truth[r.id]} / gauge ${role} (${conf})`);
     if (conf >= 80) { confN++; if (role === truth[r.id]) confHit++; }
   }
+  if (executor) console.log(`executor: ${executor}`);
   console.log(`match ${hit}/${n} = ${(100 * hit / n).toFixed(0)} %`);
   console.log(`at confidence >= 80: ${confHit}/${confN}${confN ? ` = ${(100 * confHit / confN).toFixed(0)} %` : ''}`);
   console.log(miss.join('\n'));
@@ -71,5 +73,5 @@ const [cmd, a, b, ...rest] = process.argv.slice(2);
 if (cmd === 'prepare') {
   const dirs = [b, ...rest].filter(x => x && x !== '--dir');
   prepare(a, dirs.length ? dirs : [path.join(root, '.devtool', 'features', 'done')]);
-} else if (cmd === 'score') score(a, b);
-else { console.error('usage: gauge-measure.cjs prepare <outDir> [dirs…] | score <outDir> <results.json>'); process.exit(1); }
+} else if (cmd === 'score') { const i = rest.indexOf('--executor'); score(a, b, i >= 0 ? rest[i + 1] : null); }
+else { console.error('usage: gauge-measure.cjs prepare <outDir> [dirs…] | score <outDir> <results.json> [--executor <name>]'); process.exit(1); }

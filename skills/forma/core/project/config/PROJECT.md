@@ -54,6 +54,21 @@ Here — what we work with and at what level. What we build and in what order �
 
 Spend in tokens and elapsed time are statistics, not thresholds: they are written by fact (AGENTS.md §3), never set in advance and never asked. No limit is set in dollars.
 
+**Routes** <!-- k:routes --> *(human, before start; codes and the choice rule — `AGENTS.md` §2, `route-choice.md`; the reasoning behind each field — `.forma/manual/en/03-forma/ROUTES.md` §9)*:
+
+| Field | Value |
+|---|---|
+| Enabled routes | |
+| `Kit` batch ceiling | 4 cards per call (`kit.md`, "Task kitting") |
+| `route-0` small-task threshold | |
+| `over-2` (external cheap model) | |
+| `over-4` (batch acceptance) | |
+| `Run` parallelism in a wave | |
+| Dispatcher | |
+| Gauge `gauge` (AGENTS.md §2, "The Gauge") | `haiku` (default; `haiku` \| `jev`). Profile `.claude/agents/gauge-haiku.md`; scrubbing — `.claude/scripts/gauge-scrub.cjs`; `jev` — only after measurement (`gauge-measure.cjs`). Thresholds (starting, separate per executor, revised by `Core` only through a stop with a report): leader ≥ —, gap to the second ≥ —, leader's noul ≥ —, clarity ≥ — of 4 |
+| External model for the gauge | provider and model — ; key name in `.env` — ; the site's domain is masked; cycle call limit — number of calls, the human sets the value (never dollars) |
+| An epic's default route | marker `/Intent+Kit` in the epic name (table "Project epics"); a card's own `route-N` label overrides it |
+
 **Node qualification** — not a separate field, not filled in beforehand. Each node has its own source of level, read on the spot when the node actually looks at a task:
 
 | Node | Source of level |
