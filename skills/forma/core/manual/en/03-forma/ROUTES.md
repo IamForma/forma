@@ -386,7 +386,7 @@ The `GOAL.md` of a `route-8` goal — section "Segments": segments → waves →
 | dashboard | spend broken down by route; per segment — the waves and their status |
 | dispatcher script (new) | reads the segment's labels, builds the order, launches a wave, waits for acceptance |
 
-## 9. The Gauge in the route
+## 9. The Plumb in the route
 
-Before `Kit`, `Spec` measures role fit with the Gauge (`GAUGE.md`). A confirmed role goes straight to `Run` and the card is labelled `route-2` with the reason code `gauge`; a reading below the thresholds sends the card to `Kit`, which creates the missing role (`route-5`). `Kit` is thus a stage of the cards that need a new role and of returns — not of every card. The Gauge is not a route and not a node: it changes who is called, not the route codes.
+Before `Kit`, `Spec` measures role fit with the Plumb (`PLUMB.md`). A confirmed role goes straight to `Run` and the card is labelled `route-2` with the reason code `plumb`; a reading below the thresholds sends the card to `Kit`, which creates the missing role (`route-5`). `Kit` is thus a stage of the cards that need a new role and of returns — not of every card. The Plumb is not a route and not a node: it changes who is called, not the route codes.
 

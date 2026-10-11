@@ -13,6 +13,7 @@ const { walk, projectFile } = require('../skills/forma/core/dashboard/lib/fs.cjs
 const i18n = require('../skills/forma/core/i18n/index.cjs')
 const { parseLong } = require('../skills/forma/core/dashboard/lib/cli.cjs')
 const verifyInstall = require('../skills/forma/core/verify/verify-install.cjs')
+const { migratePlumb } = require('../scripts/layout/migrate-plumb.cjs')
 const { findBash } = require('../skills/forma/adapters/claude/verify-profile.cjs')
 
 const PKG = path.resolve(__dirname, '..')
@@ -183,6 +184,14 @@ function migrateMap(root, mapFile, label) {
 const migrateConfig = (root) => migrateMap(root, CONFIG_MAP, 'config to project/config/')
 const OPS_MAP = path.join(LAYOUT, 'layout-ops-map.json')
 const migrateOps = (root) => migrateMap(root, OPS_MAP, 'service files to project/ops/')
+
+// Projects installed before the role was named Plumb: setting row and cards renamed, obsolete role files removed.
+function migrateRoleName(root) {
+  let previous = null
+  try { previous = verifyInstall.readManifest(root) } catch { /* no usable manifest: nothing is removed */ }
+  const { lines } = migratePlumb(root, previous)
+  return lines.length ? 'role Plumb migration: ' + lines.join('; ') : 'role Plumb migration: not needed (nothing changed)'
+}
 
 // ---------- core ----------
 function installCore(root, protectedPaths) {
@@ -625,7 +634,7 @@ function printVerify(root) {
 
 // install: core, engines, template, board; returns the report lines and the board result
 function install(root, choice) {
-  const migrationLine = [migrateLayout(root), migrateConfig(root), migrateOps(root), migrateAnchors(root)].join('\n')
+  const migrationLine = [migrateLayout(root), migrateConfig(root), migrateOps(root), migrateRoleName(root), migrateAnchors(root)].join('\n')
   const existingTemplate = readProjectTemplate(root)
   const protectedPaths = protectedTemplatePaths(root, existingTemplate)
   const core = installCore(root, protectedPaths)

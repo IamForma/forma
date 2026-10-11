@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 'use strict';
-// Gauge-драйвер внешнего исполнителя (gauge: jev, OpenRouter Decisions API, typesafe/jev-1.13).
+// Plumb-драйвер внешнего исполнителя (plumb: jev, OpenRouter Decisions API, typesafe/jev-1.13).
 // Очищенная карточка + каталог ролей -> мост (external-model-bridge.cjs, Decisions API) ->
 // строгий JSON {choice, score, noul}. Сам не вызывает haiku (у скрипта нет инструмента Agent) —
 // при отсутствии ключа, ошибке моста или отказе очистки печатает {fallback:"haiku", reason:...}
-// и завершается с кодом 0: вызывающий (главная сессия) тогда сам вызывает gauge-haiku.
+// и завершается с кодом 0: вызывающий (главная сессия) тогда сам вызывает plumb-haiku.
 //
 // Использование:
-//   node .claude/scripts/gauge-run.cjs <card.md> [--root DIR] [--site host[,host]] [--out FILE]
+//   node .claude/scripts/plumb-run.cjs <card.md> [--root DIR] [--site host[,host]] [--out FILE]
 //
-// Контракт вывода — такой же, как у gauge-haiku.md: {choice, score, noul}, плюс meta (не часть
+// Контракт вывода — такой же, как у plumb-haiku.md: {choice, score, noul}, плюс meta (не часть
 // контракта, только для строки расхода): usage, cost_usd, duration_ms, id, model_served.
 
 const fs = require('fs');
 const path = require('path');
-const { extractTask, loadSecrets, scrub, residue } = require('./gauge-scrub.cjs');
+const { extractTask, loadSecrets, scrub, residue } = require('./plumb-scrub.cjs');
 const { loadEnvKeyOptional, callDecisions, estimateCostUsd } = require('./external-model-bridge.cjs');
 
 const MODEL = 'typesafe/jev-1.13';
@@ -59,7 +59,7 @@ function fallback(reason, extra, outFile) {
 async function main() {
   const a = parseArgs(process.argv.slice(2));
   if (!a.card) {
-    console.error('usage: gauge-run.cjs <card.md> [--root DIR] [--site host] [--out FILE]');
+    console.error('usage: plumb-run.cjs <card.md> [--root DIR] [--site host] [--out FILE]');
     process.exit(1);
   }
 
@@ -197,6 +197,6 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error('gauge-run error:', e.message);
+  console.error('plumb-run error:', e.message);
   fallback('error', { report: { message: e.message } });
 });

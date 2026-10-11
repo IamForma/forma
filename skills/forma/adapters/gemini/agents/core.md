@@ -84,9 +84,9 @@ Read at closing, and only there (see above). You look not only at this cycle but
 | 5 | growth of the formalized-skills arsenal — count of `.claude/skills/*/SKILL.md` (`kit-limits.md`, "Limits") | is the count growing between cycles, or does every cycle resolve the familiar again without formalizing the finding as a skill? |
 | 6 | organization vs work — two shares: discarded/reworked attempts out of the cycle's total attempts, and spend on fixed dispatch overhead (kitting/routing passes that produced no card content) out of the cycle's total spend | a rising share of either means the system spends more on organizing itself and less on the work — name it as a fact for the verdict, the same way as a rising cycle spend |
 | 7 | how well the environment-limitation classification held up — local workaround vs unattainable value, classified in the moment by `Kit`/`Spec` (`kit-limits.md`, "Environment limitation"; `spec-unattainable-value.md`) | by epic/goal tags: how often that in-the-moment call is confirmed or overturned by what actually happened (the human's decision, or the cycle's outcome). A class of tasks stably misclassified is a signal to revise the .forma/protocol/route for that class (`PROJECT.md`), not to reopen one case |
-| 8 | agreement of the nodes as measured by the Gauge (below) | `Gauge` lines in the cycle's card histories, with the share accepted first time per row |
+| 8 | agreement of the nodes as measured by the Plumb (below) | `Plumb` lines in the cycle's card histories, with the share accepted first time per row |
 
-**The Gauge, read at the same closing (number 8).** Cards carry a `Gauge` line (role, percent, gap, clarity, executor, outcome; `AGENTS.md` §6). You do not call the Gauge and it does not call you — you take its readings as a criterion, per row of the table below, with the share accepted first time in each row:
+**The Plumb, read at the same closing (number 8).** Cards carry a `Plumb` line (role, percent, gap, clarity, executor, outcome; `AGENTS.md` §6). You do not call the Plumb and it does not call you — you take its readings as a criterion, per row of the table below, with the share accepted first time in each row:
 
 | Reading vs. what followed | Diagnosis | Back to |
 |---|---|---|
@@ -96,7 +96,7 @@ Read at closing, and only there (see above). You look not only at this cycle but
 | role confirmed, result not accepted | an ordinary return (`AGENTS.md` §2) | by the §2 table |
 | readings of the two executors diverge on the same cards | thresholds or catalog criteria need revising | `Core` revises the thresholds through a stop with a report |
 
-The Gauge's agreement never stands in for `Intent`'s check of the result (prohibition 1). Spend on `Kit` calls falling while the first-time share holds is the sign the mechanism works; the share of spend on `Kit` rising again is a finding.
+The Plumb's agreement never stands in for `Intent`'s check of the result (prohibition 1). Spend on `Kit` calls falling while the first-time share holds is the sign the mechanism works; the share of spend on `Kit` rising again is a finding.
 
 **The route choice, read at the same closing.** The cards carry `route-N`, `over-N`, `seg-N`, `wave-N` labels and a reason line; you read spend and returns **by route and overlay** (does a route cost what its place in `ROUTES.md` §3 promises; which routes return), and on `route-8` **by segment and wave** — returns per wave, idle time from dependencies, how many times waves were rebuilt (`Spec`'s slicing), whether the share of preparation falls segment over segment. A route that keeps returning or costing more than a longer one — you propose an amendment to the rule (`on-demand/route-choice.md`) as a fact and a measure, through the same card as any proposal above.
 

@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 'use strict';
-// Measures a Gauge executor against closed cards (role actually used = ground truth).
-//   node .claude/scripts/gauge-measure.cjs prepare <outDir> [--dir cardsDir ...]
+// Measures a Plumb executor against closed cards (role actually used = ground truth).
+//   node .claude/scripts/plumb-measure.cjs prepare <outDir> [--dir cardsDir ...]
 //     -> <outDir>/catalog.md, <outDir>/batch.json ([{id, task}]), <outDir>/truth.json ({id: role})
-//   node .claude/scripts/gauge-measure.cjs score <outDir> <results.json>
-//   node .claude/scripts/gauge-measure.cjs score <outDir> <results.json> --executor <name>   (name goes into the report line)
+//   node .claude/scripts/plumb-measure.cjs score <outDir> <results.json>
+//   node .claude/scripts/plumb-measure.cjs score <outDir> <results.json> --executor <name>   (name goes into the report line)
 //     results.json: [{id, choice:{role,probabilities,confidence}, score:{clarity}, noul:{...}}]
-// Tasks are scrubbed by gauge-scrub (prohibition 17); no value is printed.
+// Tasks are scrubbed by plumb-scrub (prohibition 17); no value is printed.
 
 const fs = require('fs');
 const path = require('path');
-const { extractTask, loadSecrets, scrub, residue } = require('./gauge-scrub.cjs');
+const { extractTask, loadSecrets, scrub, residue } = require('./plumb-scrub.cjs');
 
 const root = process.cwd();
 const roleDir = path.join(root, '.claude', 'agents', 'run');
@@ -60,7 +60,7 @@ function score(outDir, resultsFile, executor) {
     if (!(r.id in truth)) continue;
     n++;
     const role = r.choice && r.choice.role, conf = r.choice && r.choice.confidence;
-    if (role === truth[r.id]) hit++; else miss.push(`${r.id}: truth ${truth[r.id]} / gauge ${role} (${conf})`);
+    if (role === truth[r.id]) hit++; else miss.push(`${r.id}: truth ${truth[r.id]} / plumb ${role} (${conf})`);
     if (conf >= 80) { confN++; if (role === truth[r.id]) confHit++; }
   }
   if (executor) console.log(`executor: ${executor}`);
@@ -74,4 +74,4 @@ if (cmd === 'prepare') {
   const dirs = [b, ...rest].filter(x => x && x !== '--dir');
   prepare(a, dirs.length ? dirs : [path.join(root, '.devtool', 'features', 'done')]);
 } else if (cmd === 'score') { const i = rest.indexOf('--executor'); score(a, b, i >= 0 ? rest[i + 1] : null); }
-else { console.error('usage: gauge-measure.cjs prepare <outDir> [dirs…] | score <outDir> <results.json> [--executor <name>]'); process.exit(1); }
+else { console.error('usage: plumb-measure.cjs prepare <outDir> [dirs…] | score <outDir> <results.json> [--executor <name>]'); process.exit(1); }

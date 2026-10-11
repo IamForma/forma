@@ -20,7 +20,7 @@ Antigravity operates in two distinct session modes depending on platform startup
      - `Kit`: `model: gemini-3.8-flash`, write tools enabled;
      - `Run`: `model: gemini-3.8-flash`, write tools enabled (base template in `agents/run.md`, specific task profiles registered on demand from `agents/run/*.md` per the wave matrix);
       - `Core`: `model: gemini-3.8-flash`, read-only tools;
-      - `gauge-gemini`: `model: gemini-3.8-flash`, read-only tools, no project context, returns JSON only;
+      - `plumb-gemini`: `model: gemini-3.8-flash`, read-only tools, no project context, returns JSON only;
       - `extractor`: `model: gemini-3.8-flash`, read/write tools only — registered only when a graph build needs model extraction (`kit.md`, "Graphs").
     * **Execution:** Once defined, `Intent` dispatches tasks along the route using `invoke_subagent`. Each subagent executes in a strictly isolated context without parent memory. Prohibitions 1 (independent confirmation) and 7 (clean context) are physically guaranteed.
 
@@ -40,15 +40,15 @@ In Mode 2, Antigravity provides a native mechanism to continue a subagent:
 * **Constraint:** the correction travels as plain text boundary ("align left, shadow mandatory"); nothing else about the subagent (tools, model, role prompt) changes underneath it — any change there is a kit change and forces B.
 * **Mode 1 fallback:** in a single-agent session where subagent tools are absent, separate call IDs do not exist; continuation by call ID is unavailable, and only variant B (or degraded single-context continuation under §2) is permitted.
 
-### The Gauge (§2, "The Gauge")
+### The Plumb (§2, "The Plumb")
 
 * **Built-in executor:** subagent on the small model (`gemini-3.8-flash`, read-only tools, no project context, returns JSON only).
-* **Who calls it:** if `Spec` runs in an isolated subagent without subagent-invocation capability, the main session (`Intent`) runs the Gauge for `Spec`: `Spec` returns the sliced cards, the main session cleans the task using the shared script (`node .claude/scripts/gauge-scrub.cjs <card>`), invokes the executor, and hands the reading back to `Spec` to decide and record. In Mode 1 (single-agent session), `Intent`/`Spec` runs the cleanup script and executes the reading directly.
-* **Scrubbing:** fail-closed via `node .claude/scripts/gauge-scrub.cjs <card>`. Do not copy the script. On refusal or secret-like residue, the call is blocked from any external model and falls back to the in-family built-in executor (or stops to the human if unscrubbable secrets remain).
+* **Who calls it:** if `Spec` runs in an isolated subagent without subagent-invocation capability, the main session (`Intent`) runs the Plumb for `Spec`: `Spec` returns the sliced cards, the main session cleans the task using the shared script (`node .claude/scripts/plumb-scrub.cjs <card>`), invokes the executor, and hands the reading back to `Spec` to decide and record. In Mode 1 (single-agent session), `Intent`/`Spec` runs the cleanup script and executes the reading directly.
+* **Scrubbing:** fail-closed via `node .claude/scripts/plumb-scrub.cjs <card>`. Do not copy the script. On refusal or secret-like residue, the call is blocked from any external model and falls back to the in-family built-in executor (or stops to the human if unscrubbable secrets remain).
 * **Fallback:** on any error, missing API key for an external executor, or scrubbing refusal, execution falls back immediately to the built-in Gemini executor. The fallback reason is recorded in the card's `## History`.
-* **External executor:** if configured in `PROJECT.md`, «Маршруты», called over HTTPS with key from `.env` using scrubbed output only; the external executor adds its own unit count before the dash in spend accounting. **Selector:** read `gauge: haiku | jev` from `PROJECT.md`; `haiku` is the selector's portable name and resolves here to the built-in `gemini-3.8-flash` executor above, never a Claude model. For `jev` this adapter has no native driver of its own yet (Claude Code's is `node .claude/scripts/gauge-run.cjs`, the OpenRouter Decisions API for `typesafe/jev-1.13`); until one exists here, `jev` on this engine is a named configuration gap, not a silent fallback — report it and fall back to the built-in executor, the reason in `## History`.
-* **Spend and history line:** the Gauge spend line is written by `Spec` (or by the caller on its behalf) with engine tag `gemini:`, e.g.:
-  `` `Gauge`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<id>` — gemini: role <name>, N % (gap G, clarity C), <executor>, <fits / below threshold / returned>. ``
+* **External executor:** if configured in `PROJECT.md`, «Маршруты», called over HTTPS with key from `.env` using scrubbed output only; the external executor adds its own unit count before the dash in spend accounting. **Selector:** read `plumb: haiku | jev` from `PROJECT.md`; `haiku` is the selector's portable name and resolves here to the built-in `gemini-3.8-flash` executor above, never a Claude model. For `jev` this adapter has no native driver of its own yet (Claude Code's is `node .claude/scripts/plumb-run.cjs`, the OpenRouter Decisions API for `typesafe/jev-1.13`); until one exists here, `jev` on this engine is a named configuration gap, not a silent fallback — report it and fall back to the built-in executor, the reason in `## History`.
+* **Spend and history line:** the Plumb spend line is written by `Spec` (or by the caller on its behalf) with engine tag `gemini:`, e.g.:
+  `` `Plumb`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<id>` — gemini: role <name>, N % (gap G, clarity C), <executor>, <fits / below threshold / returned>. ``
 
 ## Models per node
 
@@ -61,7 +61,7 @@ Which model each node runs on is an engine matter, not a rule of the protocol �
 | `Kit` | `gemini-3.8-flash` (effort low) |
 | `Run` | `gemini-3.8-flash` (effort low) |
 | `Core` | `gemini-3.8-flash` (effort low) |
-| `gauge-gemini` | `gemini-3.8-flash` (effort low) |
+| `plumb-gemini` | `gemini-3.8-flash` (effort low) |
 | `extractor` | `gemini-3.8-flash` (effort low) |
 
 ## Spend fields (§3)

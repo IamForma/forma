@@ -1,13 +1,13 @@
 'use strict';
-// node .claude/scripts/gauge-scrub.test.cjs — fixtures are made up; no real secret is used.
+// node .claude/scripts/plumb-scrub.test.cjs — fixtures are made up; no real secret is used.
 const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const script = path.join(__dirname, 'gauge-scrub.cjs');
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'gauge-'));
+const script = path.join(__dirname, 'plumb-scrub.cjs');
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'plumb-'));
 const SECRET_ENV = 'zq9Xw3LpT7vRm2KdB8nYc5HfJ';
 const SECRET_PASS = 'Hunter-Test-Pass-77';
 const SITE = 'testsite.example';
@@ -53,4 +53,4 @@ assert.strictEqual(r.status, 0);
 assert.ok(JSON.parse(r.stdout).task.includes(CARD));
 
 fs.rmSync(root, { recursive: true, force: true });
-console.log('gauge-scrub: all tests passed');
+console.log('plumb-scrub: all tests passed');

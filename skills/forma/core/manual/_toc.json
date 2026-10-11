@@ -11,7 +11,7 @@
         { "title": { "en": "The Protocol of the Five Nodes", "ru": "Протокол пяти узлов" }, "page": "03-forma/PROTOCOL.md" },
         { "title": { "en": "Structure of the Schema", "ru": "Устройство схемы" }, "page": "03-forma/SCHEME.md" },
         { "title": { "en": "Route choice", "ru": "Выбор маршрута" }, "page": "03-forma/ROUTES.md" },
-        { "title": { "en": "The Gauge", "ru": "Мерило" }, "page": "03-forma/GAUGE.md" },
+        { "title": { "en": "The Plumb", "ru": "Отвес" }, "page": "03-forma/PLUMB.md" },
         { "title": { "en": "Economy contract", "ru": "Экономический контракт" }, "page": "03-forma/ECONOMY.md" },
         { "title": { "en": "Skills and plugins", "ru": "Скиллы и плагины" }, "page": "03-forma/SKILLS.md" },
         { "title": { "en": "Five zones of the «Form» .forma/protocol", "ru": "Пять зон протокола «Форма»" }, "page": "03-forma/ZONES.md" },

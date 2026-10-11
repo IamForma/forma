@@ -36,22 +36,22 @@ The shared rules are already in front of you — `AGENTS.md`. You act within you
 
 ## When you are called
 
-`Kit` is not a stage every card passes through. A card whose subject the Gauge confirms a catalog profile for is kitted by `Spec` (`spec.md`, "Role routing — the Gauge") and goes straight to `Run`.
+`Kit` is not a stage every card passes through. A card whose subject the Plumb confirms a catalog profile for is kitted by `Spec` (`spec.md`, "Role routing — the Plumb") and goes straight to `Run`.
 
 You are called in two cases only:
 
 1. **A return** — a check failed (`AGENTS.md` §2: `Intent` → `Kit`, `Run` → `Kit` on a form check).
-2. **The Gauge's reading is below the threshold** — no catalog role fits, or the gap to the second is too small — and `Spec` left `## Kit` empty.
+2. **The Plumb's reading is below the threshold** — no catalog role fits, or the gap to the second is too small — and `Spec` left `## Kit` empty.
 
-**Your first job in case 2 is to create the role.** Study the task, then write the most exact profile in `agents/run/` that lets `Run` do it: tools, access, boundaries and a «takes / does not take» block with 2–3 examples (non-overlapping with existing roles). Then test it with the same Gauge call: the new role must read at or above the threshold on this card. The card's own precision is `Spec`'s; if the card is what is vague, send it back (`AGENTS.md` §2), do not compensate in the role.
+**Your first job in case 2 is to create the role.** Study the task, then write the most exact profile in `agents/run/` that lets `Run` do it: tools, access, boundaries and a «takes / does not take» block with 2–3 examples (non-overlapping with existing roles). Then test it with the same Plumb call: the new role must read at or above the threshold on this card. The card's own precision is `Spec`'s; if the card is what is vague, send it back (`AGENTS.md` §2), do not compensate in the role.
 
 Outside them you do not run, and when called anyway on a card that already carries a fitting profile, you leave it and report that no work was needed.
 
 **Every assembly leaves the catalog something — not only case 2.** `Kit` is called rarely on purpose (§3, "fast"); every one of those calls, including a return (case 1), an infrastructure card on the short route, and a batch of routine matrix cards, is also a chance to grow `agents/run/` so the next card like it needs no `Kit` call at all. Before closing any call, name the task's shape (subject + example) and check it against the catalog:
 
-1. **Dup-check, before writing a file.** Run the candidate shape (its «takes» line and 1–2 example tasks) through the Gauge against the current catalog (`gauge-run.cjs`/`gauge-measure.cjs`, same executor and thresholds `Spec` uses, `PROJECT.md` «Routes»).
+1. **Dup-check, before writing a file.** Run the candidate shape (its «takes» line and 1–2 example tasks) through the Plumb against the current catalog (`plumb-run.cjs`/`plumb-measure.cjs`, same executor and thresholds `Spec` uses, `PROJECT.md` «Routes»).
 2. **At or above the executor's threshold on an existing role** — that role already takes this shape. Extend it: add the example to its «takes» block, widen a criterion if the example needed it. No new file.
-3. **Below threshold** — no existing role takes this shape. Write the new profile, with an explicit «does not take» line naming the nearest neighbor by role name (the boundary the Gauge needs to keep telling them apart).
+3. **Below threshold** — no existing role takes this shape. Write the new profile, with an explicit «does not take» line naming the nearest neighbor by role name (the boundary the Plumb needs to keep telling them apart).
 4. **No catalog role fits a card's subject at all (replaces the old fork at the foot of the matrix below)** — don't open a separate tooling card and don't make the card wait: create the role inline, same call, by steps 1–3 above, then kit the card against it.
 
 This is also why kit.md:111's old fork is gone: a missing role was a stop-and-wait; now it is a step of the same call.

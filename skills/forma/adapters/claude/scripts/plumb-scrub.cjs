@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
-// Scrubs a card's task for the Gauge's external executor (AGENTS.md prohibition 17).
+// Scrubs a card's task for the Plumb's external executor (AGENTS.md prohibition 17).
 // Not a model; fail-closed. Usage:
-//   node .claude/scripts/gauge-scrub.cjs <card.md> [--root DIR] [--site host[,host]] [--out FILE]
+//   node .claude/scripts/plumb-scrub.cjs <card.md> [--root DIR] [--site host[,host]] [--out FILE]
 // Output (stdout or --out): JSON {task, report}. The report holds counts only, never values.
 // Exit: 0 scrubbed, 2 refused (residue looks like a secret), 1 usage/read error.
 
@@ -130,7 +130,7 @@ function residue(text, secrets) {
 
 function main() {
   const a = parseArgs(process.argv.slice(2));
-  if (!a.card) { console.error('usage: gauge-scrub.cjs <card.md> [--root DIR] [--site host] [--out FILE]'); process.exit(1); }
+  if (!a.card) { console.error('usage: plumb-scrub.cjs <card.md> [--root DIR] [--site host] [--out FILE]'); process.exit(1); }
   let md;
   try { md = fs.readFileSync(a.card, 'utf8'); } catch (e) { console.error(`cannot read card: ${e.code || e.message}`); process.exit(1); }
   const task = extractTask(md);
