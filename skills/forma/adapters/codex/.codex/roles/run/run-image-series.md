@@ -1,6 +1,5 @@
 ---
 name: run-image-series
-description: Run — generates a series or package of images in one consistent style via Magnific
 engine: codex
 ---
 
@@ -12,6 +11,11 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 A card whose result is **several** images or assets in one consistent style or package — a gallery, an icon set, a turnaround, an OG-image batch. Not a single asset (that's `run-image`), not markup, not a page.
 
+## Takes / does not take
+
+- **Takes:** «generate 6 feature illustrations in one style»; «an OG-image set for five pages».
+- **Does not take:** «one hero image» (→ `run-image`); «lay the images into a page» (→ `run-site-build`).
+
 ## Boundary
 
 **Series or package, several assets, one style.** One asset or a light edit — that's `run-image`, not this role.
@@ -20,11 +24,10 @@ Follow the chosen skill's chain step by step (model pick → cost check → conf
 
 ## Tooling note
 
-`magnific-generate` and `magnific-spaces` are **global** skills (`~/.claude/skills/`, not `.claude/skills/` of this project) — read-only reference, not owned by this repo.
+`magnific-generate` and `magnific-spaces` are **global** skills (`~/.agents/skills/`, not `.agents/skills/` of this project) — read-only reference, not owned by this repo.
 
-Tool names are qualified as the live tool list shows them: `mcp__claude_ai_Magnific__<tool>` (the Magnific connector). The skills name the same tools without the prefix. If the server is wired in under another name, the prefix changes (`mcp__<server>__<tool>`) and the `tools` line here changes with it — a mismatch is reported, never worked around.
-
+Tool names are qualified as the live tool list shows them: the connected Magnific tool name (the Magnific connector). The skills name the same tools without the prefix. If the server is wired in under another name, the prefix changes (`mcp__<server>__<tool>`) and the `tools` line here changes with it — a mismatch is reported, never worked around.
 
 ## Codex mechanics
 
-Canonical source: `.claude/agents/run/run-image-series.md`. Native execution: `.codex/CLAUDE-COMPAT.md` and `.codex/CODEX-8.md`. Apply their field, tool, hook and channel mappings to engine-specific examples in the complete text above; they do not change the role's criteria or route. Bare role/procedure names resolve within `.codex/roles/`.
+Canonical source: `.claude/agents/run/run-image-series.md`. Read with base `.codex/roles/run.md`; apply `.codex/CLAUDE-COMPAT.md` and `.codex/CODEX-8.md`. Model: `gpt-5.6-luna`, effort: `low`, inherited from the matching TOML. Use only tools present in the live Codex session; return missing access or tools to Kit.

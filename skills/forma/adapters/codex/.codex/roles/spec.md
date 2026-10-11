@@ -8,4 +8,4 @@ Canonical role: `.claude/agents/spec.md`. Read it completely; this file is only 
 
 ## Codex mechanics
 
-For a ready routine profile, write the complete six-unit Run kit while slicing and choose `route-2` with `why: ready`; Intent then dispatches Run directly. One Spec call may slice any number of independent cards; record its measured spend share on every card.
+After slicing, request the Gauge through Intent as specified in CODEX-8.md. Decide from choice, score and noul using the configured thresholds for the actual executor; do not borrow Claude calibration for the Codex model. A fitting leader and gap, sufficient noul and clarity: write all six kit units, inherit the profile model, route-2 with why: gauge. Below fit thresholds: leave Kit empty and send to Kit to create the exact role. Low clarity: restate once, measure again, then return the named ambiguity to Intent. Write the Gauge reading immediately with measured Codex spend and the codex: tag. Batch slicing spend is split across its cards.

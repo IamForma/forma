@@ -16,6 +16,11 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 A card whose result is **one** image or asset — a draft, a reference, a demo asset, one light edit on an existing file — generated or edited from a prompt via the built-in `imagegen`. Not markup, not a page.
 
+## Takes / does not take
+
+- **Takes:** «generate one hero illustration from this prompt»; «one light edit (crop, recolor) on an existing PNG».
+- **Does not take:** «generate 8 icons in one style» (→ `run-image-series`); «put the image on the site» (→ `run-site-php`, or the project's upload profile).
+
 ## Boundary
 
 **One asset, one light edit.** Several assets or a packaged/consistent-style series — that's `run-image-series` (Magnific), not this role; don't stretch this one into a loop.
