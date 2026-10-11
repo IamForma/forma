@@ -19,9 +19,10 @@ Antigravity operates in two distinct session modes depending on platform startup
      - `Spec`: `model: gemini-3.8-flash`, write tools enabled;
      - `Kit`: `model: gemini-3.8-flash`, write tools enabled;
      - `Run`: `model: gemini-3.8-flash`, write tools enabled (base template in `agents/run.md`, specific task profiles registered on demand from `agents/run/*.md` per the wave matrix);
-     - `Core`: `model: gemini-3.8-flash`, read-only tools;
-     - `extractor`: `model: gemini-3.8-flash`, read/write tools only — registered only when a graph build needs model extraction (`kit.md`, "Graphs").
-   * **Execution:** Once defined, `Intent` dispatches tasks along the route using `invoke_subagent`. Each subagent executes in a strictly isolated context without parent memory. Prohibitions 1 (independent confirmation) and 7 (clean context) are physically guaranteed.
+      - `Core`: `model: gemini-3.8-flash`, read-only tools;
+      - `gauge-gemini`: `model: gemini-3.8-flash`, read-only tools, no project context, returns JSON only;
+      - `extractor`: `model: gemini-3.8-flash`, read/write tools only — registered only when a graph build needs model extraction (`kit.md`, "Graphs").
+    * **Execution:** Once defined, `Intent` dispatches tasks along the route using `invoke_subagent`. Each subagent executes in a strictly isolated context without parent memory. Prohibitions 1 (independent confirmation) and 7 (clean context) are physically guaranteed.
 
 2. **Mode 1: Single-Agent Session / Fallback (`invoke_subagent` absent in toolbox)**
    * In a standard quick chat session the subagent tools are missing, so physical context isolation between nodes is unavailable. **What to do then is the general rule of §2, "An engine with no way to invoke separate agents"** — tell the human first, keep the stages apart by explicit markers, check on inspected facts only, take only what a weak check can hold. It is not restated here.
@@ -39,6 +40,16 @@ In Mode 2, Antigravity provides a native mechanism to continue a subagent:
 * **Constraint:** the correction travels as plain text boundary ("align left, shadow mandatory"); nothing else about the subagent (tools, model, role prompt) changes underneath it — any change there is a kit change and forces B.
 * **Mode 1 fallback:** in a single-agent session where subagent tools are absent, separate call IDs do not exist; continuation by call ID is unavailable, and only variant B (or degraded single-context continuation under §2) is permitted.
 
+### The Gauge (§2, "The Gauge")
+
+* **Built-in executor:** subagent on the small model (`gemini-3.8-flash`, read-only tools, no project context, returns JSON only).
+* **Who calls it:** if `Spec` runs in an isolated subagent without subagent-invocation capability, the main session (`Intent`) runs the Gauge for `Spec`: `Spec` returns the sliced cards, the main session cleans the task using the shared script (`node .claude/scripts/gauge-scrub.cjs <card>`), invokes the executor, and hands the reading back to `Spec` to decide and record. In Mode 1 (single-agent session), `Intent`/`Spec` runs the cleanup script and executes the reading directly.
+* **Scrubbing:** fail-closed via `node .claude/scripts/gauge-scrub.cjs <card>`. Do not copy the script. On refusal or secret-like residue, the call is blocked from any external model and falls back to the in-family built-in executor (or stops to the human if unscrubbable secrets remain).
+* **Fallback:** on any error, missing API key for an external executor, or scrubbing refusal, execution falls back immediately to the built-in Gemini executor. The fallback reason is recorded in the card's `## History`.
+* **External executor:** if configured in `PROJECT.md`, «Маршруты», called over HTTPS with key from `.env` using scrubbed output only; the external executor adds its own unit count before the dash in spend accounting.
+* **Spend and history line:** the Gauge spend line is written by `Spec` (or by the caller on its behalf) with engine tag `gemini:`, e.g.:
+  `` `Gauge`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<id>` — gemini: role <name>, N % (gap G, clarity C), <executor>, <fits / below threshold / returned>. ``
+
 ## Models per node
 
 Which model each node runs on is an engine matter, not a rule of the protocol — the five pairs in §1 hold whoever executes them.
@@ -50,6 +61,7 @@ Which model each node runs on is an engine matter, not a rule of the protocol �
 | `Kit` | `gemini-3.8-flash` (effort low) |
 | `Run` | `gemini-3.8-flash` (effort low) |
 | `Core` | `gemini-3.8-flash` (effort low) |
+| `gauge-gemini` | `gemini-3.8-flash` (effort low) |
 | `extractor` | `gemini-3.8-flash` (effort low) |
 
 ## Spend fields (§3)
