@@ -74,7 +74,12 @@ test('заглушки card-001…009, card-099, goal-00 и даты в test/ �
 });
 
 test('следы проекта в сообщениях коммитов; дата в сообщении допустима', () => {
-  assert.equal(scanMessages(['Карточка ' + '134: сетка', 'card-' + '197: набор', 'v1 — 20' + '31-01-05', 'Чистое сообщение']).length, 2);
+  assert.equal(scanMessages(['Card ' + '134: grid', 'card-' + '197: set', 'v1 — 20' + '31-01-05', 'Clean message']).length, 2);
+});
+
+test('commit messages in Cyrillic are a language finding', () => {
+  const bad = scanMessages(['Clean message', 'Чистое сообщение']);
+  assert.deepEqual(bad.map((b) => b.rule), ['language']);
 });
 
 test('в сам клон протокола следы проекта не просочились', () => {
