@@ -56,10 +56,12 @@ const PASS = [
 
 const withJq = which('jq') ? process.env.PATH : null;
 const noJq = toolDir();
+// These cases build a PATH of symlinked tools; Windows has neither POSIX symlinks nor a PATH that hides jq/gh/curl from sh.
+const winSkip = process.platform === 'win32' && 'POSIX tool-restricted PATH';
 const modes = [['without jq', noJq], ...(withJq ? [['with jq', withJq]] : [])];
 
 for (const [mode, envPath] of modes) {
-  test(`guard-delete ${mode}: deleting a protected path is blocked`, () => {
+  test(`guard-delete ${mode}: deleting a protected path is blocked`, { skip: winSkip }, () => {
     const root = project();
     for (const command of BLOCK) {
       const r = run('guard-delete.sh', root, { tool_input: { command } }, envPath);
@@ -67,7 +69,7 @@ for (const [mode, envPath] of modes) {
     }
   });
 
-  test(`guard-delete ${mode}: ordinary commands pass`, () => {
+  test(`guard-delete ${mode}: ordinary commands pass`, { skip: winSkip }, () => {
     const root = project();
     for (const command of PASS) {
       const r = run('guard-delete.sh', root, { tool_input: { command } }, envPath);
@@ -75,7 +77,7 @@ for (const [mode, envPath] of modes) {
     }
   });
 
-  test(`unlock-delete ${mode}: the code phrase lets exactly one deletion through`, () => {
+  test(`unlock-delete ${mode}: the code phrase lets exactly one deletion through`, { skip: winSkip }, () => {
     const root = project();
     const del = { tool_input: { command: 'rm -rf .claude' } };
     run('unlock-delete.sh', root, { prompt: 'Подключи сенсорику' }, envPath);
@@ -98,19 +100,19 @@ function updateCase({ installed, cache, remote }) {
   return r.stdout;
 }
 
-test('check-plugin-update: versions with a suffix are compared by their numbers', () => {
+test('check-plugin-update: versions with a suffix are compared by their numbers', { skip: winSkip }, () => {
   assert.match(updateCase({ installed: '0.4.185-alpha', remote: '0.4.186-alpha' }), /0\.4\.185-alpha.*0\.4\.186-alpha/);
   assert.match(updateCase({ installed: '0.4.185-alpha', remote: '0.4.1000' }), /0\.4\.1000/);
   assert.equal(updateCase({ installed: '0.4.186-alpha', remote: '0.4.186-alpha' }), '');
   assert.equal(updateCase({ installed: '0.4.186-alpha', remote: '0.4.185-alpha' }), '', 'local ahead is not an update');
 });
 
-test('check-plugin-update: plugin cache is read when there is no install manifest', () => {
+test('check-plugin-update: plugin cache is read when there is no install manifest', { skip: winSkip }, () => {
   assert.match(updateCase({ cache: '0.4.186-alpha', remote: '0.5.0' }), /0\.4\.186-alpha.*0\.5\.0/);
   assert.equal(updateCase({ remote: '0.5.0' }), '', 'nothing installed: silent');
 });
 
-test('check-plugin-update: no gh and no curl means silence, not an error', () => {
+test('check-plugin-update: no gh and no curl means silence, not an error', { skip: winSkip }, () => {
   assert.equal(updateCase({ installed: '0.4.185-alpha' }), '');
 });
 
