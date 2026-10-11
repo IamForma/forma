@@ -19,7 +19,7 @@ A card whose result is a page, template, or content block, built or changed thro
 ## Takes / does not take
 
 - **Takes:** «build the new section on the page through the page-builder ability»; «change a template's content block and verify the rendered page».
-- **Does not take:** «a one-off data fix by PHP» (→ `run-site-php`); «replace a binary file» (→ `run-site-upload`); «only check how the page looks» (→ `run-visual-check`).
+- **Does not take:** «a one-off data fix by PHP» (→ `run-site-php`); «replace a binary file» (→ the project's upload profile); «only check how the page looks» (→ `run-visual-check`).
 
 ## Boundary
 
