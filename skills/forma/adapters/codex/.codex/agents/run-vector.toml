@@ -1,0 +1,8 @@
+name = "run-vector"
+description = "Run — hand-authors one vector asset (SVG markup), no prompt-based generation"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read AGENTS.md, .codex/CODEX-8.md and .codex/CLAUDE-COMPAT.md first. Read .claude/agents/run.md and .codex/roles/run.md as the base role, then .codex/roles/run/run-vector.md and its canonical profile completely. Ignore Claude frontmatter; follow the profile boundary and the clean card and kit. Canonical tools are only Read/Write/Edit: use file reads and writes/patches only, no command execution, network, MCP, image generation or delegation. The workspace-write sandbox permits file output; it is not a tool allow-list. Any rendering comparison requiring other tools must be supplied by the kit or returned to Kit. Return to the caller without accepting your own work.
+"""
