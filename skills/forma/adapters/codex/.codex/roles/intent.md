@@ -8,4 +8,4 @@ Canonical role: `.claude/agents/intent.md`. Read it completely; this file is onl
 
 ## Codex mechanics
 
-On `route-2` with a ready profile, dispatch Run directly without Kit. Run inherits `gpt-5.6-luna`/`low`; do not raise its model or effort without the Kit history reason. Record each shared batch spend through the Codex procedure.
+Run the Gauge on behalf of Spec (or Kit retesting a role): scrub with the shared script, dispatch the isolated Codex helper, return typed readings and measured call metadata to the requesting node. Spec decides and writes the Gauge line. Gauge is not a sixth node and never confirms work. A Gauge-confirmed route-2 (why: gauge) goes directly to Run after the required human approval; why: ready remains for an already complete card and kit. Run inherits gpt-5.6-luna/low; only a recorded Kit override changes it. Apply external-service cycle limits and fail-closed fallback from CODEX-8.md.

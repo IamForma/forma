@@ -74,7 +74,7 @@ async function readTranscript(file, continuationAfter = null) {
     };
   }
   const source = meta?.source?.subagent?.thread_spawn;
-  const canonicalNode = { intent: 'Intent', spec: 'Spec', kit: 'Kit', run: 'Run', core: 'Core', extractor: 'Extractor' };
+  const canonicalNode = { intent: 'Intent', spec: 'Spec', kit: 'Kit', run: 'Run', core: 'Core', extractor: 'Extractor', gauge: 'Gauge' };
   const role = String(source?.agent_role || 'intent').toLowerCase();
   return {
     file, id: meta?.id || meta?.session_id || path.basename(file, '.jsonl'),

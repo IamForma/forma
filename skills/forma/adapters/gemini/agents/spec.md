@@ -76,9 +76,23 @@ Card anatomy — four zones, who writes what — is shared knowledge, `AGENTS.md
 
 **A criterion for a new condition checks what separates success from failure, not what they share.** For a card that adds a condition or branch (not one adjusting already-visible behavior): the fact the criterion checks must be unreachable if the condition silently failed to fire and the outcome fell back to the default path. A check that passes identically either way isn't a check of that condition — it's a coincidence in appearance, and that criterion item doesn't count as closed.
 
-### Ready profile and batches
+### Role routing — the Gauge
 
-- **Ready profile.** A routine, complete card whose subject a catalog profile covers (`agents/run/`, matrix in `kit.md`, "Task kitting") — you write the profile into `## Kit` yourself and propose `route-2` (`why: ready`, `route-choice.md`). No recon needed and the profile fits as is; otherwise leave `## Kit` to `Kit`. The model is the profile's own (`haiku`); you never override it.
+After slicing, every card goes through the Gauge before `Kit` (`AGENTS.md` §2, "The Gauge"). The reading is obtained for you by the caller (how — §8, `claude-8.md`); you read it and decide.
+
+1. **Scrubbing comes first** — `node .claude/scripts/gauge-scrub.cjs <card>` builds the input from the five `## Task` fields only (prohibition 17). A refusal means the in-family executor, not a send; a secret-like residue means the card goes to the human.
+2. **The executor** is the one named by `gauge` in `PROJECT.md` (`gauge-haiku`, or the external one); it gets the scrubbed task and the role catalog (`agents/run/`, each profile's «takes / does not take») and returns `choice`, `score`, `noul`.
+3. **Decide by the thresholds in `PROJECT.md`:**
+   - leading role at or above the threshold, gap to the second at or above its threshold, `noul` for the leader high → write the role into `## Kit`, `route-2`, `why: gauge`, straight to `Run`. The model is the profile's own; you never override it.
+   - below either threshold → leave `## Kit` empty for `Kit`, whose job is to create the role.
+   - clarity low → restate the card once yourself, call again; still low → to `Intent`/human with the unclear point named (prohibition 2). Never split a card to raise a percentage.
+4. **Write the line** into `## History` (`AGENTS.md` §6): role, percent, gap, clarity, executor, outcome.
+
+How sure the Gauge can be is how clear your card is: a precise task is what lets `Kit` build an exact role and `Run` start without overcoming anything.
+
+### Batches
+
+- **Ready profile.** The route-2 shortcut for a routine, complete card is now the Gauge branch above; a card the catalog plainly covers still skips `Kit`.
 - **Batch.** You slice several tasks per call, no ceiling. Each card still gets its own `new-card.cjs` call, five fields and spend line (`AGENTS.md` §6).
 
 ### Homogeneity of a cycle

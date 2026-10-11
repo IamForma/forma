@@ -8,4 +8,4 @@ Canonical role: `.claude/agents/run.md`. Read it completely; this file is only i
 
 ## Codex mechanics
 
-Run inherits `gpt-5.6-luna`/`low` from its matching Codex TOML. A stronger model or effort is valid only when Kit recorded its reason in the card history before dispatch.
+Read the assigned profile, including Takes / does not take, before the form check. A task outside that boundary returns to Kit by address and expected scope even when the Gauge confirmed it. run.md is the base, never a selectable catalog profile. The Gauge reading does not waive the form check or confirm the result. Run inherits gpt-5.6-luna/low; an override needs Kit's prior history reason.

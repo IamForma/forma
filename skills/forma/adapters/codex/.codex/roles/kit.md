@@ -8,4 +8,4 @@ Canonical role: `.claude/agents/kit.md`. Read it completely; this file is only i
 
 ## Codex mechanics
 
-Run inherits `gpt-5.6-luna`/`low` from its matching Codex TOML. A stronger model or effort needs a reason in the card history before dispatch. One Kit call may kit at most four related independent cards; after return, record each measured share with the Codex batch procedure.
+In role routing, Kit is called only for a below-threshold Gauge reading or a return. First create or correct the exact portable profile in .codex/roles/run/ with tools, access, boundaries and Takes / does not take examples; request the same Gauge through Intent to test it before issuing the kit. Card ambiguity returns to Spec. Product-only profiles are read from PROJECT.md, never copied into portable Codex files. Run inherits gpt-5.6-luna/low; overrides need a prior history reason. Kit batches at most four independent related cards and returns the kit or correction to Intent, never dispatching agents itself. Approved tooling routes still allow Kit to execute infrastructure work.
