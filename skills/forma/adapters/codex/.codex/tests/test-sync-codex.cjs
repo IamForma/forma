@@ -80,6 +80,27 @@ try {
   const baseline = fullCheck();
   const baselineProblems = new Set((baseline.stdout + baseline.stderr).split(/\r?\n/).filter(line => line.startsWith('- ')));
   check(true, 'clean Codex fixture');
+  // Native portable counterparts survive a same-name product registration;
+  // removing native ownership must still reject the product import.
+  const registry = path.join(fixture, 'project/config/PROJECT.md');
+  const registryBefore = fs.existsSync(registry) ? fs.readFileSync(registry, 'utf8') : null;
+  const nativeRole = path.join(fixture, '.codex/roles/run/run-portable-fixture.md');
+  const nativeAgent = path.join(fixture, '.codex/agents/run-portable-fixture.toml');
+  const nativeBody = '---\nname: run-portable-fixture\norigin: codex\n---\n\n## Takes / does not take\n\nLocal fixture transformation only.\n\n## Boundary\n\nNo live writes.\n';
+  fs.mkdirSync(path.dirname(registry), { recursive: true });
+  fs.writeFileSync(registry, '**Project Run profiles**\n\n| `run-portable-fixture` | fixture product role |\n');
+  fs.writeFileSync(nativeRole, nativeBody);
+  fs.writeFileSync(nativeAgent, 'name = "run-portable-fixture"\nmodel = "gpt-5.6-luna"\nmodel_reasoning_effort = "low"\n');
+  check(true, 'native counterpart of product profile');
+  fs.writeFileSync(nativeRole, nativeBody.replace('origin: codex\n', ''));
+  check(false, 'product import without native ownership');
+  fs.writeFileSync(nativeRole, nativeBody);
+  const nativeApply = cp.spawnSync(process.execPath, [command, '--apply', '--codex-only', '--root', fixture], { encoding: 'utf8' });
+  if (nativeApply.status !== 0 || fs.readFileSync(nativeRole, 'utf8') !== nativeBody) throw new Error('Synchronization replaced native portable counterpart');
+  fs.rmSync(nativeRole);
+  fs.rmSync(nativeAgent);
+  if (registryBefore === null) fs.rmSync(registry); else fs.writeFileSync(registry, registryBefore);
+  check(true, 'restored native counterpart fixture');
   const sharedSkill = path.join(fixture, '.agents', 'skills', 'graph-build', 'SKILL.md');
   const sharedSkillBefore = fs.readFileSync(sharedSkill, 'utf8');
   const codexOnly = cp.spawnSync(process.execPath, [command, '--apply', '--codex-only', '--root', fixture, '--plugin', fixturePlugin], { encoding: 'utf8' });
