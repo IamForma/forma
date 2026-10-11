@@ -24,6 +24,8 @@ The five are **one body**. Five passed checks judge the parts; they say nothing 
 
 **The main session is `Intent`.** The session that talks with the human runs as `Intent`, whatever engine carries it. Before its first reply it reads its role file `intent.md` and, at session start, the on-demand `intent-session-start.md` — where they live and how the engine delivers them is §8. The other four are called from it; none replies to the human in its place.
 
+**`Gauge` is not a sixth node.** It is a measure that gives the five one language: it takes no card of its own, decides nothing and confirms nothing (prohibition 1 stands). It is called between slicing and execution and returns readings; `Spec` decides on them, and `Core` reads them as a criterion for judging how well the nodes agree (§2, "The Gauge").
+
 **`project/brief` is the anchor point.** What the human said before the first goal is recorded there and never rewritten along the way. A discrepancy between the end-image and `brief/` is named, not smoothed over.
 
 ---
@@ -33,8 +35,9 @@ The five are **one body**. Five passed checks judge the parts; they say nothing 
 ```
 Intent (goal opening)
    → Spec (slicing)
-      → Kit (kitting)
-         → Run (form check → execution)
+      → Gauge (role fit: a reading, not a node)
+         role fits → Run (form check → execution)
+         role does not fit → Kit (kitting: creates the role) → Run
             → Intent (task check)
                ✓ → "where it goes next"
                ✗ → Kit
@@ -48,6 +51,9 @@ Intent (cycle presentation)
 | Event | Where | Who sends it |
 | --- | --- | --- |
 | End-image unfit: the criterion allows more than one reading, the segment isn't separated from the whole | `Intent`, before slicing | `Spec` |
+| Role fit confirmed: leading role at or above the threshold, gap to the second at or above its threshold | `Run`, role written into `## Kit` | `Spec`, on `Gauge`'s reading |
+| Role fit below the threshold, or the gap too small | `Kit`, to create or correct the role | `Spec` |
+| Gauge reads the task itself as unclear (low clarity) | `Spec`, once | `Spec` |
 | Missing form field | `Kit` | `Run` |
 | Check failed, discrepancy is an execution slip (first time on this criterion item, `Run` still alive) | the same `Run`, continued | `Kit` |
 | Check failed | `Kit` | `Intent` |
@@ -71,6 +77,15 @@ Intent (cycle presentation)
 - **An exhausted budget reads as a slicing failure.** Only `Core` can overturn that, by examining the stop.
 - **The cycle is judged by `Core`**, not by whoever opened it, not by the human: `Intent`'s task check and the human's acceptance of the outward thing don't stand in for the verdict — comparing the cycle against the end-image is `Core`'s, last, on the cycle's cards together (§7).
 - **The short route of the marked epics, `Intent → human → Kit → Intent`:** `Spec` is replaced, not skipped; the human's approval of the card's five fields is its condition of validity (§7).
+
+**The Gauge.** The measure between slicing and execution.
+
+- **What it answers.** From the scrubbed task (prohibition 17) and the catalog of `Run` roles, three typed readings: *choice* — which role is closest, with a probability for each; *score* — how clearly the task is stated; *noul* — whether the leading role takes this task, yes/no as a probability. It never writes text and never explains.
+- **Who decides.** `Spec` — by the thresholds in `PROJECT.md` (a leading probability and a gap to the second, separate per executor). The Gauge advises; its agreement does not replace `Intent`'s check of the result.
+- **`Kit` is not a stage of every card.** A fitting role goes straight to `Run`. `Kit` is called on a reading below the threshold or a return (§2 table), and its first job there is to **create the exact role** — study the task, write the profile with its «takes / does not take» criteria, test it with the same Gauge call. How exact the role can be depends on how exact the card is: precision and clarity are `Spec`'s.
+- **Too vague to read.** A low clarity score returns the card to `Spec` once, to be restated — not in a loop, and never split only to raise a percentage.
+- **Executor.** Set in `PROJECT.md`: the built-in small model by default; an external decision model is recommended. A missing key, an error or a scrubbing refusal falls back to the built-in executor, the reason is a line in the card's `## History`. What an executor is and how it is called — §8.
+- **For `Core`.** Every reading leaves a line on the card (§6). `Core` reads, per node, the share of cards accepted first time and the divergences «Gauge ↔ `Spec` ↔ `Kit` ↔ `Run`»: a role confidently named but kitted differently points at `Kit`; a low reading on a clear task points at the role catalog; a vague card points at `Spec`. The goal is accuracy and less spend on misunderstanding between nodes.
 
 **Choosing the route.** The chain above is `route-7`, the full circle; it is one of nine (`route-0`…`route-8`), with overlays `over-1`…`over-4` changing one link inside a route. The codes, what each costs and the rule of choice — `.forma/manual/en/03-forma/ROUTES.md`; the rule as a node applies it — `route-choice.md`, read at the moment of choosing and not restated here (when to choose, who chooses, the dispatcher). Two rules stay in the law itself:
 
@@ -116,7 +131,7 @@ Two, declared as numbers in `PROJECT.md`: **attempts** (cap per task) and **volu
 - **A continuation of the same `Run` (§2) counts as an attempt**, exactly like a reassembly — it is not a cheaper way around the budget.
 - **Every node stops itself at its own limit.** `Spec` sets each card's attempt budget, within the cap.
 
-**No start without the two thresholds and the nine goals.** The first cycle does not open — no card beyond the interview and the tooling it needs — until both thresholds hold a value in `PROJECT.md` and each of the nine main goals has its image; `result-image` and `review-image` come from the human alone (who forms the rest — `intent-goal-opening.md`, "How goals are formed"). A paid external service in `PROJECT.md`, "External services", adds a third limit per cycle, in its own unit; an empty table — none. A missing threshold or a goal in draft is asked at once, in the interview — never assumed, never deferred; the start check names it as a stop (§8, the start hook). **One exception:** a demonstration cycle the human agreed to — its cards carry the label `demo`, stay out of spend and statistics, and are removed when it ends (`intent-demo.md`).
+**No start without the two thresholds and the nine goals.** The first cycle does not open — no card beyond the interview and the tooling it needs — until both thresholds hold a value in `PROJECT.md` and each of the nine main goals has its image; `result-image` and `review-image` come from the human alone (who forms the rest — `intent-goal-opening.md`, "How goals are formed"). A paid external service in `PROJECT.md`, "External services" (an external Gauge executor is one), adds a third limit per cycle, in its own unit (calls); an empty table — none. A missing threshold or a goal in draft is asked at once, in the interview — never assumed, never deferred; the start check names it as a stop (§8, the start hook). **One exception:** a demonstration cycle the human agreed to — its cards carry the label `demo`, stay out of spend and statistics, and are removed when it ends (`intent-demo.md`).
 
 **Spend is counted by fact, not by impression.** A node doesn't know its own spend from inside — that knowledge is in the call's metadata, not in its context. The contract — skeleton, every field, the `unknown` state, external model and service, `Intent`'s own lines — is `.forma/manual/en/03-forma/ECONOMY.md`, one for every engine; the engine's own fields — its §8. What holds here:
 
@@ -166,6 +181,8 @@ Phrased affirmatively — what must hold, not what's forbidden. Numbering is fix
 15. Access credentials — password, token, key — live in exactly one of two places, by kind: site/project access (test accounts and the like) only in `VARS/credentials.md`; environment access (deploy, MCP servers, model APIs) only in `.env` at the project root (outside git, not `.md`), one file, no per-engine copies. A card or any other project file references a credential by name — `[[name]]` for `VARS/`, `` `VARIABLE_NAME` (`.env`) `` for environment — and by status ("confirmed"/"unconfirmed"). The value itself is never copied into a card, in any zone, including "Result" and "History."
 16. Clean zones — files that ship to other projects: the law and engine adapters, roles, skills, scripts, hooks, `.forma/manual/`, the dashboard, the protocol's README, `docs/` and `.forma/templates/` — carry no trace of a project: no card or goal codes, calendar dates, commit hashes, project domains or names, "human decisions", personal data. The history lives in cards, `.forma/living/`, `JOURNAL.md` and the changelog; `sync-engines --check` and the write hook report a trace.
 
+17. Only the scrubbed leaves the model family. Whatever goes to an external model or service — the Gauge's external executor included — first passes a scrubbing script, not a model: an allow-list of fields, values from `VARS/` and `.env` replaced by their names, patterns (addresses, tokens, numbers, paths), the project domain masked, and a refusal to send if a secret-like residue remains. Personal data and secrets live only where prohibition 15 puts them, so they are never in a card to begin with. The refusal is fail-closed: the call falls back to the in-family executor, it is never sent unscrubbed.
+
 **Narrow exception to prohibition 1 — a short mechanical task:** `Intent` may execute a change of literally named values across an explicitly listed set of files, within epics "3. Form" or "8. Experience", without `Kit` and without a separate confirming node. A card is still opened and its history names the exception; outside this case, doer and confirmer remain separate nodes. Conditions and record — `intent-housekeeping.md`.
 
 ---
@@ -199,6 +216,9 @@ The reason for the route — and for any change of it — is a line in `## Histo
 | `risk` | an expensive error or a new stack (`route-7`) |
 | `decision` | a question, not a delivery (`route-3`) |
 | `tooling` | tooling or recon (`route-4`) |
+| `gauge` | the Gauge confirmed a catalog role and `Spec` wrote it into `## Kit` — straight to `Run` |
+
+**A Gauge reading is a line in `## History`**, written by `Spec` right after the call, never estimated: the §3 spend line of the call, whose description carries the reading: `` `Gauge`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<call id>` — <engine>: role <name>, N % (gap G, clarity C), <executor>, <fits / below threshold / returned>. `` An external executor is charged in its own unit before the dash (§3, "External service"); scrubbing is recorded as what and how many, never the values. The call is tied to the card like any subagent reach (below).
 
 **The stage of the route is written, not guessed.** Whoever moves the card along its route — the same moment §7 has it sync `status` and `assignee` — appends `` `Node`, YYYY-MM-DD: stage <key> — <what>. ``, key from a closed list: `card` (the task is being written) · `approve` (awaits the human's "yes") · `kit` (kitting) · `exec` (execution) · `check` (`Intent`'s check) · `accept` (awaits the human's acceptance) · `close` (awaits `Core`). The last stage line is where the card stands; a stage the route lacks is not written. The key part (`route`, `why`, `stage` and the codes) is English in every language, like a spend line (§3). `sync-engines --check` reports a missing reason, an unknown code or key, and a last stage that contradicts the status.
 
