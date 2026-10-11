@@ -105,6 +105,7 @@ const MAP = [
   ['.agents/forma-adapter.cjs', 'adapters/gemini/forma-adapter.cjs'],   // граница ядро — адаптер: `dashboard/lib/engines.cjs`
   ['.agents/plugins/forma/agents', 'adapters/gemini/agents'],
   ['.agents/rules', 'adapters/gemini/rules'],
+  ['.agents/tests', 'adapters/gemini/tests'],                           // тест соответствия адаптера (прописан в adapter-conformance.cjs)
   ['.agents/skills', 'adapters/codex/.agents/skills'],
   ['.codex', 'adapters/codex/.codex'],
 ];
