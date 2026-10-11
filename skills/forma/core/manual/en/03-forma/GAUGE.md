@@ -76,3 +76,7 @@ An executor earns the right to decide alone only after a measurement on closed c
 ## For `Core`
 
 Every reading is a line in the card's history. `Core` reads, per row, the share accepted first time: low clarity → `Spec`; role confidently named but kitted otherwise → `Kit`; role confirmed but the profile falls short → `Kit` corrects the profile; thresholds drifting → a stop with a report. The point is accuracy and less spend on misunderstanding between nodes — the share of spend on `Kit` should fall while the first-time share holds.
+
+**The Gauge also runs a dup-check, not only the card.** Before `Kit` writes a new role, it runs the candidate shape (its «takes» line and 1–2 examples) through the same call against the catalog: at or above the executor's threshold on an existing role, that role is extended, not duplicated; below threshold, a new profile is written with an explicit «does not take» line naming the nearest neighbor (`kit.md`, "Every assembly leaves the catalog something"). This is also why `Kit` is now called inline on a missing role, never by opening a separate tooling card and making the task wait.
+
+**Second metric: share of cards through `Kit`.** `node .forma/dashboard/tally.cjs .devtool/features` → `byNode.Kit.files` (cards carrying a `Kit` attempt) against `cardsWithAttempt` (every card with any recorded attempt). This share should fall as the catalog grows — a rising share with a flat catalog points at the dup-check being skipped, not at more work existing.
