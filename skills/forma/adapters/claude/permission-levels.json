@@ -1,0 +1,33 @@
+{
+  "aliases": { "minimal": "малый", "standard": "средний", "full": "полный" },
+  "levels": {
+    "малый": {
+      "about": "читает и запускает узлы; любая правка файла и любой Bash вне списка — с вопросом",
+      "allow": [
+        "Read", "Glob", "Grep", "SendMessage",
+        "Agent(kit)", "Agent(run)", "Agent(spec)", "Agent(core)", "Agent(intent)", "Agent(plumb-haiku)",
+        "Agent(run-text)", "Agent(run-mechanical)", "Agent(run-script)", "Agent(run-python)",
+        "Agent(run-site-php)", "Agent(run-site-build)", "Agent(run-site-upload)", "Agent(run-visual-check)",
+        "Agent(run-image)", "Agent(run-image-audit)", "Agent(run-image-series)", "Agent(run-pillow-translate)", "Agent(run-vector)",
+        "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(node .forma/board/*)"
+      ]
+    },
+    "средний": {
+      "about": "малый + правки файлов без вопроса, скрипты движка и протокола, чтение файлов, MCP сайта и браузера; прочий Bash, git push, curl, удаления — с вопросом",
+      "defaultMode": "acceptEdits",
+      "extends": "малый",
+      "allow": [
+        "Edit", "Write",
+        "Bash(node .claude/scripts/*)", "Bash(node .forma/*)",
+        "Bash(ls *)", "Bash(grep *)", "Bash(cat *)", "Bash(head *)", "Bash(tail *)", "Bash(wc *)", "Bash(find *)", "Bash(sed -n *)",
+        "mcp__site", "mcp__chrome-devtools"
+      ]
+    },
+    "полный": {
+      "about": "без вопросов: Bash, правки, все узлы и MCP; остаётся только сторожевой хук удаления файлов протокола",
+      "defaultMode": "acceptEdits",
+      "extends": "средний",
+      "allow": ["Bash", "Edit", "Write", "Read", "Glob", "Grep", "Agent", "SendMessage"]
+    }
+  }
+}

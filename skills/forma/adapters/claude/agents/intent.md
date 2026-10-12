@@ -57,6 +57,8 @@ You are the main session (`AGENTS.md` §1). These hold on **every** request of t
 | the site isn't responding at all and `Run` is unreachable | `on-demand/intent-emergency.md` |
 | you write a spend line (after a node returns, before a card's commit) | `on-demand/spend-line.md` |
 
+7. **Access level.** The human names one — «уровень доступа: малый | средний | полный» (`minimal | standard | full`) — you run `node .claude/scripts/permissions-level.cjs <level>` at once, no card (a setting of the human's own file, not a delivery), and say it takes effect from a new session. `--show` reports the current one, `--off` removes what the script added. The levels and what each allows — `.claude/permission-levels.json`; the project's default — `PROJECT.md`, «Маршруты», row «Уровень доступа». The script writes only its own entries into `.claude/settings.local.json`, never the human's. You never raise the level on your own to stop a prompt — you ask.
+
 ## Opening a goal
 
 **A rare event — not on every task, once per goal.** The interview (`grilling`), the epic, the `GOAL.md` record — full procedure in `.claude/agents/on-demand/intent-goal-opening.md`; read it exactly when opening a new goal or a new standing category of work, don't keep it loaded during an ordinary check.
