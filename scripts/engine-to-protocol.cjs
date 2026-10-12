@@ -95,6 +95,7 @@ const MAP = [
   ['.forma/board', 'core/board'],
   // адаптер Claude (читатели стенограмм Claude живут в .forma/dashboard проекта, но принадлежат адаптеру)
   ['.claude/forma-adapter.cjs', 'adapters/claude/forma-adapter.cjs'],   // граница ядро — адаптер: `dashboard/lib/engines.cjs`
+  ['.claude/permission-levels.json', 'adapters/claude/permission-levels.json'],   // уровни доступа: читает permissions-level.cjs
   ['.claude/agents', 'adapters/claude/agents'],
   ['.claude/hooks', 'adapters/claude/hooks'],
   ['.claude/rules', 'adapters/claude/rules'],

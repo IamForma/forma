@@ -298,6 +298,7 @@ function installClaude(root, protectedPaths, compact) {
   const skip = (d) => protectedPaths.has(path.resolve(d))
   copyFile(path.join(A, 'forma-adapter.cjs'), path.join(C, 'forma-adapter.cjs')) // core/adapter boundary: the core finds it by file name
   copyFile(path.join(A, 'verify-profile.cjs'), path.join(C, 'verify-profile.cjs')) // install verify profile: the core finds it via the manifest
+  copyFile(path.join(A, 'permission-levels.json'), path.join(C, 'permission-levels.json')) // access levels read by scripts/permissions-level.cjs
   copyTree(path.join(A, 'rules'), path.join(C, 'rules'))
   copyTree(path.join(A, 'agents'), path.join(C, 'agents'))
   copyTree(path.join(A, 'hooks'), path.join(C, 'hooks'))
