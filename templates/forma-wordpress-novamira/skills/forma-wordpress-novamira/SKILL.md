@@ -5,13 +5,15 @@ description: Puts into the current project this template's route (project/config
 
 # forma-wordpress-novamira — site project stub
 
-Installs three things.
+Installs four things.
 
 **The route** — `template/project/config/ROUTE.md` → `project/config/ROUTE.md`. This is the main thing the project template gives: the sequence by which a site on this stack is brought to a result (interview → landing prompt → Aura → landing as the prototype of all pages → predefined sitemap → three versions of the mockup). The interview script comes with the core and is not duplicated here; **the template adds only a reference to the fifth position** — "naturalness", that is, the route.
 
 **The `project/config/SITE.md` stub** — `template/project/config/SITE.md` → `project/config/SITE.md`, an empty skeleton of the site's architectural snapshot (theme, cache, builder, snippets, MCP authentication, page catalog). The site's product data lives only in `project/`, not in `.claude/skills/` (`AGENTS.md`, "Three layers of files"). Filled in by fact, by reconnaissance of the specific site — not at installation.
 
-**Site and translation scripts** — `template/scripts/` → `.claude/scripts/`: a wrapper of the novamira CLI, uploading PHP to the site, the .po translation pipeline.
+**Site and translation scripts** — `template/scripts/` → `.claude/scripts/`: a wrapper of the novamira CLI, uploading PHP to the site, the .po translation pipeline, and the block translation scripts (extract Russian strings, translate-blocks pipeline, apply by line / by JSON pointer / by comment, assemble and write a page).
+
+**`Run` profiles of this stack** — `template/agents/run/` → `.claude/agents/run/`: `run-site-upload`, `run-image-audit`, `run-pillow-translate`. They arrive ready, so `Plumb` finds the role in the catalog at once and `Kit` is not called to write it again for each site project. They are not part of the protocol core: the core's own catalog stays platform-neutral.
 
 ## Installation order
 
@@ -21,6 +23,7 @@ Installs three things.
 3. **Set the template status.** In `project/config/PROJECT.md`, the "Project template" block: name `forma-wordpress-novamira`, source — this template, status — `forming with the human` while the "Passed" section of `ROUTE.md` is empty. The status `verified ready` is set **only after the route has been walked to a result**, and it is set by the human, not by the installer.
 4. **Copy the `project/config/SITE.md` stub.** `template/project/config/SITE.md` → `project/config/SITE.md` (do not overwrite if the file already exists and is filled in — see step 1).
 5. **Copy the site and translation scripts.** `template/scripts/*` → `.claude/scripts/` (create the directory if missing): `site.cjs`, `site-php.cjs`, `loco-pipeline.py`, `po_shift_check.py`, `tokenator_translator.py`. If a file with that name already exists — do not overwrite silently: show the difference, ask the human. The scripts take the site and keys only from the project's `.env`, by name (`SITE_SLUG`, `TOKENATOR_API_KEY`, optional `TOKENATOR_ENDP`) — add the missing names to `.env.example` without values.
+5a. **Copy the `Run` profiles.** `template/agents/run/*.md` → `.claude/agents/run/` (create the directory if missing; a profile that already exists is not overwritten — show the difference and ask). Add each to `.claude/project-layer.txt` of the project (the template's files are not the core's, the transfer to the protocol must not offer them), and to the table «Профили Run проекта» in `PROJECT.md` if the project keeps one.
 6. **Show the human what comes next.** The stub is empty — filling it in (URL, WP/PHP, theme, cache, snippet manager, MCP authentication method, page catalog) happens at Step 0 of the `novamira-wp-deploy` skill ("New project: bootstrap"), by reconnaissance through Novamira MCP itself and in conversation with the human — it is not invented in advance.
 
 ## What this skill does not do
