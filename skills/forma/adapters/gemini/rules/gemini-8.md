@@ -66,7 +66,7 @@ Which model each node runs on is an engine matter, not a rule of the protocol �
 
 ## Spend fields (§3)
 
-**Not established for this engine.** §3 requires three numbers per attempt — tokens, duration, cache-read — plus the call id, all read from the call's own result rather than estimated. Which fields of an `invoke_subagent` return carry them has not been verified here, and the Claude Code field names (`<usage>`, `subagent_tokens`, `duration_ms`, `cache_read_input_tokens`, `agent_id`) are **not** valid in Antigravity — they belong to a different API and were carried into this file by an earlier sync in error. Until a node establishes them by recon (`kit-recon.md`, epic "3. Form/Intent+Kit"), a caller on this engine writes the history line with the fields it can actually verify and names the missing ones as missing — it does not invent a number and does not silently drop the line: a missing cache-read or call id is written with the markers of `AGENTS.md` §3, row "Unknown" — `(cache-read unknown)`, `` `id unknown` `` — with the reason named after the dash. Establishing them is a `Kit` card, epic "3. Form/Intent+Kit".
+**Not established for this engine.** §3 requires three numbers per attempt — tokens, duration, cache-read — plus the call id, all read from the call's own result rather than estimated. Which fields of an `invoke_subagent` return carry them has not been verified here, and the Claude Code field names (`<usage>`, `subagent_tokens`, `duration_ms`, `cache_read_input_tokens`, `agent_id`) are **not** valid in Antigravity — they belong to a different API and were carried into this file by an earlier sync in error. Until a node establishes them by recon (`kit-recon.md`, epic "3. Project protocol"), a caller on this engine writes the history line with the fields it can actually verify and names the missing ones as missing — it does not invent a number and does not silently drop the line: a missing cache-read or call id is written with the markers of `AGENTS.md` §3, row "Unknown" — `(cache-read unknown)`, `` `id unknown` `` — with the reason named after the dash. Establishing them is a `Kit` card, epic "3. Project protocol".
 
 **Line format on this engine (checked by `check-board.cjs`, `agent-id` and `engine-tag`):** `` `Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<id>` — gemini: <what was done>. ``
 
@@ -77,7 +77,7 @@ Which model each node runs on is an engine matter, not a rule of the protocol �
 
 ## Deletion guard (§1)
 
-**Not established for this engine.** Claude Code blocks deletion of the protocol's own files with `.claude/hooks/guard-delete.sh`, Codex with `.codex/hooks/guard-delete.ps1`; no hook mechanism has been verified in Antigravity. Until one is, the protected set of `AGENTS.md` §1 holds by discipline, not by construction: a node deletes none of it without the human's phrase «Отключи сенсорику», one action per phrase. Establishing a hook is a `Kit` card, epic "3. Form/Intent+Kit".
+**Not established for this engine.** Claude Code blocks deletion of the protocol's own files with `.claude/hooks/guard-delete.sh`, Codex with `.codex/hooks/guard-delete.ps1`; no hook mechanism has been verified in Antigravity. Until one is, the protected set of `AGENTS.md` §1 holds by discipline, not by construction: a node deletes none of it without the human's phrase «Отключи сенсорику», one action per phrase. Establishing a hook is a `Kit` card, epic "3. Project protocol".
 
 ## Main session = `Intent` (§1)
 

@@ -30,7 +30,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const economy = require('../../.forma/dashboard/economy.cjs');
-// Адаптер Claude Code: поля `usage` движка → канонические переменные (.forma/manual/en/03-forma/ECONOMY.md).
+// Адаптер Claude Code: поля `usage` движка → канонические переменные (.forma/manual/en/03-protocol/ECONOMY.md).
 const { claudeUsage } = require('./claude-economy.cjs');
 const { formatSpendLine, sessionWindowEnd } = require('../../.forma/dashboard/spend-line.cjs');
 const { makeCli } = require('../../.forma/dashboard/lib/cli.cjs');

@@ -136,7 +136,7 @@ Profiles that exist only for one product are not in this table: they live in the
 
 **Kitting done — hand off to `Run`.** One call does the whole move — `status`, `assignee` (`AGENTS.md` section 7), the stage line `` `Kit`, YYYY-MM-DD: stage exec — <что>. `` (§6) and the board check: `node .forma/board/card-move.cjs <card> --to run --note "<что>"`. The kit goes into the card in the same call — `--kit "<text>"`, or `--kit -` with the text on stdin (a heredoc) for several lines; it replaces the "Kit" zone body, so a fixed kit is written the same way, without a separate edit. Same on a return after a fix: the task goes back to the same node — a card is never left without one.
 
-**You never call `Run` yourself.** In Claude Code only the main session holds the `Agent` tool (`claude-8.md`, "Execution"); your own tool list carries no `Agent`. The call above updates the board and writes the kit — it does not launch anything. Once it's done, you return to your caller, the main session, which performs the `Agent` call that actually starts `Run` against the card you just kitted. Exception: the short route of the marked epics (`AGENTS.md` §7, "Infrastructure" below) — there you execute the task yourself and this handoff never happens.
+**You never call `Run` yourself.** In Claude Code only the main session holds the `Agent` tool (`claude-8.md`, "Execution"); your own tool list carries no `Agent`. The call above updates the board and writes the kit — it does not launch anything. Once it's done, you return to your caller, the main session, which performs the `Agent` call that actually starts `Run` against the card you just kitted. Exception: the short route, the card's label `route-4` (`AGENTS.md` §7, "Infrastructure" below) — there you execute the task yourself and this handoff never happens.
 
 **The route is read, and may be lengthened — never shortened** past what the human approved (`AGENTS.md` §2). The card lacks a role, access or kit its route assumes (`route-2` needing site access, `route-6` with a stale kit) — move it longer, change the `route-N` label and write `` `Kit`, YYYY-MM-DD: маршрут route-2 → route-5 — <причина>. `` A shorter route is `Intent`'s choice, never yours.
 
@@ -189,7 +189,7 @@ A fix can be split into steps, but not the result: a card's "what it delivers" a
 
 ## Infrastructure
 
-Cards from epic "3. Form/Intent+Kit" are yours to execute, without `Spec`/`Run`/`Core` (`AGENTS.md` §2) — both kinds: access/tool/skill, and schema or reference files (`AGENTS.md`, `.claude/rules/claude-8.md`, `.agents/rules/gemini-8.md`, `.claude/agents/*.md`, `.forma/manual/`, `PROJECT.md` tables). For the latter kind read `.claude/agents/on-demand/intent-housekeeping.md` when you take such a card.
+Cards on the short route (label `route-4`; in practice the cards of epic "3. Project protocol") are yours to execute, without `Spec`/`Run`/`Core` (`AGENTS.md` §2, §7) — both kinds: access/tool/skill, and schema or reference files (`AGENTS.md`, `.claude/rules/claude-8.md`, `.agents/rules/gemini-8.md`, `.claude/agents/*.md`, `.forma/manual/`, `PROJECT.md` tables). For the latter kind read `.claude/agents/on-demand/intent-housekeeping.md` when you take such a card.
 
 **You execute both kinds; `Intent` only confirms** (`intent.md`, "Housekeeping"). Schema housekeeping used to run without a separate confirming node — `Intent` executing and confirming its own work broke prohibition 1. Any node reaching the "human" row opens these cards, you included, when you find a gap (`kit-arsenal.md`, `kit-limits.md`).
 
@@ -217,7 +217,7 @@ A task outside your qualification (content edits on the site, not tooling) — d
 
 ## Recon
 
-**A rare event — not during ordinary kitting, only on an epic "3. Form/Intent+Kit" card.** Investigating an unfamiliar stack before slicing — full procedure in `.claude/agents/on-demand/kit-recon.md`; read it exactly when you take such a card.
+**A rare event — not during ordinary kitting, only on an epic "3. Project protocol" card.** Investigating an unfamiliar stack before slicing — full procedure in `.claude/agents/on-demand/kit-recon.md`; read it exactly when you take such a card.
 
 ## Project kitting
 
@@ -225,7 +225,7 @@ A task outside your qualification (content edits on the site, not tooling) — d
 
 ## Experience
 
-The store is `project/experience/` — one file per subject, named the way someone would search for it. `Run` and you write into it **at the moment of the finding**, not on a summary at the end of a goal: an experience that arrives a goal late has usually gone stale on the way. Epic "8. Experience/Intent+Kit" is not where the collecting happens — collecting happens by itself, on the way. The epic is for **weeding**, and that is a rare card.
+The store is `project/experience/` — one file per subject, named the way someone would search for it. `Run` and you write into it **at the moment of the finding**, not on a summary at the end of a goal: an experience that arrives a goal late has usually gone stale on the way. Epic "8. Competence segments" is not where the collecting happens — collecting happens by itself, on the way. The epic is for **weeding**, and that is a rare card.
 
 **Reading — by the subject of the card, never the whole store.** You grep by what the card is about (the plugin, the tool, the area) and read the one file that comes back. This is deliberate: the store may grow without limit and the cost of reading it stays flat. Reading it whole would make the system pay more for every kitting the more it has learned.
 

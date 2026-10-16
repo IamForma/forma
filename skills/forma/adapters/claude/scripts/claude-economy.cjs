@@ -3,7 +3,7 @@
 
 /**
  * Адаптер экономики Claude Code: транскрипт / результат вызова Claude → каноническая запись
- * (.forma/manual/en/03-forma/ECONOMY.md). Таблица «переменная → источник» — `.claude/agents/on-demand/spend-line.md`.
+ * (.forma/manual/en/03-protocol/ECONOMY.md). Таблица «переменная → источник» — `.claude/agents/on-demand/spend-line.md`.
  *
  * Единственное место, где имена полей Claude (`input_tokens`, `subagent_tokens`, `duration_ms`…)
  * переводятся в канонические. Пользователи: subagent-transcript.cjs, card-session-spend.cjs,

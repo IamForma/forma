@@ -76,7 +76,7 @@ Intent (cycle presentation)
 - **Name an unclarity at your own node**, not further down: here it costs one question, downstream it costs redone work.
 - **An exhausted budget reads as a slicing failure.** Only `Core` can overturn that, by examining the stop.
 - **The cycle is judged by `Core`**, not by whoever opened it, not by the human: `Intent`'s task check and the human's acceptance of the outward thing don't stand in for the verdict — comparing the cycle against the end-image is `Core`'s, last, on the cycle's cards together (§7).
-- **The short route of the marked epics, `Intent → human → Kit → Intent`:** `Spec` is replaced, not skipped; the human's approval of the card's five fields is its condition of validity (§7).
+- **The short route, `Intent → human → Kit → Intent` (`route-4`):** `Spec` is replaced, not skipped; the human's approval of the card's five fields is its condition of validity (§7).
 
 **The Plumb.** The measure between slicing and execution.
 
@@ -87,21 +87,21 @@ Intent (cycle presentation)
 - **Executor.** Set in `PROJECT.md`: the built-in small model by default; an external decision model is recommended. A missing key, an error or a scrubbing refusal falls back to the built-in executor, the reason is a line in the card's `## History`. What an executor is and how it is called — §8.
 - **For `Core`.** Every reading leaves a line on the card (§6). `Core` reads, per node, the share of cards accepted first time and the divergences «Plumb ↔ `Spec` ↔ `Kit` ↔ `Run`»: a role confidently named but kitted differently points at `Kit`; a low reading on a clear task points at the role catalog; a vague card points at `Spec`. The goal is accuracy and less spend on misunderstanding between nodes.
 
-**Choosing the route.** The chain above is `route-7`, the full circle; it is one of nine (`route-0`…`route-8`), with overlays `over-1`…`over-4` changing one link inside a route. The codes, what each costs and the rule of choice — `.forma/manual/en/03-forma/ROUTES.md`; the rule as a node applies it — `route-choice.md`, read at the moment of choosing and not restated here (when to choose, who chooses, the dispatcher). Two rules stay in the law itself:
+**Choosing the route.** The chain above is `route-7`, the full circle; it is one of nine (`route-0`…`route-8`), with overlays `over-1`…`over-4` changing one link inside a route. The codes, what each costs and the rule of choice — `.forma/manual/en/03-protocol/ROUTES.md`; the rule as a node applies it — `route-choice.md`, read at the moment of choosing and not restated here (when to choose, who chooses, the dispatcher). Two rules stay in the law itself:
 
 - **`route-0`…`route-5` open only on the human's approval of the five fields.** On them the criterion is written by the one who will accept by it; the human's "yes" is the independent eye `Spec` would otherwise be. Without it the card stays in `backlog`. `route-6`…`route-8` need no such approval.
 - **`Kit` may lengthen a route, never shorten it** past what the human approved; the change is a history line with its reason.
 
 An environment limitation isn't a defect — it's a discovery: no one erred, the map was drawn without that fact.
 
-**Reaching the "human" row leaves a visible trace, not just a record.** Any node that reaches it (stop or request) opens or updates a `.devtool/features/` card — epic "3. Form/Intent+Kit", `backlog`, flagged as awaiting a decision. The normal record (card history, `PROJECT.md`) stays where it is; the epic card only keeps the finding from vanishing if its goal closes before the decision is made. Once decided (or found unnecessary), it is carried out by the card's domain:
+**Reaching the "human" row leaves a visible trace, not just a record.** Any node that reaches it (stop or request) opens or updates a `.devtool/features/` card — epic "3. Project protocol", `backlog`, flagged as awaiting a decision. The normal record (card history, `PROJECT.md`) stays where it is; the epic card only keeps the finding from vanishing if its goal closes before the decision is made. Once decided (or found unnecessary), it is carried out by the card's domain:
 
 | Domain of the decision | Who carries it out |
 | --- | --- |
 | Resource or tool | `Kit` — directly, or via `Run` when site access is needed that `Kit` lacks (`kit.md`, "Infrastructure") |
 | Schema or reference file | `Intent` — directly, outside the production route (`intent-housekeeping.md`) |
 
-Full registry of process epics (eight, plus the `goal` lane for the product — nine kinds of goal, a closed list) — `intent-goal-opening.md`, "Epic".
+Full registry of process epics (eight, plus the `channels` lane for the product — nine kinds of goal, a closed list) — `intent-goal-opening.md`, "Epic".
 
 **Housekeeping — of the tooling itself and of resources and tools — is `Kit`'s to execute, `Intent`'s to confirm** (`kit.md`, `intent.md`).
 
@@ -131,9 +131,9 @@ Two, declared as numbers in `PROJECT.md`: **attempts** (cap per task) and **volu
 - **A continuation of the same `Run` (§2) counts as an attempt**, exactly like a reassembly — it is not a cheaper way around the budget.
 - **Every node stops itself at its own limit.** `Spec` sets each card's attempt budget, within the cap.
 
-**No start without the two thresholds and the nine goals.** The first cycle does not open — no card beyond the interview and the tooling it needs — until both thresholds hold a value in `PROJECT.md` and each of the nine main goals has its image; `result-image` and `review-image` come from the human alone (who forms the rest — `intent-goal-opening.md`, "How goals are formed"). A paid external service in `PROJECT.md`, "External services" (an external Plumb executor is one), adds a third limit per cycle, in its own unit (calls); an empty table — none. A missing threshold or a goal in draft is asked at once, in the interview — never assumed, never deferred; the start check names it as a stop (§8, the start hook). **One exception:** a demonstration cycle the human agreed to — its cards carry the label `demo`, stay out of spend and statistics, and are removed when it ends (`intent-demo.md`).
+**No start without the two thresholds and the nine goals.** The first cycle does not open — no card beyond the interview and the tooling it needs — until both thresholds hold a value in `PROJECT.md` and each of the nine main goals has its image; `resources` and `results` come from the human alone (who forms the rest — `intent-goal-opening.md`, "How goals are formed"). A paid external service in `PROJECT.md`, "External services" (an external Plumb executor is one), adds a third limit per cycle, in its own unit (calls); an empty table — none. A missing threshold or a goal in draft is asked at once, in the interview — never assumed, never deferred; the start check names it as a stop (§8, the start hook). **One exception:** a demonstration cycle the human agreed to — its cards carry the label `demo`, stay out of spend and statistics, and are removed when it ends (`intent-demo.md`).
 
-**Spend is counted by fact, not by impression.** A node doesn't know its own spend from inside — that knowledge is in the call's metadata, not in its context. The contract — skeleton, every field, the `unknown` state, external model and service, `Intent`'s own lines — is `.forma/manual/en/03-forma/ECONOMY.md`, one for every engine; the engine's own fields — its §8. What holds here:
+**Spend is counted by fact, not by impression.** A node doesn't know its own spend from inside — that knowledge is in the call's metadata, not in its context. The contract — skeleton, every field, the `unknown` state, external model and service, `Intent`'s own lines — is `.forma/manual/en/03-protocol/ECONOMY.md`, one for every engine; the engine's own fields — its §8. What holds here:
 
 - **The caller writes the line** into the card's `## History`, **right after the return** — never the node itself, never after the fact. The number is read from the call's own metadata, never estimated.
 - **The line:** `` `Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<call id>` — <engine>: <what was done, one sentence>. `` The key part (before the dash) is **English in every project**; the description after the dash is in the card's language (§6) and opens with the engine that did the work (`claude-code:`, `codex:`, `gemini:`).
@@ -185,7 +185,7 @@ Phrased affirmatively — what must hold, not what's forbidden. Numbering is fix
 
 18. Commit messages of the protocol repository are English only. The protocol is published, and its history reads in one language for everyone; the project repository keeps its own language. A message with Cyrillic is a stop in `forma-commit.cjs` and in the pre-push check, never a warning.
 
-**Narrow exception to prohibition 1 — a short mechanical task:** `Intent` may execute a change of literally named values across an explicitly listed set of files, within epics "3. Form" or "8. Experience", without `Kit` and without a separate confirming node. A card is still opened and its history names the exception; outside this case, doer and confirmer remain separate nodes. Conditions and record — `intent-housekeeping.md`.
+**Narrow exception to prohibition 1 — a short mechanical task:** `Intent` may execute a change of literally named values across an explicitly listed set of files, within epics "3. Project protocol" or "8. Competence segments", without `Kit` and without a separate confirming node. A card is still opened and its history names the exception; outside this case, doer and confirmer remain separate nodes. Conditions and record — `intent-housekeeping.md`.
 
 ---
 
@@ -207,6 +207,8 @@ All five fields are mandatory. **Every card also carries exactly one goal label*
 | `wave-N` | one, `route-8` only | the wave inside the segment |
 | `after-card-NNN` | zero or more | starts only after card-NNN is accepted |
 | `trial` | zero or one | the trial card of its kind |
+
+**Two different "segments".** `seg-N` and `route-8` slice **a goal** into segments of work (a unit of slicing, lives in the goal's `GOAL.md`); the epic "8. Competence segments" is **the store of experience and roles** (`project/experience/`) — a kind of goal. They share a word and nothing else: a `seg-N` label never places a card in epic 8, and a card of epic 8 carries no `seg-N` unless it runs `route-8` itself.
 
 The reason for the route — and for any change of it — is a line in `## History` by whoever chose or changed it, with a reason code from a closed list: `` `Node`, YYYY-MM-DD: route route-N (why: <code>) — <detail>. `` A change reads `route route-2 → route-5 (why: <code>)`.
 
@@ -303,8 +305,8 @@ There is no separate file for history or result — the task's whole life is in 
 | `review` | `Intent` checks against the criterion and presents the result to the human | `"Intent"` |
 | `done` | the human accepted; the cycle is not closed until `Core` has closed it | `"Core"`, then `null` |
 
-- **The short route of the marked epics — the marker `/Intent+Kit` in the epic name** (by default epics 1, 3 and 8): `Intent → human → Kit → Intent`. `Spec` is **replaced**, not skipped: its function — a readiness criterion written by someone other than the one who accepts by it — passes to the human, who approves the card's five fields before `Kit` is handed it. **Condition of validity:** that approval is a **reply in the session, not a call**, written into `## History` as an event line without `attempt` (`ECONOMY.md`, "`Intent` in the shared session"); until that "yes" the card stays in `backlog`. `Kit` kits and executes as one node: `in-progress` is held by `"Kit"`, not `"Run"` (`kit.md`, "Infrastructure"). **No marker — no route:** any other epic is sliced by `Spec` and runs the usual route; skipping `Spec` there is a breach, not a route. This is not the code phrase (§1): nothing is stepped outside the route, so prohibition 11 does not apply. The marker reads as `route-4` (an epic's default route lives in `PROJECT.md`); a card's own `route-N` label (§6) overrides it, within the approval rule of §2.
-- **Exception, epics "2. Documentation/Intent" and "6. Incoming/Intent":** `in-progress` is held by `"Intent"`. On "6. Incoming" only while `Intent` resolves the task itself; the confirmer is the human, never `Intent` (prohibition 1). An incoming card holding a list of tasks, and documentation for the human — `intent.md`, `intent-goal-opening.md`.
+- **The short route — the card's label `route-4`:** `Intent → human → Kit → Intent`. `Spec` is **replaced**, not skipped: its function — a readiness criterion written by someone other than the one who accepts by it — passes to the human, who approves the card's five fields before `Kit` is handed it. **Condition of validity:** that approval is a **reply in the session, not a call**, written into `## History` as an event line without `attempt` (`ECONOMY.md`, "`Intent` in the shared session"); until that "yes" the card stays in `backlog`. `Kit` kits and executes as one node: `in-progress` is held by `"Kit"`, not `"Run"` (`kit.md`, "Infrastructure"). **The route belongs to the card, not to the epic:** an epic is only a lane of its kind of goal, it carries no route; who holds `in-progress` is read from the card's `route-N` label (§6) — `route-4` `"Kit"`, `route-0` and `route-1` `"Intent"`, the rest `"Run"`. A card without the short-route label is sliced by `Spec` or runs the route its own label names; skipping `Spec` on a route that needs it is a breach, not a route. Choosing the route is `route-choice.md`'s, not the epic's. This is not the code phrase (§1): nothing is stepped outside the route, so prohibition 11 does not apply.
+- **Cards `Intent` executes itself (`route-0`, `route-1`):** `in-progress` is held by `"Intent"` — typically documentation for the human (epic "2. Project structure") and a discussion card `Intent` resolves itself (epic "6. Discussion of affairs"); the confirmer is the human, never `Intent` (prohibition 1). A discussion card holding a list of tasks, and documentation for the human — `intent.md`, `intent-goal-opening.md`.
 - **The wave gate.** A card of wave N+1 is not taken into work until every card named in its `after-card-*` labels is accepted — not the whole previous wave. A card that fails acceptance returns to `Kit` and reruns in the same wave; cards depending on it wait, independent ones go on.
 - **A "didn't get there" return goes to `todo`+`"Kit"`, never a drop into `review`** (§2); it reopens in `in-progress` after reassembly. Or it goes to `backlog` for fresh slicing, or the process stops outside the kanban.
 - **`backlog`+`assignee: null` on a card `Spec` didn't create is a signal, not an error**: it never went through slicing — ask the human (`intent-session-start.md`).

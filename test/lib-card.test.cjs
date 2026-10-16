@@ -10,7 +10,7 @@ const S = require('../skills/forma/core/dashboard/spend-line.cjs');
 
 const CARD = [
   '---', 'id: "card-001-x"', 'status: "review"', 'assignee: null', 'created: "2026-05-04T10:00:00Z"',
-  'labels: ["goal-forma", "route-4"]', 'priority: medium', '---', '', '# Заголовок  ', '', '## Задача', 'делай', '',
+  'labels: ["goal-protocol", "route-4"]', 'priority: medium', '---', '', '# Заголовок  ', '', '## Задача', 'делай', '',
   '## История', '- `Kit`, 2026-05-04: attempt, 10 tokens (5 cache-read), 3 s, `abc12345` — claude-code: x.', '', '## Результат', 'готово', '',
 ].join('\n');
 
@@ -27,14 +27,14 @@ test('frontmatterBlock / splitFrontmatter: блок и тело; LF и CRLF; н�
 test('parseFrontmatter: null, строка, массив, сырое значение', () => {
   assert.deepEqual(card.parseFrontmatter(CARD), {
     id: 'card-001-x', status: 'review', assignee: null, created: '2026-05-04T10:00:00Z',
-    labels: ['goal-forma', 'route-4'], priority: 'medium',
+    labels: ['goal-protocol', 'route-4'], priority: 'medium',
   });
   assert.deepEqual(card.parseFrontmatter('без блока'), {});
 });
 
 test('parseFrontmatterJson: значение как JSON, иначе строка', () => {
   const fm = card.parseFrontmatterJson(CARD);
-  assert.deepEqual(fm.labels, ['goal-forma', 'route-4']);
+  assert.deepEqual(fm.labels, ['goal-protocol', 'route-4']);
   assert.equal(fm.assignee, null);
   assert.equal(fm.priority, 'medium');
 });
@@ -50,7 +50,7 @@ test('field / labelsOf / createdDay / cardTitle', () => {
   assert.equal(card.field(CARD, 'status'), 'review');
   assert.equal(card.field(CARD, 'assignee'), null);
   assert.equal(card.field(CARD, 'нет'), null);
-  assert.deepEqual(card.labelsOf(CARD), ['goal-forma', 'route-4']);
+  assert.deepEqual(card.labelsOf(CARD), ['goal-protocol', 'route-4']);
   assert.deepEqual(card.labelsOf('без меток'), []);
   assert.equal(card.createdDay(CARD), '2026-05-04');
   assert.equal(card.createdDay('---\n---'), '');

@@ -47,8 +47,8 @@ test('new-card --dry: следующий номер, эпик и метки из
   const r = newCardDry(fx);
   assert.equal(r.status, 0, r.out);
   assert.match(r.out, /<ROOT>\/\.devtool\/features\/card-004-proba-setki\.md/);
-  assert.match(r.out, /^epic: "3\. Form\/Intent\+Kit"$/m);
-  assert.match(r.out, /^labels: \["goal-forma", "route-4"\]$/m);
+  assert.match(r.out, /^epic: "3\. Project protocol"$/m);
+  assert.match(r.out, /^labels: \["goal-protocol", "route-4"\]$/m);
   assert.match(r.out, /^## Task$/m);
   assert.deepEqual(fs.readdirSync(path.join(fx.root, '.devtool', 'features')).sort(), before);
 });

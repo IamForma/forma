@@ -85,7 +85,7 @@ Run `.codex/tests/verify-config.ps1` after changing Codex configuration. It chec
 
 ## Zone of edits
 
-Codex owns `.codex/`; it never edits `.claude/`, `.agents/` or GEMINI.md by hand. A shared-law discrepancy is named before an AGENTS.md edit. For a Codex-only refresh use `node .codex/scripts/sync-codex.cjs --apply --codex-only`; it writes only generated `.codex/` role and agent files and never writes `.agents/skills/`. Without flags and with `--check` the command is read-only. Full `--apply` also owns the shared skill mirror and must not be used for a Codex-only assignment.
+Codex owns `.codex/`; it never edits `.claude/`, `.agents/` or GEMINI.md by hand. A shared-law discrepancy is named before an AGENTS.md edit. For a Codex-only refresh use `node .codex/scripts/sync-codex.cjs --apply --codex-only`; it writes generated `.codex/` role and agent files plus `generated-skill-mirror.json`, and never writes `.agents/skills/`. Without flags and with `--check` the command is read-only. Full `--apply` also owns the shared skill mirror and must not be used for a Codex-only assignment.
 
 ## Main session = `Intent` (§1)
 

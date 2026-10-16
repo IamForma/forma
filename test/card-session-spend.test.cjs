@@ -70,7 +70,7 @@ const FULL = { N: 18120, R: 16000, T: 400 };
 // ---- запуск и разбор ---------------------------------------------------------------------------
 function writeCard(num, historyLines = []) {
   fs.writeFileSync(cardPath(num), [
-    '---', `id: "card-${num}-test"`, 'status: "review"', 'assignee: "Intent"', 'labels: ["goal-forma", "route-4"]', '---',
+    '---', `id: "card-${num}-test"`, 'status: "review"', 'assignee: "Intent"', 'labels: ["goal-protocol", "route-4"]', '---',
     `# card-${num} · тест`, '', '## Задача', `${num} · оснастка | тест | критерий | 2 | человеку`, '',
     '## Снаряжение', '', '## История', ...historyLines, '', '## Результат', ''].join('\n'));
 }

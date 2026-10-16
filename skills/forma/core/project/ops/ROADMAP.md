@@ -19,16 +19,16 @@ A map node is a goal. The first level is nine main goals by kind (`goal-<code>`)
 
 ```
 <The whole>
-├── goal-value · Value open
-├── goal-docs · Documentation open
-├── goal-forma · Form open
-├── goal-result-image · Result image open
-├── goal-core · Balance open
-├── goal-incoming · Incoming open
-├── goal-goal · Production open
+├── goal-analytics · Value open
+├── goal-structure · Documentation open
+├── goal-protocol · Form open
+├── goal-resources · Result image open
+├── goal-efficiency · Balance open
+├── goal-discussion · Incoming open
+├── goal-channels · Production open
 │   └── goal-01 · <name of a part of the product> not started
-├── goal-experience · Experience open
-└── goal-review-image · Review image open
+├── goal-competencies · Experience open
+└── goal-results · Review image open
 ```
 
 State: `not started` · `open` · `reached` · `closed` · `postponed`.

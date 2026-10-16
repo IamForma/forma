@@ -1,6 +1,6 @@
 # Адаптер gemini — бета
 
-Перенесён как есть из прежнего `templates-gemini/`. Теста соответствия контракту экономики (`.forma/manual/en/03-forma/ECONOMY.md`) у него нет, установщик его ставит (бета, `--engines gemini`), но проверки соответствия нет, поэтому `sync-engines --check` называет его «не готов» сведением, не нарушением. Готовым его делает отдельная задача: свой адаптер экономики + тест соответствия по эталону `adapters/claude/scripts/claude-economy.cjs`.
+Перенесён как есть из прежнего `templates-gemini/`. Теста соответствия контракту экономики (`.forma/manual/en/03-protocol/ECONOMY.md`) у него нет, установщик его ставит (бета, `--engines gemini`), но проверки соответствия нет, поэтому `sync-engines --check` называет его «не готов» сведением, не нарушением. Готовым его делает отдельная задача: свой адаптер экономики + тест соответствия по эталону `adapters/claude/scripts/claude-economy.cjs`.
 
 ## Механизм продолжения исполнителя (§2, §3, запрет 7)
 
@@ -32,7 +32,7 @@
 * `intent-goal-opening.md`: ориентирован на диалоговый интерфейс Claude CLI; адаптация под модальные формы Antigravity (`ask_question`) требует отдельного проектирования.
 * `intent-housekeeping.md`: ссылается на git-хуки (`forma-commit.cjs`) и скрипты защиты удаления, отсутствующие в проектной конфигурации Antigravity.
 * `intent-session-start.md`: регламентирует пороги автокомпакта (`CLAUDE_CODE_AUTO_COMPACT_WINDOW`) и хуки Claude, не применимые к Antigravity напрямую.
-* `run-external-model.md`: ссылается на контракт `.forma/manual/en/03-forma/ECONOMY.md` и `spend-line.md`, требующие адаптера экономики Gemini.
+* `run-external-model.md`: ссылается на контракт `.forma/manual/en/03-protocol/ECONOMY.md` и `spend-line.md`, требующие адаптера экономики Gemini.
 
 ### 3. Отсутствуют у Gemini (✗ missing_gemini, 15 файлов) — оставлены как есть
 * `spend-line.md`: учёт расхода сессии (§3); поля расхода для транскрипта Antigravity ещё не установлены (`rules/gemini-8.md`).

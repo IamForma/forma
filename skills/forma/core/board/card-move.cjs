@@ -12,8 +12,8 @@
 //             intent  review      Intent   stage check     пишет тот, кто исполнял: результат на проверку
 //             accept  review      Intent   stage accept    пишет Intent: проверка пройдена, ждёт «да» человека
 //             close   done        Core     stage close    пишет Intent: человек принял; файл уходит в done/
-//           Короткий маршрут (эпик с «/Intent+Kit»): исполняет Kit — `run` держит "Kit". Эпики «…/Intent»
-//           без «+Kit» (документация, входящие): `run` держит "Intent" (§7, исключения).
+//           Кто держит `run`, задаёт метка `route-N` карточки (§6–7): `route-4` (короткий маршрут) — исполняет Kit, `run`
+//           держит "Kit"; `route-0` и `route-1` — исполняет Intent, `run` держит "Intent"; остальные маршруты — Run.
 // --note  — «что» в строке этапа; без него — ошибка: пустая строка этапа ничего не говорит.
 // --node  — чья строка; по умолчанию узел, который делает эту передачу (см. таблицу; для `intent` — прежний исполнитель).
 // Расход (AGENTS.md §3, ECONOMY.md) — вызывающий пишет его сразу после возврата узла; тот же вызов дописывает и строку расхода:
@@ -32,7 +32,7 @@
 const fs = require('fs');
 const path = require('path');
 const { makeCli } = require('../dashboard/lib/cli.cjs');
-const { cardFiles, parseFrontmatter, zoneHeading } = require('../dashboard/lib/card.cjs');
+const { cardFiles, parseFrontmatter, zoneHeading, labelsOf } = require('../dashboard/lib/card.cjs');
 const { normalize } = require('./run-in-card.cjs');
 const { checkBoard } = require('./check-board.cjs');
 const i18n = require('../i18n/index.cjs');
@@ -101,12 +101,12 @@ const cardId = path.basename(file, '.md');
 let text = fs.readFileSync(file, 'utf8');
 const fm = parseFrontmatter(text);
 
-// 2. Кто держит `run` (§7): короткий маршрут и эпики «…/Intent» исполняет не Run
+// 2. Кто держит `run` (§7): по метке route-N — короткий маршрут (route-4) исполняет Kit, route-0/1 — Intent
 let assignee = t.assignee;
 if (to === 'run') {
-  const epic = fm.epic || '';
-  if (/\/Intent\+Kit\b/.test(epic)) assignee = 'Kit';
-  else if (/\/Intent\s*$/.test(epic)) assignee = 'Intent';
+  const labels = labelsOf(text);
+  if (labels.includes('route-4')) assignee = 'Kit';
+  else if (labels.includes('route-0') || labels.includes('route-1')) assignee = 'Intent';
 }
 // 3. Чья строка: для `intent` — тот, кто исполнял, иначе узел по таблице
 const node = arg('node') || (to === 'intent' && ['Run', 'Kit', 'Intent'].includes(fm.assignee) ? fm.assignee : t.by);

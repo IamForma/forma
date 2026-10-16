@@ -18,7 +18,7 @@ function run(fx, args) {
   return { status: r.status, out: clean((r.stdout || '') + (r.stderr || ''), fx) };
 }
 
-const NEW_CARD_ARGS = ['.forma/board/new-card.cjs', '--kind', 'forma', '--title', 'Проба сетки', '--route', '4', '--dry'];
+const NEW_CARD_ARGS = ['.forma/board/new-card.cjs', '--kind', 'protocol', '--title', 'Проба сетки', '--route', '4', '--dry'];
 
 function newCardDry(fx) {
   const r = run(fx, NEW_CARD_ARGS);

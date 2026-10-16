@@ -38,10 +38,10 @@ This section (№6 in "Nine sections" above) carries not only the tooling log bu
 |---|---|
 | `AGENTS.md` | rules of conduct common to all nodes: the cycle route, card format, thresholds, position markers, five pairs, prohibitions, the board |
 | `README.md` | the human's entry to the scheme — why it is built this way |
-| `manual/en/03-forma/SCHEME.md` | the whole scheme layout: the nodes, environment requirements, the cycle cache, collapsing, numbers, the file tree |
-| `manual/en/03-forma/PROTOCOL.md` | the rationale of the scheme's rules — why this way and not another |
+| `manual/en/03-protocol/SCHEME.md` | the whole scheme layout: the nodes, environment requirements, the cycle cache, collapsing, numbers, the file tree |
+| `manual/en/03-protocol/PROTOCOL.md` | the rationale of the scheme's rules — why this way and not another |
 | `living/CHANGELOG.md` | the protocol's version log: what changed and what it fixes |
-| `manual/en/03-forma/five-nodes.md` | the blueprint of file ownership by role — which node writes which file |
+| `manual/en/03-protocol/five-nodes.md` | the blueprint of file ownership by role — which node writes which file |
 | `manual/diagrams/` | visual diagrams of the route and the structure |
 | `intent.md` (the engine's role directory, §8) | the `Intent` role: result image, interview, check, record |
 | `spec.md` | the `Spec` role: slicing a cycle into cards |
@@ -98,7 +98,7 @@ There are no records of findings specific to this project yet — the next ones 
 
 A reference on the system's own tooling: which tool, access or skill appeared and which gap it closed. Not a chronology — the chronology is in each card's history; here only a conclusion fit for the future.
 
-**Written by `Kit`, as housekeeping, when each goal closes** (`kit.md`, "Config"; called by `Intent`, `intent-cycle-closing.md`, "After the verdict"). The source is the cards of epic "3. Form/Intent+Kit" about its own (resource/tool/skill), closed since the last summary.
+**Written by `Kit`, as housekeeping, when each goal closes** (`kit.md`, "Config"; called by `Intent`, `intent-cycle-closing.md`, "After the verdict"). The source is the cards of epic "3. Project protocol" about its own (resource/tool/skill), closed since the last summary.
 
 **Read by `Kit` when kitting**, before external sources of the ready-made (skill `skill-authoring`, "Sources of the ready-made"): the gap may already have been closed in a past goal.
 

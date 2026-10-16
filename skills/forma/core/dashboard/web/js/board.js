@@ -379,11 +379,16 @@ function bdOpenGoal(B, g) {
     <dt>${t('board.closer')}</dt><dd>${esc(gi.closer || '—')}</dd><dt>${t('board.cardsN', { n: list.length })}</dt><dd>${n}</dd></dl>
     <ul class="rel">${list.filter(c => c.status !== 'done').map(bdCardRow).join('') || `<li>${t('board.noOpen')}</li>`}</ul>`);
 }
+function bdRouteMix(list) {
+  const m = {};
+  list.forEach(c => { const r = c.route || '—'; m[r] = (m[r] || 0) + 1; });
+  return Object.keys(m).sort().map(r => `${esc(r)} × ${m[r]}`).join(' · ') || '—';
+}
 function bdOpenEpic(B, e) {
   const list = B.DATA.cards.filter(c => c.epic === e), acc = bdAccepted(B, e), v = B.DATA.thresholds.volume;
   bdDlgOpen(B, '', `<div class="code">${t('board.dlg.epic')}</div><h2>${esc(e)}</h2>
     <dl><dt>${t('board.cycle')}</dt><dd>${t('board.cycleText', { acc, of: v ? t('board.cycleOf', { v }) : '', closed: list.filter(c => c.status === 'done' && c.assignee == null).length })}</dd>
-    <dt>${t('board.epicRoute')}</dt><dd>${/\/Intent\+Kit/.test(e) ? t('board.epicShort') : t('board.epicSpec')}</dd>
+    <dt>${t('board.epicRoute')}</dt><dd>${bdRouteMix(list)}</dd>
     <dt>${t('board.byStatus')}</dt><dd>${bdStatuses().map(([s, nm]) => `${nm} ${list.filter(c => c.status === s).length}`).join(' · ')}</dd></dl>
     <ul class="rel">${list.filter(c => c.status !== 'done').map(bdCardRow).join('') || `<li>${t('board.noOpen')}</li>`}</ul>`);
 }

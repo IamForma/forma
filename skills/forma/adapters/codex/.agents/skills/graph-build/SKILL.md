@@ -61,4 +61,4 @@ description: Сборка графов Kit — какой командой ст�
 `node -e "const g=require('./.forma/living/graphs/<имя>/graph.json');console.log(g.nodes.length,g.edges.length)"`
 Готово: JSON читается, узлов и рёбер > 0. Для done-cards ещё: cache-miss в повторном `--dry-run` = 0, пустых извлечений 0. В Результат — узлы/рёбра каждого графа и фактическая стоимость (сумма `cost` из вывода).
 
-Стоимость строки расхода внешней модели пишет исполнитель (`AGENTS.md` §3; `.forma/manual/en/03-forma/ECONOMY.md`, "External model and external service"): `$X.XXXXXX (openrouter/deepseek/deepseek-v4-flash)`, id — `` `id unknown` `` (мост id не возвращает).
+Стоимость строки расхода внешней модели пишет исполнитель (`AGENTS.md` §3; `.forma/manual/en/03-protocol/ECONOMY.md`, "External model and external service"): `$X.XXXXXX (openrouter/deepseek/deepseek-v4-flash)`, id — `` `id unknown` `` (мост id не возвращает).

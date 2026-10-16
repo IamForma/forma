@@ -10,8 +10,8 @@ test('makeCli.flag: флаг есть или нет', () => {
 });
 
 test('makeCli.arg: значение после флага; нет значения или дальше флаг — запасное', () => {
-  const c = makeCli(['--kind', 'forma', '--bare', '--after', '--x']);
-  assert.equal(c.arg('kind'), 'forma');
+  const c = makeCli(['--kind', 'protocol', '--bare', '--after', '--x']);
+  assert.equal(c.arg('kind'), 'protocol');
   assert.equal(c.arg('bare', 'd'), 'd');
   assert.equal(c.arg('after', 'd'), 'd');
   assert.equal(c.arg('нет', 'd'), 'd');

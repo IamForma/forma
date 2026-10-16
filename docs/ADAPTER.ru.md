@@ -9,7 +9,7 @@
 | Ядро — общее, не правится под движок | Адаптер — свой у каждого движка |
 |---|---|
 | `skills/forma/core/AGENTS.md` (§1–7) | файл §8 (образец `skills/forma/adapters/claude/rules/claude-8.md`) |
-| `skills/forma/core/manual/ru/03-forma/ECONOMY.md` — контракт экономики | роли (образец `skills/forma/adapters/claude/agents/`) |
+| `skills/forma/core/manual/ru/03-protocol/ECONOMY.md` — контракт экономики | роли (образец `skills/forma/adapters/claude/agents/`) |
 | `skills/forma/core/dashboard/economy.cjs` — одна математика | хуки (образец `skills/forma/adapters/claude/hooks/`) |
 | `skills/forma/core/dashboard/spend-line.cjs` — запись строки расхода | модуль экономики (образец `skills/forma/adapters/claude/scripts/claude-economy.cjs`) |
 | `skills/forma/core/board/` — проверка и создание карточек | тест соответствия (образец `skills/forma/adapters/claude/scripts/claude-economy.test.cjs`) |

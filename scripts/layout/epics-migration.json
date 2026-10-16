@@ -1,0 +1,641 @@
+{
+ "version": 1,
+ "kinds": [
+  {
+   "n": 1,
+   "old": {
+    "code": "value",
+    "names": {
+     "ru": [
+      "Ценность",
+      "Экономика"
+     ],
+     "en": [
+      "Value",
+      "Economics",
+      "Economy"
+     ]
+    }
+   },
+   "new": {
+    "code": "analytics",
+    "ru": "Аналитика проекта",
+    "en": "Project analytics"
+   }
+  },
+  {
+   "n": 2,
+   "old": {
+    "code": "docs",
+    "names": {
+     "ru": [
+      "Документация продукта",
+      "Документация"
+     ],
+     "en": [
+      "Documentation"
+     ]
+    }
+   },
+   "new": {
+    "code": "structure",
+    "ru": "Структура проекта",
+    "en": "Project structure"
+   }
+  },
+  {
+   "n": 3,
+   "old": {
+    "code": "forma",
+    "names": {
+     "ru": [
+      "Протокол формы",
+      "Форма"
+     ],
+     "en": [
+      "Form"
+     ]
+    }
+   },
+   "new": {
+    "code": "protocol",
+    "ru": "Протокол проекта",
+    "en": "Project protocol"
+   }
+  },
+  {
+   "n": 4,
+   "old": {
+    "code": "result-image",
+    "names": {
+     "ru": [
+      "Образ результата"
+     ],
+     "en": [
+      "Result image",
+      "End-image",
+      "End image"
+     ]
+    }
+   },
+   "new": {
+    "code": "resources",
+    "ru": "Ресурсы проекта",
+    "en": "Project resources"
+   }
+  },
+  {
+   "n": 5,
+   "old": {
+    "code": "core",
+    "names": {
+     "ru": [
+      "Замечания Core",
+      "Ядро"
+     ],
+     "en": [
+      "Core findings",
+      "Remarks of Core",
+      "Core remarks"
+     ]
+    }
+   },
+   "new": {
+    "code": "efficiency",
+    "ru": "Эффективность формы",
+    "en": "Form efficiency"
+   }
+  },
+  {
+   "n": 6,
+   "old": {
+    "code": "incoming",
+    "names": {
+     "ru": [
+      "Входящие"
+     ],
+     "en": [
+      "Incoming"
+     ]
+    }
+   },
+   "new": {
+    "code": "discussion",
+    "ru": "Обсуждение дел",
+    "en": "Discussion of affairs"
+   }
+  },
+  {
+   "n": 7,
+   "old": {
+    "code": "goal",
+    "names": {
+     "ru": [
+      "Производственный цикл",
+      "Производство"
+     ],
+     "en": [
+      "Production"
+     ]
+    }
+   },
+   "new": {
+    "code": "channels",
+    "ru": "Каналы производства",
+    "en": "Production channels"
+   }
+  },
+  {
+   "n": 8,
+   "old": {
+    "code": "experience",
+    "names": {
+     "ru": [
+      "Опыт системы",
+      "Опыт"
+     ],
+     "en": [
+      "Experience"
+     ]
+    }
+   },
+   "new": {
+    "code": "competencies",
+    "ru": "Сегменты компетенций",
+    "en": "Competence segments"
+   }
+  },
+  {
+   "n": 9,
+   "old": {
+    "code": "review-image",
+    "names": {
+     "ru": [
+      "Ревью образа",
+      "Сверка образа"
+     ],
+     "en": [
+      "Image review",
+      "Review of image",
+      "Review image"
+     ]
+    }
+   },
+   "new": {
+    "code": "results",
+    "ru": "Достижение целей",
+    "en": "Goal achievement"
+   }
+  }
+ ],
+ "markers": [
+  "SKRIC",
+  "Intent+Kit",
+  "Intent+Core",
+  "Core+Intent",
+  "Intent",
+  "Core"
+ ],
+ "layers": [
+  {
+   "id": "worktree-copy",
+   "test": "^\\.claude/worktrees/",
+   "mode": "none"
+  },
+  {
+   "id": "project-cards-archive",
+   "test": "^project/cards/",
+   "mode": "none"
+  },
+  {
+   "id": "mockups",
+   "test": "^project/mockups/",
+   "mode": "none"
+  },
+  {
+   "id": "third-party",
+   "test": "\\.po$|^project/temp/|^project/reference/",
+   "mode": "none"
+  },
+  {
+   "id": "dashboard-cache",
+   "test": "^\\.forma/dashboard/\\.cache/",
+   "mode": "none"
+  },
+  {
+   "id": "living-graphs",
+   "test": "^\\.forma/living/graphs/",
+   "mode": "none"
+  },
+  {
+   "id": "other-engines",
+   "test": "^\\.codex/|^\\.agents/|^GEMINI\\.md$",
+   "mode": "none"
+  },
+  {
+   "id": "protocol-clone",
+   "test": "^\\.forma/protocol/",
+   "mode": "none"
+  },
+  {
+   "id": "cards-board",
+   "test": "^\\.devtool/features/",
+   "mode": "auto",
+   "wave": "W2"
+  },
+  {
+   "id": "theme-site-coupled",
+   "test": "^project/theme/",
+   "mode": "none"
+  },
+  {
+   "id": "manual",
+   "test": "^\\.forma/manual/",
+   "mode": "auto",
+   "wave": "W1/W4"
+  },
+  {
+   "id": "project-goals",
+   "test": "^project/goals/",
+   "mode": "auto",
+   "wave": "W1/W2"
+  },
+  {
+   "id": "project-other",
+   "test": "^project/",
+   "mode": "auto",
+   "wave": "W2"
+  },
+  {
+   "id": "engine",
+   "test": "^(\\.claude/|\\.forma/|AGENTS\\.md$)",
+   "mode": "auto",
+   "wave": "W3"
+  },
+  {
+   "id": "root-other",
+   "test": ".",
+   "mode": "auto",
+   "wave": "W3"
+  }
+ ],
+ "paths": {
+  "templates": [
+   {
+    "from": ".forma/manual/%LANG%/0%N%-%OLD%",
+    "to": ".forma/manual/%LANG%/0%N%-%NEW%",
+    "langs": [
+     "ru",
+     "en"
+    ],
+    "wave": "W1"
+   },
+   {
+    "from": "project/goals/goal-%OLD%",
+    "to": "project/goals/goal-%NEW%",
+    "wave": "W1"
+   }
+  ],
+  "expectedCount": 27
+ },
+ "ruleTemplates": [
+  {
+   "id": "epic-name-marked",
+   "desc": "«N. Имя/Маркер» -> «N. Новое имя» (язык нового имени = язык старого)",
+   "perLang": true,
+   "flags": "gu",
+   "pattern": "(?<![\\p{L}\\p{N}_/.])%N%\\.[ \\t]+(?:%OLDNAMES%)/(?:%MARKERS%)(?![\\p{L}\\p{N}_/+])",
+   "replacement": "%N%. %NEWNAME%"
+  },
+  {
+   "id": "epic-name-bare-quoted",
+   "desc": "«N. Имя» в кавычках",
+   "perLang": true,
+   "flags": "gu",
+   "pattern": "(?<=[«\"“'`])%N%\\.[ \\t]+(?:%OLDNAMES%)%NOTNEW%(?=[»\"”'`])",
+   "replacement": "%N%. %NEWNAME%"
+  },
+  {
+   "id": "epic-name-bare-after-epic",
+   "desc": "«эпик N. Имя» / «epic N. Name» без кавычек",
+   "perLang": true,
+   "flags": "gu",
+   "pattern": "(?<=(?:[Ээ]пик\\p{L}*|[Ee]pics?)[ \\t]+[«\"“]?)%N%\\.[ \\t]+(?:%OLDNAMES%)%NOTNEW%(?![\\p{L}\\p{N}_/+])",
+   "replacement": "%N%. %NEWNAME%"
+  },
+  {
+   "id": "epic-name-marker-only",
+   "desc": "«Имя/Маркер» без номера",
+   "perLang": true,
+   "flags": "gu",
+   "pattern": "(?<![\\p{L}\\p{N}_/.-])(?<!\\d+\\.[ \\t]+)(?:%OLDNAMES%)/(?:%MARKERS%)(?![\\p{L}\\p{N}_/+])",
+   "replacement": "%NEWNAME%"
+  },
+  {
+   "id": "goal-label",
+   "desc": "goal-<старый код> -> goal-<новый код> (метки, каталоги project/goals)",
+   "flags": "gu",
+   "pattern": "(?<![\\p{L}\\p{N}_-])goal-%OLD%(?![\\p{L}\\p{N}_-])",
+   "replacement": "goal-%NEW%"
+  },
+  {
+   "id": "manual-dir",
+   "desc": "0N-<старый код> -> 0N-<новый код> (каталоги мануала)",
+   "flags": "gu",
+   "pattern": "(?<![\\p{L}\\p{N}_-])0%N%-%OLD%(?![\\p{L}\\p{N}_-])",
+   "replacement": "0%N%-%NEW%"
+  },
+  {
+   "id": "table-row",
+   "desc": "строка таблицы | `код` | …",
+   "flags": "gmu",
+   "pattern": "^([ \\t]*\\|[ \\t]*)`%OLD%`(?=[ \\t]*\\|)",
+   "replacement": "$1`%NEW%`"
+  },
+  {
+   "id": "codes-array",
+   "type": "line-array",
+   "desc": "строка, где в кавычках/обратных кавычках встречаются ≥3 разных старых кода: заменяются все"
+  },
+  {
+   "id": "kind-flag",
+   "desc": "--kind <код>",
+   "flags": "gu",
+   "pattern": "(--kind[ =]`?)%OLD%(?![\\p{L}\\p{N}_-])",
+   "replacement": "$1%NEW%"
+  },
+  {
+   "id": "kind-intro-line",
+   "desc": "первая строка README раздела мануала и «**Вид**: `код` ·» в GOAL.md",
+   "flags": "gmu",
+   "pattern": "^((?:Код вида|Kind code|Code kind|Code type|Code of the kind|Code of the card type|Card type|\\*\\*Вид\\*\\*):[ \\t]*)`%OLD%`(?=[ \\t]*·)",
+   "replacement": "$1`%NEW%`"
+  },
+  {
+   "id": "literal-kind-compare",
+   "desc": "kind === 'код' / kind !== 'код' в скриптах доски",
+   "flags": "gu",
+   "pattern": "(kind[ \\t]*[!=]==[ \\t]*)'%OLD%'",
+   "replacement": "$1'%NEW%'"
+  },
+  {
+   "id": "literal-lane-get",
+   "desc": "laneOf.get('код')",
+   "flags": "gu",
+   "pattern": "(laneOf\\.get\\()'%OLD%'(?=\\))",
+   "replacement": "$1'%NEW%'"
+  },
+  {
+   "id": "literal-table-hint",
+   "desc": "подсказка про строки таблицы эпиков в тексте ошибки (| `код` | <лейбл>)",
+   "flags": "gu",
+   "pattern": "\\| `%OLD%` \\| <лейбл>",
+   "replacement": "| `%NEW%` | <лейбл>"
+  },
+  {
+   "id": "quoted-code-in-context",
+   "desc": "`код` / 'код' / \"код\" в прозе рядом со словом «эпик/код/вид/метка/kind/lane…». Эвристика: каждое срабатывание уходит в отчёт на просмотр (confirm).",
+   "confirm": true,
+   "flags": "gu",
+   "layers": [
+    "!cards-board"
+   ],
+   "pattern": "([`'\"])%OLD%\\1",
+   "replacement": "$1%NEW%$1",
+   "needLineContext": "(эпик|epic|\\bкод|\\bcode|\\bkind|\\bвид|метк|\\blabel|\\blane|дорожк|CODES)",
+   "lineExclude": [
+    "плагин|\\bplugin\\b",
+    "(Form|Форм[аы]) \\(`forma`\\)",
+    "type: 'goal'",
+    "\\['status', ?'goal'",
+    "`id`/`goal`/`round`",
+    "\\barg\\('goal'"
+   ],
+   "skipFiles": [
+    "(^|/)board\\.js$",
+    "(^|/)build-kit-graphs\\.cjs$",
+    "(^|/)CHANGELOG.md$",
+    "/archive/"
+   ]
+  },
+  {
+   "id": "bare-hyphen-code",
+   "desc": "result-image / review-image без кавычек и без goal-/0N- (слова с дефисом, почти не значат ничего другого)",
+   "confirm": true,
+   "flags": "gu",
+   "onlyKinds": [
+    4,
+    9
+   ],
+   "pattern": "(?<![\\p{L}\\p{N}_/.-])%OLD%(?![\\p{L}\\p{N}_-])",
+   "replacement": "%NEW%",
+   "skipFiles": [
+    "generate-diffui-focus-assets\\.cjs$",
+    "^project/theme/"
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "in": "эпик «3. Форма/Intent+Kit»",
+   "out": "эпик «3. Протокол проекта»"
+  },
+  {
+   "in": "epic: \"3. Form/Intent+Kit\"",
+   "out": "epic: \"3. Project protocol\""
+  },
+  {
+   "in": "\"7. Production/SKRIC\"",
+   "out": "\"7. Production channels\""
+  },
+  {
+   "in": "7. Производство/SKRIC",
+   "out": "7. Каналы производства"
+  },
+  {
+   "in": "5. Замечания Core/Core+Intent",
+   "out": "5. Эффективность формы"
+  },
+  {
+   "in": "5. Core findings/Core+Intent",
+   "out": "5. Form efficiency"
+  },
+  {
+   "in": "«6. Входящие»",
+   "out": "«6. Обсуждение дел»"
+  },
+  {
+   "in": "a card of epic 2. Documentation\".",
+   "out": "a card of epic 2. Project structure\"."
+  },
+  {
+   "in": "карточку эпика 8. Опыт системы",
+   "out": "карточку эпика 8. Сегменты компетенций"
+  },
+  {
+   "in": "Документация/Intent",
+   "out": "Структура проекта"
+  },
+  {
+   "in": "3. Форма записи",
+   "out": "3. Форма записи"
+  },
+  {
+   "in": "2. Формат",
+   "out": "2. Формат"
+  },
+  {
+   "in": "6. Экономика",
+   "out": "6. Экономика"
+  },
+  {
+   "in": "1. Входящие",
+   "out": "1. Входящие"
+  },
+  {
+   "in": "3. Форма/Intent+Run",
+   "out": "3. Форма/Intent+Run"
+  },
+  {
+   "in": "13. Форма/Intent",
+   "out": "13. Форма/Intent"
+  },
+  {
+   "in": "Экономика",
+   "out": "Экономика"
+  },
+  {
+   "in": "протокол «Форма» и плагин `forma`",
+   "out": "протокол «Форма» и плагин `forma`"
+  },
+  {
+   "in": "goal-forma и goal-goal",
+   "out": "goal-protocol и goal-channels"
+  },
+  {
+   "in": "project/goals/goal-result-image/GOAL.md",
+   "out": "project/goals/goal-resources/GOAL.md"
+  },
+  {
+   "in": "goal-formal goal-06 goal-corelation",
+   "out": "goal-formal goal-06 goal-corelation"
+  },
+  {
+   "in": "card-006-goal-forma-label.md",
+   "out": "card-006-goal-forma-label.md"
+  },
+  {
+   "in": ".forma/manual/ru/03-forma/README.md",
+   "out": ".forma/manual/ru/03-protocol/README.md"
+  },
+  {
+   "in": "04-result-image и 09-review-image",
+   "out": "04-resources и 09-results"
+  },
+  {
+   "in": "03-formal 13-forma 04-resultimage",
+   "out": "03-formal 13-forma 04-resultimage"
+  },
+  {
+   "in": "03-value",
+   "out": "03-value"
+  },
+  {
+   "in": "| `forma` | 3. Форма/Intent+Kit | замечание |",
+   "out": "| `protocol` | 3. Протокол проекта | замечание |"
+  },
+  {
+   "in": "const CODES = ['value', 'docs', 'forma', 'result-image', 'core', 'incoming', 'goal', 'experience', 'review-image'];",
+   "out": "const CODES = ['analytics', 'structure', 'protocol', 'resources', 'efficiency', 'discussion', 'channels', 'competencies', 'results'];"
+  },
+  {
+   "in": "`incoming`, `result-image`, `forma` и",
+   "out": "`discussion`, `resources`, `protocol` и"
+  },
+  {
+   "in": "node new-card.cjs --kind goal --demo",
+   "out": "node new-card.cjs --kind channels --demo"
+  },
+  {
+   "in": "--kind forma-x",
+   "out": "--kind forma-x"
+  },
+  {
+   "in": "Код вида: `value` · главная цель: `project/goals/goal-value/GOAL.md`",
+   "out": "Код вида: `analytics` · главная цель: `project/goals/goal-analytics/GOAL.md`"
+  },
+  {
+   "in": "**Вид**: `core` · дорожка на доске",
+   "out": "**Вид**: `efficiency` · дорожка на доске"
+  },
+  {
+   "in": "if (kind === 'goal' && x)",
+   "out": "if (kind === 'channels' && x)"
+  },
+  {
+   "in": "const noSpec = kind !== 'goal';",
+   "out": "const noSpec = kind !== 'channels';"
+  },
+  {
+   "in": "model.laneOf.get('incoming')",
+   "out": "model.laneOf.get('discussion')"
+  },
+  {
+   "in": "(строки вида | `incoming` | <лейбл> | …)",
+   "out": "(строки вида | `discussion` | <лейбл> | …)"
+  },
+  {
+   "in": "Where it lands: a card in the epic with code `core` — or `value`",
+   "out": "Where it lands: a card in the epic with code `efficiency` — or `analytics`"
+  },
+  {
+   "in": "She said `value` is a field",
+   "out": "She said `value` is a field"
+  },
+  {
+   "in": "{ id: goal, label: goal, type: 'goal' }",
+   "out": "{ id: goal, label: goal, type: 'goal' }"
+  },
+  {
+   "in": "Not carried by the `forma` plugin, kind code",
+   "out": "Not carried by the `forma` plugin, kind code"
+  },
+  {
+   "in": "the voice of the Form (`forma`), epic code",
+   "out": "the voice of the Form (`forma`), epic code"
+  },
+  {
+   "in": "result-image и review-image",
+   "out": "resources и results"
+  },
+  {
+   "in": "end-result-image",
+   "out": "end-result-image"
+  },
+  {
+   "in": "docs-category/result-image/",
+   "out": "docs-category/result-image/"
+  },
+  {
+   "in": "luminous result-image panel",
+   "out": "luminous resources panel",
+   "note": "ловушка: срабатывает, файл generate-diffui-focus-assets.cjs исключён по skipFiles"
+  },
+  {
+   "in": "в .forma/protocol и .forma/manual",
+   "out": "в .forma/protocol и .forma/manual"
+  },
+  {
+   "in": "epic \"7. Production channels\" and epic 7. Production channels",
+   "out": "epic \"7. Production channels\" and epic 7. Production channels"
+  },
+  {
+   "in": "epic 7. Production.",
+   "out": "epic 7. Production channels."
+  },
+  {
+   "in": "5. Core remarks/Core+Intent",
+   "out": "5. Form efficiency"
+  }
+ ]
+}

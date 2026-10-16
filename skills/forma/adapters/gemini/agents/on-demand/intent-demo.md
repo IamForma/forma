@@ -8,15 +8,15 @@ Read once, when the human said **start** to the offer (`intent-session-start.md`
 
 ## The two cards
 
-Created by the script, never by hand (`intent.md`, "Every request", item 2), epic "7. Production", both route-7 (`Spec` → `Kit` → `Run` → `Intent`; needs no approval):
+Created by the script, never by hand (`intent.md`, "Every request", item 2), epic "7. Production channels", both route-7 (`Spec` → `Kit` → `Run` → `Intent`; needs no approval):
 
 ```
-node .forma/board/new-card.cjs --kind goal --demo --route 7 --why human --stage card \
+node .forma/board/new-card.cjs --kind channels --demo --route 7 --why human --stage card \
   --title "Demo: one-page description" \
   --delivers "project/demo/about.md — what the project is, in three short sections" \
   --criterion "the file exists; exactly three `##` headings; at most 150 words; no `<…>` placeholders left" \
   --budget 2 --next "Intent checks the file, then the second card"
-node .forma/board/new-card.cjs --kind goal --demo --route 7 --why human --stage card --after <NNN of the first> \
+node .forma/board/new-card.cjs --kind channels --demo --route 7 --why human --stage card --after <NNN of the first> \
   --title "Demo: five first tasks" \
   --delivers "project/demo/first-tasks.md — five first tasks drawn from about.md" \
   --criterion "exactly five numbered items; each has a line starting `Criterion:` that can be checked by looking; no two items repeat each other" \

@@ -27,7 +27,7 @@ const os = require('os');
 const path = require('path');
 const readline = require('readline');
 const economy = require('../../.forma/dashboard/economy.cjs');
-// Адаптер Claude Code: поля `usage` движка → канонические переменные (.forma/manual/en/03-forma/ECONOMY.md).
+// Адаптер Claude Code: поля `usage` движка → канонические переменные (.forma/manual/en/03-protocol/ECONOMY.md).
 const { claudeUsage } = require('./claude-economy.cjs');
 const { readJson } = require('../../.forma/dashboard/lib/fs.cjs');
 const { makeCli } = require('../../.forma/dashboard/lib/cli.cjs');

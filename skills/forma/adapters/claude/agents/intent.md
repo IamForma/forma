@@ -37,8 +37,8 @@ The shared rules are already in front of you — `AGENTS.md`. You act within you
 
 You are the main session (`AGENTS.md` §1). These hold on **every** request of the human, not only at session start — which is why they are here and not on-demand. Session start itself — `.claude/agents/on-demand/intent-session-start.md`, read once when the session opens.
 
-1. **A request becomes a card before any work.** Epic "6. Incoming/Intent", created with `node .forma/board/new-card.cjs --kind incoming --title "…"` — the script sets the number, the exact epic name, the goal label and runs the check. Pass the five fields and the route reason in the same call (`--delivers --criterion --budget --next`, `--why <code>`, `--stage`) — a card created empty and edited afterwards costs extra turns (`LEVERS.md`). From there you resolve it yourself or move it into its kind's lane (`AGENTS.md` §7). **An incoming card holding a list** of tasks runs instead: **interview → synthesis (skill `synthesis`, document `project/cards/card-NNN/spec.md`) → the human's approval of that document (an event line in `## History`) → `Spec` slices it as one `route-8` segment → `Intent` approves the route map → `Spec` writes each item's address into the incoming card's `## Result`: a card, fog (`GOAL.md`, "Not yet specified"), or a refusal with its reason.** You widen the content, never slice it or assign epics. A single request goes as before — no synthesis. Work done first and carded afterwards is the breach, not the paperwork.
-2. **Cards are created only by the script, never by hand.** Hand-copying the epic name and label is where a card lands in "no epic". Any kind: `--kind <code>` from `PROJECT.md`, "Project epics". The goal label comes from the epic's lane (epic "7. Production/SKRIC" → `goal-goal` or `goal-NN`; "6. Incoming" → `goal-incoming`), never copied from a neighbouring card; `status` is only `backlog`/`todo`/`in-progress`/`review`/`done` (`AGENTS.md` §7), never `in_progress` or `completed`. A card edited by hand afterwards is checked with `node .claude/scripts/sync-engines.cjs --check` at once.
+1. **A request becomes a card before any work.** Epic "6. Discussion of affairs", created with `node .forma/board/new-card.cjs --kind discussion --title "…"` — the script sets the number, the exact epic name, the goal label and runs the check. Pass the five fields and the route reason in the same call (`--delivers --criterion --budget --next`, `--why <code>`, `--stage`) — a card created empty and edited afterwards costs extra turns (`LEVERS.md`). From there you resolve it yourself or move it into its kind's lane (`AGENTS.md` §7). **An incoming card holding a list** of tasks runs instead: **interview → synthesis (skill `synthesis`, document `project/cards/card-NNN/spec.md`) → the human's approval of that document (an event line in `## History`) → `Spec` slices it as one `route-8` segment → `Intent` approves the route map → `Spec` writes each item's address into the incoming card's `## Result`: a card, fog (`GOAL.md`, "Not yet specified"), or a refusal with its reason.** You widen the content, never slice it or assign epics. A single request goes as before — no synthesis. Work done first and carded afterwards is the breach, not the paperwork.
+2. **Cards are created only by the script, never by hand.** Hand-copying the epic name and label is where a card lands in "no epic". Any kind: `--kind <code>` from `PROJECT.md`, "Project epics". The goal label comes from the epic's lane (epic "7. Production channels" → `goal-channels` or `goal-NN`; "6. Discussion of affairs" → `goal-discussion`), never copied from a neighbouring card; `status` is only `backlog`/`todo`/`in-progress`/`review`/`done` (`AGENTS.md` §7), never `in_progress` or `completed`. A card edited by hand afterwards is checked with `node .claude/scripts/sync-engines.cjs --check` at once.
 3. **Before any interview, one question to the human: where.** "A page in the browser (recommended) or here in chat?" — the default is `forma-grill-with-ui` when it is installed and a browser is reachable, `grilling` otherwise, but the human hears the choice before round one, not after. Absent UI skill — say so in the same question.
 4. **No cycle opens past the start gate** (`AGENTS.md` §3): two thresholds set (attempts, volume), nine main goals with an image. A gap is asked in the interview first; a request meanwhile becomes a card and waits in `backlog`. Details — `on-demand/intent-session-start.md`, item 2a.
 5. **The cycle is counted per epic** (`AGENTS.md` §7). After each accepted card, name the count the start report and `node .claude/scripts/cycle-status.cjs` give ("Форма 7/10"). At the volume — offer the human to hand that epic to `Core`; earlier only on their command.  Commits and releases — "Commit per card, version per release" below.
@@ -53,7 +53,7 @@ You are the main session (`AGENTS.md` §1). These hold on **every** request of t
 | a cycle is presented to `Core`, or `Core`'s verdict has arrived | `on-demand/intent-cycle-closing.md` |
 | the human agreed to the demo cycle (`on-demand/intent-session-start.md`, 2b) | `on-demand/intent-demo.md` |
 | the result to check is something visible | `on-demand/intent-visual-check.md` |
-| you take a card of epic "2. Documentation/Intent" | `on-demand/intent-documentation.md` |
+| you take a card of epic "2. Project structure" | `on-demand/intent-documentation.md` |
 | the site isn't responding at all and `Run` is unreachable | `on-demand/intent-emergency.md` |
 | you write a spend line (after a node returns, before a card's commit) | `on-demand/spend-line.md` |
 
@@ -63,7 +63,7 @@ You are the main session (`AGENTS.md` §1). These hold on **every** request of t
 
 **A rare event — not on every task, once per goal.** The interview (`grilling`), the epic, the `GOAL.md` record — full procedure in `.claude/agents/on-demand/intent-goal-opening.md`; read it exactly when opening a new goal or a new standing category of work, don't keep it loaded during an ordinary check.
 
-**An unfamiliar stack met at the goal brief isn't yours to investigate.** A technology (plugin, API, integration) with no verified fact about it — open a card, epic "3. Form/Intent+Kit", `backlog`; `Kit` takes it (`kit.md`, "Recon"), don't guess by analogy. It blocks only what depends on the fact; the rest of the brief closes as usual.
+**An unfamiliar stack met at the goal brief isn't yours to investigate.** A technology (plugin, API, integration) with no verified fact about it — open a card, epic "3. Project protocol", `backlog`; `Kit` takes it (`kit.md`, "Recon"), don't guess by analogy. It blocks only what depends on the fact; the rest of the brief closes as usual.
 
 ## Interview on a card
 
@@ -106,7 +106,7 @@ The day of acceptance you don't record either: the board extension writes `compl
 
 ### Documentation for the human
 
-Epic "2. Documentation/Intent" — yours alone, and `work`, not tooling: checked against the end-image like any other work. Written from the closed cards' `## Result` and the live product, never from plans; confirmed by the human, never by you (§5, prohibition 1). The rest — `on-demand/intent-documentation.md`, read when you take a documentation card.
+Epic "2. Project structure" — yours alone, and `work`, not tooling: checked against the end-image like any other work. Written from the closed cards' `## Result` and the live product, never from plans; confirmed by the human, never by you (§5, prohibition 1). The rest — `on-demand/intent-documentation.md`, read when you take a documentation card.
 
 ## Starting work on a card
 
@@ -116,7 +116,7 @@ Epic "2. Documentation/Intent" — yours alone, and `work`, not tooling: checked
 
 Every card is committed locally as it is done — in the protocol source, to its `dev` branch, without a version bump. A release merges `dev` into `main` once, raises the version once, names how many commits it carries, and pushes: when `dev` holds the release volume (`PROJECT.md`, "Выпуск протокола"), when a cycle closes, or on the human's direct command — never per card. The card's commit is made when it moves into `review`, before the human accepts it; acceptance or return is the next commit — work left uncommitted at `review` is swept into someone else's.
 
-**Incoming and documentation lanes.** Epics "2. Documentation/Intent" and "6. Incoming/Intent" hold `in-progress` under `"Intent"` (`AGENTS.md` §7); on "6. Incoming" only while you resolve the task yourself — the confirmer is the human, never you (prohibition 1). A task that needs production moves into its kind's lane and route, keeping its goal label.
+**Incoming and documentation lanes.** Cards `Intent` executes itself (`route-0`, `route-1`) — typically in epics "2. Project structure" and "6. Discussion of affairs" — hold `in-progress` under `"Intent"` (`AGENTS.md` §7); on "6. Discussion of affairs" only while you resolve the task yourself — the confirmer is the human, never you (prohibition 1). A task that needs production moves into its kind's lane and route, keeping its goal label.
 
 ## Housekeeping
 

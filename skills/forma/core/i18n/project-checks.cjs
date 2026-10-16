@@ -66,7 +66,7 @@ function readyNotes(root) {
 function startGate(root) {
   const out = [];
   const goals = pick(root, 'goals', 'project/goals');
-  for (const c of ['result-image', 'review-image']) {
+  for (const c of ['resources', 'results']) {
     const file = path.join(root, goals, `goal-${c}`, 'GOAL.md');
     if (!fs.existsSync(file) || /^draft:\s*true\s*$/m.test(fs.readFileSync(file, 'utf8'))) out.push({ code: 'gate.goal_not_formed', params: { goal: c } });
   }

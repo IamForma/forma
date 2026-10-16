@@ -6,7 +6,7 @@ The project's goal map lives in `project/ops/ROADMAP.md`; here is the segment of
 
 ```
 goals/
-  goal-<code>/       a kind's main goal — nine, one per epic (value, docs, forma, result-image, core, incoming, goal, experience, review-image)
+  goal-<code>/       a kind's main goal — nine, one per epic (value, docs, forma, resources, core, incoming, goal, experience, results)
     GOAL.md
   goal-NN-<name>/    a subgoal, continuous numbering across all kinds; the kind is set by the ROADMAP.md map
     GOAL.md    result image, criterion, circles, verdicts
@@ -14,4 +14,4 @@ goals/
 
 `NN` — the sequence number, `<name>` — short, in Latin letters. Created by `Intent` at step 11 of the preparation (`project/config/SETUP.md`) or when opening a new goal from `ROADMAP.md`.
 
-Documentation on a goal's outcome, for the human, is not here but in `project/docs/goal-NN-<name>/` (the same number and directory name — the carrying-over rule, `manual/en/03-forma/SCHEME.md`, sect. 6).
+Documentation on a goal's outcome, for the human, is not here but in `project/docs/goal-NN-<name>/` (the same number and directory name — the carrying-over rule, `manual/en/03-protocol/SCHEME.md`, sect. 6).

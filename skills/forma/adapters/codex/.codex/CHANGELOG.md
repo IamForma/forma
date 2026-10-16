@@ -1,5 +1,11 @@
 # Codex configuration changelog
 
+## Current
+
+- Linked Run and intent-documentation adapters to the canonical instructions in `.claude/` and removed copied canonical bodies.
+- Updated epic names and goal-kind codes according to the epic migration map.
+- Rebuilt the generated skill-mirror manifest with the synchronizer.
+
 ## Later
 
 - Replaced the unsupported generic `gpt-5.6` model in Intent, Spec, and Core with the host-supported `gpt-5.6-sol` at the same medium reasoning effort.

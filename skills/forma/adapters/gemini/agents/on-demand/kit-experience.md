@@ -1,6 +1,6 @@
 # `Kit` — Experience: promotion and weeding
 
-Read this file when an experience line you used held up and is a candidate for promotion, or when you take a weeding card of epic "8. Experience/Intent+Kit". Reading and writing the store — `.claude/agents/kit.md`, "Experience".
+Read this file when an experience line you used held up and is a candidate for promotion, or when you take a weeding card of epic "8. Competence segments". Reading and writing the store — `.claude/agents/kit.md`, "Experience".
 
 **Promotion.** Used a line, and it held up — you move it up into `project/config/CONFIG.md` as a contract with an anchor, the form the roles already reference (`#browser-auth`, `#json-format`). You do this in passing, at the moment of use, not as a separate pass: you already have the file open and you are its consumer.
 

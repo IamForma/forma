@@ -9,7 +9,7 @@ const path = require('path');
 const { walk } = require('../lib/fs.cjs');
 const { runTestFile } = require('../lib/checks.cjs');
 
-const NEED = ['AGENTS.md', '.forma/manual/en/03-forma/ECONOMY.md', '.forma/manual/ru/03-forma/ECONOMY.md',
+const NEED = ['AGENTS.md', '.forma/manual/en/03-protocol/ECONOMY.md', '.forma/manual/ru/03-protocol/ECONOMY.md',
   '.forma/dashboard/economy.cjs', '.forma/dashboard/economy.test.cjs', '.forma/dashboard/tally.cjs', '.forma/dashboard/spend-line.cjs'];
 const PARTS = ['.forma/skills/grilling/SKILL.md', '.forma/skills/forma-grill-with-ui/SKILL.md', '.forma/skills/forma-grill-with-ui/server.mjs',
   '.forma/board/new-card.cjs', '.forma/board/card-move.cjs', '.forma/board/check-board.cjs', '.forma/board/DATA-MODEL.md', '.devtool/features', '.forma/dashboard/generate.js'];

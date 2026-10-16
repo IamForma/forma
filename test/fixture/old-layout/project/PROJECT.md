@@ -9,12 +9,12 @@
 
 | Code | Epic in this project |
 |---|---|
-| `value` | 1. Value/Intent+Kit |
-| `docs` | 2. Documentation/Intent |
-| `forma` | 3. Form/Intent+Kit |
-| `result-image` | 4. Result image/Intent |
-| `core` | 5. Core remarks/Core+Intent |
-| `incoming` | 6. Incoming/Intent |
-| `goal` | 7. Production/SKRIC |
-| `experience` | 8. Experience/Intent+Kit |
-| `review-image` | 9. Review image/Intent |
+| `analytics` | 1. Project analytics |
+| `structure` | 2. Project structure |
+| `protocol` | 3. Project protocol |
+| `resources` | 4. Project resources |
+| `efficiency` | 5. Form efficiency |
+| `discussion` | 6. Discussion of affairs |
+| `channels` | 7. Production channels |
+| `competencies` | 8. Competence segments |
+| `results` | 9. Goal achievement |

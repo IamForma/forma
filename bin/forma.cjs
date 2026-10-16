@@ -193,6 +193,18 @@ function migrateRoleName(root) {
   return lines.length ? 'role Plumb migration: ' + lines.join('; ') : 'role Plumb migration: not needed (nothing changed)'
 }
 
+// Projects installed before the nine goal kinds were renamed: codes, epic names, goal labels and the manual folders move to the new names once.
+// The journal with the original bytes is kept in .forma/living/migrations/; a project with both old and new codes is a stop.
+function migrateEpics(root) {
+  const script = path.join(LAYOUT, 'epics-migrate-install.cjs')
+  const check = spawnSync(process.execPath, [script, '--check', '--root', root], { encoding: 'utf8' })
+  if (check.status === 0) return 'goal kinds migration: not needed (nothing changed)'
+  if (check.status !== 1) throw new Error('STOP: goal kinds migration cannot start:\n' + (check.stdout || '') + (check.stderr || ''))
+  const r = spawnSync(process.execPath, [script, '--apply', '--allow-dirty', '--root', root], { encoding: 'utf8' })
+  if (r.status !== 0) throw new Error('STOP: goal kinds migration failed:\n' + (r.stdout || '') + (r.stderr || ''))
+  return 'goal kinds migration: ' + r.stdout.trim().split('\n')[0]
+}
+
 // ---------- core ----------
 function installCore(root, protectedPaths) {
   const skip = (d) => protectedPaths.has(path.resolve(d))
@@ -635,7 +647,7 @@ function printVerify(root) {
 
 // install: core, engines, template, board; returns the report lines and the board result
 function install(root, choice) {
-  const migrationLine = [migrateLayout(root), migrateConfig(root), migrateOps(root), migrateRoleName(root), migrateAnchors(root)].join('\n')
+  const migrationLine = [migrateLayout(root), migrateConfig(root), migrateOps(root), migrateRoleName(root), migrateEpics(root), migrateAnchors(root)].join('\n')
   const existingTemplate = readProjectTemplate(root)
   const protectedPaths = protectedTemplatePaths(root, existingTemplate)
   const core = installCore(root, protectedPaths)

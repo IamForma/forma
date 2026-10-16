@@ -1,8 +1,8 @@
 # `Intent` — Documentation for the human
 
-Read this file when you take a card of epic "2. Documentation/Intent" — `intent.md`, "Every request", row "you take a card of epic 2. Documentation". Not kept loaded on any other card.
+Read this file when you take a card of epic "2. Project structure" — `intent.md`, "Every request", row "you take a card of epic 2. Project structure". Not kept loaded on any other card.
 
-Epic "2. Documentation/Intent" — yours alone, and `work`, not tooling: it is part of what the project undertook to deliver, so it is checked against the end-image like any other work.
+Epic "2. Project structure" — yours alone, and `work`, not tooling: it is part of what the project undertook to deliver, so it is checked against the end-image like any other work.
 
 **Why you and not `Run`.** `Run` did the thing; it does not address the human, ever (§1). Documentation is Form explaining to the human what it delivered — that is your register, and you are the only node holding both the promise and the voice to state it.
 

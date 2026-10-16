@@ -60,8 +60,8 @@ const CASES = [
 
   // --- сверка движков: ядро ---
   { name: 'manual-languages', registry: 'sync', id: 'manual-languages',
-    apply: (m) => m.remove('.forma/manual/ru/03-forma/SCHEME.md'),
-    expect: /\.forma\/manual\/en\/03-forma\/SCHEME\.md: нет русской копии в \.forma\/manual\/ru\// },
+    apply: (m) => m.remove('.forma/manual/ru/03-protocol/SCHEME.md'),
+    expect: /\.forma\/manual\/en\/03-protocol\/SCHEME\.md: нет русской копии в \.forma\/manual\/ru\// },
   { name: 'core-integrity-missing', registry: 'sync', id: 'core-integrity', combine: false,
     apply: (m) => m.remove('.forma/board/DATA-MODEL.md'),
     expect: /ядро: нет \.forma\/board\/DATA-MODEL\.md/ },

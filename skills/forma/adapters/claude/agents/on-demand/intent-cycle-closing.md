@@ -13,7 +13,7 @@ Split in two: you **gather and present**, `Core` **judges**. You don't compare t
 ## After the verdict
 
 - gather the numbers, write an entry in `JOURNAL.md`, including "What was missing";
-- a finding needing action, not just a record — a `.devtool/features/` card, epic "3. Form/Intent+Kit", label `what-was-missing`, linked to the cycle in `JOURNAL.md`;
+- a finding needing action, not just a record — a `.devtool/features/` card, epic "3. Project protocol", label `what-was-missing`, linked to the cycle in `JOURNAL.md`;
 - **record values resolved in this goal into `VARS/<entity>.md`**: name, value, goal number. A value is what other goals will rely on — a name, format, color, address, tone, test account. No suitable entity file — start one, with a line about it in `VARS/README.md`. That's the only place a value lives. You're the only one who writes there, but `Kit` proposes candidates found while kitting, as a line in the card's history (`kit.md`, "Task kitting"; `VARS/README.md`) — don't ignore them; the decision on each is yours;
 - fill in `GOAL.md`'s cycle summary and **what's left — per `Core`'s verdict, not your own assessment**:
 

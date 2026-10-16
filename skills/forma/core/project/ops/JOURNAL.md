@@ -38,7 +38,7 @@ structural changes, because the prototype keeps the idea from drifting>
 <which skill was formalized, which access was opened, what was learned about the subject that was not known at the start>
 
 **What was missing**
-<if it needs action, not only recording — a `.devtool/features/` card, epic "3. Form/Intent+Kit", label `what-was-missing`, linking to this cycle>
+<if it needs action, not only recording — a `.devtool/features/` card, epic "3. Project protocol", label `what-was-missing`, linking to this cycle>
 ```
 
 ---

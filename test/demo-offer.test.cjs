@@ -62,21 +62,21 @@ test('a value outside the closed list is refused', () => {
 
 test('a real card on the board: no offer; a demo card does not count as one', () => {
   const dir = project();
-  const demo = card(dir, '--kind', 'goal', '--demo', '--route', '7', '--why', 'human', '--title', 'Demo: one-page description');
+  const demo = card(dir, '--kind', 'channels', '--demo', '--route', '7', '--why', 'human', '--title', 'Demo: one-page description');
   assert.equal(demo.status, 0, demo.stdout + demo.stderr);
   assert.match(fs.readFileSync(path.join(dir, '.devtool', 'features', fs.readdirSync(path.join(dir, '.devtool', 'features')).find((f) => /^card-/.test(f))), 'utf8'), /labels: \[[^\]]*"demo"/);
   assert.match(ready(dir), NOTE, 'only demo cards: the board is still empty');
   const check = node(dir, path.join(dir, '.forma', 'board', 'check-board.cjs'));
   assert.equal(check.status, 0, 'a demo card is allowed under a goal in draft: ' + check.stdout + check.stderr);
 
-  const real = card(dir, '--kind', 'incoming', '--title', 'Real request');
+  const real = card(dir, '--kind', 'discussion', '--title', 'Real request');
   assert.equal(real.status, 0, real.stdout + real.stderr);
   assert.doesNotMatch(ready(dir), NOTE);
 });
 
 test('production card without the demo label under a goal in draft is still refused', () => {
   const dir = project();
-  const r = card(dir, '--kind', 'goal', '--route', '7', '--why', 'human', '--title', 'Real production card');
+  const r = card(dir, '--kind', 'channels', '--route', '7', '--why', 'human', '--title', 'Real production card');
   assert.notEqual(r.status, 0, 'the exception is only for the demo');
 });
 
@@ -85,8 +85,8 @@ test('statistics: the directory walk skips demo cards, a card named explicitly i
   const board = path.join(dir, '.devtool', 'features');
   const spend = '- `Run`, 2020-01-01: attempt, 1200 tokens (800 cache-read), 40 s, `abc123` — eng-x: done.\n';
   const write = (name, labels) => fs.writeFileSync(path.join(board, name), `---\nid: "${name}"\nstatus: "done"\nlabels: [${labels}]\n---\n# ${name}\n\n## History\n${spend}\n`);
-  write('card-007-real.md', '"goal-goal", "route-7"');
-  write('card-008-demo.md', '"goal-goal", "route-7", "demo"');
+  write('card-007-real.md', '"goal-channels", "route-7"');
+  write('card-008-demo.md', '"goal-channels", "route-7", "demo"');
   const { tally } = require(path.join(dir, '.forma', 'dashboard', 'tally.cjs'));
   const all = tally([board]);
   const one = tally([path.join(board, 'card-008-demo.md')]);
