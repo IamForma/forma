@@ -1,6 +1,6 @@
 # `Spec` — Slicing details
 
-Read this file when you slice documentation (epic "2. Documentation/Intent"), a content unit (a post, a page, a demo example), a style, tone, grid or palette that runs through every part, or rework a closed card; also for the limits and the rationale of "Homogeneity of a cycle". Shared rules — `.claude/agents/spec.md`.
+Read this file when you slice documentation (epic "2. Project structure"), a content unit (a post, a page, a demo example), a style, tone, grid or palette that runs through every part, or rework a closed card; also for the limits and the rationale of "Homogeneity of a cycle". Shared rules — `.claude/agents/spec.md`.
 
 ## Reworking a closed card
 
@@ -28,7 +28,7 @@ When cards of one specification can't be grouped — a dependency forces the ord
 
 ## Slicing documentation
 
-A card in epic "2. Documentation/Intent" is `work`, and work is checked against the end-image (§6). It belongs to a **documentation goal** — not to the goal whose area it describes, which owes no documentation of its own. Name both in "what it delivers": the documentation goal, and the section of `project/docs/` being written.
+A card in epic "2. Project structure" is `work`, and work is checked against the end-image (§6). It belongs to a **documentation goal** — not to the goal whose area it describes, which owes no documentation of its own. Name both in "what it delivers": the documentation goal, and the section of `project/docs/` being written.
 
 **One kind, one card.** Writing for someone using the thing and writing for someone who will maintain it are different qualifications, and "one qualification per card" applies here like anywhere. Two kinds covering the same area means two cards, never one card producing both.
 

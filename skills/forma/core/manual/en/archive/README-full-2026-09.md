@@ -6,7 +6,7 @@ A Claude Code plugin: a five-node project management protocol — `Intent` (the 
 
 An agent working alone over a long distance in one continuous context does not break abruptly — it quietly degrades: accumulated context replaces checking against fact with the impression that "usually everything is fine", early decisions imperceptibly shift the later ones, and execution gradually drifts from the original idea toward something similar but not the same. This is not a hypothesis — it is a problem actively being worked on right now both by the labs building the models themselves and by everyone building agent systems on top of them: how to keep an agent precise not at minute five, but at step fifty.
 
-Forma answers this not with the advice "be more careful" but with construction. The five nodes are separate, isolated calls with no shared memory between them (see "Who has no memory, and why" below); every task is checked against a written criterion, not an accumulated impression; no node confirms its own work. This is a structural defence precisely against quiet degradation over a long distance, not a philosophical declaration — more in "Five pairs" and `.forma/manual/en/03-forma/PROTOCOL.md`.
+Forma answers this not with the advice "be more careful" but with construction. The five nodes are separate, isolated calls with no shared memory between them (see "Who has no memory, and why" below); every task is checked against a written criterion, not an accumulated impression; no node confirms its own work. This is a structural defence precisely against quiet degradation over a long distance, not a philosophical declaration — more in "Five pairs" and `.forma/manual/en/03-protocol/PROTOCOL.md`.
 
 ## How the system is built
 
@@ -74,7 +74,7 @@ The protocol does not start from a ready specification and does not start from e
 
 This is not an arbitrary set of inputs — it is the same structure by which the protocol later judges the work itself, applied one step earlier, to the idea of the goal. Hence the goal comes out not abstract but measurable from the start: it already has an arrival criterion, checked by five independent optics, not invented after the fact to fit what has already been done. The same thought as Karpathy's for a single agent — set goals that are actually reachable, not fantastic ones — is here not a wish but a construction: a goal is not considered formed until it has passed exactly this run.
 
-Full procedure — `.forma/manual/en/03-forma/PROTOCOL.md`, "Each node's view of the brief"; `.forma/manual/en/03-forma/KITTING.md`; steps 1b/10b in the project's `SETUP.md`.
+Full procedure — `.forma/manual/en/03-protocol/PROTOCOL.md`, "Each node's view of the brief"; `.forma/manual/en/03-protocol/KITTING.md`; steps 1b/10b in the project's `SETUP.md`.
 
 ### Who has no memory, and why
 
@@ -148,7 +148,7 @@ The scheme files are arranged in four levels by frequency of actual reading, not
 | 3 | `.forma/manual/`, `project/config/CONFIG.md`, `project/config/PROJECT.md`, `project/ROADMAP.md` | a node that needs a specific fact | on reference |
 | 4 | the current goal's `GOAL.md`, the card, `.forma/skills/*/SKILL.md` | the node working with that goal/task | on an event, narrower still than level 3 |
 
-Full analysis — `.forma/skills/forma/core/.forma/manual/en/03-forma/PROTOCOL.md`, "The language of the scheme and the language of explanation are different roles, not the same thing", and `.forma/skills/forma/core/.forma/manual/en/03-forma/SCHEME.md`, "9. Reading levels of the scheme".
+Full analysis — `.forma/skills/forma/core/.forma/manual/en/03-protocol/PROTOCOL.md`, "The language of the scheme and the language of explanation are different roles, not the same thing", and `.forma/skills/forma/core/.forma/manual/en/03-protocol/SCHEME.md`, "9. Reading levels of the scheme".
 
 ## How it works in project management
 
@@ -261,7 +261,7 @@ Procedure details — `.forma/skills/forma/SKILL.md`.
 
 The plugin itself pulls none of this in automatically: Claude Code has no way to install a VS Code extension, and a real plugin dependency (`dependencies` in `plugin.json`) is switched on for good — it cannot be disabled separately while Forma is enabled. So below is not automation but a list: what is needed, and what will simply come in handy.
 
-**Required — without it the protocol does not start, not merely "inconvenient without visuals".** `AGENTS.md` §7 describes the card status in `.devtool/features/` — the only place where all the history, results, statistics and experience of all five nodes flow together (`.forma/manual/en/03-forma/ZONES.md`, zone 3). Without a physical board over these files the dashboard and the graph have nowhere to take data from, `Intent` cannot check the criterion, `Kit` cannot kit by facts — the substrate collapses, not just the aesthetics. The VS Code extension [Kanban Markdown](https://marketplace.visualstudio.com/items?itemName=LachyFS.kanban-markdown) is our current technology choice for this required function (the principle itself is fixed, the specific extension is a replaceable part): the card is seen and edited both by the human and by any node, no separate storage.
+**Required — without it the protocol does not start, not merely "inconvenient without visuals".** `AGENTS.md` §7 describes the card status in `.devtool/features/` — the only place where all the history, results, statistics and experience of all five nodes flow together (`.forma/manual/en/03-protocol/ZONES.md`, zone 3). Without a physical board over these files the dashboard and the graph have nowhere to take data from, `Intent` cannot check the criterion, `Kit` cannot kit by facts — the substrate collapses, not just the aesthetics. The VS Code extension [Kanban Markdown](https://marketplace.visualstudio.com/items?itemName=LachyFS.kanban-markdown) is our current technology choice for this required function (the principle itself is fixed, the specific extension is a replaceable part): the card is seen and edited both by the human and by any node, no separate storage.
 
 ```
 code --install-extension LachyFS.kanban-markdown
@@ -335,8 +335,8 @@ Version comparison is numeric by parts, not textual: `0.4.9 < 0.4.51 < 0.4.99 < 
 | `.forma/skills/forma/adapters/claude/hooks/check-ready.sh` | a `SessionStart` hook: silently checks unfilled places (agents, thresholds, goal map, `VARS/`) at the start of each session, blocks nothing |
 | `.forma/skills/forma/core/.forma/dashboard/` | an official arsenal tool — installed into the project root (`.forma/dashboard/`), not into `.devtool/` (that belongs to Kanban Markdown): a live board visualization (`generate.js`/`serve.js`/`index.html`) — `node .forma/dashboard/serve.js` → `localhost:5050`, updated over SSE on every card edit; `watch.js`/`ensure-running.js` — self-healing, started by `check-dashboard.sh` when the server goes down |
 | `.forma/skills/forma/adapters/claude/hooks/check-dashboard.sh` | a `SessionStart` hook: checks `localhost:5050` at session start; if the server does not respond, starts the `watch.js` supervisor in the background |
-| `.forma/skills/forma/core/.forma/manual/en/03-forma/SCHEME.md` | the construction of the scheme as a whole — node composition, environment requirements, cycle cache, collapse, numbers, file tree; universal, not edited for the work |
-| `.forma/skills/forma/core/.forma/manual/en/03-forma/PROTOCOL.md` | the rationale for the scheme's rules — why this way and not otherwise |
+| `.forma/skills/forma/core/.forma/manual/en/03-protocol/SCHEME.md` | the construction of the scheme as a whole — node composition, environment requirements, cycle cache, collapse, numbers, file tree; universal, not edited for the work |
+| `.forma/skills/forma/core/.forma/manual/en/03-protocol/PROTOCOL.md` | the rationale for the scheme's rules — why this way and not otherwise |
 | `.forma/skills/forma/core/.forma/living/CHANGELOG.md` | the .forma/protocol's version log |
 | `.forma/skills/forma/core/project/CONFIG.md` | skeleton: a map of the project structure in nine sections (what each node writes) + the tooling log, empty |
 | `.forma/skills/forma/core/project/PROJECT.md` | skeleton: thresholds, node tooling, references, access, formalized skills — headings and empty tables |
@@ -369,7 +369,7 @@ Universal for this type of project (landing page + site). Done once, before the 
 | 10b | Kitting | `Kit`, by the instruction `.claude/agents/on-demand/kit-project-kitting.md` | prototype (10), brief (1), nodes' view (1b), all of 2–9 | `brief/kitting.md` — candidate goals, requirements for them, epics, preliminary node arsenal, draft documentation structure, list of what to complete |
 | 11 | Creating goals | here | everything before, including `kitting.md` (10b) | `goals/goal-NN/GOAL.md` per segment; a line in `ROADMAP.md`/"Map" |
 
-**11 of 13 rows are cards of the epic "6. Incoming/Intent"** on the board `.devtool/features/` — executor `Intent`, outside the production route. Two exceptions, both without a card (the board does not yet exist at this stage): step **1b** — `Spec`/`Kit`/`Run`/`Core` each read the brief separately; step **10b** — `Kit` brings everything collected together into the project kitting. Both are the same kind of housekeeping action as the other `Intent` steps, just with a different executor.
+**11 of 13 rows are cards of the epic "6. Discussion of affairs"** on the board `.devtool/features/` — executor `Intent`, outside the production route. Two exceptions, both without a card (the board does not yet exist at this stage): step **1b** — `Spec`/`Kit`/`Run`/`Core` each read the brief separately; step **10b** — `Kit` brings everything collected together into the project kitting. Both are the same kind of housekeeping action as the other `Intent` steps, just with a different executor.
 
 Step 1 is conducted in rounds along the frontier — `forma-grill-with-ui` if a browser is available, otherwise `grilling` (the choice rule — `intent-goal-opening.md`, "Epic"), not as a one-off interview. Step 2 continues it directly: the interview records what was said, the history brings it into structure — separately, so that it can be checked whether anything was lost in systematization.
 
@@ -387,7 +387,7 @@ Step 11 also fills `ROADMAP.md`: from the brief — a short one-line summary in 
 
 ---
 
-**The epic "3. Form/Intent+Kit" is not tied to any goal and is available from the very start**, even before step 1: any node that runs into a human's decision opens a card there. It does not need to be pre-registered — the name is reserved by a rule, not by a file. The marker carries two names plus a conditional third in brackets, because execution is decided by the card's domain: access/tool/skill — `Kit` kits it, executes it itself or, if the tooling requires an action on the site, hands it to `Run` (hence the brackets, participation is conditional); a scheme/reference file — `Intent` itself, directly with the human. All cases — without `Spec`/`Core`.
+**The epic "3. Project protocol" is not tied to any goal and is available from the very start**, even before step 1: any node that runs into a human's decision opens a card there. It does not need to be pre-registered — the name is reserved by a rule, not by a file. The marker carries two names plus a conditional third in brackets, because execution is decided by the card's domain: access/tool/skill — `Kit` kits it, executes it itself or, if the tooling requires an action on the site, hands it to `Run` (hence the brackets, participation is conditional); a scheme/reference file — `Intent` itself, directly with the human. All cases — without `Spec`/`Core`.
 
 ---
 

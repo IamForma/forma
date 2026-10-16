@@ -56,6 +56,21 @@ it('в .agents/plugins/forma/agents/run/ отсутствуют проектны
   assert.ok(!files.includes('run-site-upload.md'), 'run-site-upload.md не должен находиться в .agents/');
 });
 
+// 3а. Платформенные роли и профили Gemini
+it('plumb-gemini.md существует и содержит JSON-контракт измерения (choice, score, noul)', () => {
+  const plumbPath = path.join(root, '.agents', 'plugins', 'forma', 'agents', 'plumb-gemini.md');
+  assert.ok(fs.existsSync(plumbPath), 'plumb-gemini.md должен существовать');
+  const txt = fs.readFileSync(plumbPath, 'utf8');
+  assert.match(txt, /"choice":\s*\{\s*"role"/, 'должно быть поле choice');
+  assert.match(txt, /"score":\s*\{\s*"clarity"/, 'должно быть поле score');
+  assert.match(txt, /"noul":/, 'должно быть поле noul');
+});
+
+it('run-schema-markup.md существует в .agents/plugins/forma/agents/run/', () => {
+  const schemaMarkupPath = path.join(root, '.agents', 'plugins', 'forma', 'agents', 'run', 'run-schema-markup.md');
+  assert.ok(fs.existsSync(schemaMarkupPath), 'run-schema-markup.md должен существовать в .agents/plugins/forma/agents/run/');
+});
+
 // 4. Соответствие экономическому контракту (строка gemini:, разбор tally)
 it('строки расхода gemini: формируются и разбираются tally.cjs по контракту', () => {
   const d = ['2000', '01', '02'].join('-');

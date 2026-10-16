@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * Тест соответствия экономического контракта (.forma/manual/en/03-forma/ECONOMY.md).
+ * Тест соответствия экономического контракта (.forma/manual/en/03-protocol/ECONOMY.md).
  * Примеры: строка `## История` → ожидаемые канонические суммы.
  * Адаптер любого движка проходит этот же тест своими строками.
  *   node .forma/dashboard/economy.test.cjs

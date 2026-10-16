@@ -13,8 +13,8 @@ A card whose work is running one script already written and verified by `Kit` �
 
 ## Takes / does not take
 
-- **Takes:** «run the card's Node script that reads the site through the CLI and writes a local report»; «run the card's extraction script and report counts»; «run a repo script or test under `.claude/scripts/*` as-is and report its last line / exit code».
-- **Does not take:** «write or fix the script» (→ `Kit`); «a script that writes to the site» (→ `run-site-php`); «draft or reword text» (→ `run-text`); «a Python script» (→ `run-python`).
+- **Takes:** «run the card's Node script that reads the site through the CLI and writes a local report»; «run the card's extraction script and report counts»; «run a repo script or test under `.claude/scripts/*` as-is and report its last line / exit code»; «re-run a site-wide crawl script from an earlier card against a fixed set of expected facts and report which hold».
+- **Does not take:** «write or fix the script» (→ `Kit`); «a script that writes to the site» (→ `run-site-php`); «draft or reword text» (→ `run-text`); «a Python script» (→ `run-python`); «apply the same step to each item of an explicit list the kit hands over» (→ `run-mechanical`).
 
 ## Boundary
 

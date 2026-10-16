@@ -7,7 +7,7 @@
 //                                     [--delivers "<что даёт>"] [--criterion "<критерий>"] [--budget "<попытки>"] [--next "<куда дальше>"]
 //                                     [--why <код>] [--why-detail "<пояснение>"] [--stage card|approve]
 //
-// --kind   — код вида из PROJECT.md, «Эпики проекта» (value, docs, forma, result-image, core, incoming, goal, experience, review-image).
+// --kind   — код вида из PROJECT.md, «Эпики проекта» (value, docs, forma, resources, core, incoming, goal, experience, results).
 //            Имя эпика подставляется точно из таблицы — поле `epic` (AGENTS.md §7).
 // --goal   — метка цели; по умолчанию главная цель вида `goal-<код>` (AGENTS.md §6, ровно одна метка).
 // --route/--over/--seg/--wave/--after/--trial — метки маршрута (AGENTS.md §6; ROUTES.md §9). --over и --after повторяемы.
@@ -74,7 +74,7 @@ const Z = {
   task: zoneHeading('task', lang, anchored), kit: zoneHeading('kit', lang, anchored), hist: zoneHeading('history', lang, anchored), res: zoneHeading('result', lang, anchored),
   types: lang === 'ru' ? ['дело', 'оснастка', 'решение'] : ['work', 'tooling', 'decision'],
 };
-const type = arg('type', Z.types[kind === 'goal' ? 0 : 1]);
+const type = arg('type', Z.types[kind === 'channels' ? 0 : 1]);
 const fields = [['delivers', '<что даёт>'], ['criterion', '<критерий готовности>'], ['budget', '<бюджет попыток>'], ['next', '<куда дальше>']]
   .map(([k, ph]) => { const v = arg(k); if (v !== undefined && /[|\n]/.test(v)) die(`--${k}: символ | и перевод строки не допускаются — поля разделены «|»`); return v || ph; });
 
@@ -88,7 +88,7 @@ const routeLabel = routeLabels.find(l => l.startsWith('route-'));
 if (why !== undefined && !routeLabel) die('--why требует --route N: причина пишется для метки маршрута');
 
 // 4. Статус и исполнитель по маршруту (AGENTS.md §7): backlog держит Spec на производстве, на остальных дорожках — Intent
-const noSpec = kind !== 'goal'; // Spec режет только производство (7); прочие дорожки открывает Intent
+const noSpec = kind !== 'channels'; // Spec режет только производство (7); прочие дорожки открывает Intent
 const status = arg('status', 'backlog');
 const assignee = arg('assignee', noSpec ? 'Intent' : 'Spec');
 const priority = arg('priority', 'medium');

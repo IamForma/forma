@@ -23,19 +23,19 @@ Here — what we work with and at what level. What we build and in what order �
 
 | Code | Epic in this project | Function |
 |---|---|---|
-| `value` | 1. Value/Intent+Kit | a remark on the production spend of the project itself — tokens, cache, attempts, the price of a cycle: `Core` reads the trend, `Intent` holds "cheap" |
-| `docs` | 2. Documentation/Intent | documentation of the product itself, for the human: user, administrator, technical — how to work with what we produce. The goal's cycle is closed and the promise it gave must be shown restrained: `Intent` reads the "Result" zones of the closed cards, looks at the live result and writes a `project/docs/` section for the human |
-| `forma` | 3. Form/Intent+Kit | a node reached the "human" row of the route; also `Kit`'s reconnaissance of an unfamiliar stack before slicing |
-| `result-image` | 4. Result image/Intent | the `grilling` interview at the opening of a new goal |
-| `core` | 5. Core remarks/Core+Intent | `Core`'s proposals when closing a cycle: `Core` writes a remark, `Intent` sorts it by domain |
-| `incoming` | 6. Incoming/Intent | a correction or task that appeared along the way and need not go into production at once: `Intent` either resolves it quickly itself and closes the card, or sends it to `Spec` for slicing. Also here — a card without slicing and a defect outside the current goal |
-| `goal` | 7. Production/SKRIC | the product itself: the main goal `goal-goal` and subgoals `goal-NN` in one lane, the goal is chosen by label |
-| `experience` | 8. Experience/Intent+Kit | weeding the `project/experience/` store: diverged keys, contradicting records |
-| `review-image` | 9. Review image/Intent | outside the production cycle. The human's own testing process, formed by them for themselves: how the result is checked, corrections to the work and testing, additions to what was meant to be obtained in the end result — the result image and the final acceptance/testing may differ. It is an addition to an already formed goal, not a rewrite: `GOAL.md` does not change (prohibition 8), the addition is recorded beside it, and only the human turns it into a new goal or a reopening. Its own testing procedure, tied to separate processes |
+| `analytics` | 1. Project analytics | a remark on the production spend of the project itself — tokens, cache, attempts, the price of a cycle: `Core` reads the trend, `Intent` holds "cheap" |
+| `structure` | 2. Project structure | documentation of the product itself, for the human: user, administrator, technical — how to work with what we produce. The goal's cycle is closed and the promise it gave must be shown restrained: `Intent` reads the "Result" zones of the closed cards, looks at the live result and writes a `project/docs/` section for the human |
+| `protocol` | 3. Project protocol | a node reached the "human" row of the route; also `Kit`'s reconnaissance of an unfamiliar stack before slicing |
+| `resources` | 4. Project resources | the `grilling` interview at the opening of a new goal |
+| `efficiency` | 5. Form efficiency | `Core`'s proposals when closing a cycle: `Core` writes a remark, `Intent` sorts it by domain |
+| `discussion` | 6. Discussion of affairs | a correction or task that appeared along the way and need not go into production at once: `Intent` either resolves it quickly itself and closes the card, or sends it to `Spec` for slicing. Also here — a card without slicing and a defect outside the current goal |
+| `channels` | 7. Production channels | the product itself: the main goal `goal-channels` and subgoals `goal-NN` in one lane, the goal is chosen by label |
+| `competencies` | 8. Competence segments | weeding the `project/experience/` store: diverged keys, contradicting records |
+| `results` | 9. Goal achievement | outside the production cycle. The human's own testing process, formed by them for themselves: how the result is checked, corrections to the work and testing, additions to what was meant to be obtained in the end result — the result image and the final acceptance/testing may differ. It is an addition to an already formed goal, not a rewrite: `GOAL.md` does not change (prohibition 8), the addition is recorded beside it, and only the human turns it into a new goal or a reopening. Its own testing procedure, tied to separate processes |
 
 **An epic is a kind of goal, a goal is a label.** The nine kinds run in parallel; each has a main goal `goal-<code>` and, if needed, subgoals `goal-NN` (continuous numbering). A card carries exactly one goal label in `labels` — that is the true link; the epic is only the lane of its kind (`AGENTS.md` §6, `intent-goal-opening.md`, "Epic"). Who forms each kind's goal — there too, "How goals are formed".
 
-**Kinds of documentation** *(human, a decision per project; which kinds exist here at all is a list, not an obligation: which of them a specific goal owes is said by its result image, epic "4. Result image/Intent")*:
+**Kinds of documentation** *(human, a decision per project; which kinds exist here at all is a list, not an obligation: which of them a specific goal owes is said by its result image, epic "4. Project resources")*:
 
 | Kind | For whom | What it holds |
 |---|---|---|
@@ -54,7 +54,7 @@ Here — what we work with and at what level. What we build and in what order �
 
 Spend in tokens and elapsed time are statistics, not thresholds: they are written by fact (AGENTS.md §3), never set in advance and never asked. No limit is set in dollars.
 
-**Routes** <!-- k:routes --> *(human, before start; codes and the choice rule — `AGENTS.md` §2, `route-choice.md`; the reasoning behind each field — `.forma/manual/en/03-forma/ROUTES.md` §9)*:
+**Routes** <!-- k:routes --> *(human, before start; codes and the choice rule — `AGENTS.md` §2, `route-choice.md`; the reasoning behind each field — `.forma/manual/en/03-protocol/ROUTES.md` §9)*:
 
 | Field | Value |
 |---|---|
@@ -119,7 +119,7 @@ a cycle closed on the second version cannot be judged by the third.
 
 ---
 
-**What was missing — not here.** This field's setup is fixed (the rule is recorded, prohibition 5 of `AGENTS.md`): the field itself is filled by `Intent` each cycle in `JOURNAL.md` (the tail, not this table); a finding that needs fixing, not only recording, is a `.devtool/features/` card, epic "3. Form/Intent+Kit", label `what-was-missing`. `PROJECT.md` holds only this rule, not the findings themselves — otherwise the immutable settings file would turn into a growing journal.
+**What was missing — not here.** This field's setup is fixed (the rule is recorded, prohibition 5 of `AGENTS.md`): the field itself is filled by `Intent` each cycle in `JOURNAL.md` (the tail, not this table); a finding that needs fixing, not only recording, is a `.devtool/features/` card, epic "3. Project protocol", label `what-was-missing`. `PROJECT.md` holds only this rule, not the findings themselves — otherwise the immutable settings file would turn into a growing journal.
 
 ---
 
@@ -127,4 +127,4 @@ a cycle closed on the second version cannot be judged by the third.
 
 From this file the cache takes: node tooling, thresholds, access and data, project references — by link and version. The result image arrives separately — from the current goal's `GOAL.md`.
 
-Not included: "What was missing" (`JOURNAL.md` + cards of epic "3. Form/Intent+Kit") — that is material for `Spec` at slicing, not background for every call.
+Not included: "What was missing" (`JOURNAL.md` + cards of epic "3. Project protocol") — that is material for `Spec` at slicing, not background for every call.

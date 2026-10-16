@@ -19,8 +19,8 @@ const OBSOLETE = [
   `.codex/agents/${OLD}.toml`,
   `.codex/roles/${OLD}.md`,
   `.codex/tests/test-${OLD}-codex.cjs`,
-  `.forma/manual/en/03-forma/${OLD.toUpperCase()}.md`,
-  `.forma/manual/ru/03-forma/${OLD.toUpperCase()}.md`,
+  `.forma/manual/en/03-protocol/${OLD.toUpperCase()}.md`,
+  `.forma/manual/ru/03-protocol/${OLD.toUpperCase()}.md`,
 ]
 
 const rename = (t) => t

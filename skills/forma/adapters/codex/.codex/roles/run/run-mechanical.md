@@ -13,7 +13,7 @@ A card whose work is running a script already written and verified by `Kit` over
 
 ## Takes / does not take
 
-- **Takes:** «run `x.cjs` over this list of 40 pages and report the summary»; «apply the issued script to every file in the list».
+- **Takes:** «run `x.cjs` over this list of 40 pages and report the summary»; «apply the issued script to every file in the list»; «run the issued script that downloads N named media files, verifies each against the server and writes the manifest».
 - **Does not take:** «work out which files need changing» (a decision → `Kit`/`Spec`); «run this card's own script that writes a report with a stop status» (→ `run-script`); «write the script» (→ `Kit`).
 
 ## Boundary

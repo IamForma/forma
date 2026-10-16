@@ -2,7 +2,7 @@
 
 A knowledge base of what has been done. Structured by goals: each goal `project/goals/goal-NN-<name>/` has its own section here, `docs/goal-NN-<name>/`. Not by artifact type (architecture/guide/component) — by what this documentation explains.
 
-**Who writes.** `Intent`, epic "2. Documentation/Intent" — **after the circle is closed**, not along the way. Not `Run`: it made the thing, but never addresses the human (`AGENTS.md` §1), and documentation is the Form explaining to the human what it has delivered.
+**Who writes.** `Intent`, epic "2. Project structure" — **after the circle is closed**, not along the way. Not `Run`: it made the thing, but never addresses the human (`AGENTS.md` §1), and documentation is the Form explaining to the human what it has delivered.
 
 **From what.** From the "Result" zones of closed cards and from the live result — `Intent` looks itself. Not the chronology of execution (that is in the card's history), not a verdict (that is in `GOAL.md`), and not a retelling of the cards: the reader of these pages knows nothing about cards, attempts and nodes and should not.
 
@@ -16,7 +16,7 @@ A knowledge base of what has been done. Structured by goals: each goal `project/
 
 ## Structure of sections
 
-A new goal on `ROADMAP.md` — a new section here, with the same directory name as `project/goals/goal-NN-<name>/` (the rule of carrying the directory over — `manual/en/03-forma/SCHEME.md`, sect. 6). There are no sections yet — the first appears with the first closed goal.
+A new goal on `ROADMAP.md` — a new section here, with the same directory name as `project/goals/goal-NN-<name>/` (the rule of carrying the directory over — `manual/en/03-protocol/SCHEME.md`, sect. 6). There are no sections yet — the first appears with the first closed goal.
 
 ---
 

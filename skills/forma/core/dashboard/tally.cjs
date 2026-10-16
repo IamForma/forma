@@ -101,7 +101,7 @@ function dedupKey(line, file, id, m) {
   return [id, m[3], m[4] ?? "", m[5] ?? ""].join("|");
 }
 
-// Строка → канонические переменные (.forma/manual/en/03-forma/ECONOMY.md); счёт — economy.cjs.
+// Строка → канонические переменные (.forma/manual/en/03-protocol/ECONOMY.md); счёт — economy.cjs.
 // null — маркер `unknown` (отдельно), undefined — поле не записано.
 function attemptRecord(m, line, idMatch) {
   const [, node, , tokensStr, cacheStr, secondsStr, turnsStr, costStr, , tail] = m;
@@ -236,7 +236,7 @@ function tallyFiles(files, seenIds, engine) {
 }
 
 // ─────────────────────────── разрез по маршрутам ───────────────────────────
-// Метки маршрутов — AGENTS.md §6 и .forma/manual/en/03-forma/ROUTES.md §3: route-0…route-8,
+// Метки маршрутов — AGENTS.md §6 и .forma/manual/en/03-protocol/ROUTES.md §3: route-0…route-8,
 // over-1…over-4 (надстройки, считаются своей таблицей: у карточки их может быть
 // несколько), seg-N и wave-N (срезы route-8). Старая `route-intent-run` = `route-2`.
 // Доля подготовки — расход Spec + Kit к расходу карточек маршрута; на route-4 Kit —

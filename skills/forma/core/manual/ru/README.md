@@ -6,14 +6,14 @@
 
 | Раздел | Вид |
 |---|---|
-| [1. Ценность/Intent+Kit](01-value/README.md) | `value` |
-| [2. Документация/Intent](02-docs/README.md) | `docs` |
-| [3. Форма/Intent+Kit](03-forma/README.md) | `forma` |
-| [4. Образ результата/Intent](04-result-image/README.md) | `result-image` |
-| [5. Замечания Core/Core+Intent](05-core/README.md) | `core` |
-| [6. Входящие/Intent](06-incoming/README.md) | `incoming` |
-| [7. Производство/SKRIC](07-goal/README.md) | `goal` |
-| [8. Опыт/Intent+Kit](08-experience/README.md) | `experience` |
-| [9. Ревью образа/Intent](09-review-image/README.md) | `review-image` |
+| [1. Аналитика проекта](01-analytics/README.md) | `analytics` |
+| [2. Структура проекта](02-structure/README.md) | `structure` |
+| [3. Протокол проекта](03-protocol/README.md) | `protocol` |
+| [4. Ресурсы проекта](04-resources/README.md) | `resources` |
+| [5. Эффективность формы](05-efficiency/README.md) | `efficiency` |
+| [6. Обсуждение дел](06-discussion/README.md) | `discussion` |
+| [7. Каналы производства](07-channels/README.md) | `channels` |
+| [8. Сегменты компетенций](08-competencies/README.md) | `competencies` |
+| [9. Достижение целей](09-results/README.md) | `results` |
 
-Цельные справочники движка — в [03-forma/](03-forma/README.md). Диаграммы — `assets/`.
+Цельные справочники движка — в [03-protocol/](03-protocol/README.md). Диаграммы — `assets/`.

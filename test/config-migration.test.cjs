@@ -31,8 +31,8 @@ test('старая раскладка: файлы переехали, точны
   fs.writeFileSync(mf, fs.readFileSync(mf, 'utf8').replace(/project\/config\//g, 'project/'));
   fs.writeFileSync(path.join(dir, 'project/docs/note.md'), 'Пороги — в `project/PROJECT.md`, порядок — `project/SETUP.md`.\n');
   fs.mkdirSync(path.join(dir, '.devtool/features'), { recursive: true });
-  const card = ['---', 'id: "fixture-old"', 'status: "backlog"', 'priority: "medium"', 'assignee: null', 'epic: "3. Form/Intent+Kit"', 'dueDate: null',
-    'created: "2026-01-01T00:00:00.000Z"', 'modified: "2026-01-01T00:00:00.000Z"', 'completedAt: null', 'labels: ["goal-forma", "route-4"]', 'order: "a0"', '---',
+  const card = ['---', 'id: "fixture-old"', 'status: "backlog"', 'priority: "medium"', 'assignee: null', 'epic: "3. Project protocol"', 'dueDate: null',
+    'created: "2026-01-01T00:00:00.000Z"', 'modified: "2026-01-01T00:00:00.000Z"', 'completedAt: null', 'labels: ["goal-protocol", "route-4"]', 'order: "a0"', '---',
     '# Old fixture', '', '## Task', '1 · tooling | x | y | 1 | none', '', '## Kit', '', '## History', '- see project/PROJECT.md', '', '## Result', ''].join('\n');
   fs.writeFileSync(path.join(dir, '.devtool/features/fixture-old.md'), card);
   fs.writeFileSync(path.join(dir, '.forma/living/CHANGELOG.md'), 'moved project/CONFIG.md earlier\n');

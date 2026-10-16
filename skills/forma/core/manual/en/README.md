@@ -6,14 +6,14 @@ This is explanation only — what changes together with the law. Everything that
 
 | Section | Kind |
 |---|---|
-| [1. Economics/Intent+Kit](01-value/README.md) | `value` |
-| [2. Documentation/Intent](02-docs/README.md) | `docs` |
-| [3. Form/Intent+Kit](03-forma/README.md) | `forma` |
-| [4. End-image/Intent](04-result-image/README.md) | `result-image` |
-| [5. Core remarks/Core+Intent](05-core/README.md) | `core` |
-| [6. Incoming/Intent](06-incoming/README.md) | `incoming` |
-| [7. Production/SKRIC](07-goal/README.md) | `goal` |
-| [8. Experience/Intent+Kit](08-experience/README.md) | `experience` |
-| [9. Image review/Intent](09-review-image/README.md) | `review-image` |
+| [1. Project analytics](01-analytics/README.md) | `analytics` |
+| [2. Project structure](02-structure/README.md) | `structure` |
+| [3. Project protocol](03-protocol/README.md) | `protocol` |
+| [4. Project resources](04-resources/README.md) | `resources` |
+| [5. Form efficiency](05-efficiency/README.md) | `efficiency` |
+| [6. Discussion of affairs](06-discussion/README.md) | `discussion` |
+| [7. Production channels](07-channels/README.md) | `channels` |
+| [8. Competence segments](08-competencies/README.md) | `competencies` |
+| [9. Goal achievement](09-results/README.md) | `results` |
 
-Complete reference guides for the engine are in [03-forma/](03-forma/README.md). Diagrams are in `assets/`.
+Complete reference guides for the engine are in [03-protocol/](03-protocol/README.md). Diagrams are in `assets/`.

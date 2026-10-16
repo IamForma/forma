@@ -32,4 +32,4 @@ A line that has been used and confirmed moves to `project/config/CONFIG.md`, "Te
 
 ## Weeding
 
-Diverged keys (one subject recorded twice under different names) and contradicting records — a card of epic "8. Experience/Intent+Kit". On the fact of disorder, not as a ritual for every goal.
+Diverged keys (one subject recorded twice under different names) and contradicting records — a card of epic "8. Competence segments". On the fact of disorder, not as a ritual for every goal.

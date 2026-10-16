@@ -26,13 +26,13 @@ function copyTree(source, target) {
     fs.copyFileSync(path.join(source, file), out);
   }
 }
-// The plugin: .forma/protocol/ inside the project; its absence is a failure here, never a silent skip.
+// The protocol clone is optional in a project worktree. Its absence skips only
+// packaging comparisons; local adapter generation remains fully testable.
 const pluginSource = process.env.FORMA_PLUGIN_ROOT ? path.resolve(process.env.FORMA_PLUGIN_ROOT) : path.join(root, '.forma', 'protocol', 'skills', 'forma');
 const modern = fs.existsSync(path.join(pluginSource, 'adapters', 'codex'));
 const templateRel = modern ? 'adapters/codex' : 'templates-codex';
 const templateSource = path.join(pluginSource, templateRel);
-if (!fs.existsSync(templateSource)) throw new Error('Forma plugin template not found: ' + templateSource + ' (set FORMA_PLUGIN_ROOT)');
-const hasPackaged = true;
+const hasPackaged = fs.existsSync(templateSource);
 const fixturePlugin = path.join(fixture, 'plugin');
 const packaged = 'plugin/' + templateRel;
 for (const rel of ['.claude/agents', '.claude/skills', '.codex', '.agents/skills', '.forma/i18n']) copy(rel);
@@ -43,10 +43,10 @@ if (fs.existsSync(registrySource)) {
   fs.mkdirSync(path.dirname(registryTarget), { recursive: true });
   fs.copyFileSync(registrySource, registryTarget);
 }
-copyTree(templateSource, path.join(fixturePlugin, templateRel));
+if (hasPackaged) copyTree(templateSource, path.join(fixturePlugin, templateRel));
 const command = path.join(fixture, '.codex', 'scripts', 'sync-codex.cjs');
-const claudeTemplate = path.join(pluginSource, modern ? 'adapters/claude' : 'template');
-const templateEngineSync = path.join(claudeTemplate, 'scripts', modern ? 'checks/codex.cjs' : 'sync-engines.cjs');
+const claudeTemplate = hasPackaged ? path.join(pluginSource, modern ? 'adapters/claude' : 'template') : null;
+const templateEngineSync = claudeTemplate && path.join(claudeTemplate, 'scripts', modern ? 'checks/codex.cjs' : 'sync-engines.cjs');
 function check(expectSuccess, name) {
   const result = cp.spawnSync(process.execPath, [command, '--check', '--codex-only', '--root', fixture, '--plugin', fixturePlugin], { encoding: 'utf8' });
   if ((result.status === 0) !== expectSuccess) throw new Error(`${name}: ${result.stdout}${result.stderr}`);
@@ -55,7 +55,7 @@ function check(expectSuccess, name) {
 try {
   const usageFixtures = cp.spawnSync(process.execPath, [path.join(root, '.codex/tests/test-codex-usage.cjs')], { encoding: 'utf8' });
   if (usageFixtures.status !== 0) throw new Error(`continuation usage fixtures: ${usageFixtures.stdout}${usageFixtures.stderr}`);
-  if (fs.existsSync(templateEngineSync)) {
+  if (templateEngineSync && fs.existsSync(templateEngineSync)) {
     const templateSyncText = fs.readFileSync(templateEngineSync, 'utf8');
     if (!templateSyncText.includes("adapter.includes(`${CLAUDE_ON_DEMAND_DIR}/${f}`)")) {
       throw new Error('template engine sync must validate the canonical on-demand link, not compare adapter text');
@@ -78,7 +78,7 @@ try {
   }
   const fullCheck = () => cp.spawnSync(process.execPath, [command, '--check', '--root', fixture, '--plugin', fixturePlugin], { encoding: 'utf8' });
   const baseline = fullCheck();
-  const baselineProblems = new Set((baseline.stdout + baseline.stderr).split(/\r?\n/).filter(line => line.startsWith('- ')));
+  let baselineProblems = new Set((baseline.stdout + baseline.stderr).split(/\r?\n/).filter(line => line.startsWith('- ')));
   check(true, 'clean Codex fixture');
   // Native portable counterparts survive a same-name product registration;
   // removing native ownership must still reject the product import.
@@ -103,10 +103,21 @@ try {
   check(true, 'restored native counterpart fixture');
   const sharedSkill = path.join(fixture, '.agents', 'skills', 'graph-build', 'SKILL.md');
   const sharedSkillBefore = fs.readFileSync(sharedSkill, 'utf8');
+  // Give the mutation check one clean shared skill: project-level Gemini
+  // drift is allowed to exist, but must not hide a fixture regression.
+  copyTree(path.join(fixture, '.claude', 'skills', 'grilling'), path.join(fixture, '.agents', 'skills', 'grilling'));
+  const manifest = path.join(fixture, '.codex', 'generated-skill-mirror.json');
+  fs.writeFileSync(manifest, '{"skills":[]}\n');
   const codexOnly = cp.spawnSync(process.execPath, [command, '--apply', '--codex-only', '--root', fixture, '--plugin', fixturePlugin], { encoding: 'utf8' });
-  if (codexOnly.status !== 0 || fs.readFileSync(sharedSkill, 'utf8') !== sharedSkillBefore) {
-    throw new Error(`Codex-only apply must not write .agents/skills: ${codexOnly.stdout}${codexOnly.stderr}`);
+  if (codexOnly.status !== 0 || fs.readFileSync(sharedSkill, 'utf8') !== sharedSkillBefore || !fs.readFileSync(manifest, 'utf8').includes('graph-build')) {
+    throw new Error(`Codex-only apply must refresh its manifest without writing .agents/skills: ${codexOnly.stdout}${codexOnly.stderr}`);
   }
+  const fixtureBaseline = fullCheck();
+  baselineProblems = new Set((fixtureBaseline.stdout + fixtureBaseline.stderr).split(/\r?\n/).filter(line => line.startsWith('- ')));
+  const profile = path.join(fixture, '.codex', 'roles', 'run', 'run-site-php.md');
+  const canonicalProfile = fs.readFileSync(path.join(fixture, '.claude', 'agents', 'run', 'run-site-php.md'), 'utf8')
+    .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '').trim();
+  if (fs.readFileSync(profile, 'utf8').includes(canonicalProfile)) throw new Error('Run profile copied the canonical body instead of linking it');
   const cases = [
     ['model tier', path.join(fixture, '.codex/agents/intent.toml'), s => s.replace('model_reasoning_effort = "low"', 'model_reasoning_effort = "medium"')],
     ['role link', path.join(fixture, '.codex/roles/kit.md'), s => s.replace('.claude/agents/kit.md', '.claude/agents/not-kit.md')],
@@ -179,7 +190,7 @@ try {
   }
   const unknownResult = cp.spawnSync(process.execPath, [usage, '--file', unknownDuration], { encoding: 'utf8' });
   if (unknownResult.status !== 0 || !unknownResult.stdout.includes('unknown s')) throw new Error('usage fixture did not preserve an unknown duration marker');
-  console.log('Codex sync fixtures verified: clean source, plus model, role, skill, and hook drift' + (hasPackaged ? ', installed template, and template drift.' : '.'));
+  console.log('Codex sync fixtures verified: clean source, plus model, role, skill, and hook drift' + (hasPackaged ? ', installed template, and template drift.' : '; protocol-clone packaging checks skipped.'));
 } finally {
   if (path.dirname(path.resolve(fixture)) !== path.resolve(os.tmpdir()) || !path.basename(fixture).startsWith('forma-codex-sync-')) throw new Error('Unsafe fixture cleanup target');
   fs.rmSync(fixture, { recursive: true, force: true });

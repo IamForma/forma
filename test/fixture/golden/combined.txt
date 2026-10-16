@@ -51,7 +51,7 @@ exit 1
     — CLAUDE.md в корне — упразднён; §8 Claude Code живёт в .claude/rules/claude-8.md
     — CLAUDE.md: нет §8 «Engine architecture»
     — .agents/rules/gemini-8.md отсутствует
-    — .forma/manual/en/03-forma/SCHEME.md: нет русской копии в .forma/manual/ru/
+    — .forma/manual/en/03-protocol/SCHEME.md: нет русской копии в .forma/manual/ru/
     — card-002-vopros-po-primeru.md: эпик "99. Чужой" не из девяти видов (PROJECT.md, «Эпики проекта»)
     — card-001-nastroit-sborku-primera.md: метка route-9 — нет такого маршрута (route-0…route-8)
     — card-001-nastroit-sborku-primera.md: меток маршрута 2, нужна ровно одна (route-0…route-8)

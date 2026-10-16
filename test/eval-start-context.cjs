@@ -36,7 +36,7 @@ const START_FILES = [
 // Стартовый гейт (AGENTS.md §3) честно держит агента: пока цели-образы черновик, а пороги пусты, цикл не открывают и передачу
 // агент отказывается делать. Для замера передач гейт выполняется заранее — как у человека, прошедшего интервью.
 function openGate(dir) {
-  for (const c of ['result-image', 'review-image']) {
+  for (const c of ['resources', 'results']) {
     const f = path.join(dir, 'project', 'goals', `goal-${c}`, 'GOAL.md')
     fs.writeFileSync(f, fs.readFileSync(f, 'utf8').replace(/^draft:\s*true\s*\n/m, ''))
   }
@@ -50,7 +50,7 @@ function openGate(dir) {
 
 // Сценарий handoff: карточка создаётся заранее тем же скриптом, что и в рабочем проекте, — агент её только передаёт.
 function seedCard(dir) {
-  const r = sh('node', [path.join(dir, '.forma/board/new-card.cjs'), '--kind', 'value', '--title', 'Eval handoff card',
+  const r = sh('node', [path.join(dir, '.forma/board/new-card.cjs'), '--kind', 'analytics', '--title', 'Eval handoff card',
     '--delivers', 'a short note', '--criterion', 'the note exists', '--budget', '2 attempts', '--next', 'Intent',
     '--route', '7', '--why', 'risk', '--stage', 'card'], dir)
   if (r.status !== 0) throw new Error(`seed card failed:\n${r.stdout}\n${r.stderr}`)

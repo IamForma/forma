@@ -33,7 +33,7 @@ try {
     ['.codex/agents/plumb.toml', s => s.replace('sandbox_mode = "read-only"', 'sandbox_mode = "workspace-write"')],
     ['.codex/roles/spec.md', s => s.replace('why: plumb', 'why: ready')],
     ['.codex/roles/core.md', s => s.replace('measure 8', 'measure omitted')],
-    ['.codex/roles/run/run-python.md', s => s.replace('## Takes / does not take', '## Missing criteria')],
+    ['.codex/roles/run/run-python.md', s => s.replace('.claude/agents/run/run-python.md', '.claude/agents/run/missing.md')],
     ['.codex/roles/plumb.md', s => s.replace('not a sixth node', 'a sixth node')]
   ];
   for (const [rel, change] of mutations) {
@@ -55,7 +55,11 @@ try {
   // A newly registered profile must be excluded by ownership, not a hardcoded name.
   const synthetic='run-fixture-owned';
   const registry=path.join(fixture,'project/config/PROJECT.md');
-  fs.writeFileSync(registry,project.replace(section,section+'\n| `'+synthetic+'` | Fixture only |\n'));
+  const registrySection = section || '**Project Run profiles**\n';
+  const projectWithSynthetic = registrySection === section
+    ? project.replace(section, registrySection+'\n| `'+synthetic+'` | Fixture only |\n')
+    : project+'\n'+registrySection+'\n| `'+synthetic+'` | Fixture only |\n';
+  fs.writeFileSync(registry,projectWithSynthetic);
   fs.copyFileSync(path.join(fixture,'.claude/agents/run/run-text.md'),path.join(fixture,'.claude/agents/run',synthetic+'.md'));
   const syntheticSkill=path.join(fixture,'.claude/skills',synthetic);
   fs.mkdirSync(syntheticSkill,{recursive:true});

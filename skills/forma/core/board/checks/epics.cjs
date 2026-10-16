@@ -9,7 +9,7 @@ const path = require('path');
 const { cardFiles, boardDir, labelsOf, createdDay } = require('../../dashboard/lib/card.cjs');
 
 // Девять видов цели: код не зависит от языка, лейбл эпика — во втором столбце таблицы PROJECT.md. Коды меняет только человек.
-const CODES = ['value', 'docs', 'forma', 'result-image', 'core', 'incoming', 'goal', 'experience', 'review-image'];
+const CODES = ['analytics', 'structure', 'protocol', 'resources', 'efficiency', 'discussion', 'channels', 'competencies', 'results'];
 const GOAL_LABEL_RE = new RegExp('^goal-(\\d+|' + CODES.join('|') + ')$');
 
 const read = (file) => fs.readFileSync(file, 'utf8');
@@ -80,10 +80,10 @@ function cardProblems(name, text, model) {
   // Производство под черновиком цели — стоп старта. Интервью и прочие виды можно: они и формируют образ. Закрытые не трогаем.
   // Исключение — демонстрационный круг (метка demo): человек согласился на него при закрытых воротах.
   const demo = labelsOf(text).includes('demo');
-  if (kind === 'goal' && model.draft.has(g) && !demo && !/^status:\s*"done"/m.test(text)) {
+  if (kind === 'channels' && model.draft.has(g) && !demo && !/^status:\s*"done"/m.test(text)) {
     problems.push(`${name}: производство под целью ${g} в черновике — сначала образ цели (GOAL.md draft: false)`);
   }
-  if (kind && epic !== model.laneOf.get(kind) && epic !== model.laneOf.get('incoming')) {
+  if (kind && epic !== model.laneOf.get(kind) && epic !== model.laneOf.get('discussion')) {
     problems.push(`${name}: эпик "${epic}" не дорожка вида цели ${g} ("${model.laneOf.get(kind)}") — верна метка`);
   }
   return problems;
@@ -93,7 +93,7 @@ function run({ root, since }) {
   if (!fs.existsSync(boardDir(root))) return [];            // доски ещё нет — проверять нечего
   const laneOf = readLanes(root);
   if (!laneOf.size) {
-    return ['PROJECT.md: не разобрана таблица эпиков (строки вида | `incoming` | <лейбл> | …) — ' +
+    return ['PROJECT.md: не разобрана таблица эпиков (строки вида | `discussion` | <лейбл> | …) — ' +
             'проверка эпиков доски не выполнялась'];
   }
   const model = { laneOf, lanes: new Set(laneOf.values()), kindOf: readKinds(root), since, ...readGoals(root) };

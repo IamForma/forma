@@ -3,12 +3,12 @@ id: "card-003-zakrytaya-osnastka"
 status: "done"
 priority: "medium"
 assignee: null
-epic: "3. Form/Intent+Kit"
+epic: "3. Project protocol"
 dueDate: null
 created: "2031-01-01T09:00:00.000Z"
 modified: "2031-01-01T18:00:00.000Z"
 completedAt: "2031-01-01T18:00:00.000Z"
-labels: ["goal-forma", "route-4"]
+labels: ["goal-protocol", "route-4"]
 order: "a2"
 ---
 # card-003 · Закрытая оснастка

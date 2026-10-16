@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * Каталог маршрутов и надстроек — все коды из таблиц `.forma/manual/ru/03-forma/ROUTES.md`, не зашиты: «Движок»
+ * Каталог маршрутов и надстроек — все коды из таблиц `.forma/manual/ru/03-protocol/ROUTES.md`, не зашиты: «Движок»
  * показывает всё, что есть, а не только то, что используется. `DASH_ROUTES_FILE` — подмена источника для проверки.
  */
 
 const path = require('path');
 const { readIfExists } = require('../lib/fs.cjs');
 
-const ROUTES_REL = '.forma/manual/ru/03-forma/ROUTES.md';
+const ROUTES_REL = '.forma/manual/ru/03-protocol/ROUTES.md';
 const RISK = ['Нельзя, когда', 'Риск', 'Почему осторожно', 'Защита от главного риска', 'Защита от устаревания'];
 const WHY = ['Выбирать, когда', 'Почему работает', 'Почему'];
 const SHORT = { 'Нельзя, когда': 'Нельзя', 'Выбирать, когда': 'Выбирать' };

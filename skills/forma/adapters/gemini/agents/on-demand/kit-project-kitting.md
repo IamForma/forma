@@ -20,8 +20,8 @@ Read this file only when you take on `SETUP.md` step **10b, "Kitting"** — not 
 | Public fact about a technology/environment | you, recon (`agents/on-demand/kit-recon.md`) | `project/config/CONFIG.md`, "Environment technical contracts" |
 | Decision or access only the human knows | human | `VARS/credentials.md`/`.env` by kind (`AGENTS.md` §5, item 15), or directly into `brief/kitting.md` |
 | A fact you can find, but the choice between options is the human's | you find it, bring the choice | human, same as any "human" row in the route (`AGENTS.md` §2) |
-| A gap you can't close without changing the image itself or the arsenal | human decides | epic "3. Form/Intent+Kit", or back to the brief as an unattainable value |
+| A gap you can't close without changing the image itself or the arsenal | human decides | epic "3. Project protocol", or back to the brief as an unattainable value |
 
 **What you don't do:** you don't write `GOAL.md` — `Intent` does, at step 11, using `kitting.md` as material, not as a finished decision. You don't repeat the `grilling` interview — step 1 is already closed. You don't invent a route for a gap that already has one (recon, credentials, human decision, unattainable value) — file each under the table above.
 
-Rationale — `.forma/manual/en/03-forma/KITTING.md`.
+Rationale — `.forma/manual/en/03-protocol/KITTING.md`.

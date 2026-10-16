@@ -27,7 +27,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const OUT = path.join(ROOT, '.forma/living', 'graphs');
 const CACHE = path.join(OUT, '.kit-cache.json');
 const BOARD = path.join(ROOT, '.devtool', 'features');
-const CODES = ['value', 'docs', 'forma', 'result-image', 'core', 'incoming', 'goal', 'experience', 'review-image'];
+const CODES = ['analytics', 'structure', 'protocol', 'resources', 'efficiency', 'discussion', 'channels', 'competencies', 'results'];
 const GOAL_LABEL = new RegExp('^goal-(\\d+|' + CODES.join('|') + ')$');
 
 const rel = f => path.relative(ROOT, f).split(path.sep).join('/');

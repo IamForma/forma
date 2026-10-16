@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * Соответствие адаптера Claude контракту (.forma/manual/en/03-forma/ECONOMY.md): строки, собранные
+ * Соответствие адаптера Claude контракту (.forma/manual/en/03-protocol/ECONOMY.md): строки, собранные
  * адаптером, читаются tally.cjs в те же канонические суммы; отсутствующее у Claude — unknown, не 0.
  * Общий тест контракта — .forma/dashboard/economy.test.cjs, этот идёт вместе с ним.
  *   node .claude/scripts/claude-economy.test.cjs

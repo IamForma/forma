@@ -9,7 +9,7 @@ For protocol developers; not installed into projects. Sample paths are relative 
 | Core — shared, never edited for one engine | Adapter — each engine's own |
 |---|---|
 | `skills/forma/core/AGENTS.md` (§1–7) | the §8 file (sample `skills/forma/adapters/claude/rules/claude-8.md`) |
-| `skills/forma/core/manual/en/03-forma/ECONOMY.md` — the economy contract | roles (sample `skills/forma/adapters/claude/agents/`) |
+| `skills/forma/core/manual/en/03-protocol/ECONOMY.md` — the economy contract | roles (sample `skills/forma/adapters/claude/agents/`) |
 | `skills/forma/core/dashboard/economy.cjs` — the one math | hooks (sample `skills/forma/adapters/claude/hooks/`) |
 | `skills/forma/core/dashboard/spend-line.cjs` — writes the spend line | economy module (sample `skills/forma/adapters/claude/scripts/claude-economy.cjs`) |
 | `skills/forma/core/board/` — card check and creation | conformance test (sample `skills/forma/adapters/claude/scripts/claude-economy.test.cjs`) |

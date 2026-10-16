@@ -2,7 +2,7 @@
 
 /**
  * Математика экономики — одна для всех движков.
- * Контракт переменных: .forma/manual/en/03-forma/ECONOMY.md (ru — .forma/manual/ru/03-forma/ECONOMY.md).
+ * Контракт переменных: .forma/manual/en/03-protocol/ECONOMY.md (ru — .forma/manual/ru/03-protocol/ECONOMY.md).
  *
  * Модуль читает ТОЛЬКО канонические переменные. Откуда их достать и как назвать
  * поля своего движка — дело адаптера движка (§8 его файла), не этого модуля.

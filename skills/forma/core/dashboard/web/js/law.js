@@ -40,7 +40,7 @@ function lawBodyRoutes(L) {
         <small>${t('law.cardsN', {n: DATA.cards.filter(c => c.route === k).length})}</small></div>`).join('')}</div>
       <h3>${t('law.whyCodes')}</h3><dl class="kv">${Object.entries(T.why).map(([k, v]) => `<dt><code>${k}</code></dt><dd>${esc(v)}</dd>`).join('')}</dl>
       <h3>${t('law.stageKeys')}</h3><dl class="kv">${Object.entries(T.stage).filter(([k]) => k !== 'closed').map(([k, v]) => `<dt><code>${k}</code></dt><dd>${esc(v)}</dd>`).join('')}</dl>
-      <details class="sec"><summary><b>${t('law.routesRef')}</b> <small>.forma/manual/${curLang()}/03-forma/ROUTES.md</small></summary><div class="md">${lawMd(L, DATA.law.routes)}</div></details>`;
+      <details class="sec"><summary><b>${t('law.routesRef')}</b> <small>.forma/manual/${curLang()}/03-protocol/ROUTES.md</small></summary><div class="md">${lawMd(L, DATA.law.routes)}</div></details>`;
 }
 function lawBodyRoles(L, tab) {
   const { DATA, esc } = L, list = tab === 'roles' ? DATA.law.roles : DATA.law.onDemand;
