@@ -189,11 +189,43 @@ for (const [p, t, opt] of MAP) {
   if (isFile || (opt && opt.noFresh)) continue;
   const known = new Set(tFiles);
   const topKnown = new Set(tFiles.map((f) => f.split('/')[0]));
+  const newSkillDirs = new Set();   // новая папка скилла: один пункт «новое» на всю папку, не на файл внутри
   for (const f of walk(pAbs)) {
     const rel = p + '/' + f;
     if (known.has(f) || KNOWN.has(rel) || skipped(rel)) continue;
-    if (/skills$/.test(t) && !topKnown.has(f.split('/')[0])) continue;
+    if (/skills$/.test(t)) {
+      const top = f.split('/')[0];
+      if (!topKnown.has(top)) { newSkillDirs.add(top); continue; }
+    }
     R.fresh.push({ rel, src: path.join(pAbs, f), dst: path.join(tAbs, f) });
+  }
+  for (const top of newSkillDirs) {
+    const rel = p + '/' + top;
+    if (skipped(rel)) continue;
+    R.fresh.push({ rel, src: path.join(pAbs, top), dst: path.join(tAbs, top), dir: true });
+  }
+}
+
+// Сверка с подключённым шаблоном проекта (project/config/PROJECT.md, «Шаблон проекта», k:name):
+// templates/<шаблон>/skills/<шаблон>/template/{scripts,agents/run}/ — файлы продукта, не движка.
+// Совпадающие с шаблоном убираются из «новых»; расходящиеся — отдельный список, не трогаются и не переносятся.
+R.templateProject = [];
+const pmPath = path.join(root, 'project/config/PROJECT.md');
+const tplName = fs.existsSync(pmPath) && (fs.readFileSync(pmPath, 'utf8').match(/k:name\s*--> \| `([^`]+)`/) || [])[1];
+if (tplName) {
+  const tplRoot = path.join(protoDir, 'templates', tplName, 'skills', tplName, 'template');
+  for (const [projRel, tplSub] of [['.claude/scripts', 'scripts'], ['.claude/agents/run', 'agents/run']]) {
+    const tplAbs = path.join(tplRoot, tplSub);
+    if (!fs.existsSync(tplAbs)) continue;
+    for (const f of walk(tplAbs)) {
+      const rel = projRel + '/' + f;
+      const projFile = path.join(root, projRel, f);
+      if (!fs.existsSync(projFile)) continue;
+      const i = R.fresh.findIndex((x) => x.rel === rel);
+      if (i !== -1) R.fresh.splice(i, 1);
+      const a = norm(fs.readFileSync(projFile, 'utf8')), b = norm(fs.readFileSync(path.join(tplAbs, f), 'utf8'));
+      if (a !== b) R.templateProject.push({ rel });
+    }
   }
 }
 
@@ -204,6 +236,7 @@ out('Изменён только шаблон (не переносятся: «о
 out('Конфликт: изменены оба (решает человек)', R.conflict);
 out('Отличаются только исключениями (обезличивание, не дрейф)', R.same);
 out('Новые в движке (только по --add <путь>)', R.fresh);
+out('Шаблон проекта расходится (не переносится)', R.templateProject);
 
 if (mark) {
   const dirty = R.engine.length + R.template.length + R.conflict.length;
@@ -240,5 +273,9 @@ for (const x of R.engine) {
   if (c == null) { console.error('ПРОПУЩЕН ' + x.rel + ': число строк-исключений в движке и шаблоне разное.'); continue; }
   fs.writeFileSync(x.dst, x.hRaw.includes('\r\n') ? c.replace(/\n/g, '\r\n') : c); n++;
 }
-for (const x of R.fresh.filter((x) => adds.includes(x.rel))) { fs.mkdirSync(path.dirname(x.dst), { recursive: true }); fs.copyFileSync(x.src, x.dst); n++; }
+for (const x of R.fresh.filter((x) => adds.includes(x.rel))) {
+  fs.mkdirSync(path.dirname(x.dst), { recursive: true });
+  if (x.dir) fs.cpSync(x.src, x.dst, { recursive: true }); else fs.copyFileSync(x.src, x.dst);
+  n++;
+}
 console.log(`\nПеренесено: ${n}. Дальше: patch в protocol/.claude-plugin/plugin.json, коммит в protocol/, --mark, pull --rebase, --before-push, push — по команде человека.`);
