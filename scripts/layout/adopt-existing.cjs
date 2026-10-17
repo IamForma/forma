@@ -13,7 +13,8 @@
 // LICENSE, package.json, editor settings, node_modules, a root CLAUDE.md — moves, so the root holds no stray files.
 // A name already taken in project/source/ gets a suffix (name-2, name-2.ext) — nothing is overwritten.
 // The journal of every move is .forma/living/migrations/adopt-<stamp>.json; --rollback reads it back.
-// Exit codes: 0 done or nothing to do · 2 stop (dirty tree, move failed, bad arguments).
+// A locked folder is retried, then copied and deleted; one that still cannot move stays where it is and is named.
+// Exit codes: 0 done or nothing to do · 2 stop (dirty tree, an item not moved, bad arguments).
 
 const fs = require('node:fs')
 const path = require('node:path')
@@ -77,21 +78,36 @@ function undo(root, moves) {
   return back
 }
 
-// moves the items; on a failed move puts the earlier ones back and throws
+const LOCKED = new Set(['EPERM', 'EBUSY', 'EACCES', 'EXDEV', 'ENOTEMPTY'])
+const pause = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+
+// one move. Windows refuses to rename a folder some process holds open (editor, Explorer, antivirus, file watcher):
+// retry a few times, then copy and delete; a copy that cannot be fully deleted is removed again, the source stays whole.
+function moveOne(from, to) {
+  let last
+  for (let i = 0; i < 4; i++) {
+    try { fs.renameSync(from, to); return } catch (e) { last = e; if (!LOCKED.has(e.code)) throw e; pause(250) }
+  }
+  try {
+    fs.cpSync(from, to, { recursive: true, errorOnExist: true })
+    fs.rmSync(from, { recursive: true, force: true, maxRetries: 3, retryDelay: 250 })
+  } catch (e) {
+    fs.rmSync(to, { recursive: true, force: true })
+    if (!fs.existsSync(from)) throw new Error(`${last.code}; copy fallback left the source incomplete: ${e.message}`)
+    throw new Error(`${last.code}: held by another process — close it and run the script again`)
+  }
+}
+
+// moves the items one by one; a failed item stays in the root and is reported, the rest still move
 function apply(root, items) {
-  if (!items.length) return { moved: 0, journal: null }
+  if (!items.length) return { moved: 0, failed: [], journal: null }
   fs.mkdirSync(path.join(root, SOURCE), { recursive: true })
   const done = []
-  try {
-    for (const m of items) {
-      fs.renameSync(path.join(root, m.name), path.join(root, m.to))
-      done.push(m)
-    }
-  } catch (e) {
-    const back = undo(root, done)
-    throw new Error(`move of "${done.length < items.length ? items[done.length].name : '?'}" failed (${e.message}); ${back} earlier move(s) put back`)
+  const failed = []
+  for (const m of items) {
+    try { moveOne(path.join(root, m.name), path.join(root, m.to)); done.push(m) } catch (e) { failed.push({ name: m.name, error: e.message }) }
   }
-  return { moved: done.length, journal: writeJournal(root, done) }
+  return { moved: done.length, failed, journal: done.length ? writeJournal(root, done) : null }
 }
 
 function rollback(root, journalFile) {
@@ -122,6 +138,8 @@ if (require.main === module) {
         if (!flag('--allow-dirty') && dirtyTree(root)) stop('git tree is not clean (commit first, or pass --allow-dirty)')
         const r = apply(root, items)
         console.log(`moved ${r.moved} item(s); journal ${r.journal}`)
+        for (const f of r.failed) console.error(`not moved: ${f.name} — ${f.error}`)
+        if (r.failed.length) process.exit(2)
       }
     }
   } catch (e) { stop(e.message) }
