@@ -1,11 +1,11 @@
 ---
 name: grilling
-description: Интервью для формирования замысла цели — раундами по фронтиру дерева решений. Используется только `Intent`, эпик «4. Ресурсы проекта».
+description: Интервью для формирования замысла цели — раундами по фронтиру дерева решений. Используется только `Intent`, эпик «6. Обсуждение дел».
 ---
 
 # grilling — интервью для образа результата
 
-Адаптация [mattpocock/skills, `grilling`](https://github.com/mattpocock/skills/blob/main/skills/productivity/grilling/SKILL.md) под пятиузловую схему: техника ведения раздела «Интервью» `intent.md`. Работает только в эпике «4. Ресурсы проекта» на доске `.devtool/features/`, только через `Intent` — без `Kit`/`Run`/`Core` в маршруте.
+Адаптация [mattpocock/skills, `grilling`](https://github.com/mattpocock/skills/blob/main/skills/productivity/grilling/SKILL.md) под пятиузловую схему: техника ведения раздела «Интервью» `intent.md`. Работает только в эпике «6. Обсуждение дел» на доске `.devtool/features/`, только через `Intent` — без `Kit`/`Run`/`Core` в маршруте.
 
 ## Что это добавляет поверх пяти вопросов `intent.md`
 
