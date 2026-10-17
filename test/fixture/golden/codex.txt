@@ -28,6 +28,7 @@ exit 0
     · Codex (сведение, не нарушение): .agents/skills/graph-build: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/graphify: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/grilling: нет зеркала навыка Claude
+    · Codex (сведение, не нарушение): .agents/skills/human-register: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/project-knowledge: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/skill-authoring: нет зеркала навыка Claude
 

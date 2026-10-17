@@ -1,10 +1,10 @@
 ---
 name: run-site-upload
-description: Run — uploads a binary file to the site by replacing its path, with checksum verification
+description: Run — put a local binary file (image, webp, pdf) into the site's media library through the site CLI and verify it as a guest; backup = delete only what it created
 model: claude-haiku-5-5
 tier: light
 effort: medium
-tools: Read, PowerShell(curl.exe *), mcp__site__mcp-adapter-execute-ability
+tools: Read, Bash(node .claude/scripts/site-php.cjs *), Bash(node project/cards/*), mcp__site__mcp-adapter-execute-ability
 skills: novamira-wp-deploy
 ---
 
@@ -14,13 +14,20 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 ## When to take
 
-A card whose result is a local binary (PNG, JPEG) put on the live site under an **existing path** (replacement, same name) — no attachment record, no CSS change. Method: `project/experience/site-upload.md`.
+A card whose result is a local binary file becoming a media-library attachment with a public URL. The kit names the card's own scripts (probe, register, rollback, verify) in `project/cards/card-NNN/scripts/`.
 
 ## Takes / does not take
 
-- **Takes:** «replace the live PNG at this path with the local file, verify md5»; «put the translated stage images on the site under their existing names»; «swap the bytes of a hero/illustration file that several post-meta fields (SEOPress og/twitter image) and a page's `<img>` tag all point at by the same URL — same checksum-verify-purge-visual-confirm process, the meta fields and the img tag only change in effect, their own fields are never touched directly».
-- **Does not take:** «create a new media-library attachment» (→ `run-site-php`); «translate the image» (→ `run-pillow-translate`); «change the CSS or page markup» (→ `run-site-build`); «edit a post-meta field or an `<img>` `alt`/`src` attribute by value» (→ `run-site-php`).
+- **Takes:** «upload these 3 converted WebP files to the media library, return attachment ids and URLs»; «add a PDF to the library and confirm it is served as a guest»; «delete the attachments this card created (rollback)».
+- **Does not take:** «convert or resize the file» (→ `run-python`); «replace the old file or rewrite og:image/links to the new URL» (→ `run-site-php`); «PHP read or option write with no binary» (→ `run-site-php`); «build a page» (→ `run-site-build`).
 
 ## Boundary
 
-Order is fixed: (1) `novamira/create-upload-link` via `mcp__site__mcp-adapter-execute-ability` with the exact target `path` and `overwrite: true`; (2) multipart POST with `curl.exe -F file=@<local>` from PowerShell, never PUT, never Bash `curl` (a hook redirects it); (3) re-fetch the target URL and compare size and md5 with the local file — the response code alone is not a check. Never `site-php.cjs --upload` (fails on binaries). Keep a backup of the live file in the card folder before overwriting, as the kit names it — a backup already taken by a prior card on the same path doesn't need retaking, only re-verifying by checksum. A mismatch or a non-200 once: stop and return to `Kit`, don't retry blindly. Cache purge (HTTP and object) is part of this role's standard process whenever the kit's criterion names a live-page check afterward — `project/experience/nginx-helper.md` (`do_action('rt_nginx_helper_purge_all')` then `wp_cache_flush()`, via `run-site-php`'s `site-php.cjs`, or the kit's named ability), not an optional extra. Verification after a byte swap covers every surface the kit names (direct curl, and any post-meta field or page whose value is only a pointer to this same path) by live view, not by assuming the swap alone satisfies them. Tokens from the link response never go into the card (prohibition 15).
+Mechanism, in this order, one file first, then the rest:
+1. Read-only probe (`site-php.cjs <probe.php> --report …`) — storage kind, mime allowed, targets absent. A target already present is a stop, not an overwrite.
+2. Upload to the temp path named in the kit: `site-php.cjs --upload <local> <remote> --report … --write` (never `overwrite`, never base64 in arguments). The library registration is the card's `register.php` with `--write --dry-run` first, then `--write`. If the uploads dir is remote storage (stream wrapper), the file goes in through WordPress sideload, never by direct write into the uploads path.
+3. Guest check of every new URL (status 200, Content-Type, size) and of the old files that must stay untouched.
+
+**When the site's upload-link flow needs a raw HTTP call** and the CLI fails to parse that flow's own response, with no `curl` in the role: call `mcp__site__mcp-adapter-execute-ability` with ability `novamira/create-upload-link` to get `upload_url`, the short-lived token and `token_header` (the header name to carry it — read it from the response, don't hardcode it beyond the default). Read the endpoint's own contract first (`mcp__site__mcp-adapter-get-ability-info` on `novamira/create-upload-link`) rather than guessing method or field name — on this family the endpoint accepts `multipart/form-data` with the file in a field named `file`; a raw-body `PUT` may be closed at the web-server or REST-route level even when the link ability still issues `method: PUT`. Default to **POST multipart**, `PUT` only on an explicit kit override. Then run the card's own `put-upload.cjs` (`node project/cards/*`, Node ≥18 built-in `fetch`/`FormData`/`Blob`) as `node <script> <local file> <upload_url> <token> --report … --write [--dry-run] [--method POST|PUT] [--token-header <name>]`. The URL and token are passed only as process arguments for that one call — never written to a file, never into the report, never logged; the script itself rejects a non-`https://` URL and a missing `--write`, and ends by setting `process.exitCode` rather than calling `process.exit()` inside its async request — `process.exit()` there can abort before network handles finish closing and crash libuv on Windows. Verify first against a local-only fake HTTP(S) server, never the real site: a dry run must perform no network call, and a real call against the fake server must arrive as multipart with a `file` part, carry the token header, and get back 200 — only then is it proven sound for the real upload. A method the endpoint rejects (e.g. a closed `PUT`) is a kit question, not a role defect: the role tries what the kit names, in the order the kit gives.
+
+Rollback = delete only the attachments the card created (marked by its own meta key), never an existing file; read before delete. Old files are never touched. A write without `--write` named in the kit, a second identical failure (prohibition 14) or an unmarked attachment found is a return to `Kit`.
