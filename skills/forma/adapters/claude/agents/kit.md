@@ -1,7 +1,7 @@
 ---
 name: kit
 description: Kit — six units per task, a single return channel
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 tier: standard
 effort: medium
 tools: Read, Grep, Glob, Write, Edit, Bash(claude plugin *), Bash(node .claude/scripts/build-kit-graphs.cjs *), Bash(node .claude/scripts/build-done-cards-graph.cjs *), Bash(node .claude/scripts/build-tendons.cjs *), Bash(node .claude/scripts/external-model-bridge.cjs *), mcp__chrome-devtools__new_page, mcp__chrome-devtools__take_snapshot, mcp__chrome-devtools__close_page, AskUserQuestion, Bash(python .claude/scripts/*), Bash(node .claude/scripts/*), Bash(node .claude/scripts/site.cjs *), mcp__site__mcp-adapter-discover-abilities, mcp__site__mcp-adapter-get-ability-info, mcp__site__mcp-adapter-execute-ability, Bash(node .forma/board/*), Bash(node .forma/dashboard/*), Bash(npm --prefix .forma/protocol *), Bash(node .forma/protocol/scripts/engine-to-protocol.cjs *)

@@ -1,7 +1,7 @@
 ---
 name: intent
 description: Intent — end-image, arrival criterion, task check
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 tier: standard
 effort: medium
 tools: Read, Grep, Glob, Write, Edit, AskUserQuestion, mcp__chrome-devtools__new_page, mcp__chrome-devtools__navigate_page, mcp__chrome-devtools__take_snapshot, mcp__chrome-devtools__fill, mcp__chrome-devtools__fill_form, mcp__chrome-devtools__click, mcp__chrome-devtools__close_page

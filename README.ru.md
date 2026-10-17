@@ -58,9 +58,9 @@ claude plugin install forma@forma
 
 | Узел | Модель |
 |---|---|
-| `Intent`, `Kit`, `Core` | `claude-opus-5-5` |
-| `Spec`, `Run` | `claude-sonnet-5` |
-| `extractor` (помощник) | `haiku` |
+| `Intent`, `Spec`, `Kit`, `Core` | `claude-sonnet-5-5` |
+| `Run` и его профили | `claude-haiku-5-5` |
+| `extractor`, `plumb-haiku` (помощники) | `claude-haiku-5-5` |
 
 Модель меняется правкой этой строки. Обновление перезаписывает роли — держите свою правку в заметке и повторяйте после обновления.
 

@@ -1,7 +1,7 @@
 ---
 name: spec
 description: Spec — slicing into tasks, one qualification per card
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 tier: standard
 effort: medium
 tools: Read, Grep, Glob, Write, Edit, Bash(node .forma/dashboard/tally.cjs *), Bash(node .forma/board/new-card.cjs *)
