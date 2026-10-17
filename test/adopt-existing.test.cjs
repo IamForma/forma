@@ -104,3 +104,15 @@ test('installer: an update (manifest present) never adopts, even with --adopt', 
   assert.ok(fs.existsSync(path.join(dir, 'later', 'f.txt')) && fs.existsSync(path.join(dir, 'src', 'app.js')))
   fs.rmSync(dir, { recursive: true, force: true })
 })
+
+test('an item that cannot move is named and left, the rest still move, nothing throws', () => {
+  const dir = fixture()
+  const adopt = require(SCRIPT)
+  const items = [...adopt.plan(dir), { name: 'ghost', kind: 'dir', to: 'project/source/ghost' }]
+  const r = adopt.apply(dir, items)
+  assert.equal(r.failed.length, 1)
+  assert.equal(r.failed[0].name, 'ghost')
+  assert.equal(r.moved, items.length - 1)
+  assert.ok(fs.existsSync(ref(dir, 'src', 'app.js')) && fs.existsSync(r.journal ? path.join(dir, r.journal) : ''))
+  fs.rmSync(dir, { recursive: true, force: true })
+})

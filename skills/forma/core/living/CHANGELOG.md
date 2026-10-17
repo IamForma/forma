@@ -2,6 +2,10 @@
 
 Что изменилось на уровне Движка (`AGENTS.md`, `manual/`, `.claude/agents/`) и что каждое изменение чинит. Запись держит дату решения; новые — сверху.
 
+- **Unreleased** — **Adopting no longer aborts the install on a locked folder.**
+  **What was done.** `adopt-existing.cjs`: a folder Windows refuses to rename (`EPERM`/`EBUSY` — an editor, Explorer or antivirus holds it) is retried, then copied and deleted; an item that still cannot move stays in the root, is named in the install summary with the command to rerun, and the other items still move. Before, one such folder rolled everything back and stopped the install half-way.
+  **What is left.** The folder must be released by whatever holds it before the rerun. The release number is set when the protocol is released.
+
 - **Unreleased** — **First install adopts what is already in the project root.**
   **What was done.** New `scripts/layout/adopt-existing.cjs` and the installer flags `--adopt` / `--no-adopt`: on the first install (no `.forma/install-manifest.json`, no old layout) every folder and file of the root moves into `project/source/` except the protocol's own files, Git's (`.git*`) and `.env*` — the root keeps nothing else (README, LICENSE, `package.json`, `node_modules`, editor settings and a root `CLAUDE.md` move too). A taken name gets a suffix; an existing `project/` is not entered. Planned before the core is copied, applied after it, so the scaffold still arrives. Dry run by default in the script, journal in `.forma/living/migrations/`, `--rollback`. Without a flag the installer asks in a terminal and skips otherwise. Test: `test/adopt-existing.test.cjs`.
   **What is left.** Relative paths inside the moved content are not rewritten. The release number is set when the protocol is released.

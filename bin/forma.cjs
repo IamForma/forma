@@ -152,8 +152,12 @@ Found in the project root: ${list}`)
 function adoptStep(root, adopt) {
   if (adopt.note) return adopt.note
   if (!adopt.items.length) return 'adopt: nothing to move'
-  const r = adoptExisting.apply(root, adopt.items)
-  return `adopt: ${r.moved} item(s) moved into project/source/ (journal ${r.journal}; undo: node ${path.join(PKG, 'scripts', 'layout', 'adopt-existing.cjs')} --rollback ${r.journal} --root .)`
+  let r
+  try { r = adoptExisting.apply(root, adopt.items) } catch (e) { return `adopt: failed (${e.message}) — nothing is lost; the install goes on, run adopt-existing.cjs --apply afterwards` }
+  const script = path.join(PKG, 'scripts', 'layout', 'adopt-existing.cjs')
+  const parts = [`adopt: ${r.moved} item(s) moved into project/source/${r.journal ? ` (journal ${r.journal}; undo: node ${script} --rollback ${r.journal} --root .)` : ''}`]
+  if (r.failed.length) parts.push(`adopt: NOT moved — ${r.failed.map((f) => `${f.name} (${f.error})`).join('; ')}. Close whatever holds them (editor, Explorer), then: node ${script} --apply --allow-dirty --root .`)
+  return parts.join('\n')
 }
 
 // ---------- migration from the old layout ----------
