@@ -53,13 +53,22 @@ function codexMechanics(name, onDemand) {
 function adapter(name,onDemand=false) { const source=onDemand?`.claude/agents/on-demand/${name}.md`:`.claude/agents/${name}.md`; const title=onDemand?`${name} · Codex procedure adapter`:`${name[0].toUpperCase()}${name.slice(1)} · Codex role`; return `# ${title}\n\nCanonical ${onDemand?'procedure':'role'}: \`${source}\`. Read it completely; this file is only its Codex adapter.\n\n- Ignore Claude YAML frontmatter and apply \`.codex/CLAUDE-COMPAT.md\` to Claude tools, skills, scripts, MCP, and subagent references.\n- Codex mechanics and model settings come from \`.codex/CODEX-8.md\` and the matching agent TOML; they never replace the canonical body.\n- An unavailable live tool is an environment limitation and follows the route; it is never silently substituted.\n${codexMechanics(name,onDemand)}`; }
 function syncRoleLayer() {
   for (const role of roles) { const canonical=path.join(claudeAgents,`${role}.md`), toml=path.join(codex,'agents',`${role}.toml`), target=path.join(codex,'roles',`${role}.md`); if (!exists(canonical)||!exists(toml)) { problems.push(`missing role component: ${role}`); continue; } const [model,effort]=models[role]; const desiredToml=text(toml).replace(/^model\s*=.*$/m,`model = "${model}"`).replace(/^model_reasoning_effort\s*=.*$/m,`model_reasoning_effort = "${effort}"`); if(APPLY&&desiredToml!==text(toml))fs.writeFileSync(toml,desiredToml); if(text(toml)!==desiredToml)problems.push(`model/tier drift: ${role}`); const desired=adapter(role); if(APPLY){fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,desired);} if(!exists(target)||!sameText(text(target),desired))problems.push(`role link drift: ${role}`); }
-  const source=path.join(claudeAgents,'on-demand'); for(const rel of files(source).filter(f=>f.endsWith('.md'))) { const target=path.join(codex,'roles','on-demand',rel), desired=adapter(rel.slice(0,-3),true); if(rel==='intent-documentation.md' && exists(target)){if(!text(target).includes(`.claude/agents/on-demand/${rel}`)||!text(target).includes('.codex/CLAUDE-COMPAT.md'))problems.push(`procedure link drift: ${rel}`);continue;} if(APPLY){fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,desired);} if(!exists(target)||!sameText(text(target),desired))problems.push(`procedure link drift: ${rel}`); }
+  const source=path.join(claudeAgents,'on-demand'); for(const rel of files(source).filter(f=>f.endsWith('.md'))) { const target=path.join(codex,'roles','on-demand',rel), desired=adapter(rel.slice(0,-3),true); if(APPLY){fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,desired);} if(!exists(target)||!sameText(text(target),desired))problems.push(`procedure link drift: ${rel}`); }
 }
 function syncSkills() {
   const excluded=projectRunProfiles();
   const names=exists(claudeSkills)?fs.readdirSync(claudeSkills,{withFileTypes:true}).filter(e=>e.isDirectory()&&!excluded.has(e.name)).map(e=>e.name).sort():[]; const manifest=path.join(codex,'generated-skill-mirror.json'); const old=exists(manifest)?JSON.parse(text(manifest)).skills||[]:[];
-  if(APPLY){for(const n of old.filter(n=>!names.includes(n)))fs.rmSync(path.join(agentSkills,n),{recursive:true,force:true});for(const n of names){fs.rmSync(path.join(agentSkills,n),{recursive:true,force:true});copyTree(path.join(claudeSkills,n),path.join(agentSkills,n));}fs.writeFileSync(manifest,JSON.stringify({skills:names},null,2)+'\n');}
-  if(!exists(manifest)||JSON.stringify(JSON.parse(text(manifest)).skills||[])!==JSON.stringify(names))problems.push('skill mirror manifest drift'); for(const n of names){const target=path.join(agentSkills,n);if(!exists(target))problems.push(`skill mirror missing: ${n}`);else sameTree(path.join(claudeSkills,n),target,`skill mirror ${n}`);}
+  if(APPLY){
+    // --codex-only owns the manifest but deliberately never mutates Gemini's
+    // shared skill mirror under .agents/.
+    if(!CODEX_ONLY){
+      for(const n of old.filter(n=>!names.includes(n)))fs.rmSync(path.join(agentSkills,n),{recursive:true,force:true});
+      for(const n of names){fs.rmSync(path.join(agentSkills,n),{recursive:true,force:true});copyTree(path.join(claudeSkills,n),path.join(agentSkills,n));}
+    }
+    fs.writeFileSync(manifest,JSON.stringify({skills:names},null,2)+'\n');
+  }
+  if(!exists(manifest)||JSON.stringify(JSON.parse(text(manifest)).skills||[])!==JSON.stringify(names))problems.push('skill mirror manifest drift');
+  if(!CODEX_ONLY) for(const n of names){const target=path.join(agentSkills,n);if(!exists(target))problems.push(`skill mirror missing: ${n}`);else sameTree(path.join(claudeSkills,n),target,`skill mirror ${n}`);}
 }
 function checkStatic() {
   const appendix=path.join(codex,'CODEX-8.md'), readme=path.join(codex,'README.md'); const expected=[['Intent','gpt-5.6-sol','low'],['Spec','gpt-5.6-terra','low'],['Kit','gpt-5.6-terra','medium'],['Run','gpt-5.6-luna','low'],['Core','gpt-5.6-sol','low'],['Extractor','gpt-5.6-luna','low']];
@@ -134,12 +143,7 @@ function syncProfiles() {
     const existing = path.join(codex, 'roles', 'run', rel);
     if (exists(existing) && /^origin: codex$/m.test(text(existing))) continue;
     const source = `.claude/agents/run/${rel}`;
-    let body = text(path.join(ROOT, source)).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
-    body = body.replaceAll('.claude/agents/', '.codex/roles/')
-      .replaceAll('~/.claude/skills/', '~/.agents/skills/')
-      .replaceAll('`mcp__claude_ai_Magnific__<tool>`', 'the connected Magnific tool name')
-      .replaceAll('`.claude/skills/` of this project', '`.agents/skills/` of this project');
-    const desired = `---\nname: ${name}\nengine: codex\n---\n\n${body.trim()}\n\n## Codex mechanics\n\nCanonical source: \`${source}\`. Read with base \`.codex/roles/run.md\`; apply \`.codex/CLAUDE-COMPAT.md\` and \`.codex/CODEX-8.md\`. Model: \`gpt-5.6-luna\`, effort: \`low\`, inherited from the matching TOML. Use only tools present in the live Codex session; return missing access or tools to Kit.\n`;
+    const desired = `# ${name} · Codex Run-profile adapter\n\nCanonical role: \`${source}\`. Read it completely with base \`.codex/roles/run.md\`; this file is only its Codex adapter.\n\n- Ignore Claude YAML frontmatter and apply \`.codex/CLAUDE-COMPAT.md\` to Claude tools, skills, scripts, MCP, and subagent references.\n- Codex mechanics and model settings come from \`.codex/CODEX-8.md\` and \`.codex/agents/${name}.toml\`; they never replace the canonical body.\n- Use only tools present in the live Codex session. Missing access or tools return to Kit through the route.\n`;
     const target = path.join(codex, 'roles', 'run', rel);
     const agent = path.join(codex, 'agents', name + '.toml');
     if (APPLY) {
@@ -154,7 +158,8 @@ function syncProfiles() {
 }
 syncRoleLayer();
 syncProfiles();
-if (!CODEX_ONLY) { syncSkills(); syncTemplate(); }
+syncSkills();
+if (!CODEX_ONLY) syncTemplate();
 checkStatic();checkProfiles();
 if(problems.length){console.error('Codex sync drift:\n- '+problems.join('\n- '));process.exit(1);}
 console.log(APPLY ? (CODEX_ONLY ? 'Codex-only derived files synchronized.' : 'Codex derived files synchronized.') : (CODEX_ONLY ? 'Codex-only derived files are synchronized.' : 'Codex derived files are synchronized.'));

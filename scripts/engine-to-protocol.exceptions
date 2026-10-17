@@ -25,8 +25,6 @@ skip ^\.codex/CLAUDE-COMPAT\.md$
 skip ^\.codex/tests/verify-config\.ps1$
 # производный манифест: собирается sync-codex --apply в каждом проекте
 skip ^\.codex/generated-skill-mirror\.json$
-# в проекте строка 44 зашивает MCP-серверы проекта-источника; пока она там — файл не переносится
-skip ^\.codex/scripts/sync-codex\.cjs$
 # Codex: строка о MCP-серверах в CODEX-8 — в проекте конкретные, в шаблоне нейтральная
 mask .codex/CODEX-8.md ^Project MCP servers
 # Gemini intent: строка о создании карточек — в проекте называет его эпик, в шаблоне нейтральная
