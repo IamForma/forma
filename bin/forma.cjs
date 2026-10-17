@@ -14,6 +14,7 @@ const i18n = require('../skills/forma/core/i18n/index.cjs')
 const { parseLong } = require('../skills/forma/core/dashboard/lib/cli.cjs')
 const verifyInstall = require('../skills/forma/core/verify/verify-install.cjs')
 const { migratePlumb } = require('../scripts/layout/migrate-plumb.cjs')
+const adoptExisting = require('../scripts/layout/adopt-existing.cjs')
 const { findBash } = require('../skills/forma/adapters/claude/verify-profile.cjs')
 
 const PKG = path.resolve(__dirname, '..')
@@ -32,7 +33,7 @@ const ENGINES = [
 
 // ---------- arguments ----------
 function parseArgs(argv) {
-  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version', 'dashboard', 'no-dashboard'])
+  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version', 'dashboard', 'no-dashboard', 'adopt', 'no-adopt'])
   const o = { cmd: 'init', dir: process.cwd(), ...opts }
   if (rest[0]) o.cmd = rest[0]
   o.dir = path.resolve(o.dir)
@@ -51,6 +52,9 @@ const HELP = `forma ${VERSION} init — install/update the Forma protocol in the
   --dir      <path>                  project root (default: current folder)
   --compact  <n>|off                 Claude Code auto-compact window for this project (default: 250000); off — leave
                                      Claude Code's default. Your own value (env, ~/.claude, settings.local.json) is never changed
+  --adopt / --no-adopt               first install only: move the folders and files already in the project root into
+                                     project/source/; only the protocol's files, Git's and .env* stay in the
+                                     root. Without either flag: asked in a terminal, skipped otherwise
   --yes                              no questions, defaults for anything missing
   --dashboard / --no-dashboard       start the dashboard at the end (default: start it when run in a terminal); print the link either way
   --version                          print the installer version and exit
@@ -120,6 +124,36 @@ function gitBoundary(root) {
     process.exit(1)
   }
   return r.stdout.trim()
+}
+
+// ---------- adopting an existing folder (first install only) ----------
+// What is already in the root moves into project/source/ (scripts/layout/adopt-existing.cjs). Planned before the
+// core is copied, applied after it, so project/ still gets its scaffold. An update never adopts: folders made later are the human's.
+function isFirstInstall(root) {
+  return !fs.existsSync(path.join(root, verifyInstall.MANIFEST)) && oldLayoutMoves(root).length === 0
+}
+
+async function chooseAdopt(o, root, ask) {
+  if (o['no-adopt'] || !isFirstInstall(root)) return { items: [], note: null }
+  const items = adoptExisting.plan(root)
+  if (!items.length) return { items, note: null }
+  const list = items.map((m) => `${m.name}${m.kind === 'dir' ? '/' : ''}`).join(', ')
+  if (o.adopt) return { items, note: null }
+  const live = ask || (o.yes || process.stdin.isTTY === false ? null : makeAsk())
+  if (!live) return { items: [], note: `adopt: found ${items.length} item(s) in the root (${list}) — not moved; rerun with --adopt to move them into project/source/` }
+  console.log(`
+Found in the project root: ${list}`)
+  console.log("      They can move into project/source/ — only the protocol's files, Git's and .env* stay in the root.")
+  const a = (await live('Move them? [y/N]: ')).trim().toLowerCase()
+  if (!ask) live.close()
+  return a === 'y' || a === 'д' || a === 'yes' || a === 'да' ? { items, note: null } : { items: [], note: 'adopt: declined — nothing moved' }
+}
+
+function adoptStep(root, adopt) {
+  if (adopt.note) return adopt.note
+  if (!adopt.items.length) return 'adopt: nothing to move'
+  const r = adoptExisting.apply(root, adopt.items)
+  return `adopt: ${r.moved} item(s) moved into project/source/ (journal ${r.journal}; undo: node ${path.join(PKG, 'scripts', 'layout', 'adopt-existing.cjs')} --rollback ${r.journal} --root .)`
 }
 
 // ---------- migration from the old layout ----------
@@ -653,6 +687,7 @@ function install(root, choice) {
   const core = installCore(root, protectedPaths)
   const report = []
   report.push(migrationLine)
+  report.push(adoptStep(root, choice.adopt))
   report.push(`core: AGENTS.md, .forma/manual/, .forma/board/, .forma/skills/, .forma/dashboard/ synced; .forma/living/ — missing files added; board .devtool/features/ — ${core.boardState}; project/ — ${core.projectState}`)
   installEngines(root, choice, protectedPaths, report)
   installTemplateStep({ root, template: choice.template, existingTemplate }, core, report)
@@ -713,10 +748,11 @@ async function main() {
   const boardMode = await chooseBoard(o, ask)
   const lang = await chooseLang(o, ask)
   const compact = await chooseCompact(o, ask, root, engines)
+  const adopt = await chooseAdopt(o, root, ask)
   if (ask) ask.close()
 
   console.log('Installing…')
-  const result = install(root, { engines, template, boardMode, lang, compact })
+  const result = install(root, { engines, template, boardMode, lang, compact, adopt })
   progressDone()
   printReport(result)
   const ok = printVerify(root)
