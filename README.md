@@ -58,9 +58,9 @@ Set in the `model:` field of each role in `.claude/agents/`. Defaults:
 
 | Node | Model |
 |---|---|
-| `Intent`, `Kit`, `Core` | `claude-opus-5-5` |
-| `Spec`, `Run` | `claude-sonnet-5` |
-| `extractor` (helper) | `haiku` |
+| `Intent`, `Spec`, `Kit`, `Core` | `claude-sonnet-5-5` |
+| `Run` and its profiles | `claude-haiku-5-5` |
+| `extractor`, `plumb-haiku` (helpers) | `claude-haiku-5-5` |
 
 Change a model by editing that line. The installer overwrites roles on update, so keep your change in a note or re-apply it after updating.
 
