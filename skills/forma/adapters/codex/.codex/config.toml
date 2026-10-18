@@ -1,0 +1,7 @@
+developer_instructions = """
+This project follows the Form protocol in the root AGENTS.md. Before acting, read .codex/CODEX-8.md and .codex/CLAUDE-COMPAT.md. For a named Form node, the semantic role source is .claude/agents/<node>.md; the matching .codex/roles/<node>.md is the Codex adapter. Codex-specific mechanics come only from .codex files and never replace AGENTS.md.
+"""
+
+[agents]
+# This environment has four total slots, including the main session.
+max_concurrent_threads_per_session = 3

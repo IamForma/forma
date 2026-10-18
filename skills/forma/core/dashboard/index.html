@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kanban</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="web/css/base.css">
+<link rel="stylesheet" href="web/css/panels.css">
+</head>
+<body>
+<header>
+  <h1><span id="proj"></span></h1><nav class="tabs"><span class="tab on" data-view="dash" data-i18n="tab.dashboard">Dashboard</span><span class="tab" data-view=".forma/board" data-i18n="tab.board">Kanban</span><span class="tab" data-view="interview" data-i18n="tab.interview">Interview</span><span class="tab" data-view="nodes" data-i18n="tab.nodes">Form</span><span class="tab" data-view="docs" data-i18n="tab.docs">Documentation</span><span class="tab" data-view="economy" data-i18n="tab.economy">Economy</span><span class="tab" data-view="graphs" data-i18n="tab.graphs">Graphs</span><span class="tab" data-view="settings" data-i18n="tab.settings">Settings</span></nav>
+  <select id="lang" class="lang" aria-label="Language"></select>
+  <span class="meta" id="gen"></span>
+</header>
+<div id="view-dash" class="lx"><div class="wrap" id="dash">
+  <section class="tiles" id="dash-kpi"></section>
+  <div class="grid2">
+    <section class="e-card">
+      <h3 data-i18n="dash.epics.title">Progress by epic</h3>
+      <div id="dash-epics"></div>
+    </section>
+    <section class="e-card">
+      <h3 data-i18n="dash.crit.title">Critical path</h3>
+      <ol class="crit" id="dash-crit"></ol>
+    </section>
+  </div>
+  <section class="e-card">
+    <div class="tbl-head">
+      <h3 data-i18n="dash.table.title">Cards</h3>
+      <div class="tbl-tools">
+        <input type="search" id="dash-q" data-i18n-ph="dash.search.ph" placeholder="Search by code, title…">
+        <span class="e-seg" id="dash-switch"><span class="on" data-view="table" data-i18n="dash.view.table">Table</span><span data-view="kanban" data-i18n="dash.view.kanban">Kanban</span></span>
+      </div>
+    </div>
+    <div id="dash-filters"></div>
+    <div id="dash-table"></div>
+    <div id="dash-kanban" hidden></div>
+  </section>
+</div></div>
+<div id="view-board" hidden>
+<div class="bar" id="bar">
+  <div class="bar-head"><input type="search" class="hq" id="q" data-i18n-ph="board.search" placeholder="Find: number (107), code, title… Enter — open"><span class="meta" id="qn"></span><div class="stats" id="stats"></div></div>
+  <div class="bar-sel"><button type="button" class="bar-toggle" id="bar-toggle">Filters ▾</button><span class="bar-sum" id="bar-sum"></span></div>
+  <div class="row bar-goals" id="f-goal"></div>
+  <div class="bar-body">
+  <div class="row"><b data-i18n="board.slice">Slice</b><span id="group"></span></div>
+  <div class="row" id="f-state"></div>
+  <div class="row" id="f-epic"></div>
+  <div class="row" id="f-assignee"></div>
+  <div class="row" id="f-route"></div>
+  <div class="row" id="f-rdy"></div>
+  </div>
+</div>
+<main id="main"></main>
+<div id="view-goals" class="lx" hidden><div class="wrap"><div id="chain"></div></div></div>
+</div>
+<div id="view-interview" class="lx" hidden><div class="wrap"><div id="interview"></div></div></div>
+<div id="view-nodes" class="lx" hidden><div class="wrap"><div id="nodes"></div></div></div>
+<div id="view-docs" class="lx" hidden><div class="wrap"><div id="docs"></div></div></div>
+<div id="view-economy" class="lx" hidden><div class="wrap"><div id="economy"></div></div></div>
+<div id="view-graphs" class="lx" hidden><div class="wrap"><div id="graphs"></div></div></div>
+<div id="view-settings" hidden>
+  <nav class="lawnav" id="settings-nav">
+    <span class="chip on" data-stab="law" data-i18n="set.tab.law">Law</span>
+    <span class="chip" data-stab="project" data-i18n="set.tab.project">Project</span>
+    <span class="chip" data-stab="engine" data-i18n="set.tab.engine">Engine</span>
+    <span class="chip" data-stab="structure" data-i18n="set.tab.structure">Structure</span>
+  </nav>
+  <div id="view-law"></div>
+  <div id="view-project" class="lx" hidden><div class="wrap"><div id="project"></div></div></div>
+  <div id="view-engine" class="lx" hidden><div class="wrap"><div id="engine"></div></div></div>
+  <div id="view-structure" class="lx" hidden><div class="wrap"><div id="structure"></div></div></div>
+</div>
+<dialog id="dlg"></dialog>
+<script src="web/js/i18n.js"></script>
+<script src="web/js/common.js"></script>
+<script src="web/js/economy.js"></script>
+<script src="web/js/graphs.js"></script>
+<script src="web/js/chain.js"></script>
+<script src="web/js/interview.js"></script>
+<script src="web/js/docs.js"></script>
+<script src="web/js/structure.js"></script>
+<script src="web/js/bort.js"></script>
+<script src="web/js/engine.js"></script>
+<script src="web/js/nodes.js"></script>
+<script src="web/js/forma.js"></script>
+<script src="web/js/law.js"></script>
+<script src="web/js/board.js"></script>
+<script src="web/js/dash.js"></script>
+<script src="web/js/app.js"></script>
+</body>
+</html>

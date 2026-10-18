@@ -1,0 +1,3 @@
+# check-board
+exit 1
+    — card-001-nastroit-sborku-primera.md: status "in_progress" — допустимо только backlog/todo/in-progress/review/done

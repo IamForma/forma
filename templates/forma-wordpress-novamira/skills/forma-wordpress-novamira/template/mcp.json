@@ -1,0 +1,17 @@
+{
+  "note": "Connector manifest: names, types and variable names only. Values live in the project .env and the client connector settings.",
+  "servers": {
+    "novamira": {
+      "type": "http",
+      "urlTemplate": "https://<site-host>/wp-json/mcp/novamira-oauth"
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ]
+    }
+  }
+}

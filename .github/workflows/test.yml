@@ -1,0 +1,28 @@
+name: test
+
+# Страховочная сетка движка: тесты-фиксаторы поведения и линтер на каждый пуш в dev и main.
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # CRLF в репозитории ломает bash-хуки у пользователей на macOS/Linux (.gitattributes требует LF).
+      - name: Line endings are LF
+        run: |
+          bad=$(git ls-files --eol | grep -E '^i/(crlf|mixed)' || true)
+          if [ -n "$bad" ]; then echo "Files with CRLF/mixed line endings:"; echo "$bad"; exit 1; fi
+      - name: Shell hooks parse
+        run: git ls-files -z '*.sh' | xargs -0 -n1 bash -n
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint

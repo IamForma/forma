@@ -1,0 +1,31 @@
+{
+  "trigger": {
+    "mode": "off",
+    "threshold": 20,
+    "_mode_options": [
+      "history-accumulation",
+      "off"
+    ],
+    "_threshold_meaning": "число новых событий (закрытых карточек + строк History) с момента последнего запуска /graphify, накопление которых ставит граф в очередь на пересборку"
+  },
+  "executor": {
+    "channel": "external",
+    "_channel_options": [
+      "internal",
+      "external"
+    ],
+    "model_internal": "claude-haiku (Agent tool, живая сессия)",
+    "model_external": "z-ai/glm-5.3-flash (openrouter)",
+    "_channel_meaning": {
+      "internal": "по умолчанию. .claude/scripts/build-done-cards-graph.cjs сам вызвать Agent tool не может (это может только живая сессия) — на cache-miss файлах печатает JSON-список и останавливается; извлечение через Haiku проводит вызывающий (Intent/агент), результат каждого файла дописывается в кэш командой `node .claude/scripts/build-done-cards-graph.cjs record --file ... --json ...`, повторный запуск скрипта собирает граф из полного кэша",
+      "external": "только по явной просьбе человека — скрипт сам, без живого агента, вызывает .claude/scripts/external-model-bridge.cjs (GLM 5.3 Flash / OpenRouter, ключ в .env, project/CONFIG.md#deepseek-extraction-quality) на каждый cache-miss файл, не останавливаясь"
+    },
+    "cache_file": ".forma/dashboard/.cache/graphify-extract-cache.json — ключ: относительный путь карточки, значение: {hash (sha256 содержимого), nodes, edges, hyperedges, tokens, cost, extractedAt, model, channel}. Не изменившийся файл (хэш совпал) — cache-hit, ни одного нового вызова модели."
+  },
+  "budget": {
+    "maxUsdPerBuild": 0.5,
+    "alertUsd": null,
+    "_maxUsdPerBuild_meaning": "жёсткий потолок расхода за один прогон .claude/scripts/build-done-cards-graph.cjs (нарастающая сумма cost_usd_estimate по вызовам external-model-bridge.cjs, считается по ходу прогона) — превышение останавливает прогон, не долетая до конца корпуса; граф строится по уже накопленному, останов — явной строкой в .forma/dashboard/graphify.log (warnings+1) и меткой .forma/dashboard/.cache/graphify-budget-stop.json. null/отсутствие = без потолка (как раньше)",
+    "_alertUsd_meaning": "мягкий порог — превышение пишет предупреждение в консоль и продолжает прогон дальше, не останавливает. null/отсутствие = без предупреждения"
+  }
+}

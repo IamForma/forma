@@ -1,0 +1,6 @@
+# check-board
+exit 1
+    — ключевая часть строки расхода не по-английски у 1 записей после 2030-01-01 (§3: attempt, N tokens (R cache-read), T s, `<id>` — описание на языке карточки):
+      card-001-nastroit-sborku-primera.md: `Kit`, 2031-01-05: attempt, много токенов.
+    — 1 записей расхода не разбираются и в счёт не попадают (форма «ДАТА: attempt,» есть, формат §3 не соблюдён):
+      card-001-nastroit-sborku-primera.md: `Kit`, 2031-01-05: attempt, много токенов.

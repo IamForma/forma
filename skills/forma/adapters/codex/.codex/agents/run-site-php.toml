@@ -1,0 +1,8 @@
+name = "run-site-php"
+description = "Run — site-side PHP probes and scripted writes through the site CLI, read before write"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read AGENTS.md, .codex/CODEX-8.md and .codex/CLAUDE-COMPAT.md first. Then read the complete role .codex/roles/run/run-site-php.md before starting. Operate only within the assigned card and kit. The main session speaks as Intent; other production nodes return to their caller. Read .codex/roles/run.md as the base role, then apply this profile.
+"""

@@ -1,0 +1,145 @@
+# Forma
+
+**English** · [Русский](README.ru.md)
+
+A five-node project protocol for AI agents: `Intent` (the idea), `Spec` (slicing), `Kit` (kitting), `Run` (execution), `Core` (the cycle verdict). Runs in Claude Code; Codex and Gemini adapters are in progress.
+
+## Installation
+
+**Requirements:** Node 18+, Git, Claude Code. For the board — VS Code (or Antigravity) with the Kanban Markdown extension.
+
+### Way 1 — installer (recommended)
+
+From the target project's folder:
+
+```
+npx github:IamForma/forma init
+```
+
+It installs the core (`AGENTS.md`, roles, hooks, board, dashboard, `manual/`) and asks a few questions:
+
+1. **Engines** — `claude` (ready); `codex`, `gemini` — not ready yet.
+2. **Project template** — none (the route is worked out in the interview) or a ready one, e.g. `forma-wordpress-novamira`.
+3. **Kanban board** — find the editors and install Kanban Markdown, or skip.
+4. **Document language** — `en` (default), `ru` or another language code.
+5. **Auto-compact window** — for Claude Code, 250000 tokens by default (see "Version and updates").
+
+Without questions: `npx github:IamForma/forma init --engines claude --template none --board auto`.
+
+Running it again is an **update**: the scheme is overwritten; `project/`, the board and `living/` are left untouched. The package is not on the npm registry (the name `forma` is taken there) — use `github:` only.
+
+### Way 2 — git clone
+
+```
+cd target-project
+git clone https://github.com/IamForma/forma.git protocol
+```
+
+Then in a Claude Code session opened in the target project:
+
+```
+read protocol/skills/forma/SKILL.md and install the Forma protocol by it
+```
+
+Update: `git -C protocol pull`, then "update the Forma protocol". The clone is a nested repository — its files do not enter your project's history.
+
+### Way 3 — Claude Code plugin
+
+```
+claude plugin marketplace add IamForma/forma
+claude plugin install forma@forma
+```
+
+Then in the project: "install the Forma protocol" (or `/forma`). If an update does not show up after `marketplace update`, the plugin cache is stale — switch to way 2.
+
+### Node models
+
+Set in the `model:` field of each role in `.claude/agents/`. Defaults:
+
+| Node | Model |
+|---|---|
+| `Intent`, `Spec`, `Kit`, `Core` | `claude-sonnet-5-5` |
+| `Run` and its profiles | `claude-haiku-5-5` |
+| `extractor`, `plumb-haiku` (helpers) | `claude-haiku-5-5` |
+
+Change a model by editing that line. The installer overwrites roles on update, so keep your change in a note or re-apply it after updating.
+
+### Project templates
+
+A template adds a ready route for a specific type of work on top of the core. Pick it in the installer (question 2) or install it separately:
+
+| Template | For | As a plugin |
+|---|---|---|
+| [`forma-wordpress-novamira`](templates/forma-wordpress-novamira/README.md) | WordPress via Novamira MCP (+ Elementor), Aura/Magnific | `claude plugin install forma-wordpress-novamira@forma` |
+
+With way 2 the templates are already in `protocol/templates/<name>/`: copy its `skills/` into `.claude/skills/`, then ask the agent to read `protocol/templates/<name>/skills/<name>/SKILL.md` and install the template by it.
+
+### Kanban board (required)
+
+```
+code --install-extension LachyFS.kanban-markdown
+```
+
+The board `.devtool/features/` is where card status, history, results and spend live. Without it the dashboard, the graph and criterion checks have no data.
+
+### After installation
+
+- Dashboard: the installer starts it in the background when run in a terminal and prints the link (`--dashboard` forces it, `--no-dashboard` skips it); it also starts with every Claude Code session. By hand: `node .forma/dashboard/ensure-running.js` — the address is in `.forma/dashboard/.cache/server.json` (usually `http://localhost:5050/`).
+- Version: the installer prints `Forma <version> installed` or `updated <old> → <new>`; later, `npx github:IamForma/forma --version` or `.forma/install-manifest.json`.
+- In the first session `Intent` offers a short demo of the whole route on two small cards (start / skip / later); its cards are labelled `demo`, stay out of the statistics and are removed afterwards.
+- Set the two thresholds (attempts, volume) in `project/config/PROJECT.md`.
+- Start preparation from `project/config/SETUP.md` — the interview is led by `Intent`, the main session.
+
+Optional companions: `skill-creator`, `context-mode`, `agentmemory` — see the full description.
+
+## Version and updates
+
+- **Which version is installed.** The first line of the installer's output is `Forma <version> → <folder>`. Without installing: `npx github:IamForma/forma --version`. In a project: the `version` field of `.forma/install-manifest.json`.
+- **Update notice.** Once a day, when a Claude Code session starts, a hook compares the installed version with the latest on GitHub and says so only when GitHub has a newer one. It works without `gh` (it falls back to a plain request) and stays silent when offline.
+- **Update.** Run `npx github:IamForma/forma init` in the project folder again — `project/`, the board and `living/` are kept.
+- **Auto-compact window.** The installer offers to set Claude Code's auto-compact window to 250000 tokens for the project (`.claude/settings.json`). It never overrides your own value (environment variable, `~/.claude/settings.json`, `.claude/settings.local.json`). Without questions: `--compact <tokens>` sets another value, `--compact off` leaves Claude Code's default.
+
+## If something does not work
+
+- **The installer printed nothing and returned to the prompt.** Run the same command again; if it repeats, delete the `_npx` folder inside the npm cache (`npm config get cache`) and retry. A stale `npx` cache is the usual cause.
+- **Hooks do nothing (no card check, no delete guard, no start message).** Claude Code runs every hook through `bash`. On Windows install Git for Windows (it brings Git Bash) and run the installer again — it prints a warning when no working `bash` is found. Check the result with `node .forma/verify/verify-install.cjs`.
+- **A command was blocked: "Blocked by the guard-delete hook".** The scheme's own folders and files (`.claude/`, `.agents/`, `.codex/`, `.devtool/`, `.forma/manual/`, `.forma/living/`, `AGENTS.md`, `PROJECT.md`, any `GOAL.md`) are protected from deletion and from being moved out. To allow exactly one such command, write the code phrase from `AGENTS.md` §2 in your own message; the permission is used up by the next command.
+
+## What it is
+
+![Five nodes](assets/five-nodes.svg)
+
+**Main thesis: an agent cannot check itself.** One agent working a long distance in one context does not break — it quietly degrades: impression replaces checking against fact, and the result drifts toward something similar but not the same. Forma answers with construction, not advice: five separate nodes, each with its own narrow role; every task is checked against a written criterion; **no node confirms its own work**.
+
+The five are one body. Each judges by its own pair of criteria and has its own typical loss:
+
+| Node | Judges | Holds | Loses, if the pair breaks |
+|---|---|---|---|
+| `Intent` | beautifully | justly | generalization |
+| `Spec` | simply | completely | omission |
+| `Kit` | naturally | lawfully | distortion |
+| `Run` | honestly | humanely | substitution |
+| `Core` | individually | the true path | the map isn't the territory |
+
+Every loss looks reasonable at the moment it happens — so it is caught by a separate node, not by vigilance.
+
+- **Route.** `Intent → Spec → Kit → Run → Intent`. There is no direct return to `Run`: `Kit` always reassembles the card.
+- **Memory.** `Intent` is the main session with the human; `Spec`, `Kit`, `Run`, `Core` are isolated calls with no shared memory. Growth lives in files (`JOURNAL.md`, `VALUE.md`, skills), not in model memory.
+- **Tools by role.** `Spec` and `Core` can only read and write files; tools that change the product go only into `Run`'s kit, for one task.
+- **`Core`** stays aside: it steps in only on a breached threshold or when a cycle closes, and gives the verdict "reached / not reached".
+- **Board.** The same five as a kanban: `Spec` → `Kit` → `Run` → `Intent`, with `Core` under all four.
+
+The law is `AGENTS.md` (§1–7, English — the model's native language, ~39% fewer tokens). Explanations — `manual/en/`, `manual/ru/`.
+
+## Full description
+
+The previous, detailed README (why each rule, comparison with Karpathy Guidelines, reading levels, protocol development, versioning, repository structure, project preparation):
+
+- English — [skills/forma/core/manual/en/archive/README-full.md](skills/forma/core/manual/en/archive/README-full.md)
+- Русский — [skills/forma/core/manual/ru/archive/README-full.md](skills/forma/core/manual/ru/archive/README-full.md)
+
+New engine adapter — [docs/ADAPTER.md](docs/ADAPTER.md).
+
+## License
+
+[MIT](LICENSE)

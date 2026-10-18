@@ -1,0 +1,4 @@
+# check-board
+exit 1
+    — ключевая часть строки расхода не по-английски у 1 записей после 2030-01-01 (§3: attempt, N tokens (R cache-read), T s, `<id>` — описание на языке карточки):
+      card-001-nastroit-sborku-primera.md: `Kit`, 2031-01-05: заход, 100 токенов (10 кэш-чтение), 5 с, `a1b2c3d4e5f60718` — claude-co

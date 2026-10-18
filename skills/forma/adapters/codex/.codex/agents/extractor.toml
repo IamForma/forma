@@ -1,0 +1,9 @@
+name = "extractor"
+description = "Mechanical source extractor used only when a card explicitly kits extraction work."
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Read .claude/agents/extractor.md and .codex/roles/extractor.md completely. Perform only the extraction named in the prompt. Treat Claude YAML frontmatter as documentation, not Codex configuration. Do not broaden the task, judge the route, or substitute missing facts.
+"""

@@ -1,0 +1,4 @@
+# check-board
+exit 1
+    — card-001-nastroit-sborku-primera.md: метка route-9 — нет такого маршрута (route-0…route-8)
+    — card-001-nastroit-sborku-primera.md: меток маршрута 2, нужна ровно одна (route-0…route-8)

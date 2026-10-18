@@ -1,0 +1,4 @@
+# check-board
+exit 1
+    — нет метки движка в 1 строках захода с 2030-01-01 (§3: описание после тире начинается с claude-code: / codex: / gemini:):
+      card-001-nastroit-sborku-primera.md: Kit 2031-01-05

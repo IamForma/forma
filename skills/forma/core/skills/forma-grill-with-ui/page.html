@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>grill</title>
+<style>
+  :root {
+    --bg: #f7f4ee; --panel: #ffffff; --ink: #1f1c18; --ink-2: #625b51; --ink-3: #9a9285;
+    --rule: #e6e0d4; --accent: #9a3a26; --ok: #3d6b4a; --ok-soft: #e3eee5; --stage: #b8791f; --stage-soft: #f8ecd2; --warn-soft: #fbe9e4;
+    --serif: "Iowan Old Style", Charter, Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: var(--sans); font-size: 15px; line-height: 1.5; color: var(--ink); background: var(--bg);
+    display: grid; grid-template-rows: auto auto 1fr auto; grid-template-columns: 260px minmax(0, 1fr) 33vw; height: 100vh;
+  }
+  a { color: var(--accent); }
+  /* Rows are pinned: the banner is display:none most of the time, and auto-placement would
+     otherwise slide the content into the "auto" row and stretch the footer into the "1fr" row. */
+  #banner { grid-row: 1; grid-column: 1 / -1; display: none; padding: 9px 24px; font-size: 14px; background: var(--warn-soft); color: var(--accent); border-bottom: 1px solid var(--rule); }
+  #banner.show { display: block; } #banner.done { background: var(--ok-soft); color: var(--ok); }
+
+  header { grid-row: 2; grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-bottom: 1px solid var(--rule); background: var(--panel); position: relative; }
+  header h1 { font-family: var(--serif); font-weight: 500; font-size: 20px; margin: 0; }
+  header .path { color: var(--ink-3); font-size: 13px; }
+  header .status { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); } header .status .spin { color: var(--stage); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+  .dot.working { background: var(--stage); animation: pulse 1.2s ease-in-out infinite; }
+  .dot.gone { background: var(--ink-3); }
+  @keyframes pulse { 50% { opacity: .3; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .attach-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .attach-formats { color: var(--ink-3); font-size: 12px; }
+  .attach-why { color: var(--ink-3); font-size: 12px; }
+  .attach-row { flex-wrap: wrap; }
+  .ok-mark { display: inline-block; color: var(--ok); font-size: 12px; font-weight: 700; margin-right: 6px; vertical-align: -1px; flex-shrink: 0; }
+  .spin { display: inline-block; width: 11px; height: 11px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -1px; flex-shrink: 0; }
+  #progress { display: none; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; overflow: hidden; background: var(--stage-soft); }
+  header.working #progress { display: block; }
+  #progress::after { content: ""; position: absolute; top: 0; bottom: 0; width: 30%; background: var(--stage); animation: slide 1.4s ease-in-out infinite; }
+  @keyframes slide { from { left: -30%; } to { left: 100%; } }
+  #terms-toggle, #visualize { font-size: 12px; padding: 4px 10px; }
+  #visualize .spin { width: 9px; height: 9px; margin-right: 4px; }
+  #visualize:disabled { background: var(--panel); border-color: var(--rule); color: var(--ink-3); }
+  #terms { display: none; position: absolute; right: 24px; top: 100%; width: 420px; max-height: 60vh; overflow-y: auto; background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 16px; box-shadow: 0 8px 24px rgba(0,0,0,.08); z-index: 5; }
+  #terms.show { display: block; }
+  .term { padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 14px; } .term:last-child { border-bottom: 0; }
+  .term b { font-family: var(--serif); font-weight: 500; font-size: 15px; } .term .avoid { color: var(--ink-3); font-size: 12px; }
+
+  nav { grid-row: 3; grid-column: 1; border-right: 1px solid var(--rule); overflow-y: auto; padding: 10px 0 24px; }
+  nav .note { margin: 6px 14px 4px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; font-size: 13px; color: var(--ink-2); }
+  nav .round { padding: 14px 16px 4px 20px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); display: flex; justify-content: space-between; }
+  nav .round.current { color: var(--accent); }
+  .item { display: grid; grid-template-columns: 26px 1fr auto; gap: 6px; align-items: baseline; padding: 8px 16px 8px 20px; cursor: pointer; }
+  .item:hover { background: #efebe3; }
+  .item.selected { background: var(--panel); box-shadow: inset 3px 0 0 var(--accent); }
+  /* Имя вопроса — метка, а не текст: в четыре строки его читать незачем. */
+  .item .id { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item .t { font-size: 14px; }
+  .item .mark { font-size: 11px; color: var(--ink-3); display: inline-flex; align-items: center; gap: 4px; }
+  .item .mark svg { width: 12px; height: 12px; }
+  .mark.answered { color: var(--ok); } .mark.open, .mark.reopened { color: var(--accent); } .mark.staged { color: var(--stage); font-weight: 600; } .mark.pending { color: var(--stage); }
+  .item.updated .t::after { content: "обновлено"; font-size: 10px; color: var(--stage); margin-left: 6px; letter-spacing: .06em; text-transform: uppercase; }
+  nav .empty { padding: 20px; font-size: 13px; color: var(--ink-3); }
+
+  /* Visualize view: the list and card columns give way to the visual; the right panel becomes its feedback. */
+  #visual { grid-row: 3; grid-column: 1 / 3; display: none; grid-template-rows: auto 1fr; min-height: 0; background: var(--panel); }
+  body.visualize #visual { display: grid; } body.visualize nav, body.visualize main { display: none; }
+  #visual-strip { display: flex; align-items: center; flex-wrap: nowrap; gap: 14px; padding: 8px 24px; border-bottom: 1px solid var(--rule); font-size: 13px; color: var(--ink-2); background: var(--bg); }
+  /* Полоса — всегда одна строка: кнопки не переносятся, уступает длинная подпись (усечение, полный текст в title). */
+  #visual-strip > * { flex: none; }
+  #visual-strip .kind { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; white-space: nowrap; }
+  #visual-strip .ver { color: var(--ink-3); flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #visual-strip .ver b { color: var(--ink-2); font-weight: 600; }
+  #visual-stale { color: var(--stage); font-size: 12px; white-space: nowrap; }
+  #visual-strip .right { margin-left: auto; display: flex; align-items: center; flex-wrap: nowrap; gap: 10px; color: var(--stage); white-space: nowrap; }
+  #visual-strip a { color: var(--ink-3); text-decoration: none; font-size: 13px; white-space: nowrap; } #visual-strip a:hover { color: var(--accent); }
+  /* Во всё окно: визуал забирает и колонку обратной связи. Обратное — режим общения. */
+  body.visualize.visual-wide #visual { grid-column: 1 / -1; }
+  body.visualize.visual-wide aside { display: none; }
+  #visual-strip .wide { color: var(--ink-3); text-decoration: none; font-size: 13px; cursor: pointer; }
+  #visual-strip .wide:hover { color: var(--accent); }
+  #visual-frame { width: 100%; height: 100%; border: 0; background: #fff; display: block; }
+  #visual-wait { display: flex; align-items: center; justify-content: center; gap: 10px; height: 100%; color: var(--ink-3); font-size: 14px; background: #fff; }
+  #visual-wait[hidden], #visual-frame[hidden] { display: none; }
+
+  main { grid-row: 3; grid-column: 2; overflow-y: auto; padding: 36px 44px 60px; background: var(--panel); }
+  .card { max-width: 680px; }
+  .crumb { font-size: 12px; color: var(--ink-3); display: flex; gap: 12px; flex-wrap: wrap; }
+  .crumb a { text-decoration: none; } .crumb .upd { color: var(--stage); }
+  .title-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 8px 0 12px; }
+  .card h2 { font-family: var(--serif); font-weight: 500; font-size: 30px; line-height: 1.15; margin: 0; }
+  #explore { font-size: 13px; padding: 6px 12px; flex-shrink: 0; }
+  #explore:disabled { background: var(--panel); border-color: var(--rule); color: var(--ink-3); }
+  .card .body { font-size: 15px; color: var(--ink-2); max-width: 62ch; margin: 0; white-space: pre-line; }
+  .opts { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 8px; }
+  .opt { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); cursor: pointer; }
+  .opt .check { width: 20px; height: 20px; color: var(--ok); visibility: hidden; align-self: center; }
+  .opt .check svg, .mark svg { display: block; width: 100%; height: 100%; }
+  .opt:hover { border-color: var(--ink-3); }
+  .opt .k { font-family: var(--serif); font-size: 18px; line-height: 1.2; color: var(--ink-3); }
+  .opt.rec { border-color: var(--accent); } .opt.rec .k { color: var(--accent); }
+  .opt .tag { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
+  .opt.chosen { background: var(--ok-soft); border-color: var(--ok); } .opt.chosen .k, .opt.chosen .tag { color: var(--ok); } .opt.chosen .check { visibility: visible; }
+  /* Once an answer is picked (staged or recorded), everything but the picked box reads as disabled; hover or focus wakes a part back up. */
+  .card.picked .body, .card.picked .why, .card.picked .answer-row, .card.picked .links, .card.picked .opt:not(.chosen):not(.staged):not(.pending) { opacity: .45; transition: opacity .15s; }
+  .card.picked .opt:not(.chosen):not(.staged):not(.pending):hover, .card.picked .answer-row:focus-within, .card.picked .links:hover { opacity: 1; }
+  .opt.text-answer { cursor: default; } .opt.text-answer .tag { color: var(--ok); } .opt.text-answer:hover { border-color: var(--ok); }
+  .opt.staged { border-color: var(--stage); box-shadow: 0 0 0 1px var(--stage); background: var(--stage-soft); }
+  .opt.pending { border-color: var(--stage); border-style: dashed; } .opt.pending .k { color: var(--stage); } .opt .check.pending { visibility: visible; color: var(--stage); display: flex; align-items: center; justify-content: center; }
+  .locked .opt { cursor: default; } .locked .opt:hover { border-color: var(--rule); }
+  .why { margin: 14px 0 0; font-size: 14px; color: var(--ink-2); white-space: pre-line; } .why b { color: var(--accent); font-weight: 600; }
+  /* Поле ответа растёт под текст: диктуя длинно, человек не должен терять из
+     виду собственные слова. Предел — чтобы карточка не уезжала целиком. */
+  .answer-row textarea { min-height: 76px; max-height: 45vh; overflow-y: auto; }
+  .staged-line { margin-top: 10px; font-size: 14px; color: var(--stage); } .staged-line a { color: var(--ink-3); font-size: 12px; margin-left: 8px; }
+  .pending-line { margin-top: 10px; font-size: 14px; color: var(--stage); display: flex; align-items: center; gap: 8px; }
+  .answer-row { display: flex; gap: 8px; margin-top: 20px; align-items: flex-start; }
+  .links { margin-top: 12px; font-size: 13px; display: flex; gap: 14px; } .links a { color: var(--ink-3); text-decoration: none; } .links a:hover { color: var(--accent); }
+  textarea { width: 100%; min-height: 60px; font: inherit; font-size: 14px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); resize: vertical; color: var(--ink); }
+  textarea:focus { outline: none; border-color: var(--ink-3); }
+  button { font-family: var(--sans); font-weight: 500; font-size: 14px; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--rule); background: var(--panel); color: var(--ink); cursor: pointer; white-space: nowrap; }
+  button:hover { border-color: var(--ink-3); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; } button.primary:hover { border-color: var(--accent); }
+  button:disabled, button.primary:disabled { background: var(--ink-3); border-color: var(--ink-3); color: #fff; cursor: default; }
+  main .empty { color: var(--ink-3); font-size: 14px; }
+
+  aside { grid-row: 3; grid-column: 3; border-left: 1px solid var(--rule); display: grid; grid-template-rows: auto 1fr auto; min-height: 0; }
+  aside .head { padding: 20px 22px 12px; }
+  aside .head h3 { margin: 0; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  aside .head .sub { font-family: var(--serif); font-size: 16px; margin-top: 4px; }
+  aside .head .count { font-size: 12px; color: var(--ink-3); margin-left: 8px; font-family: var(--sans); }
+  aside .msgs { overflow-y: auto; padding: 0 22px 12px; }
+  .msg { padding: 12px 0; border-top: 1px solid var(--rule); position: relative; }
+  .msg .who { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+  .msg.user .who { color: var(--stage); } .msg.agent .who { color: var(--accent); }
+  .msg.staged { background: var(--stage-soft); margin: 8px -10px 0; padding: 10px 28px 10px 10px; border-radius: 6px; border-top: 0; }
+  .msg.pending { opacity: .7; } .msg.pending .who { display: flex; align-items: center; gap: 6px; }
+  .msg .text { font-size: 14px; white-space: pre-line; }
+  .msg .rm { position: absolute; right: 8px; top: 8px; color: var(--ink-3); text-decoration: none; font-size: 14px; }
+  .empty-thread { padding: 12px 0; font-size: 13px; color: var(--ink-3); border-top: 1px solid var(--rule); }
+  .explore-head { padding: 12px 0 6px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; border-top: 1px solid var(--rule); }
+  .explore-wait { padding: 12px 0; font-size: 13px; color: var(--stage); border-top: 1px solid var(--rule); }
+  .procon { width: 100%; border-collapse: collapse; font-size: 13px; margin: 2px 0 10px; }
+  .procon th { text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--rule); }
+  .procon td { vertical-align: top; padding: 8px 8px 8px 0; border-bottom: 1px solid var(--rule); }
+  .procon td.k { font-family: var(--serif); font-size: 16px; color: var(--ink-2); width: 28px; } .procon td.k.rec { color: var(--accent); }
+  .procon ul { margin: 0; padding-left: 16px; } .procon li { margin: 0 0 3px; }
+  .procon .pro li::marker { color: var(--ok); } .procon .con li::marker { color: var(--accent); }
+  aside .compose { padding: 12px 22px 18px; border-top: 1px solid var(--rule); display: grid; gap: 8px; }
+
+  footer { grid-row: 4; grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; padding: 12px 24px; border-top: 1px solid var(--rule); background: var(--panel); }
+  footer .staged-list { font-size: 13px; color: var(--ink-2); flex: 1; } footer .staged-list b { color: var(--stage); } footer .staged-list .sent { color: var(--stage); display: inline-flex; align-items: center; gap: 6px; }
+  #finish.ready { background: var(--ok); border-color: var(--ok); color: #fff; font-weight: 600; animation: ready 1.2s ease-in-out infinite; }
+  #finish.ready:hover { background: #2f5a3b; border-color: #2f5a3b; }
+  @keyframes ready { 0%, 100% { background-color: var(--ok); border-color: var(--ok); } 50% { background-color: #7fb08d; border-color: #7fb08d; } }
+  footer .hint { font-size: 12px; color: var(--ink-3); } footer .warn { font-size: 12px; color: var(--accent); }
+  footer .confirm { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: center; }
+  #finish:disabled { background: var(--panel); border-color: var(--rule); color: var(--ink-3); animation: none; } #finish .spin { margin-right: 4px; }
+
+  .mic-btn { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border-radius: 50%; }
+  .mic-btn svg { width: 18px; height: 18px; }
+  .mic-btn.recording { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .mic-meter { display: none; align-items: flex-end; gap: 3px; height: 20px; align-self: center; }
+  .mic-meter.on { display: inline-flex; }
+  .mic-meter span { display: block; width: 3px; height: 4px; border-radius: 2px; background: var(--accent); transition: height .08s ease-out; }
+  .compose-actions { display: flex; gap: 8px; align-items: center; justify-self: end; }
+</style>
+</head>
+<body>
+<div id="banner"></div>
+<header>
+  <h1 id="topic">grill</h1>
+  <span class="path" id="doc-path"></span>
+  <button id="terms-toggle" type="button">Термины</button>
+  <div id="terms"></div>
+  <button id="visualize" type="button" hidden>Визуализация</button>
+  <span class="status"><span class="dot" id="agent-dot"></span><span id="agent-status">подключение…</span></span>
+  <div id="progress"></div>
+</header>
+<nav id="nav"><div class="empty">Подключение…</div></nav>
+<main id="main"></main>
+<section id="visual"><div id="visual-strip"></div><div id="visual-wait" hidden><span class="spin"></span>Рисуем первую версию…</div><iframe id="visual-frame" title="Визуал" sandbox="allow-scripts"></iframe></section>
+<aside id="aside"></aside>
+<footer>
+  <span class="staged-list" id="staged-list"></span>
+  <span class="warn" id="send-why"></span>
+  <span class="hint">⌘↩ отправить</span>
+  <span id="finish-area"></span>
+  <button class="primary" id="send" type="button" disabled>Отправить агенту</button>
+</footer>
+<script>
+"use strict";
+
+// ---- translations (T) — единственная точка правки текста интерфейса; ----
+// код ниже обращается к T, а не хранит английские/русские строки инлайн — так
+// диффы апстрима остаются логическими правками, не текстовыми.
+const T = {
+  terms: "Термины",
+  termsWithCount: (n) => `Термины${n ? " · " + n : ""}`,
+  visualize: "Визуализация",
+  visualizeBack: "Вопросы",
+  wideOn: "Во всё окно",
+  wideOff: "Режим общения",
+  wideOnHint: "Развернуть визуал на всё окно — когда детали слишком мелкие (Esc — обратно)",
+  wideOffHint: "Вернуть колонку обратной связи",
+  visualLabel: (v) => `Визуал · v${v}`,
+  visualizing: "Визуализация…",
+  visualizeHint: "Нарисовать прототип или диаграмму текущего замысла",
+  connecting: "подключение…",
+  connectingNav: "Подключение…",
+  drawingFirst: "Рисуем первую версию…",
+  sendToAgent: "Отправить агенту",
+  sendNToAgent: (n) => `Отправить агенту (${n})`,
+  drawStuck: "Рисование идёт больше 10 минут; перегенерируйте, чтобы попробовать снова.",
+  serverGone: "сервер недоступен",
+  agentBusyWarn: (t) => `Агент работает уже ${t}; возможно, он не слушает.`,
+  sendWaitingWarn: (seq, ms) => `Отправка #${seq} ушла ${ms} назад, агент ещё не забрал её. Отвечать дальше можно — отправки разбираются по порядку.`,
+  sendFailed: "Отправка не удалась: ",
+  noServer: "нет связи с сервером",
+  finishedBanner: (doc, visual, at) => `Завершено · документ записан в ${doc}${visual ? ", визуал — в " + visual : ""}${at ? " в " + at : ""}.`,
+  serverGoneBanner: "Сервер недоступен. Возобновите грилл из терминала — вкладка переподключится сама.",
+  avoid: "Не использовать: ",
+  noTermsYet: "Пока нет терминов. Агент добавляет их сюда по мере того, как они устаканиваются.",
+  agentBusyTitle: "агент занят",
+  diagram: "Диаграмма",
+  prototype: "Прототип",
+  firstVersionOnWay: "первая версия уже в пути",
+  outOfDate: "Устарело · перегенерируйте, чтобы учесть последние решения",
+  regenerating: "перегенерация…",
+  regenerate: "Перегенерировать",
+  agentWorking: (t) => `Агент работает · ${t}`,
+  agentWaiting: (since, handled) => `Агент ждёт вас${since ? " · с " + since : ""}${handled ? " · обработано #" + handled : ""}`,
+  waitingFirstRound: "Ждём первый раунд…",
+  round: (r) => `Раунд ${r}`,
+  currentSuffix: " · текущий",
+  pickQuestion: "Выберите вопрос слева.",
+  noQuestionsYet: "Пока нет вопросов.",
+  crumbRound: (r) => `раунд ${r}`,
+  after: (list) => `после ${list}`,
+  root: "корень",
+  durable: "трудно обратимо",
+  recUpdated: "рекомендация обновлена",
+  deferred: "отложено",
+  reopened: "переоткрыто",
+  statusOpen: "открыт",
+  recommended: "Рекомендовано",
+  yourAnswer: "Ваш ответ",
+  yourAnswerSending: "Ваш ответ · ушло",
+  whyOption: (o) => `Почему ${o}.`,
+  suggested: "Предложено.",
+  stagedDefer: "В очереди: отложить этот вопрос",
+  stagedReopen: "В очереди: переоткрыть этот вопрос",
+  stagedAccept: (o) => `В очереди: принять ${o}`,
+  stagedOption: (o) => `В очереди: вариант ${o}`,
+  // Показываем текст целиком: обрезка прятала бы то, что человек уже надиктовал,
+  // и потерю части снова было бы не видно.
+  stagedText: (t) => `В очереди текст: «${t}»`,
+  stagedTextParts: (n) => ` · частей: ${n}`,
+  clear: "очистить",
+  bitDefer: "отложить",
+  bitReopen: "переоткрыть",
+  sentWaiting: (bits) => `Отправлено: ${bits} по этому вопросу — ушло, агент разбирает`,
+  placeholderChange: "Измените ответ или добавьте нюанс…",
+  placeholderFreeText: "Свободный ответ, если ни один вариант не подходит…",
+  placeholderYourAnswer: "Ваш ответ…",
+  stageText: "Отправить текст в очередь",
+  deferThis: "Отложить этот вопрос",
+  reopenThis: "Переоткрыть этот вопрос",
+  exploring: "Изучаем…",
+  exploreAgain: "Изучить ещё раз",
+  exploreDeeper: "Изучить глубже",
+  discussion: "Обсуждение",
+  message: (n) => `${n} ${ruPlural(n, ["сообщение", "сообщения", "сообщений"])}`,
+  who: (w) => (w === "agent" ? "агент" : "вы"),
+  sendingSuffix: "ушло",
+  stagedSuffix: "в очереди",
+  remove: "Удалить",
+  emptyThreadQuestion: "Пока ничего нет. Спросите что угодно об этом вопросе — агент ответит здесь при следующей отправке.",
+  threadPlaceholder: (id) => `Уточнить по ${id}…`,
+  addToDiscussion: "Добавить в обсуждение",
+  prosAndCons: (at) => `Плюсы и минусы${at ? " · " + at : ""}`,
+  pros: "Плюсы",
+  cons: "Минусы",
+  exploringWait: "Изучаем: агент составляет таблицу плюсов и минусов по этому вопросу.",
+  visualFeedback: "Обратная связь по визуалу",
+  emptyThreadVisual: "Пока ничего нет. Опишите, что не так или чего не хватает в визуале — агент перерисует его при следующей отправке. Если замечание противоречит уже отвеченному вопросу, этот вопрос будет переоткрыт для вас.",
+  feedbackPlaceholder: "Замечание по визуалу…",
+  addFeedback: "Добавить замечание",
+  optionArrow: (o) => `→ ${o}`,
+  optionArrowText: "→ текст",
+  msgCountShort: (n) => `+${n} сообщ.`,
+  visualMsgCountShort: (n) => `визуал +${n} сообщ.`,
+  sentSeqWaiting: (seq) => `Отправлено #${seq} — ушло. Агент разбирает, отвечать можно дальше.`,
+  finished: "завершено",
+  finishedFooter: "Этот грилл завершён.",
+  nothingStaged: "Ничего не в очереди. Выберите вариант или напишите в обсуждении.",
+  attachFile: "Приложить файл",
+  attaching: (name) => `Отправляю ${name}…`,
+  attached: (n) => `Приложено файлов: ${n}`,
+  attachFailed: (name, why) => `${name} не приложился: ${why}`,
+  attachFormats: "doc · xlsx · pdf · txt · md · изображение — до 10 МБ",
+  attachHint: "Уходит сразу и привязывается к этому вопросу. Нужное для интервью, а не архив: то, что короче показать, чем рассказать.",
+  attachTooBig: (name, mb) => `${name} — ${mb} МБ, это больше 10. Пришлите выжимку или страницу, а не весь файл.`,
+  finishSent: "Завершение ушло. Агент записывает документ — страница обновится сама.",
+  finishStale: (seq, ms) => `Завершение #${seq} ушло ${ms} назад, агент его ещё не забрал. Ничего не потеряно: оно записано на диск и будет обработано. Вкладку можно закрыть — ответы сохранены.`,
+  finishConfirm: "Завершить этот грилл? Всё, что в очереди, уйдёт вместе с этим; агент запишет документ и остановится.",
+  finish: "Завершить",
+  cancel: "Отмена",
+  finishReadyTitle: "Все вопросы закрыты. Завершение запишет документ.",
+  finishGrill: "Завершить грилл",
+  micStart: "Наговорить голосом",
+  micStop: "Остановить запись",
+};
+function ruPlural(n, forms) {
+  const n10 = n % 10, n100 = n % 100;
+  if (n10 === 1 && n100 !== 11) return forms[0];
+  if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return forms[1];
+  return forms[2];
+}
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Агент работает прямо сейчас — столько ждём, прежде чем отпустить форму.
+const WORKING_GRACE_MS = 20 * 1000;
+// Отправлено, но агент ещё не забрал. Здесь ждать нечего: запись уже на диске,
+// и держать человека дольше пары секунд значит показывать ему его же законченное
+// дело как незаконченное.
+const SENT_GRACE_MS = 2 * 1000;
+// Завершение отправлено, агент не забрал. Дольше этого молчать нельзя: человек
+// уже не понимает, идёт работа или всё встало.
+const FINISH_STALE_MS = 45 * 1000;
+// Потолок на приложенный файл. Столько же стоит на сервере — здесь он для того,
+// чтобы человек узнал об отказе сразу, а не после минуты заливки.
+const MAX_ATTACH = 10 * 1024 * 1024;
+const DRAW_GRACE_MS = 10 * 60 * 1000; // a background draw older than this is treated as stuck: Regenerate comes back
+const DRAW_STUCK_NOTE = T.drawStuck;
+const GONE_AFTER_MS = 3000;
+const CHECK = '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="currentColor"/><path d="M6 10.4l2.6 2.6L14 7.4" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const MIC_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z" fill="currentColor"/><path d="M19 11a1 1 0 1 0-2 0 5 5 0 0 1-10 0 1 1 0 1 0-2 0 7 7 0 0 0 6 6.93V20H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.07A7 7 0 0 0 19 11z" fill="currentColor"/></svg>';
+
+// ---- голосовой ввод (Web Speech API — есть в Chrome/Edge, нет в Firefox; тихо не появляется, если браузер не умеет) ----
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const MIC_BARS = 4;
+const micSupported = () => !!SR;
+const micButtonHtml = (btnId, meterId) => micSupported()
+  ? `<button id="${btnId}" type="button" class="mic-btn" title="${T.micStart}">${MIC_ICON}</button><span class="mic-meter" id="${meterId}">${"<span></span>".repeat(MIC_BARS)}</span>`
+  : "";
+let activeMic = null; // { recognition }
+let micAudio = null;  // { stream, ctx, analyser, raf }
+
+// Уровнемер — отдельный от распознавания речи поток: SpeechRecognition отдаёт только
+// текст, не громкость. Читаем реальный уровень сигнала через Web Audio API и двигаем
+// несколько полосок в реальном времени, вместо простого мигания кнопки.
+function startMeter(meterId) {
+  const meter = $(meterId); if (!meter) return;
+  navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+    if (!activeMic) { stream.getTracks().forEach((t) => t.stop()); return; } // запись уже остановили, пока ждали разрешение
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 64;
+    src.connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    const bars = meter.querySelectorAll("span");
+    meter.classList.add("on");
+    micAudio = { stream, ctx, analyser };
+    (function tick() {
+      if (!micAudio) return;
+      analyser.getByteFrequencyData(data);
+      for (let i = 0; i < bars.length; i++) {
+        const from = Math.floor((i / bars.length) * data.length);
+        const to = Math.floor(((i + 1) / bars.length) * data.length);
+        let sum = 0; for (let j = from; j < to; j++) sum += data[j];
+        const avg = sum / Math.max(1, to - from);
+        bars[i].style.height = (4 + Math.min(16, (avg / 255) * 16)) + "px";
+      }
+      micAudio.raf = requestAnimationFrame(tick);
+    })();
+  }).catch(() => {}); // без отдельного разрешения на этот поток просто нет уровнемера — распознавание речи само по себе не пострадает
+}
+function stopMeter(meterId) {
+  const meter = $(meterId);
+  if (meter) { meter.classList.remove("on"); meter.querySelectorAll("span").forEach((b) => (b.style.height = "4px")); }
+  if (micAudio) {
+    if (micAudio.raf) cancelAnimationFrame(micAudio.raf);
+    micAudio.stream.getTracks().forEach((t) => t.stop());
+    micAudio.ctx.close().catch(() => {});
+    micAudio = null;
+  }
+}
+function stopActiveMic() { if (activeMic) activeMic.recognition.stop(); }
+function wireMic(btnId, textareaId, meterId, onCommit) {
+  if (!micSupported()) return;
+  const btn = $(btnId); const ta = $(textareaId);
+  if (!btn || !ta) return;
+  btn.onclick = () => {
+    if (activeMic) { activeMic.recognition.stop(); return; }
+    const rec = new SR();
+    rec.lang = "ru-RU"; rec.interimResults = false; rec.continuous = true;
+    activeMic = { recognition: rec };
+    btn.classList.add("recording"); btn.title = T.micStop;
+    startMeter(meterId);
+    rec.onresult = (e) => {
+      let text = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript;
+      text = text.trim(); if (!text) return;
+      const sep = ta.value && !/\s$/.test(ta.value) ? " " : "";
+      ta.value = ta.value + sep + text;
+      onCommit(ta.value);
+    };
+    rec.onerror = () => {};
+    rec.onend = () => { btn.classList.remove("recording"); btn.title = T.micStart; activeMic = null; stopMeter(meterId); };
+    rec.start();
+  };
+}
+
+let S = null, raw = null, selected = null, storeKey = null;
+let lastOk = Date.now(), gone = false, confirmFinish = false;
+let local = fresh();
+function fresh() { return { staged: {}, pending: [], drafts: {}, view: "questions", vfeedback: [] }; }
+function load() { local = fresh(); try { const v = localStorage.getItem(storeKey); if (v) local = Object.assign(fresh(), JSON.parse(v)); } catch {} }
+function save() { try { localStorage.setItem(storeKey, JSON.stringify(local)); } catch {} }
+
+// ---- data helpers ----
+const qs = () => (S && Array.isArray(S.questions) ? S.questions : []);
+const byId = (id) => qs().find((q) => q.id === id);
+const isOpen = (q) => q.status === "open" || q.status === "reopened";
+const curRound = () => qs().reduce((m, q) => Math.max(m, Number(q.round) || 0), 0);
+const rounds = () => { const m = new Map(); for (const q of qs()) { const r = Number(q.round) || 0; if (!m.has(r)) m.set(r, []); m.get(r).push(q); } return [...m.entries()].sort((a, b) => a[0] - b[0]); };
+const firstOpen = () => qs().filter((q) => isOpen(q) && Number(q.round) === curRound())[0] || qs().find(isOpen) || qs()[qs().length - 1] || null;
+const locked = () => !!(S && S.finished);
+const visual = () => (S && S.visual && typeof S.visual === "object" ? S.visual : null);
+const hasVisual = () => { const v = visual(); return !!v && (Number(v.version) || 0) >= 1; }; // version 0 = first draw still running, nothing to show
+const drawing = () => { const v = visual(); return v && v.drawing && typeof v.drawing === "object" ? v.drawing : null; };
+const drawStuck = () => { const d = drawing(); return !!d && Date.now() - Date.parse(d.since || 0) > DRAW_GRACE_MS; };
+const activeView = () => (local.view === "visualize" && hasVisual() ? "visualize" : "questions");
+const timeOf = (iso) => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); };
+const fmtMs = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)); return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`; };
+
+// ---- polling ----
+async function poll() {
+  try {
+    const r = await fetch("/state", { cache: "no-store" });
+    if (!r.ok) throw new Error(String(r.status));
+    const text = await r.text();
+    lastOk = Date.now();
+    if (gone) { gone = false; render(); }
+    if (text !== raw) { raw = text; S = JSON.parse(text); onState(); } else tick();
+  } catch {
+    if (!gone && Date.now() - lastOk > GONE_AFTER_MS) { gone = true; render(); } else tick();
+  }
+  setTimeout(poll, 1000);
+}
+function onState() {
+  const key = "grill:" + (S.project || "") + ":" + (S.created || "");
+  if (key !== storeKey) { storeKey = key; load(); }
+  const handled = Number((S.agent || {}).handled) || 0;
+  const still = local.pending.filter((p) => p.seq > handled);
+  if (still.length !== local.pending.length) {
+    local.pending = still; save();
+    if (!still.length) { const cur = byId(selected); if (!cur || !isOpen(cur)) selected = (firstOpen() || {}).id || selected; }
+  }
+  if (!selected || !byId(selected)) selected = (firstOpen() || {}).id || null;
+  render();
+}
+
+// ---- staging ----
+const st = (id) => (local.staged[id] = local.staged[id] || {});
+const prune = (id) => { const s = local.staged[id]; if (s && !s.answer && !s.defer && !s.reopen && !(s.thread && s.thread.length)) delete local.staged[id]; };
+// Текст к тексту дописывается, а не затирает: длинный ответ диктуют частями, и
+// вторая часть молча съедала первую. Вариант поверх варианта по-прежнему заменяет
+// — там человек меняет выбор, а не продолжает мысль.
+function stageAnswer(id, answer) {
+  const s = st(id);
+  if (answer.kind === "text" && s.answer && s.answer.kind === "text" && s.answer.text) {
+    s.answer = { kind: "text", text: s.answer.text + "\n\n" + answer.text };
+  } else {
+    s.answer = answer;
+  }
+  delete s.defer; delete s.reopen; commit();
+}
+function stageThread(id, text) { const s = st(id); (s.thread = s.thread || []).push(text); if (local.drafts[id]) delete local.drafts[id].thread; commit(); }
+function stageDefer(id) { const s = st(id); s.defer = true; delete s.answer; delete s.reopen; commit(); }
+function stageReopen(id) { const s = st(id); s.reopen = true; delete s.answer; delete s.defer; commit(); }
+function clearStaged(id) { const s = local.staged[id]; if (s) { delete s.answer; delete s.defer; delete s.reopen; prune(id); } commit(); }
+function removeThread(id, i) { const s = local.staged[id]; if (s && s.thread) { s.thread.splice(i, 1); prune(id); } commit(); }
+function commit() { save(); render(); }
+// ---- pending: sent, not yet recorded by the agent (agent.handled < seq) ----
+const pendingActions = (id) => local.pending.flatMap((p) => p.actions.filter((a) => a.q === id));
+const lastPending = () => local.pending[local.pending.length - 1] || null;
+const isExploring = (id) => pendingActions(id).some((a) => a.type === "explore");
+const pendingOfType = (t) => local.pending.flatMap((p) => p.actions.filter((a) => a.type === t));
+const isVisualizing = () => pendingOfType("visualize").length > 0 || (!!drawing() && !drawStuck());
+const isFinishing = () => pendingOfType("finish").length > 0;
+// Не просто «завершение в полёте», а когда именно оно ушло: без этого нечем
+// отличить «только что» от «давно и, кажется, некому».
+const finishPending = () => local.pending.find((p) => p.actions.some((a) => a.type === "finish")) || null;
+const allSettled = () => qs().length > 0 && !qs().some(isOpen);
+function stagedCount() {
+  let n = local.vfeedback.length;
+  for (const s of Object.values(local.staged)) n += (s.answer ? 1 : 0) + (s.defer ? 1 : 0) + (s.reopen ? 1 : 0) + (s.thread ? s.thread.length : 0);
+  return n;
+}
+function stageFeedback(text) { local.vfeedback.push(text); if (local.drafts.__visual) delete local.drafts.__visual.thread; commit(); }
+function removeFeedback(i) { local.vfeedback.splice(i, 1); commit(); }
+function buildActions() {
+  const out = [];
+  for (const [q, s] of Object.entries(local.staged)) {
+    if (s.reopen) out.push({ q, type: "reopen" });
+    if (s.defer) out.push({ q, type: "defer" });
+    if (s.answer) { const a = { q, type: "answer", kind: s.answer.kind }; if (s.answer.option) a.option = s.answer.option; if (s.answer.text) a.text = s.answer.text; out.push(a); }
+    for (const t of s.thread || []) out.push({ q, type: "thread", text: t });
+  }
+  for (const t of local.vfeedback) out.push({ type: "visual-feedback", text: t });
+  return out;
+}
+function sendState(needStaged = true) {
+  const a = (S && S.agent) || {};
+  if (locked()) return { disabled: true, why: "" };
+  if (gone) return { disabled: true, why: T.serverGone };
+  if (needStaged && !stagedCount()) return { disabled: true, why: "" };
+  if (a.status === "working") {
+    const ms = Date.now() - Date.parse(a.since || 0);
+    if (!(ms > WORKING_GRACE_MS)) return { disabled: true, why: "" };
+    return { disabled: false, why: T.agentBusyWarn(fmtMs(ms)) };
+  }
+  const lp = lastPending();
+  if (lp) { // отправлено, агент ещё не забрал — отпускаем через SENT_GRACE_MS
+    const ms = Date.now() - Date.parse(lp.at || 0);
+    if (!(ms > SENT_GRACE_MS)) return { disabled: true, why: "" };
+    return { disabled: false, why: T.sendWaitingWarn(lp.seq, fmtMs(ms)) };
+  }
+  return { disabled: false, why: "" };
+}
+async function post(actions) {
+  let r, j = {};
+  try { r = await fetch("/send", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ actions }) }); j = await r.json().catch(() => ({})); } catch { r = null; }
+  if (!j.ok) $("send-why").textContent = T.sendFailed + (j.error || (r && r.status) || T.noServer);
+  return j.ok ? j : null;
+}
+async function send() {
+  const { disabled } = sendState(); if (disabled) return;
+  const actions = buildActions();
+  const j = await post(actions);
+  if (j) { local.pending.push({ seq: j.seq, at: new Date().toISOString(), actions }); local.staged = {}; local.vfeedback = []; confirmFinish = false; commit(); }
+}
+// Finish is not staged: confirming ships everything staged plus the finish action in one event, right away.
+async function finishNow() {
+  if (sendState(false).disabled || isFinishing()) return;
+  const actions = buildActions().concat([{ type: "finish" }]);
+  const j = await post(actions);
+  if (j) { local.pending.push({ seq: j.seq, at: new Date().toISOString(), actions }); local.staged = {}; local.vfeedback = []; confirmFinish = false; commit(); }
+}
+// Файл уходит по одному, отдельным запросом: так видно, какой именно не дошёл,
+// и большой документ не тянет за собой на дно остальные.
+async function attach(qid, files) {
+  const why = $("attach-why");
+  for (const f of files) {
+    if (f.size > MAX_ATTACH) {
+      if (why) why.textContent = T.attachTooBig(f.name, (f.size / 1048576).toFixed(1));
+      render();
+      return;
+    }
+    if (why) why.textContent = T.attaching(f.name);
+    try {
+      const u = "/upload?name=" + encodeURIComponent(f.name) + (qid ? "&q=" + encodeURIComponent(qid) : "");
+      const r = await fetch(u, { method: "POST", body: f });
+      const j = await r.json().catch(() => ({}));
+      if (!j.ok) throw new Error(j.error || r.status);
+      local.attached = (local.attached || 0) + 1;
+      save();
+    } catch (e) {
+      if (why) why.textContent = T.attachFailed(f.name, e.message || e);
+      render();
+      return;
+    }
+  }
+  if (why) why.textContent = T.attached(local.attached || 0);
+  render();
+}
+
+// Visualize is not staged either: the first click (and Regenerate) is a generate request, like Explore deeper.
+async function visualize() {
+  if (sendState(false).disabled || isVisualizing()) return;
+  const actions = [{ type: "visualize" }];
+  const j = await post(actions);
+  if (j) { local.pending.push({ seq: j.seq, at: new Date().toISOString(), actions }); local.view = "visualize"; commit(); }
+}
+// Explore deeper skips staging: one click, one event, so the table is on its way at once.
+async function explore(id) {
+  if (sendState(false).disabled || isExploring(id)) return;
+  const actions = [{ q: id, type: "explore" }];
+  const j = await post(actions);
+  if (j) { local.pending.push({ seq: j.seq, at: new Date().toISOString(), actions }); commit(); }
+}
+
+// ---- rendering ----
+function render() { stopActiveMic(); withInputs(() => { document.body.classList.toggle("visualize", activeView() === "visualize"); renderBanner(); renderHeader(); renderNav(); renderMain(); renderVisual(); renderAside(); renderFooter(); }); }
+function tick() { renderStatus(); renderFooter(); }
+function withInputs(fn) {
+  const act = document.activeElement; const keep = act && act.tagName === "TEXTAREA" ? { id: act.id, s: act.selectionStart, e: act.selectionEnd } : null;
+  fn();
+  if (keep) { const el = $(keep.id); if (el) { el.focus(); try { el.setSelectionRange(keep.s, keep.e); } catch {} } }
+}
+function renderBanner() {
+  const b = $("banner");
+  if (S && S.finished) { b.className = "show done"; b.textContent = T.finishedBanner(S.finished.doc || S.doc || "", S.finished.visual || "", S.finished.at ? timeOf(S.finished.at) : ""); }
+  else if (gone) { b.className = "show"; b.textContent = T.serverGoneBanner; }
+  else { b.className = ""; b.textContent = ""; }
+}
+function renderHeader() {
+  if (!S) return;
+  document.title = "grill · " + (S.topic || "");
+  $("topic").textContent = S.topic || "grill";
+  $("doc-path").textContent = S.doc || "";
+  const terms = Array.isArray(S.terms) ? S.terms : [];
+  $("terms-toggle").textContent = T.termsWithCount(terms.length);
+  $("terms").innerHTML = terms.length
+    ? terms.map((t) => `<div class="term"><b>${esc(t.term)}</b> — ${esc(t.def)}${t.avoid && t.avoid.length ? `<div class="avoid">${T.avoid}${t.avoid.map(esc).join(", ")}</div>` : ""}</div>`).join("")
+    : `<div class="term" style="color:var(--ink-3)">${T.noTermsYet}</div>`;
+  renderVisualizeButton();
+  renderStatus();
+}
+function renderVisualizeButton() {
+  const b = $("visualize"); const v = visual(); const lk = locked();
+  if (hasVisual()) { b.hidden = false; b.disabled = false; b.title = ""; b.textContent = activeView() === "visualize" ? T.visualizeBack : T.visualLabel(esc(v.version)); return; }
+  if (lk) { b.hidden = true; return; }
+  b.hidden = false;
+  if (isVisualizing()) { b.disabled = true; b.title = ""; b.innerHTML = `<span class="spin"></span>${T.visualizing}`; return; }
+  const gate = sendState(false); b.disabled = gate.disabled; b.textContent = T.visualize;
+  b.title = gate.disabled && gate.why ? gate.why : drawStuck() ? DRAW_STUCK_NOTE : T.visualizeHint;
+}
+// Полный визуал / режим общения. Состояние помнится между перезагрузками —
+// человек, раскрывший картину ради мелких деталей, не хочет раскрывать её заново
+// после каждого раунда. Хранилище может быть недоступно: тогда режим просто узкий.
+function isWide() { return document.body.classList.contains("visual-wide"); }
+function setWide(on) {
+  document.body.classList.toggle("visual-wide", !!on);
+  try { localStorage.setItem("grill.visualWide", on ? "1" : "0"); } catch (e) {}
+  renderVisual();
+}
+try { if (localStorage.getItem("grill.visualWide") === "1") document.body.classList.add("visual-wide"); } catch (e) {}
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && isWide() && activeView() === "visualize") { e.preventDefault(); setWide(false); }
+});
+
+function renderVisual() {
+  const v = visual(); const strip = $("visual-strip"); const frame = $("visual-frame");
+  const wait = $("visual-wait");
+  if (!v) { strip.innerHTML = ""; wait.hidden = true; frame.hidden = false; if (frame.dataset.v) { frame.removeAttribute("src"); delete frame.dataset.v; } return; }
+  if (!hasVisual()) { // first draw still running: no file to show yet, never request v0
+    if (frame.dataset.v) { frame.removeAttribute("src"); delete frame.dataset.v; }
+    frame.hidden = true; wait.hidden = false;
+    strip.innerHTML = `<span class="kind">${v.kind === "diagram" ? T.diagram : T.prototype}</span><span class="ver">${T.firstVersionOnWay}</span>`;
+    return;
+  }
+  wait.hidden = true; frame.hidden = false;
+  const src = `/visual?v=${encodeURIComponent(v.version)}`;
+  if (frame.dataset.v !== String(v.version)) { frame.dataset.v = String(v.version); frame.setAttribute("src", src); } // only a version bump reloads the iframe; a background redraw keeps the current one
+  const busy = isVisualizing(); const gate = sendState(false); const lk = locked(); const wide = isWide();
+  const regenTitle = gate.disabled ? (gate.why || T.agentBusyTitle) : drawStuck() ? DRAW_STUCK_NOTE : "";
+  strip.innerHTML = `<span class="kind">${v.kind === "diagram" ? T.diagram : T.prototype}</span>
+    <span class="ver"${v.note ? ` title="${esc(v.note)}"` : ""}><b>v${esc(v.version)}</b>${v.note ? " · " + esc(v.note) : ""}${v.at ? " · " + timeOf(v.at) : ""}</span>
+    ${v.stale ? `<span id="visual-stale" role="status">${T.outOfDate}</span>` : ""}
+    <span class="right">${wide ? `<a href="#" class="wide" id="wide-toggle" title="${esc(T.wideOffHint)}">${T.wideOff}</a>`
+                              : `<a href="#" class="wide" id="wide-toggle" title="${esc(T.wideOnHint)}">${T.wideOn}</a>`}
+    ${busy ? `<span class="spin"></span> ${T.regenerating}` : lk ? "" : `<a href="#" id="regen"${regenTitle ? ` title="${esc(regenTitle)}"` : ""}>${T.regenerate}</a>`}</span>`;
+  const r = $("regen"); if (r) r.onclick = (e) => { e.preventDefault(); visualize(); };
+  const w = $("wide-toggle"); if (w) w.onclick = (e) => { e.preventDefault(); setWide(!isWide()); };
+}
+function renderStatus() {
+  const dot = $("agent-dot"), txt = $("agent-status");
+  if (gone) { dot.className = "dot gone"; txt.textContent = T.serverGone; return; }
+  if (!S) return;
+  const a = S.agent || {};
+  if (S.finished) { dot.className = "dot"; txt.textContent = T.finished; document.querySelector("header").classList.remove("working"); return; }
+  const working = a.status === "working";
+  document.querySelector("header").classList.toggle("working", working);
+  if (working) { dot.className = "dot working"; txt.innerHTML = `<span class="spin"></span> ${T.agentWorking(fmtMs(Date.now() - Date.parse(a.since || 0)))}`; }
+  else { dot.className = "dot"; txt.textContent = T.agentWaiting(a.since ? timeOf(a.since) : "", a.handled ? String(a.handled) : ""); }
+}
+function renderNav() {
+  const nav = $("nav"); nav.innerHTML = "";
+  if (!S) return;
+  if (S.note) { const n = document.createElement("div"); n.className = "note"; n.textContent = S.note; nav.appendChild(n); }
+  const all = rounds();
+  if (!all.length) { nav.insertAdjacentHTML("beforeend", `<div class="empty">${T.waitingFirstRound}</div>`); return; }
+  const cur = curRound();
+  for (const [r, list] of all) {
+    const h = document.createElement("div"); h.className = "round" + (r === cur ? " current" : "");
+    h.innerHTML = `<span>${T.round(r)}${r === cur ? T.currentSuffix : ""}</span><span>${list.length}</span>`; nav.appendChild(h);
+    for (const q of list) {
+      const s = local.staged[q.id];
+      const el = document.createElement("div");
+      el.className = "item" + (q.id === selected ? " selected" : "") + (q.updated ? " updated" : "");
+      const statusLabel = q.status === "open" ? T.statusOpen : q.status === "deferred" ? T.deferred : q.status === "reopened" ? T.reopened : esc(q.status);
+      const mark = s ? `<span class="mark staged">${T.stagedSuffix}</span>`
+        : pendingActions(q.id).some((a) => a.type !== "explore") ? `<span class="mark pending"><span class="ok-mark">&#10003;</span>${T.sendingSuffix}</span>`
+        : `<span class="mark ${esc(q.status)}">${q.status === "answered" ? CHECK + (q.answer && q.answer.option ? esc(q.answer.option) : "") : statusLabel}</span>`;
+      el.innerHTML = `<span class="id" title="${esc(q.id)}">${esc(q.id).toUpperCase()}</span><span class="t">${esc(q.title)}</span>${mark}`;
+      el.onclick = () => { selected = q.id; render(); };
+      nav.appendChild(el);
+    }
+  }
+  const sel = nav.querySelector(".item.selected"); if (sel) sel.scrollIntoView({ block: "nearest" });
+}
+function renderMain() {
+  const main = $("main"); const q = byId(selected);
+  if (!q) { main.innerHTML = `<p class="empty">${S && qs().length ? T.pickQuestion : T.noQuestionsYet}</p>`; return; }
+  const s = local.staged[q.id] || {}; const lk = locked(); const d = local.drafts[q.id] || {};
+  const rec = q.rec || {};
+  const crumb = [`${esc(q.id).toUpperCase()} · ${T.crumbRound(esc(q.round))}`];
+  crumb.push(q.deps && q.deps.length ? `<span>${T.after(q.deps.map((x) => `<a href="#" data-go="${esc(x)}">${esc(x).toUpperCase()}</a>`).join(", "))}</span>` : `<span>${T.root}</span>`);
+  if (q.durable) crumb.push(`<span>${T.durable}</span>`);
+  if (q.updated) crumb.push(`<span class="upd">${T.recUpdated}</span>`);
+  if (q.status === "deferred") crumb.push(`<span>${T.deferred}</span>`);
+  if (q.status === "reopened") crumb.push(`<span>${T.reopened}</span>`);
+  const pend = pendingActions(q.id);
+  const pendAnswer = pend.filter((a) => a.type === "answer").pop() || null;
+  const opts = (q.options || []).map((o) => {
+    const isRec = rec.option === o.k, chosen = q.answer && q.answer.option === o.k, staged = s.answer && s.answer.option === o.k, pending = !staged && pendAnswer && pendAnswer.option === o.k;
+    return `<li class="opt${isRec ? " rec" : ""}${chosen ? " chosen" : ""}${staged ? " staged" : ""}${pending ? " pending" : ""}" data-opt="${esc(o.k)}"><span class="k">${esc(o.k)}</span><span>${isRec ? `<div class="tag">${T.recommended}</div>` : ""}${esc(o.text)}</span>${pending ? `<span class="check pending"><span class="ok-mark">&#10003;</span></span>` : `<span class="check">${CHECK}</span>`}</li>`;
+  }).join("") + (q.status === "answered" && q.answer && q.answer.kind === "text" && q.answer.text
+    ? `<li class="opt chosen text-answer"><span class="k"></span><span><div class="tag">${T.yourAnswer}</div>${esc(q.answer.text)}</span><span class="check">${CHECK}</span></li>` : "")
+    + (pendAnswer && pendAnswer.kind === "text" && pendAnswer.text
+    ? `<li class="opt pending text-answer"><span class="k"></span><span><div class="tag">${T.yourAnswerSending}</div>${esc(pendAnswer.text)}</span><span class="check pending"><span class="ok-mark">&#10003;</span></span></li>` : "");
+  const why = rec.option ? `<p class="why"><b>${T.whyOption(esc(rec.option))}</b> ${esc(rec.why)}</p>`
+    : rec.text ? `<p class="why"><b>${T.suggested}</b> ${esc(rec.text)}${rec.why ? " — " + esc(rec.why) : ""}</p>` : rec.why ? `<p class="why">${esc(rec.why)}</p>` : "";
+  let stagedLine = "";
+  if (s.defer) stagedLine = T.stagedDefer;
+  else if (s.reopen) stagedLine = T.stagedReopen;
+  else if (s.answer) stagedLine = s.answer.kind === "accept" ? T.stagedAccept(esc(s.answer.option)) : s.answer.option ? T.stagedOption(esc(s.answer.option)) : T.stagedText(esc(s.answer.text)) + (s.answer.text.split("\n\n").length > 1 ? T.stagedTextParts(s.answer.text.split("\n\n").length) : "");
+  if (stagedLine) stagedLine = `<div class="staged-line">${stagedLine}<a href="#" id="clear-staged">${T.clear}</a></div>`;
+  const pendBits = pend.filter((a) => a.type === "defer" || a.type === "reopen").map((a) => (a.type === "defer" ? T.bitDefer : T.bitReopen));
+  if (pendBits.length) stagedLine += `<div class="pending-line"><span class="ok-mark">&#10003;</span>${T.sentWaiting(pendBits.join(", "))}</div>`;
+  const controls = lk ? "" : `
+      <div class="answer-row">
+        <textarea id="free" placeholder="${q.status === "answered" ? T.placeholderChange : (q.options || []).length ? T.placeholderFreeText : T.placeholderYourAnswer}">${esc(d.free || "")}</textarea>
+        ${micButtonHtml("free-mic", "free-meter")}
+        <button id="stage-text" type="button">${T.stageText}</button>
+      </div>
+      <div class="attach-row">
+        <input id="attach-in" type="file" multiple hidden>
+        <button id="attach" type="button" title="${T.attachHint}">${T.attachFile}</button>
+        <span class="attach-formats">${T.attachFormats}</span>
+        <span id="attach-why" class="attach-why">${local.attached ? T.attached(local.attached) : ""}</span>
+      </div>
+      <div class="links">${isOpen(q) ? `<a href="#" id="defer">${T.deferThis}</a>` : `<a href="#" id="reopen">${T.reopenThis}</a>`}</div>`;
+  const exploring = isExploring(q.id);
+  const gate = sendState(false);
+  const exploreBtn = (q.options || []).length && !lk
+    ? `<button id="explore" type="button"${exploring || gate.disabled ? " disabled" : ""}${gate.disabled && gate.why ? ` title="${esc(gate.why)}"` : ""}>${exploring ? `<span class="spin"></span> ${T.exploring}` : q.explore ? T.exploreAgain : T.exploreDeeper}</button>` : "";
+  const picked = (q.status === "answered" && q.answer) || !!s.answer || !!pendAnswer;
+  main.innerHTML = `<article class="card${lk ? " locked" : ""}${picked ? " picked" : ""}">
+      <div class="crumb">${crumb.join("")}</div>
+      <div class="title-row"><h2>${esc(q.title)}</h2>${exploreBtn}</div>
+      <p class="body">${esc(q.body)}</p>
+      ${opts ? `<ul class="opts">${opts}</ul>` : ""}
+      ${why}${stagedLine}${controls}
+    </article>`;
+  main.querySelectorAll("[data-go]").forEach((a) => (a.onclick = (e) => { e.preventDefault(); if (byId(a.dataset.go)) { selected = a.dataset.go; render(); } }));
+  if (lk) return;
+  main.querySelectorAll(".opt:not(.text-answer)").forEach((o) => (o.onclick = () => stageAnswer(q.id, { kind: o.dataset.opt === rec.option ? "accept" : "option", option: o.dataset.opt })));
+  const ex = $("explore"); if (ex) ex.onclick = () => explore(q.id);
+  $("stage-text").onclick = () => { const t = $("free").value.trim(); if (t) { (local.drafts[q.id] = local.drafts[q.id] || {}).free = ""; stageAnswer(q.id, { kind: "text", text: t }); } };
+  const grow = (el) => { if (!el) return; el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, window.innerHeight * 0.45) + "px"; };
+  $("free").oninput = (e) => { (local.drafts[q.id] = local.drafts[q.id] || {}).free = e.target.value; grow(e.target); save(); };
+  grow($("free"));
+  wireMic("free-mic", "free", "free-meter", (val) => { (local.drafts[q.id] = local.drafts[q.id] || {}).free = val; grow($("free")); save(); });
+  const at = $("attach"); const ai = $("attach-in");
+  if (at && ai) { at.onclick = () => ai.click(); ai.onchange = () => { if (ai.files.length) attach(q.id, [...ai.files]); }; }
+  const cl = $("clear-staged"); if (cl) cl.onclick = (e) => { e.preventDefault(); clearStaged(q.id); };
+  const df = $("defer"); if (df) df.onclick = (e) => { e.preventDefault(); stageDefer(q.id); };
+  const ro = $("reopen"); if (ro) ro.onclick = (e) => { e.preventDefault(); stageReopen(q.id); };
+}
+function renderAside() {
+  const aside = $("aside");
+  if (activeView() === "visualize") return renderFeedback(aside);
+  const q = byId(selected);
+  if (!q) { aside.innerHTML = ""; return; }
+  const s = local.staged[q.id] || {}; const lk = locked(); const d = local.drafts[q.id] || {};
+  const thread = Array.isArray(q.thread) ? q.thread : [];
+  const msgs = thread.map((m) => `<div class="msg ${m.who === "agent" ? "agent" : "user"}"><div class="who">${T.who(m.who)}${m.at ? " · " + timeOf(m.at) : ""}</div><div class="text">${esc(m.text)}</div></div>`).join("")
+    + pendingActions(q.id).filter((a) => a.type === "thread").map((a) => `<div class="msg user pending"><div class="who"><span class="ok-mark">&#10003;</span>${T.who("user")} · ${T.sendingSuffix}</div><div class="text">${esc(a.text)}</div></div>`).join("")
+    + (s.thread || []).map((t, i) => `<div class="msg user staged"><div class="who">${T.who("user")} · ${T.stagedSuffix}</div><div class="text">${esc(t)}</div>${lk ? "" : `<a href="#" class="rm" data-rm="${i}" title="${T.remove}">×</a>`}</div>`).join("");
+  const rec = q.rec || {};
+  let explore = "";
+  if (q.explore && Array.isArray(q.explore.rows) && q.explore.rows.length) {
+    const li = (xs) => `<ul>${(Array.isArray(xs) ? xs : []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    explore = `<div class="explore-head">${T.prosAndCons(q.explore.at ? timeOf(q.explore.at) : "")}</div>
+      <table class="procon"><thead><tr><th></th><th>${T.pros}</th><th>${T.cons}</th></tr></thead><tbody>${q.explore.rows.map((r) =>
+        `<tr><td class="k${rec.option === r.option ? " rec" : ""}">${esc(r.option)}</td><td class="pro">${li(r.pros)}</td><td class="con">${li(r.cons)}</td></tr>`).join("")}</tbody></table>`;
+  }
+  if (isExploring(q.id)) explore += `<div class="explore-wait"><span class="spin"></span> ${T.exploringWait}</div>`;
+  aside.innerHTML = `
+    <div class="head"><h3>${T.discussion}</h3><div class="sub">${esc(q.id).toUpperCase()} · ${esc(q.title)}<span class="count">${T.message(thread.length)}</span></div></div>
+    <div class="msgs">${explore}${msgs || (explore ? "" : `<div class="empty-thread">${T.emptyThreadQuestion}</div>`)}</div>
+    ${lk ? "" : `<div class="compose"><textarea id="thread-in" placeholder="${T.threadPlaceholder(esc(q.id).toUpperCase())}">${esc(d.thread || "")}</textarea><div class="compose-actions">${micButtonHtml("thread-mic", "thread-meter")}<button id="stage-thread" type="button">${T.addToDiscussion}</button></div></div>`}`;
+  aside.querySelectorAll("[data-rm]").forEach((a) => (a.onclick = (e) => { e.preventDefault(); removeThread(q.id, Number(a.dataset.rm)); }));
+  if (lk) return;
+  $("stage-thread").onclick = () => { const t = $("thread-in").value.trim(); if (t) stageThread(q.id, t); };
+  $("thread-in").oninput = (e) => { (local.drafts[q.id] = local.drafts[q.id] || {}).thread = e.target.value; save(); };
+  wireMic("thread-mic", "thread-in", "thread-meter", (val) => { (local.drafts[q.id] = local.drafts[q.id] || {}).thread = val; save(); });
+}
+function renderFeedback(aside) {
+  const v = visual(); const lk = locked(); const d = local.drafts.__visual || {};
+  const thread = Array.isArray(v.thread) ? v.thread : [];
+  const msgs = thread.map((m) => `<div class="msg ${m.who === "agent" ? "agent" : "user"}"><div class="who">${T.who(m.who)}${m.at ? " · " + timeOf(m.at) : ""}</div><div class="text">${esc(m.text)}</div></div>`).join("")
+    + pendingOfType("visual-feedback").map((a) => `<div class="msg user pending"><div class="who"><span class="ok-mark">&#10003;</span>${T.who("user")} · ${T.sendingSuffix}</div><div class="text">${esc(a.text)}</div></div>`).join("")
+    + local.vfeedback.map((t, i) => `<div class="msg user staged"><div class="who">${T.who("user")} · ${T.stagedSuffix}</div><div class="text">${esc(t)}</div>${lk ? "" : `<a href="#" class="rm" data-rmf="${i}" title="${T.remove}">×</a>`}</div>`).join("");
+  aside.innerHTML = `
+    <div class="head"><h3>${T.visualFeedback}</h3><div class="sub">${v.kind === "diagram" ? T.diagram : T.prototype} · v${esc(v.version)}<span class="count">${T.message(thread.length)}</span></div></div>
+    <div class="msgs">${msgs || `<div class="empty-thread">${T.emptyThreadVisual}</div>`}</div>
+    ${lk ? "" : `<div class="compose"><textarea id="feedback-in" placeholder="${T.feedbackPlaceholder}">${esc(d.thread || "")}</textarea><div class="compose-actions">${micButtonHtml("feedback-mic", "feedback-meter")}<button id="stage-feedback" type="button">${T.addFeedback}</button></div></div>`}`;
+  aside.querySelectorAll("[data-rmf]").forEach((a) => (a.onclick = (e) => { e.preventDefault(); removeFeedback(Number(a.dataset.rmf)); }));
+  if (lk) return;
+  $("stage-feedback").onclick = () => { const t = $("feedback-in").value.trim(); if (t) stageFeedback(t); };
+  $("feedback-in").oninput = (e) => { (local.drafts.__visual = local.drafts.__visual || {}).thread = e.target.value; save(); };
+  wireMic("feedback-mic", "feedback-in", "feedback-meter", (val) => { (local.drafts.__visual = local.drafts.__visual || {}).thread = val; save(); });
+}
+function renderFooter() {
+  const n = stagedCount(); const list = $("staged-list");
+  const parts = Object.entries(local.staged).map(([id, s]) => {
+    const bits = [];
+    if (s.reopen) bits.push(T.bitReopen); if (s.defer) bits.push(T.bitDefer);
+    if (s.answer) bits.push(s.answer.option ? T.optionArrow(s.answer.option) : T.optionArrowText);
+    if (s.thread && s.thread.length) bits.push(T.msgCountShort(s.thread.length));
+    return `${esc(id).toUpperCase()} ${bits.join(" ")}`;
+  });
+  if (local.vfeedback.length) parts.push(T.visualMsgCountShort(local.vfeedback.length));
+  const lp = lastPending();
+  const sent = lp ? `<span class="sent"><span class="ok-mark">&#10003;</span>${T.sentSeqWaiting(lp.seq)}</span>` : "";
+  list.innerHTML = locked() ? T.finishedFooter : n ? `<b>${n} ${ruPlural(n, ["в очереди", "в очереди", "в очереди"])}</b> · ${parts.join(" · ")}${sent ? " · " + sent : ""}` : sent || T.nothingStaged;
+  const fa = $("finish-area");
+  if (locked()) fa.innerHTML = "";
+  else if (isFinishing()) {
+    const fp = finishPending();
+    const ms = fp ? Date.now() - Date.parse(fp.at || 0) : 0;
+    // Кружок значит «идёт прямо сейчас», а идёт оно не у нас. Отправка состоялась — галочка.
+    fa.innerHTML = ms > FINISH_STALE_MS
+      ? `<span class="confirm">${T.finishStale(fp.seq, fmtMs(ms))}</span>`
+      : `<span class="sent"><span class="ok-mark">&#10003;</span>${T.finishSent}</span>`;
+  }
+  else if (confirmFinish) fa.innerHTML = `<span class="confirm">${T.finishConfirm} <button id="finish-yes" type="button">${T.finish}</button><button id="finish-no" type="button">${T.cancel}</button></span>`;
+  else {
+    const a = (S && S.agent) || {}; const gate = sendState(false);
+    const ready = allSettled() && a.status !== "working" && !lp && !gone;
+    fa.innerHTML = `<button id="finish" type="button" class="${ready ? "ready" : ""}"${gate.disabled ? " disabled" : ""}${ready ? ` title="${T.finishReadyTitle}"` : gate.disabled && gate.why ? ` title="${esc(gate.why)}"` : ""}>${T.finishGrill}</button>`;
+  }
+  const f = $("finish"); if (f && !f.disabled) f.onclick = () => { confirmFinish = true; render(); };
+  const fy = $("finish-yes"); if (fy) fy.onclick = finishNow;
+  const fn = $("finish-no"); if (fn) fn.onclick = () => { confirmFinish = false; render(); };
+  renderSend();
+}
+function renderSend() {
+  const { disabled, why } = sendState(); const n = stagedCount(); const b = $("send");
+  b.disabled = disabled; b.textContent = n ? T.sendNToAgent(n) : T.sendToAgent;
+  $("send-why").textContent = why;
+}
+
+$("send").onclick = send;
+$("visualize").onclick = () => { if (hasVisual()) { local.view = activeView() === "visualize" ? "questions" : "visualize"; commit(); } else visualize(); };
+$("terms-toggle").onclick = () => $("terms").classList.toggle("show");
+document.addEventListener("click", (e) => { if (!e.target.closest("#terms") && !e.target.closest("#terms-toggle")) $("terms").classList.remove("show"); });
+document.addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") send(); });
+poll();
+</script>
+</body>
+</html>

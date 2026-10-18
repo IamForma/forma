@@ -1,0 +1,115 @@
+<svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Форма как канбан-доска: Spec — входящий лог, Kit — определение, Run — процесс, Intent — готово, Core снизу как предел, связывающий все четыре">
+  <defs>
+    <marker id="kb-ah-forward" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#eaf2fb"/>
+    </marker>
+    <marker id="kb-ah-core" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a9d0f5"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="560" fill="#0f2a4a"/>
+
+  <!-- forward flow between columns: Spec -> Kit -> Run -> Intent -->
+  <line x1="211" y1="175" x2="256" y2="175" stroke="#eaf2fb" stroke-width="2" marker-end="url(#kb-ah-forward)"/>
+  <text x="233.5" y="169" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#eaf2fb">снаряжение</text>
+
+  <line x1="427" y1="175" x2="472" y2="175" stroke="#eaf2fb" stroke-width="2" marker-end="url(#kb-ah-forward)"/>
+  <text x="449.5" y="169" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#eaf2fb">исполнение</text>
+
+  <line x1="643" y1="175" x2="688" y2="175" stroke="#eaf2fb" stroke-width="2" marker-end="url(#kb-ah-forward)"/>
+  <text x="665.5" y="169" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#eaf2fb">сверка</text>
+
+  <!-- Spec column: 40..211 -->
+  <rect x="40" y="40" width="171" height="120" fill="#0f2a4a" stroke="#6f9bd1"/>
+  <rect x="40" y="40" width="5" height="120" fill="#a8ecff"/>
+  <text x="125.5" y="68" text-anchor="middle" font-family="Consolas, monospace" font-weight="700" font-size="17" fill="#eaf2fb">SPEC</text>
+  <text x="125.5" y="90" text-anchor="middle" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13" fill="#eaf2fb">Входящий лог</text>
+  <text x="125.5" y="108" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" fill="#9db8d6">Спецификация</text>
+  <text x="125.5" y="124" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#6f8fb3">backlog</text>
+
+  <rect x="55" y="200" width="141" height="44" rx="4" fill="#153a63" stroke="#a8ecff" stroke-width="1"/>
+  <line x1="67" y1="216" x2="184" y2="216" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="67" y1="230" x2="127" y2="230" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <rect x="55" y="258" width="141" height="44" rx="4" fill="#153a63" stroke="#a8ecff" stroke-width="1"/>
+  <line x1="67" y1="274" x2="184" y2="274" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="67" y1="288" x2="127" y2="288" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <rect x="55" y="316" width="141" height="44" rx="4" fill="#153a63" stroke="#a8ecff" stroke-width="1"/>
+  <line x1="67" y1="332" x2="184" y2="332" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="67" y1="346" x2="127" y2="346" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Kit column: 256..427 -->
+  <rect x="256" y="40" width="171" height="120" fill="#0f2a4a" stroke="#6f9bd1"/>
+  <rect x="256" y="40" width="5" height="120" fill="#a3c1ff"/>
+  <text x="341.5" y="68" text-anchor="middle" font-family="Consolas, monospace" font-weight="700" font-size="17" fill="#eaf2fb">KIT</text>
+  <text x="341.5" y="90" text-anchor="middle" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13" fill="#eaf2fb">Определение</text>
+  <text x="341.5" y="108" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" fill="#9db8d6">Снаряжение</text>
+  <text x="341.5" y="124" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#6f8fb3">to-do</text>
+
+  <rect x="271" y="200" width="141" height="44" rx="4" fill="#153a63" stroke="#a3c1ff" stroke-width="1"/>
+  <line x1="283" y1="216" x2="400" y2="216" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="283" y1="230" x2="343" y2="230" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <rect x="271" y="258" width="141" height="44" rx="4" fill="#153a63" stroke="#a3c1ff" stroke-width="1"/>
+  <line x1="283" y1="274" x2="400" y2="274" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="283" y1="288" x2="343" y2="288" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <rect x="271" y="316" width="141" height="44" rx="4" fill="#153a63" stroke="#a3c1ff" stroke-width="1"/>
+  <line x1="283" y1="332" x2="400" y2="332" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="283" y1="346" x2="343" y2="346" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Run column: 472..643 -->
+  <rect x="472" y="40" width="171" height="120" fill="#0f2a4a" stroke="#6f9bd1"/>
+  <rect x="472" y="40" width="5" height="120" fill="#7be0a8"/>
+  <text x="557.5" y="68" text-anchor="middle" font-family="Consolas, monospace" font-weight="700" font-size="17" fill="#eaf2fb">RUN</text>
+  <text x="557.5" y="90" text-anchor="middle" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13" fill="#eaf2fb">Процесс</text>
+  <text x="557.5" y="108" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" fill="#9db8d6">Исполнение</text>
+  <text x="557.5" y="124" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#6f8fb3">in-progress</text>
+
+  <rect x="487" y="200" width="141" height="44" rx="4" fill="#153a63" stroke="#7be0a8" stroke-width="1"/>
+  <line x1="499" y1="216" x2="616" y2="216" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="499" y1="230" x2="559" y2="230" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <rect x="487" y="258" width="141" height="44" rx="4" fill="#153a63" stroke="#7be0a8" stroke-width="1"/>
+  <line x1="499" y1="274" x2="616" y2="274" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="499" y1="288" x2="559" y2="288" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <rect x="487" y="316" width="141" height="44" rx="4" fill="#153a63" stroke="#7be0a8" stroke-width="1"/>
+  <line x1="499" y1="332" x2="616" y2="332" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="499" y1="346" x2="559" y2="346" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Intent column: 688..859 -->
+  <rect x="688" y="40" width="171" height="120" fill="#0f2a4a" stroke="#6f9bd1"/>
+  <rect x="688" y="40" width="5" height="120" fill="#b98cff"/>
+  <text x="773.5" y="68" text-anchor="middle" font-family="Consolas, monospace" font-weight="700" font-size="17" fill="#eaf2fb">INTENT</text>
+  <text x="773.5" y="90" text-anchor="middle" font-family="Segoe UI, sans-serif" font-weight="700" font-size="13" fill="#eaf2fb">Готово</text>
+  <text x="773.5" y="108" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" fill="#9db8d6">Замысел</text>
+  <text x="773.5" y="124" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#6f8fb3">done</text>
+
+  <rect x="703" y="200" width="141" height="44" rx="4" fill="#153a63" stroke="#b98cff" stroke-width="1"/>
+  <line x1="715" y1="216" x2="832" y2="216" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="715" y1="230" x2="775" y2="230" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <rect x="703" y="258" width="141" height="44" rx="4" fill="#153a63" stroke="#b98cff" stroke-width="1"/>
+  <line x1="715" y1="274" x2="832" y2="274" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="715" y1="288" x2="775" y2="288" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <rect x="703" y="316" width="141" height="44" rx="4" fill="#153a63" stroke="#b98cff" stroke-width="1"/>
+  <line x1="715" y1="332" x2="832" y2="332" stroke="#5f7fa3" stroke-width="3" stroke-linecap="round"/>
+  <line x1="715" y1="346" x2="775" y2="346" stroke="#3f5b80" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Core ties: reaches up into all four columns from below -->
+  <line x1="125.5" y1="430" x2="125.5" y2="362" stroke="#a9d0f5" stroke-width="1.8" stroke-dasharray="2 4" marker-end="url(#kb-ah-core)"/>
+  <line x1="341.5" y1="430" x2="341.5" y2="362" stroke="#a9d0f5" stroke-width="1.8" stroke-dasharray="2 4" marker-end="url(#kb-ah-core)"/>
+  <line x1="557.5" y1="430" x2="557.5" y2="362" stroke="#a9d0f5" stroke-width="1.8" stroke-dasharray="2 4" marker-end="url(#kb-ah-core)"/>
+  <line x1="773.5" y1="430" x2="773.5" y2="362" stroke="#a9d0f5" stroke-width="1.8" stroke-dasharray="2 4" marker-end="url(#kb-ah-core)"/>
+
+  <!-- Core: not a column — the floor under all four -->
+  <rect x="40" y="430" width="819" height="55" fill="#0f2a4a" stroke="#ff6b57" stroke-width="1.6"/>
+  <text x="449.5" y="453" text-anchor="middle" font-family="Consolas, monospace" font-weight="700" font-size="16" fill="#ff6b57">CORE</text>
+  <text x="449.5" y="472" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#9db8d6">предел — держит и определяет успех всех четырёх, а не одной карточки</text>
+
+  <text x="449.5" y="520" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="12" fill="#9db8d6">слева направо — путь карточки по доске · пунктир снизу — Core связывает и ограничивает все четыре узла</text>
+</svg>
