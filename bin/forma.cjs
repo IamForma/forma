@@ -13,6 +13,7 @@ const { walk, projectFile } = require('../skills/forma/core/dashboard/lib/fs.cjs
 const i18n = require('../skills/forma/core/i18n/index.cjs')
 const { parseLong } = require('../skills/forma/core/dashboard/lib/cli.cjs')
 const verifyInstall = require('../skills/forma/core/verify/verify-install.cjs')
+const extensions = require('../skills/forma/core/extensions/extensions.cjs')
 const adoptExisting = require('../scripts/layout/adopt-existing.cjs')
 const { findBash } = require('../skills/forma/adapters/claude/verify-profile.cjs')
 
@@ -32,7 +33,7 @@ const ENGINES = [
 
 // ---------- arguments ----------
 function parseArgs(argv) {
-  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version', 'dashboard', 'no-dashboard', 'adopt', 'no-adopt'])
+  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version', 'dashboard', 'no-dashboard', 'adopt', 'no-adopt', 'check'])
   const o = { cmd: 'init', dir: process.cwd(), ...opts }
   if (rest[0]) o.cmd = rest[0]
   o.dir = path.resolve(o.dir)
@@ -61,6 +62,10 @@ const HELP = `forma ${VERSION} init — install/update the Forma protocol in the
   npx github:IamForma/forma uninstall [--dir <path>] [--yes]
                                      remove the protocol from the project (engine folders, .forma, AGENTS.md, .env.example,
                                      installer lines in .gitignore). Dry run unless --yes. project/, .devtool/, .env, .mcp.json stay
+
+  npx github:IamForma/forma extensions [--check] [--dir <path>]
+                                     copy project/extensions/<engine>/ into the engine folders (project wins on a name clash);
+                                     --check only reports missing, stale and hand-edited copies
 
 All four flags set (or --yes, or no terminal) — the menu is not shown.
 `
@@ -172,6 +177,7 @@ function installCore(root, protectedPaths) {
   copyTree(path.join(CORE, 'board'), path.join(forma, 'board'))
   copyTree(path.join(CORE, 'verify'), path.join(forma, 'verify'))
   copyTree(path.join(CORE, 'i18n'), path.join(forma, 'i18n'))
+  copyTree(path.join(CORE, 'extensions'), path.join(forma, 'extensions'), { skip: (d) => path.basename(d) === 'PROJECT-README.md' })
   copyTree(path.join(CORE, 'skills'), path.join(forma, 'skills'), { skip })
   // dashboard: code is overwritten, the human's settings are not
   copyTree(path.join(CORE, 'dashboard'), path.join(forma, 'dashboard'), {
@@ -189,6 +195,9 @@ function installCore(root, protectedPaths) {
     copyTree(path.join(CORE, 'project'), projectDir)
     projectState = 'scaffold created'
   }
+  // project/extensions/ — the project's own roles, skills, scripts; never overwritten, survives uninstall
+  const extReadme = path.join(root, extensions.ROOT_DIR, 'README.md')
+  if (!fs.existsSync(extReadme)) copyFile(path.join(CORE, 'extensions', 'PROJECT-README.md'), extReadme)
   ensureLine(path.join(root, '.gitignore'), '.forma/dashboard/.cache/', 'Forma: dashboard runtime')
   ensureLine(path.join(root, '.gitignore'), 'project/cards/*/assets/', 'Forma: card assets stay out of git')
   ensureLine(path.join(root, '.gitignore'), 'project/cards/*/work/', 'Forma: card work files stay out of git')
@@ -200,7 +209,7 @@ const CLAUDE_HOOKS = {
   PreToolUse: [{ hooks: ['guard-delete.sh', 'tool-usage.sh'] }],
   UserPromptSubmit: [{ hooks: ['unlock-delete.sh'] }],
   SessionStart: [{ matcher: 'startup', hooks: ['check-ready.sh', ['check-plugin-update.sh', 15], 'check-dashboard.sh', 'intent-start.sh'] }],
-  PostToolUse: [{ matcher: 'Write|Edit', hooks: ['check-card.sh'] }],
+  PostToolUse: [{ matcher: 'Write|Edit', hooks: ['check-card.sh', 'sync-extensions.sh'] }],
 }
 // Auto-compact window. Forma proposes COMPACT_DEFAULT and asks first; the human's own value always wins:
 // found in the environment, ~/.claude/settings.json or .claude/settings.local.json, Forma writes nothing. A project
@@ -498,6 +507,14 @@ function installGemini(root) {
 const NO_BASH = process.platform === 'win32'
   ? 'no working bash found: Claude Code hooks (delete guard, card check, session start) will not run. Install Git for Windows (https://git-scm.com/download/win) and rerun'
   : 'no working bash found: Claude Code hooks (delete guard, card check, session start) will not run. Install bash and rerun'
+// project/extensions/ -> engine folders; the project wins on a name clash, a hand-edited copy is kept
+function syncExtensions(root, report) {
+  extensions.forgetOwned(root, new Set([...owned].map((p) => path.resolve(p))))
+  const r = extensions.sync(root)
+  if (!r.written.length && !r.drift.length && !r.removed.length) return
+  report.push(`extensions: ${r.written.length} copied from project/extensions/` + (r.drift.length ? `; ! ${r.drift.length} edited by hand, kept: ${r.drift.join(', ')}` : ''))
+  for (const k of r.overrides) report.push(`  override: ${k} (project replaces the engine default)`)
+}
 function installEngines(root, choice, protectedPaths, report) {
   for (const e of choice.engines) {
     if (e === 'claude') {
@@ -506,12 +523,14 @@ function installEngines(root, choice, protectedPaths, report) {
       report.push('  ' + compactLine)
       if (warn) report.push('  ! ' + warn)
       if (!findBash()) report.push('  ! ' + NO_BASH)
+      syncExtensions(root, report) // before Codex: sync-codex builds its roles from .claude/
     } else if (e === 'codex') {
       report.push(...installCodex(root, protectedPaths))
     } else if (e === 'gemini') {
       report.push(...installGemini(root))
     }
   }
+  syncExtensions(root, report)
 }
 
 function installTemplateStep({ root, template, existingTemplate }, core, report) {
@@ -643,6 +662,7 @@ async function main() {
   const o = parseArgs(process.argv.slice(2))
   if (o.help || o.cmd === 'help') { process.stdout.write(HELP); return }
   if (o.version || o.cmd === 'version') { console.log(VERSION); return }
+  if (o.cmd === 'extensions') { process.exitCode = extensions.main([o.check ? 'check' : 'sync', '--dir', o.dir]); return }
   if (o.cmd === 'uninstall') { process.exitCode = require('../scripts/uninstall.cjs').run({ dir: o.dir, yes: !!o.yes }); return }
   if (o.cmd !== 'init') { console.error(`Unknown command: ${o.cmd}\n\n${HELP}`); process.exit(2) }
   const root = o.dir

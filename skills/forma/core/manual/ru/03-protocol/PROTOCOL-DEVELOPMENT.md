@@ -38,6 +38,8 @@
 
 `node .forma/protocol/bin/forma.cjs uninstall [--dir <путь>] [--yes]` (или `npx github:IamForma/forma uninstall`). По умолчанию dry-run: печатает, что уйдёт и что останется. `--yes` пишет.
 
+Файлы в `.claude/`, которых нет в релизе, — собственная работа проекта. Dry-run перечисляет их, `--yes` переносит их в `project/extensions/<движок>/` до удаления движка, а следующая установка копирует их обратно. Где лежат собственные роли, скиллы и скрипты проекта и как они попадают в каталоги движков — `project/extensions/README.md`; `node .forma/extensions/extensions.cjs [sync|check]`.
+
 - **Удаляется:** `.claude`, `.codex`, `.agents`, `.forma`, `AGENTS.md`, `.env.example`, строки установщика в `.gitignore`, gitlink `.forma/protocol` в индексе.
 - **Остаётся:** `project/`, `.devtool/`, `.env`, `.mcp.json`, `.playwright-cli/`, код продукта.
 - **Из сессии:** `Intent` показывает dry-run и запускает `--yes` только после сообщения человека с фразой «Отключи сенсорику» (она один раз снимает страж удаления).

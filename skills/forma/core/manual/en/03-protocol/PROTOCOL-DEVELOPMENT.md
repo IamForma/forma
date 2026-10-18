@@ -38,6 +38,8 @@ Run the work as a card of the "3. Project protocol" epic: the transfer, the trac
 
 `node .forma/protocol/bin/forma.cjs uninstall [--dir <path>] [--yes]` (or `npx github:IamForma/forma uninstall`). Dry run by default: prints what goes and what stays. `--yes` writes.
 
+Files in `.claude/` that are not part of the release are the project's own work. The dry run lists them; `--yes` moves them to `project/extensions/<engine>/` before removing the engine, and the next install copies them back. Where the project's own roles, skills and scripts live, and how they reach the engine folders — `project/extensions/README.md`; `node .forma/extensions/extensions.cjs [sync|check]`.
+
 - **Removed:** `.claude`, `.codex`, `.agents`, `.forma`, `AGENTS.md`, `.env.example`, the installer's lines in `.gitignore`, the `.forma/protocol` gitlink in the index.
 - **Stays:** `project/`, `.devtool/`, `.env`, `.mcp.json`, `.playwright-cli/`, the product's code.
 - **From a session:** `Intent` shows the dry run and applies `--yes` only after the human's message with the code phrase «Отключи сенсорику» (it lifts the delete-guard once).

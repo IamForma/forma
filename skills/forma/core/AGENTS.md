@@ -252,6 +252,7 @@ Kind matters at check time: a tooling task is checked against its own criterion 
 | --- | --- | --- | --- |
 | 1. Node roles and skills | the engine adapter directories (`.claude/`, `.agents/`, `.codex/`) | the method itself — portable, carries no fact of a specific product | yes, by `engine-to-protocol.cjs` |
 | 2. Shared across engines | `.forma/` (protocol clone, manual, dashboard) | the law and its machinery, identical for every project | this layer **is** the protocol source |
+| 3a. Project extensions | `project/extensions/<engine>/` (`claude` → `.claude/`, `codex` → `.codex/`, `agents` → `.agents/`) | what the project builds on top of the protocol — its own roles, skills, scripts, hooks. Written here, never into the engine folders, which hold generated copies; survives `uninstall` and reinstall; a file here replaces an engine file of the same name | only by a deliberate promotion, by `engine-to-protocol.cjs` |
 | 3. Product | `project/`, `.forma/living/`, `.devtool/` | this product's data and settings — a site snapshot, credentials by reference, design tokens, goals, cards, board, project history | never |
 
 Prohibition 16 names the clean zones this keeps clean; the release check (`check-release.cjs --traces`) catches only pattern-matched traces (card codes, dates, domains, emails, hashes) in layers 1–2 or in the protocol source — not every product fact.
