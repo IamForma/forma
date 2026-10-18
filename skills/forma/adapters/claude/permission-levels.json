@@ -1,5 +1,5 @@
 {
-  "aliases": { "minimal": "малый", "standard": "средний", "full": "полный" },
+  "aliases": { "minimal": "малый", "standard": "средний", "site": "сайт", "full": "полный" },
   "levels": {
     "малый": {
       "about": "читает и запускает узлы; любая правка файла и любой Bash вне списка — с вопросом",
@@ -21,6 +21,15 @@
         "Bash(node .claude/scripts/*)", "Bash(node .forma/*)",
         "Bash(ls *)", "Bash(grep *)", "Bash(cat *)", "Bash(head *)", "Bash(tail *)", "Bash(wc *)", "Bash(find *)", "Bash(sed -n *)",
         "mcp__site", "mcp__chrome-devtools"
+      ]
+    },
+    "сайт": {
+      "about": "средний + работа с живым сайтом без вопросов: загрузка файлов и запросы к сайту (curl, Invoke-WebRequest), сборка (node, npx, npm, python -I); git push, удаления и произвольный прочий Bash — с вопросом. Серверы MCP самого сайта проект добавляет в свой settings.local.json",
+      "defaultMode": "acceptEdits",
+      "extends": "средний",
+      "allow": [
+        "Bash(curl *)", "PowerShell(curl.exe *)", "PowerShell(Invoke-WebRequest *)",
+        "Bash(node *)", "Bash(npx *)", "Bash(npm *)", "Bash(python -I *)"
       ]
     },
     "полный": {
