@@ -15,7 +15,7 @@
 
 <p align="center"><b><a href="https://iamforma.pro/#intro">iamforma.pro</a></b> · <a href="https://yaforma.pro/">Russian: yaforma.pro</a> · <a href="https://github.com/IamForma/forma">IamForma/forma</a></p>
 
-[![Forma: natural workflow — from intent to concrete result through five nodes](assets/hero-how-it-works.png)](https://iamforma.pro/#intro)
+[![Forma: natural workflow — from intent to concrete result through five nodes](assets/hero-how-it-works.webp)](https://iamforma.pro/#intro)
 
 ## What it is
 
@@ -33,7 +33,7 @@ The protocol already incorporates well-known methodologies: Scrum, 4-D System, G
 
 Mandatory requirement: work in **VS Code** or **Antigravity** with the **[Kanban Markdown](https://marketplace.visualstudio.com/items?itemName=LachyFS.kanban-markdown)** (LachyFS) extension. This is the core functionality of the system: the extension renders a board from card-files `.devtool/features/*.md`, nodes move across it, and the user sees the progress of work through it. Without the board, the protocol does not work.
 
-![Kanban Markdown board in VS Code: side panel with task counts by column, columns Backlog, To Do, In Progress, Review, Done; cards showing epic, goal and route labels, and executor node](assets/kanban-board-top.png)
+![Kanban Markdown board in VS Code: side panel with task counts by column, columns Backlog, To Do, In Progress, Review, Done; cards showing epic, goal and route labels, and executor node](assets/kanban-board-top.webp)
 
 | You need | Why |
 |---|---|
@@ -66,7 +66,7 @@ Forma is built differently: it lets you dig deep and grow tall. Rigidity, flexib
 
 In Forma there is an interview. It is the first of three steps: it turns "there's an idea" into a clear goal. It asks questions until the idea becomes clear; your answers are recorded in `project/brief` as an anchor point. Next, `Spec` breaks the goal into cards with a readiness criterion, and the result is checked against the criterion, accepted by a human, and `Core` evaluates the cycle. Didn't reach it — the cycle repeats on what remains.
 
-![Interview tab of the Forma dashboard](assets/dashboard/dashboard-interview.png)
+![Interview tab of the Forma dashboard](assets/dashboard/dashboard-interview.webp)
 
 ## How it works
 
@@ -94,7 +94,7 @@ Forma was born from inspiration by the natural course of nature: the way nature 
 
 Forma doesn't invent the order — it takes the one nature itself is built on. Every undertaking passes through the seasons, and each season has its own work: spring directs, summer gives what is desired, autumn defines the environment, winter acts and prepares the next cycle. Above all this is Earth, which holds the whole cycle.
 
-![Five nodes as the natural order: Spec — spring and growth, Intent — summer, sun and bloom, Kit — autumn, grain and tools, Run — winter and ice crystals; in the center Core — Earth, to which all four are connected](assets/nature-cycle.png)
+![Five nodes as the natural order: Spec — spring and growth, Intent — summer, sun and bloom, Kit — autumn, grain and tools, Run — winter and ice crystals; in the center Core — Earth, to which all four are connected](assets/nature-cycle.webp)
 
 | Season | Node | What it does |
 |---|---|---|
@@ -225,27 +225,27 @@ Besides the board in the editor, Forma has its own dashboard — a local project
 
 **Dashboard** — progress by epic, critical path, card table.
 
-![Dashboard tab of the Forma dashboard](assets/dashboard/dashboard-dashboard.png)
+![Dashboard tab of the Forma dashboard](assets/dashboard/dashboard-dashboard.webp)
 
 **Kanban** — project board with filters by goal, epic, and node.
 
-![Kanban tab of the Forma dashboard](assets/dashboard/dashboard-kanban.png)
+![Kanban tab of the Forma dashboard](assets/dashboard/dashboard-kanban.webp)
 
 **Interview** — the person's answers before the first goal — anchor point `project/brief`.
 
-![Interview tab of the Forma dashboard](assets/dashboard/dashboard-interview.png)
+![Interview tab of the Forma dashboard](assets/dashboard/dashboard-interview.webp)
 
 **Forma** — card for each node: model, skills, connectors, load.
 
-![Forma tab of the Forma dashboard](assets/dashboard/dashboard-form.png)
+![Forma tab of the Forma dashboard](assets/dashboard/dashboard-form.webp)
 
 **Economy** — token and cache consumption by nodes and cards.
 
-![Economy tab of the Forma dashboard](assets/dashboard/dashboard-economy.png)
+![Economy tab of the Forma dashboard](assets/dashboard/dashboard-economy.webp)
 
 **Settings** — thresholds, routes, external services.
 
-![Settings tab of the Forma dashboard](assets/dashboard/dashboard-settings.png)
+![Settings tab of the Forma dashboard](assets/dashboard/dashboard-settings.webp)
 
 ## Working phrases
 

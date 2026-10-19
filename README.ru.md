@@ -15,7 +15,7 @@
 
 <p align="center"><b><a href="https://yaforma.pro/">yaforma.pro</a></b> · <a href="https://iamforma.pro/#intro">English: iamforma.pro</a> · <a href="https://github.com/IamForma/forma">IamForma/forma</a></p>
 
-[![Форма: естественный ход дела — от замысла до конкретного результата через пять узлов](assets/hero-how-it-works.ru.png)](https://yaforma.pro/)
+[![Форма: естественный ход дела — от замысла до конкретного результата через пять узлов](assets/hero-how-it-works.ru.webp)](https://yaforma.pro/)
 
 ## Что это
 
@@ -33,7 +33,7 @@
 
 Обязательное условие: работать в **VS Code** или **Antigravity** с расширением **[Kanban Markdown](https://marketplace.visualstudio.com/items?itemName=LachyFS.kanban-markdown)** (LachyFS). Это основной функционал системы: расширение рисует доску из карточек-файлов `.devtool/features/*.md`, по ней двигаются узлы и по ней человек видит ход работы. Без доски протокол не работает.
 
-![Доска Kanban Markdown в VS Code: боковая панель с числом задач по колонкам, колонки Backlog, To Do, In Progress, Review, Done; карточки с эпиком, метками цели и маршрута и исполнителем-узлом](assets/kanban-board-top.png)
+![Доска Kanban Markdown в VS Code: боковая панель с числом задач по колонкам, колонки Backlog, To Do, In Progress, Review, Done; карточки с эпиком, метками цели и маршрута и исполнителем-узлом](assets/kanban-board-top.webp)
 
 | Нужно | Зачем |
 |---|---|
@@ -66,7 +66,7 @@ npx github:IamForma/forma init
 
 В «Форме» есть интервью. Это первый из трёх шагов: оно превращает «есть идея» в понятную цель. Задаёт вопросы, пока идея не станет ясной; ваши ответы фиксируются в `project/brief` как опорная точка. Дальше `Spec` разбивает цель на карточки с критерием готовности, а результат проверяется по критерию, его принимает человек, а `Core` оценивает круг. Не дошли — круг повторяется на остатке.
 
-![Вкладка «Интервью» дашборда Формы](assets/dashboard/dashboard-interview.ru.png)
+![Вкладка «Интервью» дашборда Формы](assets/dashboard/dashboard-interview.ru.webp)
 
 ## Как это работает
 
@@ -94,7 +94,7 @@ npx github:IamForma/forma init
 
 «Форма» не выдумывает порядок — она берёт тот, по которому устроена сама природа. Любое дело проходит времена года, и у каждого времени своя работа: весна направляет, лето даёт желаемое, осень определяет окружение, зима действует и готовит следующий цикл. Над всем этим — Земля, которая держит круг целиком.
 
-![Пять узлов как природный порядок: Spec — весна и рост, Intent — лето, солнце и цветение, Kit — осень, колос и орудия, Run — зима и кристаллы льда; в центре Core — Земля, с которой связаны все четыре](assets/nature-cycle.png)
+![Пять узлов как природный порядок: Spec — весна и рост, Intent — лето, солнце и цветение, Kit — осень, колос и орудия, Run — зима и кристаллы льда; в центре Core — Земля, с которой связаны все четыре](assets/nature-cycle.webp)
 
 | Время года | Узел | Что делает |
 |---|---|---|
@@ -225,27 +225,27 @@ NNN · дело | страница с формой связи | форма от�
 
 **Дашборд** — прогресс по эпикам, критический путь, таблица карточек.
 
-![Вкладка «Дашборд» дашборда Формы](assets/dashboard/dashboard-dashboard.ru.png)
+![Вкладка «Дашборд» дашборда Формы](assets/dashboard/dashboard-dashboard.ru.webp)
 
 **Канбан** — доска проекта с фильтрами по цели, эпику и узлу.
 
-![Вкладка «Канбан» дашборда Формы](assets/dashboard/dashboard-kanban.ru.png)
+![Вкладка «Канбан» дашборда Формы](assets/dashboard/dashboard-kanban.ru.webp)
 
 **Интервью** — ответы человека до первой цели — опорная точка `project/brief`.
 
-![Вкладка «Интервью» дашборда Формы](assets/dashboard/dashboard-interview.ru.png)
+![Вкладка «Интервью» дашборда Формы](assets/dashboard/dashboard-interview.ru.webp)
 
 **Форма** — карточка каждого узла: модель, скиллы, коннекторы, нагрузка.
 
-![Вкладка «Форма» дашборда Формы](assets/dashboard/dashboard-form.ru.png)
+![Вкладка «Форма» дашборда Формы](assets/dashboard/dashboard-form.ru.webp)
 
 **Экономика** — расход токенов и кэша по узлам и карточкам.
 
-![Вкладка «Экономика» дашборда Формы](assets/dashboard/dashboard-economy.ru.png)
+![Вкладка «Экономика» дашборда Формы](assets/dashboard/dashboard-economy.ru.webp)
 
 **Настройки** — пороги, маршруты, внешние сервисы.
 
-![Вкладка «Настройки» дашборда Формы](assets/dashboard/dashboard-settings.ru.png)
+![Вкладка «Настройки» дашборда Формы](assets/dashboard/dashboard-settings.ru.webp)
 
 ## Фразы для работы
 
