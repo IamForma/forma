@@ -3,6 +3,10 @@
 // project/extensions/<engine>/ and survive `forma uninstall`. This module copies them into the engine
 // folders (the engines read only their own folders) and reports drift.
 //   project/extensions/claude/ -> .claude/    project/extensions/codex/ -> .codex/    project/extensions/agents/ -> .agents/
+// Layers, later wins on the same relative path:
+//   project/extensions/<engine>/           (unsorted, the oldest layout)
+//   project/extensions/template/<engine>/  (what the project takes from a shared project template)
+//   project/extensions/custom/<engine>/    (what belongs to this project alone; overrides template)
 // CLI: node extensions.cjs [sync|check] [--dir <path>]
 
 const fs = require('node:fs')
@@ -10,6 +14,7 @@ const path = require('node:path')
 const crypto = require('node:crypto')
 
 const ROOT_DIR = path.join('project', 'extensions')
+const LAYERS = ['', 'template', 'custom'] // '' = project/extensions/<engine>/ directly
 const ENGINE_DIRS = { claude: '.claude', codex: '.codex', agents: '.agents' }
 const STATE = path.join('.forma', 'extensions-state.json')
 const BLOCK_START = '# Forma: extension copies (generated from project/extensions/)'
@@ -29,14 +34,16 @@ function walk(dir, base = dir, out = []) {
   return out
 }
 
-/** Source files of the extensions: [{ engine, rel, src, dst }] — `dst` is relative to the project root. */
+/** Source files of the extensions: [{ engine, rel, layer, src, dst }] — `dst` is relative to the project root; on a clash the later layer wins. */
 function sources(root) {
-  const out = []
+  const byDst = new Map()
   for (const [engine, dirName] of Object.entries(ENGINE_DIRS)) {
-    const base = path.join(root, ROOT_DIR, engine)
-    for (const rel of walk(base)) out.push({ engine, rel, src: path.join(base, rel), dst: path.join(dirName, rel) })
+    for (const layer of LAYERS) {
+      const base = path.join(root, ROOT_DIR, ...(layer ? [layer] : []), engine)
+      for (const rel of walk(base)) byDst.set(posix(path.join(dirName, rel)), { engine, rel, layer, src: path.join(base, rel), dst: path.join(dirName, rel) })
+    }
   }
-  return out
+  return [...byDst.values()]
 }
 
 function readState(root) {
@@ -100,7 +107,7 @@ function sync(root, { dry = false } = {}) {
     const rec = state[key]
     const exists = fs.existsSync(full)
     const curHash = exists ? sha(full) : null
-    if (exists && rec && curHash !== rec.copy) { // the copy was edited by hand
+    if (exists && rec && curHash !== rec.copy && curHash !== srcHash) { // the copy was edited by hand
       res.drift.push(key)
       next[key] = rec
       continue
@@ -144,7 +151,7 @@ function check(root) {
     if (!fs.existsSync(full)) { problems.push(`missing copy: ${key}`); continue }
     const cur = sha(full)
     const rec = state[key]
-    if (rec && cur !== rec.copy) problems.push(`copy edited by hand: ${key} (move the edit into project/extensions/, then sync)`)
+    if (rec && cur !== rec.copy && cur !== sha(src)) problems.push(`copy edited by hand: ${key} (move the edit into project/extensions/, then sync)`)
     else if (cur !== sha(src)) problems.push(`stale copy: ${key}`)
   }
   return { problems }
@@ -212,6 +219,6 @@ function main(argv) {
   return r.drift.length ? 1 : 0
 }
 
-module.exports = { forgetOwned, ROOT_DIR, ENGINE_DIRS, STATE, sources, sync, check, foreign, moveForeign, stripIgnoreBlock, main }
+module.exports = { forgetOwned, ROOT_DIR, LAYERS, ENGINE_DIRS, STATE, sources, sync, check, foreign, moveForeign, stripIgnoreBlock, main }
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2))

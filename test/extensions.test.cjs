@@ -83,3 +83,17 @@ test('удалён источник — удалена и нетронутая �
   assert.match(r.stdout, /removed: \.claude\/agents\/run\/run-seo\.md/)
   assert.ok(!fs.existsSync(p('.claude', 'agents', 'run', 'run-seo.md')))
 })
+
+test('template/ копируется, затем custom/ перекрывает; check без дрейфа', () => {
+  for (const layer of ['template', 'custom']) fs.mkdirSync(p('project', 'extensions', layer, 'claude', 'agents', 'run'), { recursive: true })
+  const run = (layer, name, text) => fs.writeFileSync(p('project', 'extensions', layer, 'claude', 'agents', 'run', name), text)
+  run('template', 'run-a.md', '# template a\n')
+  run('template', 'run-b.md', '# template b\n')
+  run('custom', 'run-b.md', '# custom b\n')
+  const r = ext('sync')
+  assert.equal(r.status, 0, r.stdout + r.stderr)
+  assert.equal(read('.claude', 'agents', 'run', 'run-a.md'), '# template a\n')
+  assert.equal(read('.claude', 'agents', 'run', 'run-b.md'), '# custom b\n')
+  const c = ext('check')
+  assert.equal(c.status, 0, c.stdout)
+})

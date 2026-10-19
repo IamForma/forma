@@ -78,7 +78,12 @@ if (fs.existsSync(excFile)) {
 // не переносятся ни по --apply, ни по --add, ни попаданием в MAP (lib/forbidden-transfer.cjs).
 const OWN_LAYER = readOwnLayer(root);
 const forbidden = (rel) => isForbiddenTransfer(rel, OWN_LAYER);
-const skipped = (rel) => forbidden(rel) || SKIP.some((r) => r.test(rel));
+// Копии из project/extensions/ (папки template/ и custom/ и нераскладанная <движок>/) — файлы проекта,
+// а не движка: ни «новое», ни «изменён движок» (extensions.cjs sources). Источник правды — project/extensions/.
+const EXT_DST = new Set();
+try { for (const x of require('../skills/forma/core/extensions/extensions.cjs').sources(root)) EXT_DST.add(x.dst.split(path.sep).join('/')); } catch { /* нет модуля — копий нет */ }
+const isExtCopy = (rel) => EXT_DST.has(rel) || [...EXT_DST].some((d) => d.startsWith(rel + '/'));
+const skipped = (rel) => forbidden(rel) || isExtCopy(rel) || SKIP.some((r) => r.test(rel));
 const MASKED = '\u0000masked\u0000';
 const norm = (s) => s.replace(/\r\n/g, '\n');
 const mask = (rel, s) => { if (s == null) return null; const rs = MASK[rel]; s = norm(s);
@@ -246,6 +251,19 @@ if (mark) {
   fs.writeFileSync(baseFile, head + '\n');
   console.log('\nБаза записана: ' + head);
   process.exit(0);
+}
+
+// Новый файл в папке движка, который не лежит ни в project/extensions/template/, ни в custom/, не в шаблоне протокола
+// и не назван в --add, — неразложенный: стоп с вопросом, молча не переносится и не остаётся.
+const ENGINE_PREFIX = ['.claude/', '.agents/', '.codex/'];
+const unsorted = R.fresh.filter((x) => ENGINE_PREFIX.some((e) => x.rel.startsWith(e)) && !adds.includes(x.rel));
+if (unsorted.length) {
+  console.error('\nСТОП: неразложенные новые файлы в папках движка — куда они?');
+  for (const x of unsorted) console.error('  ' + x.rel);
+  console.error('Вопрос: template (общее для проектов этого шаблона) или custom (только этого проекта)?');
+  console.error('Ответ: перенести в project/extensions/template/<движок>/ или project/extensions/custom/<движок>/ (тот же путь внутри) и запустить extensions.cjs sync;');
+  console.error('в протокол — только явно: --add <путь>.');
+  process.exit(3);
 }
 
 const forbiddenAdds = adds.filter(forbidden);
