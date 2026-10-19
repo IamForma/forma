@@ -43,6 +43,22 @@ if (fs.existsSync(registrySource)) {
   fs.mkdirSync(path.dirname(registryTarget), { recursive: true });
   fs.copyFileSync(registrySource, registryTarget);
 }
+// A source worktree may have project-only Run profiles.  Without their
+// registry they are not part of a portable fixture, so leave only profiles
+// that already have a Codex counterpart.
+const fixtureRunProfiles = path.join(fixture, '.claude', 'agents', 'run');
+const fixtureRegistry = path.join(fixture, 'project', 'config', 'PROJECT.md');
+const fixtureProjectProfiles = fs.existsSync(fixtureRegistry)
+  ? /(?:\*\*|^#{1,6}\s*)(?:Профили Run проекта|Project Run profiles)[\s\S]*?(?=^#{1,6}\s|\n\*\*|(?![\s\S]))/m.exec(fs.readFileSync(fixtureRegistry, 'utf8'))?.[0] || ''
+  : '';
+if (!fixtureProjectProfiles) {
+  for (const rel of files(fixtureRunProfiles).filter(file => file.endsWith('.md'))) {
+    const name = rel.slice(0, -3);
+    const role = path.join(fixture, '.codex', 'roles', 'run', rel);
+    const agent = path.join(fixture, '.codex', 'agents', name + '.toml');
+    if (!fs.existsSync(role) && !fs.existsSync(agent)) fs.rmSync(path.join(fixtureRunProfiles, rel));
+  }
+}
 if (hasPackaged) copyTree(templateSource, path.join(fixturePlugin, templateRel));
 const command = path.join(fixture, '.codex', 'scripts', 'sync-codex.cjs');
 const claudeTemplate = hasPackaged ? path.join(pluginSource, modern ? 'adapters/claude' : 'template') : null;
@@ -88,7 +104,10 @@ try {
   const nativeAgent = path.join(fixture, '.codex/agents/run-portable-fixture.toml');
   const nativeBody = '---\nname: run-portable-fixture\norigin: codex\n---\n\n## Takes / does not take\n\nLocal fixture transformation only.\n\n## Boundary\n\nNo live writes.\n';
   fs.mkdirSync(path.dirname(registry), { recursive: true });
-  fs.writeFileSync(registry, '**Project Run profiles**\n\n| `run-portable-fixture` | fixture product role |\n');
+  const fixtureProfile = '| `run-portable-fixture` | fixture product role |\n';
+  fs.writeFileSync(registry, registryBefore === null
+    ? `**Project Run profiles**\n\n${fixtureProfile}`
+    : `${registryBefore}${registryBefore.endsWith('\n') ? '' : '\n'}${fixtureProfile}`);
   fs.writeFileSync(nativeRole, nativeBody);
   fs.writeFileSync(nativeAgent, 'name = "run-portable-fixture"\nmodel = "gpt-5.6-luna"\nmodel_reasoning_effort = "low"\n');
   check(true, 'native counterpart of product profile');

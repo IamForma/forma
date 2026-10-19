@@ -25,7 +25,7 @@ A card whose result is **several** images or assets in one consistent style or p
 
 **Series or package, several assets, one style.** One asset or a light edit — that's `run-image`, not this role.
 
-Follow the chosen skill's chain step by step (model pick → cost check → confirm → generate → download), per `magnific-generate` (one-off batch, no reusable node link) or `magnific-spaces` (result must stay as a reusable prompt→generator link in a Magnific space). The count of assets is the number `Spec` set, never one stand-in for all of them. The result in "Result" is working file paths, not a description of what was asked for.
+Follow the chosen skill's chain step by step (model pick → cost check → confirm → generate → download), per `magnific-generate` (one-off batch, no reusable node link) or `magnific-spaces` (result must stay as a reusable prompt→generator link in a Magnific space). The count of assets is the number `Spec` set, never one stand-in for all of them. Download every file to `project/cards/card-NNN/assets/<subfolder>/` of the card, never outside `assets/`. The result in "Result" is working file paths, not a description of what was asked for.
 
 ## Tooling note
 

@@ -24,4 +24,4 @@ A card whose result is **one** image or asset — a draft, a reference, a demo a
 
 **One asset, one light edit.** Several assets or a packaged/consistent-style series — that's `run-image-series` (Magnific), not this role; don't stretch this one into a loop.
 
-Write the prompt yourself, from what the subject describes, before the call — never one generic template for every subject at once. Cheap tier for a draft or demo; a stronger model only when the cheap one falls short. The result in "Result" is a working file path, not a description of what was asked for.
+Write the prompt yourself, from what the subject describes, before the call — never one generic template for every subject at once. Cheap tier for a draft or demo; a stronger model only when the cheap one falls short. Save the file to `project/cards/card-NNN/assets/` of the card, never outside `assets/`. The result in "Result" is a working file path, not a description of what was asked for.

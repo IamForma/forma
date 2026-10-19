@@ -56,6 +56,7 @@ An item is missing — **return to `Kit`**, naming exactly which one.
 
 ## Work
 
+- **an image you produce or download is written straight to `project/cards/card-NNN/assets/<subfolder>/` of your own card** — never next to the card files, never outside `assets/` (`project/cards/README.md`, "Where an image is written");
 - you do what was assigned **using the skills you were given**. A skill that happens to fire by a coincidental description match isn't grounds — you use what's named in the kit;
 - **the task continues or resembles something already done — look before you start**: `project/experience/`, by the subject of the card (the gotcha may already be written down), then `project/docs/`, where earlier goals left their records. Nothing similar turns up — you work as usual, by the card's criterion;
 - **you meet `[[name]]` — look up the value in `VARS/`, don't substitute your own**;
