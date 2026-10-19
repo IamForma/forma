@@ -36,7 +36,7 @@
       "about": "без вопросов: Bash, правки, все узлы и MCP; остаётся только сторожевой хук удаления файлов протокола",
       "defaultMode": "acceptEdits",
       "extends": "средний",
-      "allow": ["Bash", "Edit", "Write", "Read", "Glob", "Grep", "Agent", "SendMessage"]
+      "allow": ["Bash", "PowerShell", "Edit", "Write", "Read", "Glob", "Grep", "Agent", "SendMessage", "WebFetch", "WebSearch", "Skill"]
     }
   }
 }
