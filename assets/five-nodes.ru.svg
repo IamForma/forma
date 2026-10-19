@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 652" width="900" height="652" role="img" aria-labelledby="t d" lang="ru">
+<title id="t">Пять узлов</title>
+<desc id="d">Пять узлов: Intent через Spec нарезает работу, Kit собирает снаряжение, Run исполняет, Intent проверяет; человек принимает, Core выносит вердикт по кругу. Plumb — мера между нарезкой и исполнением, не узел.</desc>
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#f2f6fb;font-size:11px;text-anchor:middle}
+.b{font-family:Consolas,Menlo,monospace;font-weight:700;font-size:17px}
+.m{fill:#b9cce5}.y{fill:#ffc266}.k{fill:#ff8a76}.c{fill:#93c8f7}.l{text-anchor:start}.e{text-anchor:end}
+.nd{fill:#1d3b68;stroke:#8fb2dc;stroke-width:1.5}
+.ac{fill:#93c8f7}
+.fw{fill:none;stroke:#f2f6fb;stroke-width:2}
+.rt{fill:none;stroke:#ffc266;stroke-width:2;stroke-dasharray:6 5}
+.cr{fill:none;stroke:#ff8a76;stroke-width:2;stroke-dasharray:6 5}
+</style>
+<defs>
+<marker id="af" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f2f6fb"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffc266"/></marker>
+<marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff8a76"/></marker>
+</defs>
+<rect width="900" height="652" rx="10" fill="#13294b"/>
+
+<polyline class="cr" points="350,215 244,192" marker-end="url(#ak)"/>
+<polyline class="cr" points="550,215 656,192" marker-end="url(#ak)"/>
+<polyline class="cr" points="350,325 244,448" marker-end="url(#ak)"/>
+<polyline class="cr" points="550,325 656,448" marker-end="url(#ak)"/>
+
+<polyline class="fw" points="140,450 140,192" marker-end="url(#af)"/>
+<text class="e" x="132" y="325">нарезка</text>
+<polyline class="fw" points="240,130 375,130"/>
+<polyline class="fw" points="525,130 658,130" marker-end="url(#af)"/>
+<text x="592" y="120">снаряжение</text>
+<polyline class="fw" points="760,192 760,448" marker-end="url(#af)"/>
+<text class="l" x="768" y="325">исполнение</text>
+<polyline class="fw" points="658,510 242,510" marker-end="url(#af)"/>
+<text x="450" y="502">проверка</text>
+
+<polyline class="rt" points="190,192 190,448" marker-end="url(#ar)"/>
+<text class="l y" x="198" y="255">образ непригоден</text>
+<polyline class="rt" points="700,448 700,192" marker-end="url(#ar)"/>
+<text class="e y" x="692" y="255">нет поля формы</text>
+<polyline class="rt" points="140,572 140,598 890,598 890,130 862,130" marker-end="url(#ar)"/>
+<text class="y" x="515" y="590">проверка не пройдена: в Kit</text>
+
+<rect x="375" y="108" width="150" height="44" rx="22" fill="#1d3b68" stroke="#93c8f7" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text class="b" x="450" y="128" style="font-size:14px">Plumb</text>
+<text class="m" x="450" y="144" style="font-size:10.5px">чтение подбора роли</text>
+<text class="c" x="450" y="172">мера, не узел</text>
+
+<rect class="nd" x="40" y="70" width="200" height="122" rx="8"/><rect class="ac" x="40" y="70" width="6" height="122" rx="3"/>
+<text class="b" x="140" y="98">Spec</text><text class="m" x="140" y="118">нарезает цель</text>
+<text x="140" y="142">судит: просто</text><text x="140" y="158">решает: полно</text><text class="m" x="140" y="176">ломается в: упущение</text>
+<rect class="nd" x="660" y="70" width="200" height="122" rx="8"/><rect class="ac" x="660" y="70" width="6" height="122" rx="3"/>
+<text class="b" x="760" y="98">Kit</text><text class="m" x="760" y="118">собирает снаряжение</text>
+<text x="760" y="142">судит: естественно</text><text x="760" y="158">решает: законно</text><text class="m" x="760" y="176">ломается в: искажение</text>
+<rect class="nd" x="40" y="450" width="200" height="122" rx="8"/><rect class="ac" x="40" y="450" width="6" height="122" rx="3"/>
+<text class="b" x="140" y="478">Intent</text><text class="m" x="140" y="498">говорит с человеком</text>
+<text x="140" y="522">судит: красиво</text><text x="140" y="538">решает: справедливо</text><text class="m" x="140" y="556">ломается в: обобщение</text>
+<rect class="nd" x="660" y="450" width="200" height="122" rx="8"/><rect class="ac" x="660" y="450" width="6" height="122" rx="3"/>
+<text class="b" x="760" y="478">Run</text><text class="m" x="760" y="498">исполняет карточку</text>
+<text x="760" y="522">судит: честно</text><text x="760" y="538">решает: человечно</text><text class="m" x="760" y="556">ломается в: подмену</text>
+<rect x="350" y="215" width="200" height="110" rx="8" fill="#1d3b68" stroke="#ff8a76" stroke-width="2"/>
+<text class="b k" x="450" y="243">Core</text><text class="m" x="450" y="262">судит круг</text>
+<text x="450" y="284">судит: индивидуально</text><text x="450" y="300">решает: верный путь</text><text class="m" x="450" y="316" style="font-size:10px">ломается в: карта не территория</text>
+<text class="k" x="450" y="205" style="font-size:10.5px">не достигнуто: названный узел</text>
+
+<circle cx="450" cy="380" r="8" fill="#f2f6fb"/>
+<path d="M450 388 V412 M436 396 H464 M450 412 L440 428 M450 412 L460 428" stroke="#f2f6fb" stroke-width="3" fill="none" stroke-linecap="round"/>
+<text x="450" y="446" style="font-size:12px">человек</text>
+<polyline class="fw" points="244,480 412,418" marker-end="url(#af)"/>
+<text x="305" y="440">приёмка</text>
+<polyline class="fw" points="450,364 450,328" marker-end="url(#af)"/>
+<text class="l" x="458" y="352">вердикт</text>
+
+<line x1="150" y1="632" x2="190" y2="632" stroke="#f2f6fb" stroke-width="2"/><text class="l m" x="196" y="636">основной ход</text>
+<line x1="350" y1="632" x2="390" y2="632" stroke="#ffc266" stroke-width="2" stroke-dasharray="6 5"/><text class="l m" x="396" y="636">возврат</text>
+<line x1="600" y1="632" x2="640" y2="632" stroke="#ff8a76" stroke-width="2" stroke-dasharray="6 5"/><text class="l m" x="646" y="636">возврат по вердикту Core</text>
+</svg>

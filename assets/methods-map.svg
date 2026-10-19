@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" role="img" aria-labelledby="t d" lang="en">
+<title id="t">One frame, all the methods</title>
+<desc id="d">Summary map: for each of the five nodes, the Kanban column, the season, the 4-D System role, the GTD step and the Karpathy principle that correspond to it. The Osterwalder canvas maps to the nine kinds of goal, Scrum to the number of nodes.</desc>
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#f2f6fb;font-size:12px;text-anchor:middle}
+.b{font-family:Consolas,Menlo,monospace;font-weight:700;font-size:17px}
+.h{font-weight:700;font-size:13px}
+.m{fill:#b9cce5}.y{fill:#ffc266}.k{fill:#ff8a76}.c{fill:#93c8f7}.g{fill:#7be0a8}.l{text-anchor:start}.e{text-anchor:end}
+.nd{fill:#1d3b68;stroke:#8fb2dc;stroke-width:1.5}
+.col{fill:#183258;stroke:#33527f;stroke-width:1}
+.fw{fill:none;stroke:#f2f6fb;stroke-width:2}
+.rt{fill:none;stroke:#ffc266;stroke-width:2;stroke-dasharray:6 5}
+.cr{fill:none;stroke:#ff8a76;stroke-width:2;stroke-dasharray:6 5}
+</style>
+<defs>
+<marker id="af" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f2f6fb"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffc266"/></marker>
+<marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff8a76"/></marker>
+</defs>
+<rect width="1000" height="420" rx="10" fill="#13294b"/>
+<text class="h c l" x="28" y="44">Node</text>
+<text class="h c l" x="138" y="44">Kanban column</text>
+<text class="h c l" x="268" y="44">Nature</text>
+<text class="h c l" x="448" y="44">4-D System</text>
+<text class="h c l" x="608" y="44">GTD</text>
+<text class="h c l" x="798" y="44">Karpathy rule</text>
+<line x1="20" y1="56" x2="980" y2="56" stroke="#33527f" stroke-width="1.5"/>
+<rect class="col" x="20" y="70" width="960" height="46" rx="6"/>
+<text class="b l" x="28" y="99">Spec</text>
+<text class="l" x="138" y="98" style="font-size:12.5px">Backlog</text>
+<text class="l" x="268" y="98" style="font-size:12.5px">spring: directs</text>
+<text class="l" x="448" y="98" style="font-size:12.5px">directing</text>
+<text class="l" x="608" y="98" style="font-size:12.5px">organize</text>
+<text class="l" x="798" y="98" style="font-size:12.5px">keep it simple</text>
+<rect class="col" x="20" y="126" width="960" height="46" rx="6"/>
+<text class="b l" x="28" y="155">Kit</text>
+<text class="l" x="138" y="154" style="font-size:12.5px">To Do</text>
+<text class="l" x="268" y="154" style="font-size:12.5px">autumn: environment</text>
+<text class="l" x="448" y="154" style="font-size:12.5px">including</text>
+<text class="l" x="608" y="154" style="font-size:12.5px">prepare the space</text>
+<text class="l" x="798" y="154" style="font-size:12.5px">think before executing</text>
+<rect class="col" x="20" y="182" width="960" height="46" rx="6"/>
+<text class="b l" x="28" y="211">Run</text>
+<text class="l" x="138" y="210" style="font-size:12.5px">In Progress</text>
+<text class="l" x="268" y="210" style="font-size:12.5px">winter: action</text>
+<text class="l" x="448" y="210" style="font-size:12.5px">cultivating</text>
+<text class="l" x="608" y="210" style="font-size:12.5px">engage</text>
+<text class="l" x="798" y="210" style="font-size:12.5px">only what is needed</text>
+<rect class="col" x="20" y="238" width="960" height="46" rx="6"/>
+<text class="b l" x="28" y="267">Intent</text>
+<text class="l" x="138" y="266" style="font-size:12.5px">Review</text>
+<text class="l" x="268" y="266" style="font-size:12.5px">summer: the desired</text>
+<text class="l" x="448" y="266" style="font-size:12.5px">visioning</text>
+<text class="l" x="608" y="266" style="font-size:12.5px">clarify; accept</text>
+<text class="l" x="798" y="266" style="font-size:12.5px">real goals</text>
+<rect class="col" x="20" y="294" width="960" height="46" rx="6" style="stroke:#ff8a76"/>
+<text class="b k l" x="28" y="323">Core</text>
+<text class="l" x="138" y="322" style="font-size:12.5px">Done</text>
+<text class="l" x="268" y="322" style="font-size:12.5px">Earth: holds the cycle</text>
+<text class="l" x="448" y="322" style="font-size:12.5px">neutral center</text>
+<text class="l" x="608" y="322" style="font-size:12.5px">weigh and balance</text>
+<text class="l" x="798" y="322" style="font-size:12.5px">not named in the rule</text>
+<text class="l y" x="28" y="374" style="font-size:12.5px">Osterwalder canvas: 9 blocks ↔ 9 kinds of goal (epics) — a separate row, not a node.</text>
+<text class="l y" x="28" y="396" style="font-size:12.5px">Scrum: a team of 5 ± 2 ↔ exactly five nodes.</text>
+</svg>

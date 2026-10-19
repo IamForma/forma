@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" role="img" aria-labelledby="t d" lang="ru">
+<title id="t">Один каркас — все методики</title>
+<desc id="d">Сводная карта: для каждого из пяти узлов показано, какая колонка Kanban-доски, какое время года, какая роль 4-D System, какой шаг GTD и какой принцип Карпаты ему соответствуют. Канва Остервальдера соответствует девяти видам цели, Scrum — числу узлов.</desc>
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#f2f6fb;font-size:12px;text-anchor:middle}
+.b{font-family:Consolas,Menlo,monospace;font-weight:700;font-size:17px}
+.h{font-weight:700;font-size:13px}
+.m{fill:#b9cce5}.y{fill:#ffc266}.k{fill:#ff8a76}.c{fill:#93c8f7}.g{fill:#7be0a8}.l{text-anchor:start}.e{text-anchor:end}
+.nd{fill:#1d3b68;stroke:#8fb2dc;stroke-width:1.5}
+.col{fill:#183258;stroke:#33527f;stroke-width:1}
+.fw{fill:none;stroke:#f2f6fb;stroke-width:2}
+.rt{fill:none;stroke:#ffc266;stroke-width:2;stroke-dasharray:6 5}
+.cr{fill:none;stroke:#ff8a76;stroke-width:2;stroke-dasharray:6 5}
+</style>
+<defs>
+<marker id="af" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f2f6fb"/></marker>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffc266"/></marker>
+<marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff8a76"/></marker>
+</defs>
+<rect width="1000" height="420" rx="10" fill="#13294b"/>
+<text class="h c l" x="28" y="44">Узел</text>
+<text class="h c l" x="138" y="44">Колонка Kanban</text>
+<text class="h c l" x="268" y="44">Природа</text>
+<text class="h c l" x="448" y="44">4-D System</text>
+<text class="h c l" x="608" y="44">GTD</text>
+<text class="h c l" x="798" y="44">Правило Карпаты</text>
+<line x1="20" y1="56" x2="980" y2="56" stroke="#33527f" stroke-width="1.5"/>
+<rect class="col" x="20" y="70" width="960" height="46" rx="6"/>
+<text class="b l" x="28" y="99">Spec</text>
+<text class="l" x="138" y="98" style="font-size:12.5px">Backlog</text>
+<text class="l" x="268" y="98" style="font-size:12.5px">весна: направляет</text>
+<text class="l" x="448" y="98" style="font-size:12.5px">направляющий</text>
+<text class="l" x="608" y="98" style="font-size:12.5px">разбить</text>
+<text class="l" x="798" y="98" style="font-size:12.5px">не усложняй</text>
+<rect class="col" x="20" y="126" width="960" height="46" rx="6"/>
+<text class="b l" x="28" y="155">Kit</text>
+<text class="l" x="138" y="154" style="font-size:12.5px">To Do</text>
+<text class="l" x="268" y="154" style="font-size:12.5px">осень: окружение</text>
+<text class="l" x="448" y="154" style="font-size:12.5px">включающий</text>
+<text class="l" x="608" y="154" style="font-size:12.5px">подготовить пространство</text>
+<text class="l" x="798" y="154" style="font-size:12.5px">думай перед выполнением</text>
+<rect class="col" x="20" y="182" width="960" height="46" rx="6"/>
+<text class="b l" x="28" y="211">Run</text>
+<text class="l" x="138" y="210" style="font-size:12.5px">In Progress</text>
+<text class="l" x="268" y="210" style="font-size:12.5px">зима: действие</text>
+<text class="l" x="448" y="210" style="font-size:12.5px">культивирующий</text>
+<text class="l" x="608" y="210" style="font-size:12.5px">выполнить</text>
+<text class="l" x="798" y="210" style="font-size:12.5px">только необходимое</text>
+<rect class="col" x="20" y="238" width="960" height="46" rx="6"/>
+<text class="b l" x="28" y="267">Intent</text>
+<text class="l" x="138" y="266" style="font-size:12.5px">Review</text>
+<text class="l" x="268" y="266" style="font-size:12.5px">лето: желаемое</text>
+<text class="l" x="448" y="266" style="font-size:12.5px">визионер</text>
+<text class="l" x="608" y="266" style="font-size:12.5px">определить; принять</text>
+<text class="l" x="798" y="266" style="font-size:12.5px">реальные цели</text>
+<rect class="col" x="20" y="294" width="960" height="46" rx="6" style="stroke:#ff8a76"/>
+<text class="b k l" x="28" y="323">Core</text>
+<text class="l" x="138" y="322" style="font-size:12.5px">Done</text>
+<text class="l" x="268" y="322" style="font-size:12.5px">Земля: держит круг</text>
+<text class="l" x="448" y="322" style="font-size:12.5px">нейтральный центр</text>
+<text class="l" x="608" y="322" style="font-size:12.5px">взвесить и сбалансировать</text>
+<text class="l" x="798" y="322" style="font-size:12.5px">не назван в правиле</text>
+<text class="l y" x="28" y="374" style="font-size:12.5px">Канва Остервальдера: 9 блоков ↔ 9 видов цели (эпиков) — отдельный ряд, не узел.</text>
+<text class="l y" x="28" y="396" style="font-size:12.5px">Scrum: команда 5 ± 2 ↔ ровно пять узлов.</text>
+</svg>
