@@ -63,7 +63,7 @@ On this deployment, all five nodes run on one tier (`sonnet`) — the regulator 
 | Execution | `Run` | sonnet | medium | what `Kit` issued | every task |
 | Center | `Core` | sonnet | extra high | `GOAL.md`, `JOURNAL.md`, numbers | upon a breached threshold |
 
-`Core` (`core.md`, "Efficiency over time") diagnoses over-kitting — a criterion consistently passing on the first attempt at low effort — by lowering effort, not the tier: raising/lowering the tier only makes sense where more than one model is actually in use on the project.
+`Core` (`core.md`, "Balance over time") diagnoses over-kitting — a criterion consistently passing on the first attempt at low effort — by lowering effort, not the tier: raising/lowering the tier only makes sense where more than one model is actually in use on the project.
 
 **Two poles across this table:** `Intent`+`Spec` hold the form of the task (image, criterion, slicing), `Kit`+`Run` — the content (kit, action); `Core` is outside both. Why, and what happens at the moment of their joining — `PROTOCOL.md`, "The two poles and intention".
 

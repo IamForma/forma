@@ -20,7 +20,7 @@ The organizing principle is by node: a pair of sections for each of the four "wo
 | 6 | `Kit` | Documentation (tooling) | the whole project structure (what each file/directory is, its essence) + a log: which tool/access/skill appeared and which gap it closed | this file → section "6. Kit — Documentation (tooling)" below |
 | 7 | `Run` | Work and role | executing exactly what was assigned with the skills issued, no improvisation | `run.md` |
 | 8 | `Run` | Documentation (per project) | the final description of what was done, per cards of kind "work", for the human | `project/docs/` (per goal, `docs/goal-NN-<name>/`) |
-| 9 | `Core` | Central | the verdict on the cycle as a whole (not the sum of five checks), thresholds, node diagnosis, efficiency trend | `core.md`, `GOAL.md` → "Series result", `JOURNAL.md` |
+| 9 | `Core` | Central | the verdict on the cycle as a whole (not the sum of five checks), thresholds, node diagnosis, balance trend | `core.md`, `GOAL.md` → "Series result", `JOURNAL.md` |
 
 **Items 2 and 4 are closed.** `Intent`'s acceptance stays distributed — not a gap but a deliberate choice not to duplicate what is already written in `GOAL.md`/`ROADMAP.md`/`JOURNAL.md`. `Spec` got its own file for statistics and value — `project/ops/VALUE.md`, filled in when each goal closes.
 

@@ -1,6 +1,6 @@
 ---
 name: core
-description: Core — thresholds, cycle verdict, node diagnosis, efficiency trend
+description: Core — thresholds, cycle verdict, node diagnosis, balance trend
 model: claude-sonnet-5-5
 tier: standard
 effort: medium
@@ -71,7 +71,7 @@ On closing, for the cycle's cards together:
 
 **Closing lines are not just a record — they are what the system learns from.** The experience graph is built from closed cards (`build-done-cards-graph.cjs`), so a closing line you write enters `Kit`'s kit for later cycles by construction, without anyone carrying it there.
 
-## Efficiency over time
+## Balance over time
 
 Read at closing, and only there (see above). You look not only at this cycle but at the **trend** — and the trend is the reason it is not read more often: these numbers move across cycles, not within one, so reading them after every card would be counting noise and paying for it. You don't read all of `JOURNAL.md` every time — the tail (the last few cycles) for "what's happening now", the two registries of №4 for "how the system is doing overall". Eight numbers, each read cumulatively across cycles, never on a single task:
 
