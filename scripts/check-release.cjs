@@ -27,7 +27,7 @@ const TRACES = [
   { id: 'goal-code', re: /\bgoal-[1-9]\d\b/i, why: 'код цели проекта' },
   { id: 'attempt', re: /попытк\p{L}*\s+\d|attempt\s+\d/iu, why: 'номер попытки по карточке' },
   { id: 'criterion', re: /критери\p{L}*\s+\d|criterion\s+\d/iu, why: 'пункт критерия карточки' },
-  { id: 'site', re: /iamforma\.pro|yaforma/i, why: 'имя сайта или проекта' },
+  { id: 'site', re: /iamforma\.pro|yaforma/i, why: 'имя сайта или проекта', files: /^(?!README(\.ru)?\.md$)/ }, // кроме README: ссылки на официальные сайты сообщества
   { id: 'date', re: /\b20\d\d-\d\d-\d\d\b/, why: 'календарная дата', files: /^(?!test\/)/ },
 ];
 const TEXT = /\.(md|json|cjs|js|sh|toml|html|css|txt|yml|yaml)$/i;
