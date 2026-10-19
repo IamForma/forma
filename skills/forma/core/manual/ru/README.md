@@ -10,7 +10,7 @@
 | [2. Структура проекта](02-structure/README.md) | `structure` |
 | [3. Протокол проекта](03-protocol/README.md) | `protocol` |
 | [4. Ресурсы проекта](04-resources/README.md) | `resources` |
-| [5. Эффективность формы](05-efficiency/README.md) | `efficiency` |
+| [5. Баланс формы](05-balance/README.md) | `balance` |
 | [6. Обсуждение дел](06-discussion/README.md) | `discussion` |
 | [7. Каналы производства](07-channels/README.md) | `channels` |
 | [8. Сегменты компетенций](08-competencies/README.md) | `competencies` |

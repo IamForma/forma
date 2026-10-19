@@ -12,7 +12,7 @@ description: Собирает из текущего проекта на «Фор
 | Входит | Не входит никогда |
 |---|---|
 | `project/config/ROUTE.md` — маршрут (шаги, вход/выход, почему такой порядок); `project/brief/idea.md` — только каркас разделов, содержание обезличено до пометок «ещё не спрошено» | карточки `.devtool/features/`, `project/cards/` |
-| базовые цели девяти видов (`analytics`, `structure`, `protocol`, `resources`, `efficiency`, `discussion`, `channels`, `competencies`, `results`) — порядок, образ результата и признак **в общем виде**, как алгоритм | история, расход, `JOURNAL.md`, `dashboard/*.log` |
+| базовые цели девяти видов (`analytics`, `structure`, `protocol`, `resources`, `balance`, `discussion`, `channels`, `competencies`, `results`) — порядок, образ результата и признак **в общем виде**, как алгоритм | история, расход, `JOURNAL.md`, `dashboard/*.log` |
 | подцели `goal-NN` — только как обобщённый порядок шагов, без предмета проекта | `VARS/`, `.env`, `project/brief/` (кроме каркаса `idea.md`) |
 | скиллы проекта, очищенные от привязки (`.claude/skills/*`, кроме скиллов ядра `forma`) | `project/experience/`, `project/config/CONFIG.md`, `mockups/`, `reference/` |
 | профили `Run` и скрипты слоя «шаблон» — те, что лежат в `project/extensions/template/<движок>/` и нужны любому проекту этого типа (не только этому продукту): `project/extensions/template/claude/agents/run/*.md` → `template/agents/run/`, `project/extensions/template/claude/scripts/*` → `template/scripts/`, очищенные от следов проекта; имена — по функции, не по карточке (`kit.md`, п. 4a) | профили и скрипты, нужные только этому продукту; всё, что в ядре протокола (общий каталог ролей `Run`, `.claude/scripts/` ядра) |

@@ -22,7 +22,7 @@
       ]
     },
     { "title": { "en": "4. Project resources", "ru": "4. Ресурсы проекта" }, "page": "04-resources/README.md" },
-    { "title": { "en": "5. Form efficiency", "ru": "5. Эффективность формы" }, "page": "05-efficiency/README.md" },
+    { "title": { "en": "5. Form balance", "ru": "5. Баланс формы" }, "page": "05-balance/README.md" },
     { "title": { "en": "6. Discussion of affairs", "ru": "6. Обсуждение дел" }, "page": "06-discussion/README.md" },
     { "title": { "en": "7. Production channels", "ru": "7. Каналы производства" }, "page": "07-channels/README.md" },
     { "title": { "en": "8. Competence segments", "ru": "8. Сегменты компетенций" }, "page": "08-competencies/README.md" },

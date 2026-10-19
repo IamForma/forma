@@ -1,6 +1,6 @@
-# 5. Form efficiency
+# 5. Form balance
 
-Code of the kind: `efficiency` · main goal: `project/goals/goal-efficiency/GOAL.md`
+Code of the kind: `balance` · main goal: `project/goals/goal-balance/GOAL.md`
 
 The centre, the "core": errors, balance of the nodes, how well they work, balance of the system; the efficiency of the nodes' interaction is partnership. The aim is to understand how effective the project is; above all, to keep the balance of forces.
 

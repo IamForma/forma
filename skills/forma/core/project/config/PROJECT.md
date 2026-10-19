@@ -27,7 +27,7 @@ Here — what we work with and at what level. What we build and in what order �
 | `structure` | 2. Project structure | documentation of the product itself, for the human: user, administrator, technical — how to work with what we produce. The goal's cycle is closed and the promise it gave must be shown restrained: `Intent` reads the "Result" zones of the closed cards, looks at the live result and writes a `project/docs/` section for the human |
 | `protocol` | 3. Project protocol | a node reached the "human" row of the route; also `Kit`'s reconnaissance of an unfamiliar stack before slicing |
 | `resources` | 4. Project resources | the `grilling` interview at the opening of a new goal |
-| `efficiency` | 5. Form efficiency | `Core`'s proposals when closing a cycle: `Core` writes a remark, `Intent` sorts it by domain |
+| `balance` | 5. Form balance | `Core`'s proposals when closing a cycle: `Core` writes a remark, `Intent` sorts it by domain |
 | `discussion` | 6. Discussion of affairs | a correction or task that appeared along the way and need not go into production at once: `Intent` either resolves it quickly itself and closes the card, or sends it to `Spec` for slicing. Also here — a card without slicing and a defect outside the current goal |
 | `channels` | 7. Production channels | the product itself: the main goal `goal-channels` and subgoals `goal-NN` in one lane, the goal is chosen by label |
 | `competencies` | 8. Competence segments | weeding the `project/experience/` store: diverged keys, contradicting records |

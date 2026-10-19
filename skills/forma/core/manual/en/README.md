@@ -10,7 +10,7 @@ This is explanation only — what changes together with the law. Everything that
 | [2. Project structure](02-structure/README.md) | `structure` |
 | [3. Project protocol](03-protocol/README.md) | `protocol` |
 | [4. Project resources](04-resources/README.md) | `resources` |
-| [5. Form efficiency](05-efficiency/README.md) | `efficiency` |
+| [5. Form balance](05-balance/README.md) | `balance` |
 | [6. Discussion of affairs](06-discussion/README.md) | `discussion` |
 | [7. Production channels](07-channels/README.md) | `channels` |
 | [8. Competence segments](08-competencies/README.md) | `competencies` |

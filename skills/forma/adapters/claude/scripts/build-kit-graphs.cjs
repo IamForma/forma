@@ -10,7 +10,9 @@
 // кэша, изменённый разбирается заново, удалённый уходит из графа вместе со своими
 // узлами. Граф не пересобирается — он дописывается тем, что поменялось.
 //
-// Четвёртый граф — central: объединение goals, arsenal и board под единые префиксы id,
+// Граф structure (структура проекта: zone:/file:, карточка → зона, расход по зонам) — см. раздел
+// «structure» ниже; ТЗ — project/ops/GRAPHS-STRUCTURE-SITE.md.
+// Четвёртый граф — central: объединение goals, arsenal, structure и board под единые префиксы id,
 // собирается последним, из готовых графов (файлы не перечитываются).
 // Единые префиксы id: card:<card-NNN> · goal:<goal-…> · epic:<эпик> · role:<роль> ·
 // skill:<скилл> · script:<скрипт> · mcp:<сервер> · tool:<инструмент> · plugin:<плагин> ·
@@ -21,7 +23,7 @@
 // Отчёт: карточки без цели и без роли, роли и цели без карточек, доля принятых с первого раза
 // (по числу строк attempt роли Run в History) в разрезе ролей — метрика для Core.
 //
-//   node .claude/scripts/build-kit-graphs.cjs [--only goals|board|arsenal|central]
+//   node .claude/scripts/build-kit-graphs.cjs [--only goals|board|arsenal|structure|central]
 //
 // Выход: .forma/living/graphs/{goals,board,arsenal,central}/graph.json — формат graphify
 // ({nodes:[{id,label,type,source_file}], edges:[{source,target,relation}]}),
@@ -38,7 +40,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const OUT = path.join(ROOT, '.forma/living', 'graphs');
 const CACHE = path.join(OUT, '.kit-cache.json');
 const BOARD = path.join(ROOT, '.devtool', 'features');
-const CODES = ['analytics', 'structure', 'protocol', 'resources', 'efficiency', 'discussion', 'channels', 'competencies', 'results'];
+const CODES = ['analytics', 'structure', 'protocol', 'resources', 'balance', 'discussion', 'channels', 'competencies', 'results'];
 const GOAL_LABEL = new RegExp('^goal-(\\d+|' + CODES.join('|') + ')$');
 
 const rel = f => path.relative(ROOT, f).split(path.sep).join('/');
@@ -330,14 +332,195 @@ function build(name, pairs, cache, roles) {
   return { name, nodes: nodes.size, edges: edges.length, hit, miss, gone, orphan, dangling, graph: { nodes: [...nodes.values()], edges } };
 }
 
-// --- central: объединение трёх графов ---------------------------------------------
+// --- structure: структура проекта (зоны, файлы, карточка → зона, расход по зонам) ------
+// Узлы: zone:<путь каталога> (project/ первого и второго уровня, без node_modules и скрытых),
+// file:<путь> (файлы каталогов первого уровня, только корневые). Карточки и цели — заглушки
+// с теми же id, что в board/goals. Файлы-источники (карточки, файлы зон, README/GOAL) разбираются
+// кэшируемыми извлекателями; дерево каталогов читается с диска каждый раз (листинг, не разбор).
 
-const CENTRAL_V = 1;
-const LAYER = t => ({ card: 'board', file: 'board', goal: 'goals', epic: 'goals' }[t] || 'arsenal');
+const ZONE_ROOT = 'project';
+const SKIP_DIR = n => n === 'node_modules' || n.startsWith('.');
+const dirs = d => fs.existsSync(d) ? fs.readdirSync(d, { withFileTypes: true }).filter(e => e.isDirectory() && !SKIP_DIR(e.name)).map(e => e.name).sort() : [];
+const files = d => fs.existsSync(d) ? fs.readdirSync(d, { withFileTypes: true }).filter(e => e.isFile()).map(e => e.name).sort() : [];
+
+function zoneTree() {
+  const zones = [];   // {id, path, parent}
+  for (const a of dirs(path.join(ROOT, ZONE_ROOT))) {
+    zones.push({ path: `${ZONE_ROOT}/${a}`, parent: null });
+    for (const b of dirs(path.join(ROOT, ZONE_ROOT, a))) zones.push({ path: `${ZONE_ROOT}/${a}/${b}`, parent: `${ZONE_ROOT}/${a}` });
+  }
+  return zones;
+}
+
+const normPath = p => p.replace(/[\/.]+$/, '').replace(/\/{2,}/g, '/');
+const PATH_RE = /(?<![\w\/.\-])(?:project|\.claude|\.forma)\/[\w.\-\/@]*[\w\-\/]/g;
+
+// Карточка: пути из ## Задача / Результат / История, метка цели, расход.
+function cardForStructure(f, text) {
+  const body = [['Task', 'Задача'], ['Result', 'Результат'], ['History', 'История']].map(n => zone(text, n)).join('\n');
+  const paths = [...new Set([...body.matchAll(PATH_RE)].map(m => normPath(m[0])).filter(p => p.includes('/') && !/NNN|\*|<|>/.test(p)))];
+  const goal = labels(text).find(l => GOAL_LABEL.test(l)) || '';
+  const sp = spendOf(text);
+  return { nodes: [], edges: [], paths, goal, tokens: sp.tokens, seconds: sp.seconds };
+}
+cardForStructure.v = 1;
+
+// Файл зоны / README / GOAL: подпись (первая строка README, иначе заголовок GOAL) и ссылки на другие файлы.
+function docForStructure(f, text) {
+  const dir = path.posix.dirname(rel(f)), links = new Set();
+  for (const m of text.matchAll(/\]\(([^)\s#]+)(?:#[^)]*)?\)/g)) {
+    if (/^[a-z]+:|^\//i.test(m[1])) continue;
+    links.add(normPath(path.posix.normalize(path.posix.join(dir, m[1]))));
+  }
+  for (const m of text.matchAll(PATH_RE)) links.add(normPath(m[0]));
+  const first = (text.split('\n').map(s => s.trim()).find(s => s && s !== '---') || '').replace(/^#+\s*/, '').slice(0, 160);
+  const h1 = (text.match(/^# (.+)$/m) || [])[1] || '';
+  return { nodes: [], edges: [], head: first, title: h1.slice(0, 160), links: [...links].filter(l => l !== rel(f)) };
+}
+docForStructure.v = 1;
+
+function structureSources(zones) {
+  const pairs = [...list(BOARD, f => f.endsWith('.md')), ...list(path.join(BOARD, 'done'), f => f.endsWith('.md'))].map(f => [f, cardForStructure]);
+  for (const z of zones) {
+    const abs = path.join(ROOT, z.path);
+    if (!z.parent) for (const n of files(abs)) pairs.push([path.join(abs, n), docForStructure]);
+    else for (const n of ['README.md', 'GOAL.md']) if (fs.existsSync(path.join(abs, n))) pairs.push([path.join(abs, n), docForStructure]);
+  }
+  return pairs;
+}
+
+function buildStructure(cache, goalIds) {
+  const slot = cache.structure || (cache.structure = {});
+  const zones = zoneTree(), zset = new Set(zones.map(z => z.path));
+  let hit = 0, miss = 0, gone = 0;
+  const alive = new Set(), parts = new Map();
+  for (const [file, extract] of structureSources(zones)) {
+    const key = rel(file), buf = fs.readFileSync(file), h = hash(buf);
+    alive.add(key);
+    const tag = extract.name + (extract.v || '');
+    let part = slot[key];
+    if (part && part.hash === h && part.extractor === tag) hit++;
+    else { part = { hash: h, extractor: tag, ...extract(file, buf.toString('utf8')) }; slot[key] = part; miss++; }
+    parts.set(key, { ...part, isCard: extract === cardForStructure, file });
+  }
+  for (const key of Object.keys(slot)) if (!alive.has(key)) { delete slot[key]; gone++; }
+
+  const nodes = new Map(), edges = new Map();
+  let dropped = 0;
+  const droppedSample = [];
+  const drop = (s, t, r) => { dropped++; if (droppedSample.length < 5) droppedSample.push(`${s} → ${t} (${r})`); };
+  const addEdge = (source, target, relation, source_file) => {
+    if (!nodes.has(source) || !nodes.has(target)) return drop(source, target, relation);
+    edges.set(source + '|' + target + '|' + relation, { source, target, relation, source_file });
+  };
+  const fileOf = new Map();   // путь README/GOAL/файла → разобранная часть
+  for (const [key, p] of parts) if (!p.isCard) fileOf.set(key, p);
+  // Зоны, их подписи, файлы первого уровня.
+  for (const z of zones) {
+    let label = '';
+    for (const n of ['README.md', 'GOAL.md']) {
+      const p = fileOf.get(`${z.path}/${n}`);
+      if (p) { label = n === 'README.md' ? p.head : p.title || p.head; break; }
+    }
+    nodes.set('zone:' + z.path, { id: 'zone:' + z.path, label: label || path.posix.basename(z.path), type: 'zone', path: z.path,
+      caption: label, has_readme: fs.existsSync(path.join(ROOT, z.path, 'README.md')), source_file: z.path, tokens: 0, seconds: 0, split: {} });
+    if (z.parent) edges.set(`zone:${z.parent}|zone:${z.path}|contains`, { source: 'zone:' + z.parent, target: 'zone:' + z.path, relation: 'contains', source_file: z.parent });
+  }
+  for (const z of zones.filter(z => !z.parent)) {
+    for (const n of files(path.join(ROOT, z.path))) {
+      const key = `${z.path}/${n}`, p = fileOf.get(key);
+      nodes.set('file:' + key, { id: 'file:' + key, label: n, type: 'file', hash: p ? p.hash : '', source_file: key });
+      edges.set(`zone:${z.path}|file:${key}|contains`, { source: 'zone:' + z.path, target: 'file:' + key, relation: 'contains', source_file: z.path });
+    }
+  }
+  // links_to между файлами (.md первого уровня).
+  for (const [key, p] of fileOf) {
+    if (!nodes.has('file:' + key) || !key.endsWith('.md')) continue;
+    for (const l of p.links || []) {
+      if (!l.startsWith(ZONE_ROOT + '/') || l === key) continue;   // вне project/ — не ссылка графа
+      const abs = path.join(ROOT, l);
+      if (fs.existsSync(abs) && !fs.statSync(abs).isFile()) continue;   // каталог — это не связь файл-файл
+      if (fs.existsSync(abs) && !nodes.has('file:' + l)) continue;      // файл глубже первого уровня: узла нет по ТЗ
+      addEdge('file:' + key, 'file:' + l, 'links_to', key);
+    }
+  }
+  // Карточки: заглушка узла, карточка → зона / файл, расход.
+  const zoneOf = p => { let best = ''; for (const z of zset) if ((p === z || p.startsWith(z + '/')) && z.length > best.length) best = z; return best; };
+  const withZone = new Set(), cardsAll = [], missing = new Map(), zoneGoals = new Map();
+  let touchZone = 0, touchFile = 0;
+  for (const [key, p] of parts) {
+    if (!p.isCard) continue;
+    const code = cardId(p.file), id = 'card:' + code;
+    cardsAll.push(id);
+    nodes.set(id, { id, label: id, type: 'card', source_file: key });
+    const zs = new Set(), bad = [];
+    for (const q of [...p.paths, `${ZONE_ROOT}/cards/${code}`]) {
+      if (!fs.existsSync(path.join(ROOT, q))) { if (q !== `${ZONE_ROOT}/cards/${code}`) { bad.push(q); drop(id, q, 'touches_zone'); } continue; }
+      if (nodes.has('file:' + q)) { addEdge(id, 'file:' + q, 'touches_file', key); touchFile++; }
+      const z = zoneOf(q);
+      if (z) zs.add(z);
+    }
+    if (bad.length) missing.set(id, bad);
+    for (const z of zs) { addEdge(id, 'zone:' + z, 'touches_zone', key); touchZone++; }
+    if (zs.size) {
+      withZone.add(id);
+      for (const z of zs) {
+        const n = nodes.get('zone:' + z);
+        n.tokens += p.tokens / zs.size; n.seconds += p.seconds / zs.size;
+        if (p.tokens || p.seconds) n.split[id] = zs.size;
+        if (p.goal && goalIds.has(p.goal)) {
+          const gid = 'goal:' + p.goal;
+          if (!nodes.has(gid)) nodes.set(gid, { id: gid, label: p.goal, type: 'goal', source_file: '.forma/living/graphs/goals/graph.json' });
+          addEdge('zone:' + z, gid, 'serves', key);
+          (zoneGoals.get(p.goal) || zoneGoals.set(p.goal, new Set()).get(p.goal)).add(z);
+        }
+      }
+    }
+  }
+  // Зона каталога goals/goal-<код> ↔ одноимённая цель.
+  for (const z of zones) {
+    const m = z.path.match(/^project\/goals\/(goal-[\w-]+)$/);
+    if (!m) continue;
+    if (!goalIds.has(m[1])) { drop('zone:' + z.path, m[1], 'serves'); continue; }
+    const gid = 'goal:' + m[1];
+    if (!nodes.has(gid)) nodes.set(gid, { id: gid, label: m[1], type: 'goal', source_file: '.forma/living/graphs/goals/graph.json' });
+    addEdge('zone:' + z.path, gid, 'serves', z.path);
+    (zoneGoals.get(m[1]) || zoneGoals.set(m[1], new Set()).get(m[1])).add(z.path);
+  }
+  for (const n of nodes.values()) if (n.type === 'zone') { n.tokens = Math.round(n.tokens); n.seconds = Math.round(n.seconds * 100) / 100; }
+  const E = [...edges.values()], N = [...nodes.values()];
+  const touched = new Set(E.filter(e => e.relation === 'touches_zone').map(e => e.target));
+  const Z = N.filter(n => n.type === 'zone');
+  const report = {
+    zones: Z.length, cards: cardsAll.length, card_zone_edges: touchZone, card_file_edges: touchFile, dropped_edges: dropped, dropped_sample: droppedSample,
+    zones_without_readme: Z.filter(n => !n.has_readme).map(n => n.path),
+    zones_without_cards: Z.filter(n => !touched.has(n.id)).map(n => n.path),
+    cards_without_zones: cardsAll.filter(c => !withZone.has(c)),
+    cards_with_missing_path: [...missing.keys()],
+    goals_without_zone: [...goalIds].filter(g => !zoneGoals.has(g)),
+    top_spend: Z.filter(n => n.tokens).sort((a, b) => b.tokens - a.tokens).slice(0, 3).map(n => ({ zone: n.path, tokens: n.tokens, seconds: n.seconds })),
+  };
+  const dir = path.join(OUT, 'structure');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'graph.json'), JSON.stringify({ built: new Date().toISOString(), extractor: 'deterministic', model_tokens: 0, nodes: N, edges: E, report }, null, 1));
+  return { name: 'structure', nodes: N.length, edges: E.length, hit, miss, gone, report, graph: { nodes: N, edges: E, report } };
+}
+
+function printStructure(r) {
+  const p = r.report, f = l => `${l.length}` + (l.length ? ' (' + l.slice(0, 3).join(', ') + (l.length > 3 ? ', …' : '') + ')' : '');
+  console.log(`structure: зон ${p.zones} · рёбер карточка→зона ${p.card_zone_edges}, карточка→файл ${p.card_file_edges} · рёбер на несуществующий id (не построены) ${p.dropped_edges}`);
+  console.log(`обрывы structure: зон без README ${f(p.zones_without_readme)} · зон без карточек ${f(p.zones_without_cards)} · карточек без зон ${f(p.cards_without_zones)} · карточек с несуществующим путём ${f(p.cards_with_missing_path)} · целей без зоны ${f(p.goals_without_zone)}`);
+}
+
+// --- central: объединение графов ---------------------------------------------------
+
+const CENTRAL_V = 2;
+const LAYER = t => ({ card: 'board', file: 'board', goal: 'goals', epic: 'goals', zone: 'structure' }[t] || 'arsenal');
+const CENTRAL_PARTS = ['goals', 'arsenal', 'structure', 'board'];   // structure до board: заглушки карточек не затирают подписи доски
 
 function buildCentral(cache, graphs) {
   const strip = g => ({ nodes: g.nodes, edges: g.edges });
-  const h = hash(CENTRAL_V + JSON.stringify(['goals', 'arsenal', 'board'].map(n => strip(graphs[n]))));
+  const h = hash(CENTRAL_V + JSON.stringify(CENTRAL_PARTS.map(n => strip(graphs[n]))));
   const file = path.join(OUT, 'central', 'graph.json');
   const prev = fs.existsSync(file) ? readJson(file, null) : null;
   if (cache.central && cache.central.hash === h && prev && prev.report) {
@@ -345,12 +528,13 @@ function buildCentral(cache, graphs) {
   }
   const nodes = new Map(), edges = new Map(), dropped = [];
   const mapId = (id, type) => {
+    if (id.startsWith('card:') || id.startsWith('goal:')) return id;   // уже с префиксом (structure)
     if (type === 'card' || /^card-\d+$/.test(id)) return 'card:' + id;
     if (id.startsWith('goal-')) return 'goal:' + id;
     if (id.startsWith('lane:')) return 'epic:' + id.slice(5);
     return id;
   };
-  for (const name of ['goals', 'arsenal', 'board']) {
+  for (const name of CENTRAL_PARTS) {
     const g = graphs[name], fallback = '.forma/living/graphs/' + name + '/graph.json', types = new Map(g.nodes.map(n => [n.id, n.type]));
     for (const n of g.nodes) {
       const id = mapId(n.id, n.type), old = nodes.get(id), type = id.startsWith('epic:') ? 'epic' : id.startsWith('goal:') ? (n.type === 'goal' && old ? old.type : n.type) : n.type;
@@ -391,12 +575,15 @@ function buildCentral(cache, graphs) {
     roles_without_cards: N.filter(n => n.type === 'role' && !inn('uses_role').has(n.id)).map(n => n.id),
     goals_without_cards: N.filter(n => n.id.startsWith('goal:') && !inn('serves').has(n.id)).map(n => n.id),
     core: { accepted_with_attempts: known, first_time: first, first_time_share: known ? Math.round(first / known * 1000) / 1000 : null, by_role: byRole },
+    structure: graphs.structure.report ? (({ zones, card_zone_edges, dropped_edges, zones_without_readme, zones_without_cards, cards_without_zones, cards_with_missing_path, goals_without_zone }) =>
+      ({ zones, card_zone_edges, dropped_edges, zones_without_readme: zones_without_readme.length, zones_without_cards: zones_without_cards.length,
+         cards_without_zones: cards_without_zones.length, cards_with_missing_path: cards_with_missing_path.length, goals_without_zone: goals_without_zone.length }))(graphs.structure.report) : null,
   };
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const graph = { built: new Date().toISOString(), extractor: 'deterministic', model_tokens: 0, nodes: N, edges: E, report };
   fs.writeFileSync(file, JSON.stringify(graph, null, 1));
   cache.central = { hash: h };
-  return { name: 'central', nodes: N.length, edges: E.length, hit: 0, miss: 3, gone: 0, report, graph };
+  return { name: 'central', nodes: N.length, edges: E.length, hit: 0, miss: 4, gone: 0, report, graph };
 }
 
 function printCentral(r) {
@@ -423,15 +610,20 @@ function main() {
     const g = arsenal || readJson(path.join(OUT, 'arsenal', 'graph.json'), { nodes: [] });
     return (roles = new Set(g.nodes.filter(n => n.type === 'role').map(n => n.id)));
   };
-  for (const name of ['goals', 'arsenal', 'board']) {
+  for (const name of ['goals', 'arsenal', 'structure', 'board']) {
     if (only && only !== name) continue;
+    if (name === 'structure') {
+      const gg = (rows.find(r => r.name === 'goals') || {}).graph || readJson(path.join(OUT, 'goals', 'graph.json'), { nodes: [] });
+      rows.push(buildStructure(cache, new Set(gg.nodes.filter(n => /^goal-/.test(n.id) && n.type !== 'card').map(n => n.id))));
+      continue;
+    }
     const r = build(name, src[name], cache, name === 'board' ? roleSet() : null);
     if (name === 'arsenal') arsenal = r.graph;
     rows.push(r);
   }
   if (!only || only === 'central') {   // последним: из только что собранных графов, недостающие — из файлов
     const graphs = {};
-    for (const n of ['goals', 'arsenal', 'board']) {
+    for (const n of CENTRAL_PARTS) {
       const row = rows.find(r => r.name === n);
       graphs[n] = row ? row.graph : readJson(path.join(OUT, n, 'graph.json'), { nodes: [], edges: [] });
     }
@@ -445,6 +637,8 @@ function main() {
   }
   const cen = rows.find(r => r.name === 'central');
   if (cen) printCentral(cen);
+  const st = rows.find(r => r.name === 'structure');
+  if (st) printStructure(st);
   const a = rows.find(r => r.name === 'arsenal');
   if (a && a.dangling) {
     const names = [...new Set(a.dangling.map(e => e.source.slice(5) + ' → ' + e.target))];

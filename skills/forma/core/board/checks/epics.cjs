@@ -9,7 +9,7 @@ const path = require('path');
 const { cardFiles, boardDir, labelsOf, createdDay } = require('../../dashboard/lib/card.cjs');
 
 // Девять видов цели: код не зависит от языка, лейбл эпика — во втором столбце таблицы PROJECT.md. Коды меняет только человек.
-const CODES = ['analytics', 'structure', 'protocol', 'resources', 'efficiency', 'discussion', 'channels', 'competencies', 'results'];
+const CODES = ['analytics', 'structure', 'protocol', 'resources', 'balance', 'discussion', 'channels', 'competencies', 'results'];
 const GOAL_LABEL_RE = new RegExp('^goal-(\\d+|' + CODES.join('|') + ')$');
 
 const read = (file) => fs.readFileSync(file, 'utf8');

@@ -23,7 +23,7 @@ A map node is a goal. The first level is nine main goals by kind (`goal-<code>`)
 ├── goal-structure · Documentation open
 ├── goal-protocol · Form open
 ├── goal-resources · Result image open
-├── goal-efficiency · Balance open
+├── goal-balance · Balance open
 ├── goal-discussion · Incoming open
 ├── goal-channels · Production open
 │   └── goal-01 · <name of a part of the product> not started
