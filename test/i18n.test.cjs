@@ -155,7 +155,7 @@ test('хуки: один и тот же стоп на en, ru и французс
     // the reason of a blocked delete: the project language, and the code phrase stays literal in both
     const reason = spawnSync(process.execPath, [path.join(dir, '.forma', 'i18n', 'cli.cjs'), 'msg', 'hook.delete_blocked', 'cmd=rm x', '--root', dir], { encoding: 'utf8', env: { ...process.env, FORMA_LANG: 'en' } }).stdout;
     assert.match(reason, /Blocked by the guard-delete hook.*(rm x).*"Отключи сенсорику"/);
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally { try { fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* temp cleanup is best-effort: Windows ACLs can refuse it */ } }
 });
 
 test('установщик: --lang принимает код без каталога и сообщает про английские хуки; мусорный код отклонён', () => {

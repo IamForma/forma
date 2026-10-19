@@ -30,6 +30,7 @@ test('fresh project: the demo is reported once, the marker reads none', () => {
   assert.equal(cli(dir, 'demo').stdout.trim(), 'none');
   assert.match(ready(dir), NOTE);
   const hook = spawnSync('sh', [path.join(dir, '.claude', 'hooks', 'check-ready.sh')], { encoding: 'utf8', env: { ...process.env, CLAUDE_PROJECT_DIR: dir, FORMA_LANG: 'en' } });
+  if (hook.error && hook.error.code === 'ENOENT') return; // no `sh` on PATH (plain Windows): the hook itself cannot run
   assert.match(hook.stdout, NOTE);
 });
 
