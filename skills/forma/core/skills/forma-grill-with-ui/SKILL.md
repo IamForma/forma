@@ -1,6 +1,6 @@
 ---
 name: forma-grill-with-ui
-description: Grilling-интервью на локальной странице браузера вместо терминала: все вопросы с рекомендациями разом, ответ в любом порядке, обсуждение по каждому, одна кнопка «Send to Agent». Запуск — «forma/форма grill with ui» или /forma-grill-with-ui <тема>; продолжение — /forma-grill-with-ui resume.
+description: "Grilling-интервью на локальной странице браузера вместо терминала: все вопросы с рекомендациями разом, ответ в любом порядке, обсуждение по каждому, одна кнопка «Send to Agent». Запуск — «forma/форма grill with ui» или /forma-grill-with-ui <тема>; продолжение — /forma-grill-with-ui resume."
 ---
 
 # grill-with-ui
