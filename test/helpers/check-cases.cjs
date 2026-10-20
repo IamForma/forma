@@ -91,9 +91,14 @@ const CASES = [
   { name: 'adapter-conformance', registry: 'sync', id: 'adapter-conformance',
     apply: (m) => m.write('.claude/scripts/claude-economy.test.cjs', "console.error('сломан нарочно'); process.exit(1);\n"),
     expect: /адаптер Claude Code: \.claude\/scripts\/claude-economy\.test\.cjs: тест не прошёл \(код 1\) — сломан нарочно/ },
+  // Codex проснулся (реестр спящих пуст): сверка читает его среду.
   { name: 'codex', registry: 'sync', id: 'codex',
-    apply: (m) => m.write('.codex/README.md', 'заглушка\n'),
+    apply: (m) => { m.write('.forma/engines.json', '{ "dormant": [] }\n'); m.write('.codex/README.md', 'заглушка\n'); },
     expect: null, expectInfo: /Codex \(сведение, не нарушение\): \.codex\/agents\/intent\.toml: нет определения субагента/ },
+  // Codex спит (реестр .forma/engines.json): среда на месте, но не сверяется.
+  { name: 'codex-dormant', registry: 'sync', id: 'codex',
+    apply: (m) => m.write('.codex/README.md', 'заглушка\n'),
+    expect: null, expectInfo: /Codex: спящий режим — не сверяется/ },
   // Паритет ролей — не проверка реестра (сведение): порча видна в таблице и в --diff.
   { name: 'role-parity', registry: 'sync', id: null, args: ['--check', '--diff'],
     apply: (m) => m.write('.agents/plugins/forma/agents/core.md', '# другая роль\n'),

@@ -10,7 +10,7 @@
 <img alt="Version 0.0.x" src="https://img.shields.io/badge/version-0.0.x-blue">
 <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-green">
 <img alt="Claude Code: ready" src="https://img.shields.io/badge/Claude%20Code-ready-brightgreen">
-<img alt="Codex and Gemini: beta" src="https://img.shields.io/badge/Codex%20%C2%B7%20Gemini-beta-yellow">
+<img alt="Gemini: beta" src="https://img.shields.io/badge/Gemini-beta-yellow">
 </p>
 
 <p align="center"><b><a href="https://iamforma.pro/#intro">iamforma.pro</a></b> · <a href="https://yaforma.pro/">Russian: yaforma.pro</a> · <a href="https://github.com/IamForma/forma">IamForma/forma</a></p>
@@ -39,7 +39,7 @@ Mandatory requirement: work in **VS Code** or **Antigravity** with the **[Kanban
 |---|---|
 | **VS Code** or **Antigravity** | The editor where the board lives. |
 | **Kanban Markdown** | The board. The installer sets it up automatically (`--board auto`); manually: `code --install-extension LachyFS.kanban-markdown`. |
-| **Claude Code** | The engine on which nodes run (Codex and Gemini — beta). |
+| **Claude Code** | The engine on which nodes run (Gemini — beta; Codex is dormant). |
 | **Node 18+** and **Git** | Installer and protocol scripts. |
 | **`bash`** | Claude Code hooks; on Windows — Git for Windows. Verification: `node .forma/verify/verify-install.cjs`. |
 
@@ -331,7 +331,7 @@ Author's thesis: this framework has no alternative — other methodologies (PMBO
 npx github:IamForma/forma init
 ```
 
-The installer asks: engines (`claude` ready; `codex`, `gemini` — beta), project template (or no template), kanban board, document language, auto-compaction window. Non-interactive: `npx github:IamForma/forma init --engines claude --template none --board auto`. No npm registry package — only `github:`.
+The installer asks: engines (`claude` ready; `gemini` — beta; `codex` is dormant — not offered and not installed until it is woken in `core/engines.json`), project template (or no template), kanban board, document language, auto-compaction window. Non-interactive: `npx github:IamForma/forma init --engines claude --template none --board auto`. No npm registry package — only `github:`.
 
 **Method 2 — git clone.**
 
@@ -364,7 +364,7 @@ Then in the project: `/forma`. If the update doesn't appear after `marketplace u
 ```
 AGENTS.md          the law, §1–7
 .claude/           Claude Code adapter: agents/, hooks/, scripts/, skills/, rules/, settings.json
-.codex/  .agents/  Codex and Gemini adapters (beta)
+.codex/  .agents/  Gemini adapter (beta); Codex is dormant (not installed)
 .forma/            core: board/, dashboard/, manual/, living/, verify/, extensions/, i18n/,
                    install-manifest.json, protocol/ (clone with method 2)
 project/           product: config/, brief/, extensions/, cards/, ops/ — updates do not touch

@@ -6,16 +6,18 @@
 const fs = require('fs');
 const path = require('path');
 const { runTestFile } = require('../../../.forma/dashboard/lib/checks.cjs');
+const { isDormant } = require('./support/dormant.cjs');
 
 const ADAPTERS = [
   { name: 'Claude Code', eight: '.claude/rules/claude-8.md', test: '.claude/scripts/claude-economy.test.cjs' },
-  { name: 'Codex', eight: '.codex/CODEX-8.md', test: '.codex/tests/test-codex-usage.cjs' },
+  { id: 'codex', name: 'Codex', eight: '.codex/CODEX-8.md', test: '.codex/tests/test-codex-usage.cjs' },
   { name: 'Gemini (Antigravity)', eight: '.agents/rules/gemini-8.md', test: '.agents/tests/test-gemini-adapter.cjs' },
 ];
 
 /** Один адаптер: нарушения — в `problems`, сведения — в `info`. Файла §8 нет — адаптер не установлен, молчание. */
 function checkAdapter(root, a, problems, info) {
   if (!fs.existsSync(path.join(root, a.eight))) return;
+  if (a.id && isDormant(root, a.id)) { info.push(`адаптер ${a.name}: спящий режим — тест соответствия не запускается`); return; }
   if (!a.test) { info.push(`адаптер ${a.name}: не готов — теста соответствия нет, не проверяется`); return; }
   if (!fs.existsSync(path.join(root, a.test))) { problems.push(`адаптер ${a.name}: нет теста соответствия ${a.test}`); return; }
   const bad = runTestFile(root, a.test);

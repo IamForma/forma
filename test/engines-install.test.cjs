@@ -1,4 +1,4 @@
-// Codex и Gemini (бета) ставятся установщиком: файлы адаптеров, роли, повторный запуск, config.toml проекта не затирается.
+// Gemini (бета) ставится установщиком; Codex спит (core/engines.json) — не ставится, явный запрос отклоняется.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -12,36 +12,33 @@ const init = (engines) => spawnSync(process.execPath, [FORMA, 'init', '--dir', d
 
 test.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 
-test('claude,codex,gemini: адаптеры Codex и Gemini установлены, сверка целостна', () => {
-  const r = init('claude,codex,gemini');
+test('claude,gemini: адаптер Gemini установлен, Codex не ставится, сверка целостна', () => {
+  const r = init('claude,gemini');
   assert.equal(r.status, 0, r.stdout + r.stderr);
   for (const f of [
-    '.codex/CODEX-8.md', '.codex/config.toml', '.codex/agents/intent.toml', '.codex/roles/kit.md', '.codex/hooks.json',
-    '.agents/skills/grilling/SKILL.md',
+    '.forma/engines.json',
     '.agents/rules/gemini-8.md', '.agents/forma-adapter.cjs', '.agents/plugins/forma/plugin.json', '.agents/plugins/forma/agents/kit.md', '.agents/plugins/forma/mcp_config.json',
   ]) assert.ok(fs.existsSync(path.join(dir, f)), f);
-  assert.match(r.stdout, /Codex \(beta\)/);
+  assert.ok(!fs.existsSync(path.join(dir, '.codex')), 'Codex спит — .codex/ не ставится');
   assert.match(r.stdout, /Gemini \(Antigravity, beta\)/);
+  assert.doesNotMatch(r.stdout, /Codex/);
   assert.match(r.stdout, /install is intact/);
 });
 
-test('повторный запуск не затирает config.toml и mcp_config.json проекта', () => {
-  const cfg = path.join(dir, '.codex', 'config.toml');
+test('повторный запуск не затирает mcp_config.json проекта', () => {
   const mcp = path.join(dir, '.agents', 'plugins', 'forma', 'mcp_config.json');
-  fs.appendFileSync(cfg, '\n[mcp_servers.site]\ncommand = "x"\n');
   fs.writeFileSync(mcp, '{"mcpServers":{"site":{}}}');
-  const r = init('claude,codex,gemini');
+  const r = init('claude,gemini');
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(fs.readFileSync(cfg, 'utf8'), /mcp_servers\.site/);
   assert.match(fs.readFileSync(mcp, 'utf8'), /"site"/);
 });
 
-test('только codex без Claude: ставится, sync-codex откладывается с предупреждением', () => {
+test('--engines codex: спящий движок отклоняется кодом 2, ничего не ставится', () => {
   const d2 = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-engines2-'));
   try {
     const r = spawnSync(process.execPath, [FORMA, 'init', '--dir', d2, '--engines', 'codex', '--board', 'skip', '--yes'], { encoding: 'utf8' });
-    assert.equal(r.status, 0, r.stdout + r.stderr);
-    assert.ok(fs.existsSync(path.join(d2, '.codex', 'CODEX-8.md')));
-    assert.match(r.stdout, /\.claude\/agents not found/);
+    assert.equal(r.status, 2, r.stdout + r.stderr);
+    assert.match(r.stderr, /dormant/);
+    assert.ok(!fs.existsSync(path.join(d2, '.codex')));
   } finally { fs.rmSync(d2, { recursive: true, force: true }); }
 });
