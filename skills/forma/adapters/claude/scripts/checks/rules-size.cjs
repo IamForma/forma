@@ -23,7 +23,7 @@ function run({ root, info }) {
   for (const rel of ruleFiles(root)) {
     const bytes = fs.statSync(path.join(root, rel)).size;
     if (bytes > ERROR_BYTES) problems.push(`размер правил: ${rel} — ${bytes} байт, больше ${ERROR_BYTES}; платформа усечёт хвост — вынести в файл ролей по голому имени`);
-    else if (bytes > WARN_BYTES && info) info.push(`  размер правил: ${rel} — ${bytes} байт, близко к лимиту (${ERROR_BYTES})`);
+    else if (bytes > WARN_BYTES && info) info.push(`  размер правил: ${rel} — больше ${WARN_BYTES} байт, близко к лимиту (${ERROR_BYTES})`);
   }
   return problems;
 }

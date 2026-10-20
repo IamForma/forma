@@ -8,6 +8,7 @@ exit 1
     — ядро: .forma/board/DATA-MODEL.md привязан к движку — «Claude Code»
 
 Ядро и адаптеры:
+  размер правил: AGENTS.md — больше 20000 байт, близко к лимиту (22000)
     ✓ адаптер Claude Code: тест соответствия пройден
 
 Паритет ролей Claude↔Gemini — сведение, не нарушение (роли не копируются, адаптер Gemini не готов):
@@ -19,6 +20,7 @@ exit 1
 | Agent: Run                | .claude/agents/run.md               | .agents/plugins/forma/agents/run.md           | ✗ Дрейф (missing_gemini) |
 | Agent: Spec               | .claude/agents/spec.md              | .agents/plugins/forma/agents/spec.md          | ✗ Дрейф (missing_gemini) |
 | Agent: Extractor          | .claude/agents/extractor.md         | .agents/plugins/forma/agents/extractor.md     | ✗ Дрейф (missing_gemini) |
+| On-Demand: Card And Board | .claude/agents/on-demand/card-and-board.md | .agents/plugins/forma/agents/on-demand/card-and-board.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Citing Schema To Human | .claude/agents/on-demand/citing-schema-to-human.md | .agents/plugins/forma/agents/on-demand/citing-schema-to-human.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Cycle Closing | .claude/agents/on-demand/intent-cycle-closing.md | .agents/plugins/forma/agents/on-demand/intent-cycle-closing.md | ✗ Дрейф (missing_gemini) |
 | On-Demand: Intent Demo    | .claude/agents/on-demand/intent-demo.md | .agents/plugins/forma/agents/on-demand/intent-demo.md | ✗ Дрейф (missing_gemini) |
