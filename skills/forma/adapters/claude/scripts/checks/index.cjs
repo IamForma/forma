@@ -7,6 +7,7 @@
 
 module.exports = [
   require('./root-rules.cjs'),
+  require('./rules-size.cjs'),
   require('../../../.forma/dashboard/checks/manual-languages.cjs'),
   require('../../../.forma/dashboard/checks/locale-parity.cjs'),
   ...require('../../../.forma/board/checks/index.cjs'),
