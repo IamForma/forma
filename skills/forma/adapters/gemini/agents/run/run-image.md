@@ -4,7 +4,7 @@ description: Run — generates or edits a single image or visual asset from an i
 model: gemini-3.8-flash
 tier: standard
 effort: low
-tools: нет аналога — нужен инструмент imagegen
+tools: Read, Write, imagegen, run_command(node .claude/scripts/resources.cjs register *)
 skills: none
 ---
 
@@ -26,3 +26,7 @@ A card whose result is **one** image or asset — a draft, a reference, a demo a
 **One asset, one light edit.** Several assets or a packaged/consistent-style series — that's `run-image-series` (Magnific), not this role; don't stretch this one into a loop.
 
 Write the prompt yourself, from what the subject describes, before the call — never one generic template for every subject at once. Cheap tier for a draft or demo; a stronger model only when the cheap one falls short. Save the file to `project/cards/card-NNN/assets/` of the card, never outside `assets/`. The result in "Result" is a working file path, not a description of what was asked for.
+
+## Registry entry
+
+Every file you create or edit and keep gets a record in the resources registry, right after it is saved — otherwise the file is invisible to the resources graph: `node .claude/scripts/resources.cjs register <path> --kind generated --card <card-NNN> --prompt "<the prompt>" --model "<model>" --description "<one sentence: what is shown>"`. Name the card of the call; the prompt and model are the ones actually used. The command prints the record's key — put it beside the file path in "Result". A trial or rejected take is not registered: it goes to `project/work/` or is not kept.
