@@ -2,10 +2,7 @@
 // Счётчик накопления для авто-триггера graphify — читает graphify.config.json,
 // смотрит, сколько новых событий набежало с последнего запуска /graphify
 // (по последней строке .forma/dashboard/graphify.log), и при превышении порога
-// либо реально запускает пересборку (executor.mode="external-model" — единственный
-// режим, который может сработать без участия живой Claude-сессии, см. README),
-// либо просто помечает граф как «пора пересобрать» (.forma/dashboard/.cache/graphify-pending.json) —
-// хук не умеет сам вызывать Agent tool/Skill, это может только живой агент в сессии.
+// помечает граф как «пора пересобрать» (.forma/dashboard/.cache/graphify-pending.json).
 //
 // Запуск: node .forma/dashboard/graphify-trigger.cjs   (обычно — из watch.js, тем же порядком,
 // что и watchFeatures()/watchGraphifyLog() в serve.js; можно и вручную).
@@ -66,34 +63,6 @@ function clearPending() {
   if (fs.existsSync(PENDING_FILE)) fs.unlinkSync(PENDING_FILE);
 }
 
-function runExternalModel(config) {
-  // Отсоединённый процесс, не inline — сборка занимает минуты (десятки вызовов внешней
-  // модели, по одному файлу за раз, контракт извлечения требует декомпозиции), встраивать
-  // её в этот счётчик (вызывается из serve.js на каждой пересборке среза) означало бы
-  // подвесить живой дашборд на всё это время. сборщик графа сделанных карточек (у адаптера движка)
-  // сам разбирается с моделью/ключом и сам дописывает .forma/dashboard/graphify.log и снимает
-  // pending по завершении — здесь только запуск и забывание.
-  const scriptPath = engines.firstPath(PROJECT_ROOT, 'doneCardsGraphScript');
-  if (!scriptPath || !fs.existsSync(scriptPath)) {
-    console.log('graphify-trigger: executor=external-model, но сборщик графа сделанных карточек у адаптера движка не найден — сборка невозможна.');
-    writePending('threshold-reached-external-model-script-missing', null, null);
-    return;
-  }
-  const { spawn } = require('child_process');
-  // --trigger=auto-accum — это и есть срабатывание по накоплению (единственный источник
-  // такого запуска для build-done-cards-graph.cjs), помечается в .forma/dashboard/graphify.log
-  // (`kit.md`-задача «механизм контроля создания графов», п.1).
-  const child = spawn(process.execPath, [scriptPath, '--trigger=auto-accum', '--channel=external'], {
-    detached: true,
-    stdio: 'ignore',
-    cwd: PROJECT_ROOT,
-    windowsHide: true,
-  });
-  child.unref();
-  console.log(`graphify-trigger: executor=external-model (${config.executor.model_external || 'модель не указана'}) — запущена фоновая пересборка (pid ${child.pid}), не дожидаемся.`);
-  writePending('external-model-build-started', null, null);
-}
-
 function check() {
   const config = loadConfig();
   if (!config || config.trigger?.mode !== 'history-accumulation') { clearPending(); return; }
@@ -104,14 +73,9 @@ function check() {
 
   if (count < threshold) { clearPending(); return; }
 
-  const mode = config.executor?.channel === 'external' ? 'external-model' : '.forma/manual';
-  if (mode === 'external-model') {
-    runExternalModel(config);
-  } else {
-    // subagent и manual — хук не может вызвать Agent tool/Skill сам; помечает только.
-    writePending(mode === 'subagent' ? 'threshold-reached-awaiting-subagent' : 'threshold-reached-awaiting-manual-run', count, threshold);
-    console.log(`graphify-trigger: накоплено ${count} событий (порог ${threshold}) — граф помечен как «пора пересобрать» (${path.relative(PROJECT_ROOT, PENDING_FILE)}), запустите /graphify.`);
-  }
+  // Графы механические; хук только помечает «пора пересобрать».
+  writePending('threshold-reached-awaiting-manual-run', count, threshold);
+  console.log(`graphify-trigger: накоплено ${count} событий (порог ${threshold}) — граф помечен как «пора пересобрать» (${path.relative(PROJECT_ROOT, PENDING_FILE)}), запустите node .claude/scripts/build-kit-graphs.cjs.`);
 }
 
 module.exports = { check };

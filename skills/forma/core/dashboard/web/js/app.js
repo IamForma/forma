@@ -18,7 +18,7 @@ function renderPanels(d) {
   renderEconomy(d);
   // Графы: вкладка рисуется один раз — открытый граф не перезагружается на каждом обновлении
   if (!graphShown) {
-    document.getElementById('graphs').innerHTML = `<nav class="side-tabs">${[['goals','app.graph.goals'],['arsenal','app.graph.arsenal'],['structure','app.graph.structure'],['resources','app.graph.resources'],['board','app.graph.board'],['central','app.graph.central']].map(([c,k]) => `<button class="side-tab" data-c="${c}">${t(k)}</button>`).join('')}</nav><div id="gp"></div>`;
+    document.getElementById('graphs').innerHTML = `<nav class="side-tabs">${[['goals','app.graph.goals'],['arsenal','app.graph.arsenal'],['structure','app.graph.structure'],['resources','app.graph.resources'],['board','app.graph.board'],['manual','app.graph.manual'],['project','app.graph.project'],['central','app.graph.central']].map(([c,k]) => `<button class="side-tab" data-c="${c}">${t(k)}</button>`).join('')}</nav><div id="gp"></div>`;
     showGraph(graphShown = 'goals');
   }
 }

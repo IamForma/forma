@@ -69,7 +69,7 @@ Every `Run` step re-reads its whole context: steps × context is the cache-read 
 1. **Repeated — into a script.** A step over a list (files, plugins, pages) done more than 2–3 times is a script, not instructions; `Run` runs it and reads the summary.
 2. **Trial run before issue.** `Kit` passes the riskiest step (API, site write, compile) on one object and writes "verified on X" into the kit. Site code runs first as a stateless read-only `execute-php` probe — a site-side "sandbox" is a live plugin, not isolation (see the project's site-access skill); the same holds for `Run`.
 3. **`Kit` writes the missing script itself**, verifies it on the trial object, puts it in `.claude/scripts/`; a large one is its own tooling card, the task waits (`after-card-NNN`).
-4. **Output contract.** No script reaches `Run` without it — template in `.agents/skills/run-scripts/SKILL.md`.
+4. **Output contract.** No script reaches `Run` without it: a script states what it prints, its exit codes and its summary line before it is issued.
 4a. **A script is named for what it does, never for the card that needed it (it is written to `project/extensions/claude/scripts/`, never to `.claude/scripts/`)** (`apply-json-pointer.cjs`, not `task12-apply-json.cjs`): a script is kit, and kit moves to other cards. Card codes, dates, hosts and file lists go in its arguments or a data file in `project/cards/card-NNN/`, not in its name or body. Layers, decided when the file is written: **engine** — universal, `.claude/scripts/`, ships with the protocol and carries no trace of the project (`AGENTS.md`, prohibition 16); **extension** — a new file of the project's own kit goes to `project/extensions/template/<engine>/` (useful to any project of this type, travels with the project template) or `project/extensions/custom/<engine>/` (only this product); **card** — too tied to one object, `project/cards/card-NNN/scripts/`. **Every new extension file (script, `Run` profile, skill, hook) requires an explicit choice — `template` or `custom` — and a `` `Kit`, YYYY-MM-DD: extension file <path> → template|custom — <why> `` line in the card's `## History`;** no choice made, no file written. The same split applies to `Run` profiles (and a profile only this product needs also gets a row in `PROJECT.md`, «Профили Run проекта»). Before writing a new script or profile, look in `.claude/scripts/` and `agents/run/` for one that already does it.
 5. **Step budget in the kit:** "≈N tool calls"; twice that — `Run` stops and reports.
 6. **Short kit:** commands, paths, boundaries; no "why".
@@ -99,7 +99,7 @@ You determine what each task requires and fill in six units on the card:
 
 Nodes carry their skill list in frontmatter `uses:` — reference only, doesn't change the node's behavior. Run roles carry it in `skills:` — a working key, loaded into the role's context at start, so only what that role actually needs belongs there. `tier` is a form-bookkeeping field only — Claude Code doesn't read it.
 
-Write the channel explicitly into the kit — `Run` doesn't choose it. (The bridge has one more use, yours as well: extraction for the knowledge graphs, under its own narrow contract — `project/config/CONFIG.md`, `#deepseek-extraction-quality`; `kit-graphs.md`. Don't confuse the two uses.)
+Write the channel explicitly into the kit — `Run` doesn't choose it.
 
 **When the doer is `Run`: matrix "task → Run role" from `agents/run/*.md`, one row per card of the wave.**
 
@@ -210,7 +210,7 @@ A task outside your qualification (content edits on the site, not tooling) — d
 
 **Two housekeeping habits that keep tooling honest:**
 
-- **A tool is named by its function, not by its provider.** `external-model-bridge.cjs`, not `deepseek-bridge.cjs`: the provider changes, the name stays, and a stale name misleads every reader after the first swap.
+- **A tool is named by its function, not by its provider.** `external-model-bridge.cjs`, not `<provider>-bridge.cjs`: the provider changes, the name stays, and a stale name misleads every reader after the first swap.
 - **A mass replacement never touches the record.** Any `sed`/script run across the repository excludes `.devtool/features/` (cards quote old names as history), `.forma/living/CHANGELOG.md` (history, prohibition 5) and `.cache/` (regenerated). A card that must change is edited by hand.
 
 **The card is the whole instruction — a dispatch message never retells it.** `## Task` already carries the full assignment, written once by `Spec`/`Intent`; the caller may pass only the card's path or id. Nothing beyond the card survives a call — don't wait for or ask for a retelling: read `## Task` directly.
@@ -228,6 +228,8 @@ A task outside your qualification (content edits on the site, not tooling) — d
 The store is `project/experience/` — one file per subject, named the way someone would search for it. `Run` and you write into it **at the moment of the finding**, not on a summary at the end of a goal: an experience that arrives a goal late has usually gone stale on the way. Epic "8. Competence segments" is not where the collecting happens — collecting happens by itself, on the way. The epic is for **weeding**, and that is a rare card.
 
 **Reading — by the subject of the card, never the whole store.** You grep by what the card is about (the plugin, the tool, the area) and read the one file that comes back. This is deliberate: the store may grow without limit and the cost of reading it stays flat. Reading it whole would make the system pay more for every kitting the more it has learned.
+
+**The graph is the second reading, after the grep:** which cards touched the same files, which role closed similar cards — `node .claude/scripts/graph-query.cjs find|node|path` (`board`, `central`). A hit is a lead to the card, not a fact; the fact is in the card and the experience file.
 
 **Writing — one line, and only when the method was non-obvious or cost attempts.** A gotcha, a constraint of the environment, what didn't work and why. The finding in one or two sentences, the date, the source card. The subject already has a file — you add a line to it and never start a second one.
 

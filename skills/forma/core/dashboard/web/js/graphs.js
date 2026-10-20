@@ -4,11 +4,10 @@
 // каждая несёт числа именно своего корпуса, не агрегат по всем трём разом
 // (`kit.md`-задача «механизм контроля создания графов», п.4).
 // Подписи вычисляются при обращении: язык меняется без перезагрузки.
-const GRAPHIFY_CORPUS_LABEL = { get project(){ return t('gr.label.project'); }, get manual(){ return t('gr.label.manual'); }, get 'done-cards'(){ return t('gr.label.experience'); }, get site(){ return t('gr.label.site'); }, get engine(){ return t('gr.label.engine'); } };
+const GRAPHIFY_CORPUS_LABEL = { get project(){ return t('gr.label.project'); }, get manual(){ return t('gr.label.manual'); }, get site(){ return t('gr.label.site'); }, get engine(){ return t('gr.label.engine'); } };
 const GRAPHIFY_CORPUS_HINT = {
   project: '/graphify project --update',
   manual: '/graphify manual --update',
-  get 'done-cards'(){ return t('gr.hint.experience'); },
   site: 'node .claude/scripts/build-site-graph.cjs',
   engine: 'node .claude/scripts/build-engine-graph.cjs',
 };
@@ -30,7 +29,6 @@ function graphifyPanelHtml(corpus, entry){
   const badges = [];
   if (entry.stale) badges.push(graphifyBadgeHtml(t('gr.stale', {corpus, hint})));
   if (entry.pending && entry.pending.pending) badges.push(graphifyBadgeHtml(t('gr.pending', {a: entry.pending.accumulatedEvents ?? '?', b: entry.pending.threshold ?? '?'})));
-  if (entry.budgetStop) badges.push(graphifyBadgeHtml(t('gr.budget', {done: entry.budgetStop.filesProcessed, total: entry.budgetStop.filesTotal, cost: '$' + entry.budgetStop.costUsd.toFixed(4), max: '$' + entry.budgetStop.maxUsdPerBuild, hint})));
 
   return `<section class="config-card" style="margin-bottom:12px">
     <h2>Graphify — ${label}</h2>
@@ -49,14 +47,14 @@ function graphifyPanelHtml(corpus, entry){
 
 function renderGraphifyPanels(data){
   const byCorpus = data.graphifyByCorpus || {};
-  for (const corpus of ['project', '.forma/manual', 'done-cards', 'site', 'engine']) {
+  for (const corpus of ['project', 'manual', 'site', 'engine']) {
     const el = document.getElementById('graphify-panel-' + corpus);
     if (el) el.innerHTML = graphifyPanelHtml(corpus, byCorpus[corpus]);
   }
 }
 
 // Графы Kit строятся скриптом без модели — журнала Graphify у них нет.
-const KIT_GRAPHS = ['goals', 'arsenal', 'structure', 'resources', 'board', 'central'];
+const KIT_GRAPHS = ['goals', 'arsenal', 'structure', 'resources', 'board', 'manual', 'project', 'central'];
 
 function showGraph(c) {
   document.querySelectorAll('#graphs .side-tab').forEach(b => b.classList.toggle('on', b.dataset.c === c));

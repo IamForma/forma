@@ -60,7 +60,7 @@ const CACHE_DIR = path.join(ROOT, '.cache');
 const LOG_FILE = path.join(ROOT, 'subagents.log');
 const REGISTRY_FILE = path.join(CACHE_DIR, 'subagents-registry.json');
 
-// Тот же casual-формат времени, что и graphify.log/build-done-cards-graph.cjs:
+// Тот же casual-формат времени, что и graphify.log:
 // ГГГГ-ММ-ДД ЧЧ:ММ (срез ISO без строгого учёта часового пояса) — консистентно с
 // .forma/dashboard/generate.js:timeAgo(), который эту же форму и парсит.
 function nowStamp() {

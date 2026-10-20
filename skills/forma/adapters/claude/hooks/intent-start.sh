@@ -18,7 +18,8 @@ try {
   const lang = i18n.projectLang(process.cwd());
   text = (code, params) => i18n.message(code, params, lang);
 } catch { /* no catalog: the codes themselves are shown */ }
-const ctx = text("hook.intent_context", { url }) + "\n\n" + role + "\n\n" + start;
+const digest = (() => { try { return require("child_process").execFileSync(process.execPath, [".claude/scripts/graph-query.cjs", "digest"], { encoding: "utf8", timeout: 10000, windowsHide: true }).trim(); } catch { return ""; } })();
+const ctx = text("hook.intent_context", { url }) + "\n\n" + role + "\n\n" + start + (digest ? "\n\n" + digest : "");
 process.stdout.write(JSON.stringify({
   systemMessage: text("hook.dashboard_link", { url }),
   hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: ctx }

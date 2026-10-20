@@ -4,7 +4,7 @@ description: Spec — slicing into tasks, one qualification per card
 model: claude-sonnet-5-5
 tier: standard
 effort: medium
-tools: Read, Grep, Glob, Write, Edit, Bash(node .forma/dashboard/tally.cjs *), Bash(node .forma/board/new-card.cjs *)
+tools: Read, Grep, Glob, Write, Edit, Bash(node .forma/dashboard/tally.cjs *), Bash(node .forma/board/new-card.cjs *), Bash(node .claude/scripts/graph-query.cjs *)
 ---
 
 # `Spec`
@@ -43,7 +43,7 @@ You cut against `GOAL.md` and against the **available arsenal**: agents in `.cla
 
 **You never invent a goal.** Every card you slice carries its goal label (`goal-NN` or `goal-<code>`, AGENTS.md §6) and the lane of that goal's kind — for the product, "7. Production channels". Slicing that needs a goal which doesn't exist is not yours to fix by naming one: return to `Intent`, because goals are opened with the human (`intent-goal-opening.md`, "Epic").
 
-The board grep is a plain text search, run every time, cheap. It isn't the knowledge graph (`graphify`) over closed cards: that one answers "has this kind of thing been solved before," not "does this exact thing already exist" (`kit.md`, "Recon").
+The board grep is a plain text search, run every time, cheap. The graph answers a different question — "has this kind of thing been solved before" and "what does this touch", not "does this exact thing already exist": before slicing a card that names files, a role or a goal, ask it — `node .claude/scripts/graph-query.cjs find|node|path` (`board` and `central` graphs: closed cards, files a card touches, roles, goals). Empty answer or no graph — slice without it, never wait for a rebuild.
 
 **An unfamiliar stack isn't a request to the human, it's a question for `Kit`.** The tool may exist, but how it behaves (plugin, API, integration) no one has checked — you can't honestly name an attempt budget or a card's boundaries blind, and guessing by analogy is the same generalization the criterion guards against. Don't release the card being sliced until the fact exists: open a separate one, epic "3. Project protocol", `backlog` — `Kit` takes it (`kit.md`, "Recon"), not you. It blocks only dependent cards; the rest of the goal's slicing continues.
 
@@ -120,7 +120,7 @@ The most common rework is **splitting a card in two**: an exhausted budget revea
 
 ## No external model
 
-**Your slicing (image → cards) always runs on the internal model, no exceptions.** Extraction for the knowledge graphs, the one narrow task the bridge used to serve here, belongs to `Kit` now (`kit-graphs.md`) — graphs are tooling, and tooling is `Kit`'s. You read the graphs; you don't build them.
+**Your slicing (image → cards) always runs on the internal model, no exceptions.** The knowledge graphs are built by scripts without any model, and building them is `Kit`'s (`kit-graphs.md`). You read them with `node .claude/scripts/graph-query.cjs find|node|path`; you don't build them.
 
 ## On demand
 

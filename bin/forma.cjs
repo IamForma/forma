@@ -213,7 +213,7 @@ const CLAUDE_HOOKS = {
   PreToolUse: [{ hooks: ['guard-delete.sh', 'tool-usage.sh'] }],
   UserPromptSubmit: [{ hooks: ['unlock-delete.sh'] }],
   SessionStart: [{ matcher: 'startup', hooks: ['check-ready.sh', ['check-plugin-update.sh', 15], 'check-dashboard.sh', 'intent-start.sh'] }],
-  PostToolUse: [{ matcher: 'Write|Edit', hooks: ['check-card.sh', 'sync-extensions.sh'] }],
+  PostToolUse: [{ matcher: 'Write|Edit', hooks: ['check-card.sh', 'sync-extensions.sh', 'auto-graphs.sh'] }],
 }
 // Auto-compact window. Forma proposes COMPACT_DEFAULT and asks first; the human's own value always wins:
 // found in the environment, ~/.claude/settings.json or .claude/settings.local.json, Forma writes nothing. A project

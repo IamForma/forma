@@ -281,7 +281,7 @@ function buildHtml(nodes, edges) {
   return { nodesCount: Number(m[1]), edgesCount: Number(m[2]), communitiesCount: Number(m[3]) };
 }
 
-// Строка в .forma/dashboard/graphify.log — формат общий с build-done-cards-graph.cjs, corpus=site.
+// Строка в .forma/dashboard/graphify.log — формат graphify.log, corpus=site.
 function appendBuildLog(g, html) {
   const ts = new Date().toISOString().slice(0, 16).replace('T', ' ');
   const line = `${ts} | mode=deterministic-site | agents=0 | tokens=0 | $0.000000 | corpus=site | trigger=manual | ` +

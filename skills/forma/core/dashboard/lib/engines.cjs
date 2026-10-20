@@ -29,7 +29,6 @@
  *   skillsDir              каталог скиллов проекта                         'unknown' вместо числа
  *   templateSkills         имена умений, что поставляет шаблон (список)    признак умений «—»
  *   syncScript             скрипт сверки движков; вызывается с --check     сверка не запускается
- *   doneCardsGraphScript   сборщик графа сделанных карточек                сборка невозможна
  *   usageRefresh           [{ script, args, cache }] — скрипты, что         кэши расхода не
  *                          обновляют кэш расхода диалога в .forma/dashboard/.cache обновляются ядром
  *   mcpConfigs(root)       [{ rel, file, level }] — файлы MCP-серверов     серверов нет, список пуст
@@ -64,7 +63,6 @@ const SHAPE = {
   skillsDir: 'string',
   templateSkills: 'array',
   syncScript: 'string',
-  doneCardsGraphScript: 'string',
   usageRefresh: 'array',
   mcpConfigs: 'function',
   engineSettings: 'function',
