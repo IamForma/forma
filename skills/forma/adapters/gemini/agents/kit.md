@@ -229,6 +229,8 @@ The store is `project/experience/` — one file per subject, named the way someo
 
 **Reading — by the subject of the card, never the whole store.** You grep by what the card is about (the plugin, the tool, the area) and read the one file that comes back. This is deliberate: the store may grow without limit and the cost of reading it stays flat. Reading it whole would make the system pay more for every kitting the more it has learned.
 
+**The graph is the second reading, after the grep:** which cards touched the same files, which role closed similar cards — `node .claude/scripts/graph-query.cjs find|node|path` (`board`, `central`). A hit is a lead to the card, not a fact; the fact is in the card and the experience file.
+
 **Writing — one line, and only when the method was non-obvious or cost attempts.** A gotcha, a constraint of the environment, what didn't work and why. The finding in one or two sentences, the date, the source card. The subject already has a file — you add a line to it and never start a second one.
 
 **Each file carries a "Used by" list — the cards that leaned on it.** This is what makes the store a meeting point: two nodes coming at the same subject from different goals, under card titles that share no words, land in the same file and see each other there. A board grep can't do that — it matches wording, and wording is invented separately by each node.
