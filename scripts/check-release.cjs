@@ -27,9 +27,22 @@ const TRACES = [
   { id: 'goal-code', re: /\bgoal-[1-9]\d\b/i, why: 'код цели проекта' },
   { id: 'attempt', re: /попытк\p{L}*\s+\d|attempt\s+\d/iu, why: 'номер попытки по карточке' },
   { id: 'criterion', re: /критери\p{L}*\s+\d|criterion\s+\d/iu, why: 'пункт критерия карточки' },
-  { id: 'site', re: /iamforma\.pro|yaforma/i, why: 'имя сайта или проекта', files: /^(?!README(\.ru)?\.md$)/ }, // кроме README: ссылки на официальные сайты сообщества
+  { id: 'site', re: /iamforma\.pro|yaforma|formacraft/i, why: 'имя сайта или проекта', files: /^(?!README(\.ru)?\.md$)/ }, // кроме README: ссылки на официальные сайты сообщества
+  { id: 'connector', re: /mcp__novamira-[a-z0-9]+(?:-[a-z0-9]+)*__/i, why: 'имя коннектора конкретного сайта' },
   { id: 'date', re: /\b20\d\d-\d\d-\d\d\b/, why: 'календарная дата', files: /^(?!test\/)/ },
 ];
+// Имена сайтов самого проекта: слаги коннекторов `mcp__novamira-<слаг>` и домены из curl-правил в настройках Claude Code
+// проекта (клон лежит в <проект>/.forma/protocol). Нет файла или клон вне проекта — список пуст.
+function projectSiteNames(dir) {
+  const names = new Set();
+  for (const rel of ['.claude/settings.json', '.claude/settings.local.json']) {
+    let text; try { text = fs.readFileSync(path.join(dir, '..', '..', rel), 'utf8'); } catch { continue; }
+    for (const m of text.matchAll(/mcp__novamira-([a-z0-9-]+)/g)) if (m[1].length >= 4 && m[1] !== 'hq') names.add(m[1]);
+    for (const m of text.matchAll(/curl(?:\.exe)? [^"]*?\*?([a-z0-9-]+\.[a-z]{2,})\*?/gi)) names.add(m[1].toLowerCase());
+  }
+  return [...names];
+}
+
 const TEXT = /\.(md|json|cjs|js|sh|toml|html|css|txt|yml|yaml)$/i;
 const SKIP = /(^|\/)(node_modules|archive)\//;
 const SELF = /^(scripts\/check-release\.cjs|test\/release-check\.test\.cjs)$/;
@@ -54,12 +67,16 @@ function scan(dir, rules, skip) {
 const scanCorruption = (dir) => scan(dir, RULES, /^test\//);
 
 /** Следы проекта в отслеживаемых текстовых файлах клона `dir`: [{ file, line, rule, why, text }]. */
-const scanTraces = (dir) => scan(dir, TRACES);
+const scanTraces = (dir) => {
+  const own = projectSiteNames(dir).map((n) => ({ id: 'site-name', re: new RegExp(n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), why: 'имя сайта проекта из его MCP-конфига' }));
+  return scan(dir, TRACES.concat(own));
+};
 
 /** Следы проекта в сообщениях коммитов: [{ message, rule, why }]. Даты в сообщении допустимы. */
 function scanMessages(messages) {
   const found = [];
   for (const m of messages) if (/[А-Яа-яЁё]/.test(m)) found.push({ message: m.split('\n')[0].slice(0, 100), rule: 'language', why: 'protocol commit messages are English only (AGENTS.md, prohibition 18)' });
+  for (const m of messages) if (/\b\d+\s+cards?\b/i.test(m)) found.push({ message: m.split('\n')[0].slice(0, 100), rule: 'card-count', why: 'число карточек проекта в сообщении' });
   for (const m of messages) for (const r of TRACES) if (r.id !== 'date' && r.re.test(m)) found.push({ message: m.split('\n')[0].slice(0, 100), rule: r.id, why: r.why });
   return found;
 }
@@ -107,4 +124,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { scanCorruption, RULES, scanTraces, scanMessages, TRACES };
+module.exports = { scanCorruption, RULES, scanTraces, scanMessages, TRACES, projectSiteNames };
