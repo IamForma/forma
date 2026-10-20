@@ -50,7 +50,7 @@ it('список умений шаблона: совпадает с тем, чт
   const base = path.join(ROOT, '.forma/protocol', 'skills', 'forma');
   const dirs = [path.join(base, 'adapters', 'claude', 'skills'), path.join(base, 'core', 'skills')];
   if (!dirs.every((d) => fs.existsSync(d))) return; // установленный проект без клона: сверять не с чем
-  const real = dirs.flatMap((d) => fs.readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name)).sort();
+  const real = [...new Set(dirs.flatMap((d) => fs.readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name)))].sort(); // умение может лежать и в adapters/claude, и в core
   assert.deepEqual([...a.templateSkills].sort(), real);
 });
 
