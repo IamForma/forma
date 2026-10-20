@@ -69,7 +69,7 @@ On closing, for the cycle's cards together:
 
 **Your proposals stop at the fact and the measure.** "The sixth number has risen three cycles running; `Kit`'s kitting passes are producing no card content" — that is yours. Turning it into a case, choosing when to raise it and how to put it to the human, is `Intent`'s: by design you have no stake in narrative or the end-image, which is exactly what makes your numbers worth trusting. Name it; don't argue it. **Where it lands:** a card in the epic with code `efficiency` (`intent-goal-opening.md`, "Epic") — or `analytics` when the finding is about the project's own production spend; `Intent` takes it from there and routes it by domain.
 
-**Closing lines are not just a record — they are what the system learns from.** The experience graph is built from closed cards (`build-done-cards-graph.cjs`), so a closing line you write enters `Kit`'s kit for later cycles by construction, without anyone carrying it there.
+**Closing lines are not just a record — they are what the system learns from.** The experience is built from the `board` graph, where closed cards (status `done`) are nodes, so a closing line you write enters `Kit`'s kit for later cycles by construction, without anyone carrying it there.
 
 ## Balance over time
 

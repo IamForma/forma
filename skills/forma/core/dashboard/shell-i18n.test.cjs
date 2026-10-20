@@ -68,7 +68,7 @@ for (const [lang, cyr] of [['en', false], ['ru', true]]) {
     const x = load(lang);
     const full = { reason: '', corpus: 'project' };
     const html = [x.nodesHtml([{ node: 'Kit', model: '', effort: '', toolCount: 3, externalModel: true }]), x.nodesHtml([]), x.chainHtml(chain),
-      x.graphifyPanelHtml('project', null), x.graphifyPanelHtml('done-cards', { stale: true, pending: { pending: true }, budgetStop: { filesProcessed: 1, filesTotal: 2, costUsd: 1, maxUsdPerBuild: 1 },
+      x.graphifyPanelHtml('project', null), x.graphifyPanelHtml('manual', { stale: true, pending: { pending: true },
         lastRun: { nodes: 1, edges: 2, communities: 3, warnings: 0, at: D(1) + ' 10:00', trigger: 'x', costUsd: 0.1 } }),
       x.docsHtml(null)].join('\n');
     assert.ok(html.length > 2000, 'не отрисовалось');

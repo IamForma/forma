@@ -9,11 +9,11 @@ Read this file when you build, refresh or read the knowledge graphs, or prepare 
 | goals | the `ROADMAP.md` map and every card's goal label | none | `build-kit-graphs.cjs` |
 | live board | open cards: status, holder, lane, goal, files they name | none | `build-kit-graphs.cjs` |
 | arsenal | roles' declared tools, skills, scripts, MCP servers, the tool journal (declared vs used) | none | `build-kit-graphs.cjs` |
-| experience | closed cards | the smallest that can extract meaning | `build-done-cards-graph.cjs` |
-| manual, project | the engine's and the project's documents | the smallest that can extract meaning | `graphify` |
+| experience | closed cards (status `done`), a part of the `board` graph | none | `build-kit-graphs.cjs` |
+| manual, project | the engine's and the project's documents | none | `build-kit-graphs.cjs --only manual|project` |
 | tendons | rule ↔ case links between the three above | none | `build-tendons.cjs` |
 
-**As cheap as possible — two rules.** What is written explicitly (frontmatter, labels, card codes, paths, headings, spend lines, the journal) is parsed, never sent to a model: that costs nothing and is exact. A model is reached only for meaning that isn't written as structure, and then the smallest one that holds the quality — the internal extractor by default; the external bridge (`external-model-bridge.cjs`) only under the narrow contract `project/config/CONFIG.md`, `#deepseek-extraction-quality`. Which one, for which files, is your decision, written into the card like any channel.
+**Mechanical only.** Every graph is built by a script from what is written explicitly (frontmatter, labels, card codes, paths, headings, spend lines, the journal): parsed, never sent to a model — free and exact. No graph needs a model; meaning that isn't written as structure is not extracted.
 
 **Grown, never rebuilt.** Every graph is cached by file hash: an unchanged file keeps its nodes without a call, a changed one is re-read, a deleted one takes its nodes with it. A rebuild costs what changed, not what exists.
 

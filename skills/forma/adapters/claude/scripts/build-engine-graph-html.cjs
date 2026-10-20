@@ -1,8 +1,6 @@
 #!/usr/bin/env node
-// Рендер .forma/living/graphs/engine/graph.html из уже собранного graph.json (скелет +
-// слой смысла). Тот же шаг graphify.to_html, что у site (build-site-graph.cjs) —
-// без модели, без сети: Python-рендерер, вызывается после build-engine-graph.cjs
-// и build-engine-meaning.cjs.
+// Рендер .forma/living/graphs/engine/graph.html из уже собранного graph.json (скелет). Тот же шаг graphify.to_html, что у site (build-site-graph.cjs) —
+// без модели, без сети: Python-рендерер, вызывается после build-engine-graph.cjs.
 //
 //   node .claude/scripts/build-engine-graph-html.cjs
 'use strict';
@@ -56,7 +54,7 @@ print(f"Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges, {len(co
 
 function main() {
   if (!fs.existsSync(GRAPH_FILE)) {
-    console.error(`Нет ${GRAPH_FILE} — сначала build-engine-graph.cjs (и build-engine-meaning.cjs для описаний).`);
+    console.error(`Нет ${GRAPH_FILE} — сначала build-engine-graph.cjs.`);
     process.exit(1);
   }
   const g = JSON.parse(fs.readFileSync(GRAPH_FILE, 'utf8'));

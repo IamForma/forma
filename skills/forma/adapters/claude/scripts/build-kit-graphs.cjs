@@ -2,9 +2,8 @@
 //
 // Всё, из чего они строятся, уже записано явно — frontmatter карточек, метки
 // целей, карта ROADMAP.md, фронтматтер ролей, журнал инструментов. Поэтому модель
-// здесь не вызывается ни разу: разбор текста, а не извлечение смысла. Смысловые
-// графы (опыт, manual, project) строятся другими скриптами, и модель для них
-// выбирает Kit — самую маленькую, какая справится.
+// здесь не вызывается ни разу: разбор текста, а не извлечение смысла.
+// Все графы механические: ни один не вызывает модель.
 //
 // Инкрементально по хэшу файла: неизменённый файл берёт свои узлы и рёбра из
 // кэша, изменённый разбирается заново, удалённый уходит из графа вместе со своими
@@ -16,14 +15,17 @@
 // собирается последним, из готовых графов (файлы не перечитываются).
 // Единые префиксы id: card:<card-NNN> · goal:<goal-…> · epic:<эпик> · role:<роль> ·
 // skill:<скилл> · script:<скрипт> · mcp:<сервер> · tool:<инструмент> · plugin:<плагин> ·
-// node:<узел протокола> · file:<путь>. Смысловые графы подключаются по тому же контракту id.
+// node:<узел протокола> · file:<путь>. Новые графы подключаются по тому же контракту id.
 // Межслойные рёбра: card → goal (serves, метка goal-NN), card → epic (in_lane), card → role (uses_role).
 // Ребро на несуществующий узел не строится, а считается в отчёте. Кэш central — хэш трёх
 // входных графов (без поля built) и версия сборщика: при неизменных входах разбирается 0.
 // Отчёт: карточки без цели и без роли, роли и цели без карточек, доля принятых с первого раза
 // (по числу строк attempt роли Run в History) в разрезе ролей — метрика для Core.
 //
-//   node .claude/scripts/build-kit-graphs.cjs [--only goals|board|arsenal|structure|resources|central]
+// Графы manual (.forma/manual/**/*.md) и project (project/**/*.md без cards/, work/, node_modules) — тоже
+// механические: doc на файл (подпись — первый H1), heading на H2, рёбра contains и links_to.
+//
+//   node .claude/scripts/build-kit-graphs.cjs [--only goals|board|arsenal|structure|resources|manual|project|central]
 //
 // Выход: .forma/living/graphs/{goals,board,arsenal,central}/graph.json — формат graphify
 // ({nodes:[{id,label,type,source_file}], edges:[{source,target,relation}]}),
@@ -259,6 +261,43 @@ function logForArsenal(f, text) {
   return { nodes, edges };
 }
 
+// --- manual / project: механический разбор markdown-корпуса ------------------------------
+// doc:<путь> на файл (подпись — первый H1), heading:<путь>#<n> на H2, contains doc→heading,
+// links_to doc→doc (относительные markdown-ссылки и пути project/.claude/.forma, как в docForStructure).
+function docForCorpus(f, text) {
+  const key = rel(f), dir = path.posix.dirname(key), id = 'doc:' + key;
+  const body = text.replace(/^```[\s\S]*?^```/gm, '');
+  const h1 = (body.match(/^# (.+)$/m) || [])[1] || path.posix.basename(key);
+  const nodes = [{ id, label: h1.trim().slice(0, 160), type: 'doc', path: key }], edges = [];
+  let n = 0;
+  for (const m of body.matchAll(/^## (.+)$/gm)) {
+    const hid = `heading:${key}#${++n}`;
+    nodes.push({ id: hid, label: m[1].trim().slice(0, 160), type: 'heading', path: key });
+    edges.push({ source: id, target: hid, relation: 'contains' });
+  }
+  const links = new Set();
+  for (const m of body.matchAll(/\]\(([^)\s#]+)(?:#[^)]*)?\)/g)) {
+    if (/^[a-z]+:|^\//i.test(m[1])) continue;
+    links.add(normPath(path.posix.normalize(path.posix.join(dir, m[1]))));
+  }
+  for (const m of body.matchAll(PATH_RE)) links.add(normPath(m[0]));
+  for (const l of links) if (l !== key) edges.push({ source: id, target: 'doc:' + l, relation: 'links_to' });
+  return { nodes, edges };
+}
+docForCorpus.v = 1;
+
+function mdTree(dir, skip) {
+  const out = [];
+  if (!fs.existsSync(dir)) return out;
+  for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name < b.name ? -1 : 1)) {
+    if (e.name === 'node_modules' || e.name.startsWith('.') || (skip && skip(e.name))) continue;
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) out.push(...mdTree(p, null));
+    else if (e.name.endsWith('.md')) out.push(p);
+  }
+  return out;
+}
+
 // --- какие файлы питают какой граф -----------------------------------------------
 
 function pluginFiles() {
@@ -272,6 +311,8 @@ function sources() {
   const skillDirs = list(path.join(ROOT, '.claude', 'skills'), () => true)
     .map(d => path.join(d, 'SKILL.md')).filter(f => fs.existsSync(f));
   return {
+    manual: mdTree(path.join(ROOT, '.forma', 'manual')).map(f => [f, docForCorpus]),
+    project: mdTree(path.join(ROOT, 'project'), n => n === 'cards' || n === 'work').map(f => [f, docForCorpus]),
     goals: [[[path.join(ROOT, 'project', 'ops', 'ROADMAP.md'), path.join(ROOT, 'project', 'ROADMAP.md')].find(f => fs.existsSync(f)) || path.join(ROOT, 'project', 'ops', 'ROADMAP.md'), roadmapForGoals],
             ...[...open, ...done].map(f => [f, cardForGoals])],
     board: [...open, ...done].map(f => [f, cardForBoard]),   // доска: открытые и закрытые (done/)
@@ -319,6 +360,10 @@ function build(name, pairs, cache, roles) {
       if (!['runs_script', 'uses_connector', 'uses_skill', 'has_role', 'has_skill'].includes(e.relation) || nodes.has(e.target)) keep.push(e);
       else if (['runs_script', 'uses_connector', 'uses_skill'].includes(e.relation)) dangling.push(e);
     }
+    edges.length = 0; edges.push(...keep);
+  }
+  if (name === 'manual' || name === 'project') {   // ссылка на файл вне корпуса — не ребро графа
+    const keep = edges.filter(e => nodes.has(e.target));
     edges.length = 0; edges.push(...keep);
   }
   let gone = 0;
@@ -679,7 +724,7 @@ function main() {
     const g = arsenal || readJson(path.join(OUT, 'arsenal', 'graph.json'), { nodes: [] });
     return (roles = new Set(g.nodes.filter(n => n.type === 'role').map(n => n.id)));
   };
-  for (const name of ['goals', 'arsenal', 'structure', 'resources', 'board']) {
+  for (const name of ['goals', 'arsenal', 'structure', 'resources', 'board', 'manual', 'project']) {
     if (only && only !== name) continue;
     if (name === 'resources') {
       const gg = (rows.find(r => r.name === 'goals') || {}).graph || readJson(path.join(OUT, 'goals', 'graph.json'), { nodes: [] });

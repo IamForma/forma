@@ -13,7 +13,7 @@ const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const GRAPHS = path.join(ROOT, '.forma/living', 'graphs');
-const CORPORA = ['goals', 'arsenal', 'structure', 'resources', 'board', 'central'];
+const CORPORA = ['goals', 'arsenal', 'structure', 'resources', 'board', 'manual', 'project', 'central'];
 
 function toExtraction(g, corpus) {
   return {

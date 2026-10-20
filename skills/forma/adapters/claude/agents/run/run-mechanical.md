@@ -5,7 +5,6 @@ model: claude-haiku-5-5
 tier: light
 effort: medium
 tools: Read, Write, Bash(node .claude/scripts/*), Bash(node .forma/board/run-in-card.cjs *)
-skills: run-scripts
 ---
 
 # `run-mechanical`

@@ -38,7 +38,7 @@ it('проверка формы отличает порчу: не тот тип 
 
 it('пути адаптера — от корня проекта, и они существуют', () => {
   const a = adapter();
-  for (const f of ['rolesDir', 'onDemandRolesDir', 'engineRulesFile', 'skillsDir', 'syncScript', 'doneCardsGraphScript']) {
+  for (const f of ['rolesDir', 'onDemandRolesDir', 'engineRulesFile', 'skillsDir', 'syncScript']) {
     assert.ok(fs.existsSync(engines.resolveRel(ROOT, a[f])), `${f}: ${a[f]} не найден`);
   }
   for (const r of a.usageRefresh) assert.ok(fs.existsSync(engines.resolveRel(ROOT, r.script)), `usageRefresh: ${r.script}`);

@@ -21,9 +21,9 @@ const path = require('path');
 const { makeCli } = require('../../.forma/dashboard/lib/cli.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const MANUAL = path.join(ROOT, '.forma/living', 'graphs', '.forma/manual', 'graph.json');
+const MANUAL = path.join(ROOT, '.forma/living', 'graphs', 'manual', 'graph.json');
 const PROJECT = path.join(ROOT, '.forma/living', 'graphs', 'project', 'graph.json');
-// Граф движка — необязательный вход (build-engine-meaning.cjs, слой смысла):
+// Граф движка — необязательный вход:
 // нет файла или в нём нет description/capabilities — секция «движок → правило»
 // просто пустая, это не повод останавливать сухожилия карточек.
 const ENGINE = path.join(ROOT, '.forma/living', 'graphs', 'engine', 'graph.json');
@@ -155,8 +155,8 @@ function matchProhibitions(proh, cards, toBone, boneHits) {
   }
 }
 
-// --- движок → правило: «реализует правило» (слой смысла, не код) -----------------
-// Текст сопоставления — description+capabilities узла-файла (build-engine-meaning.cjs),
+// --- движок → правило: «реализует правило» (по описанию узла, не по коду) -----------------
+// Текст сопоставления — description+capabilities узла-файла,
 // не исходный код: совпадение по смыслу, та же логика мест, что matchBones/matchProhibitions,
 // но источник — файлы движка, а не карточки.
 function engineFiles(engine) {
@@ -304,10 +304,10 @@ function printSummary(out) {
   console.log('  плотнее всего:', out.wear.slice(0, 3).map((w) => w.label.slice(0, 32) + ' (' + w.cards + ')').join(' · '));
   const e = out.engine;
   if (e.filesWithMeaning) {
-    console.log('  движок → правило: файлов со слоем смысла', e.filesWithMeaning, 'из', e.filesTotal,
+    console.log('  движок → правило: файлов с описанием', e.filesWithMeaning, 'из', e.filesTotal,
                 '| правил «реализует» затронуто', e.rulesImplemented, '| рёбер', out.toBoneEngine.length);
   } else {
-    console.log('  движок → правило: нет слоя смысла (.forma/living/graphs/engine/graph.json без description/capabilities) — секция пустая.');
+    console.log('  движок → правило: нет описаний (.forma/living/graphs/engine/graph.json без description/capabilities) — секция пустая.');
   }
 }
 

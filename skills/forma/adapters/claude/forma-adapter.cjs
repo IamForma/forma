@@ -55,7 +55,6 @@ module.exports = {
   // Список едет с адаптером — в установленном проекте клона .forma/protocol/ нет; сверка с шаблоном — forma-adapter.test.cjs.
   templateSkills: ['engine-switch', 'excalidraw-diagrams', 'forma-grill-with-ui', 'graph-build', 'graphify', 'grilling', 'human-register', 'project-knowledge', 'skill-authoring'],
   syncScript: '.claude/scripts/sync-engines.cjs',
-  doneCardsGraphScript: '.claude/scripts/build-done-cards-graph.cjs',
 
   // Расход диалога: скрипт пишет .forma/dashboard/.cache/session-current.json.
   usageRefresh: [

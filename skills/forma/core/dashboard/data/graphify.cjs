@@ -1,16 +1,16 @@
 'use strict';
 
 /**
- * Graphify — пять корпусов графов (project, manual, done-cards, site, engine), у каждого свой последний прогон,
- * стоимость и число узлов/рёбер/кластеров/предупреждений (не агрегат по всем сразу). Триггер по накоплению —
- * только у done-cards; project и manual получают «протухло» по хешу содержимого корпуса (`checkCorpusStale`);
+ * Graphify — четыре корпуса графов (project, manual, site, engine), у каждого свой последний прогон,
+ * стоимость и число узлов/рёбер/кластеров/предупреждений (не агрегат по всем сразу). Все графы механические (без модели).
+ * project и manual получают «протухло» по хешу содержимого корпуса (`checkCorpusStale`);
  * site и engine строятся отдельными скриптами (`build-site-graph.cjs`, `build-engine-graph.cjs`) со своим
  * снимком каждый — без файлового протухания здесь.
  *
  * Журнал `.forma/dashboard/graphify.log` — не карточка, не круг: одна строка на запуск.
  * Формат базовый (все старые строки): ГГГГ-ММ-ДД ЧЧ:ММ | mode=... | agents=N | tokens=N | $X.XXXX | <что сделано>
  * Расширенный — между $-сегментом и свободной сводкой стоят необязательные поля key=value, в этом порядке:
- * corpus=<project|manual|done-cards|site|engine> | trigger=<manual|auto-accum|human> | nodes=N | edges=N | communities=N | warnings=N.
+ * corpus=<project|manual|site|engine> | trigger=<manual|auto-accum|human> | nodes=N | edges=N | communities=N | warnings=N.
  * Каждое поле распознаётся независимо: старая строка без них разбирается так же, как раньше.
  */
 
@@ -25,7 +25,7 @@ const GRAPHIFY_HEAD_RE =
 const GRAPHIFY_EXTRA_KEY_RE = /^(corpus|trigger|nodes|edges|communities|warnings)=(.+)$/;
 
 /** Корпуса графов — те же имена, что у вкладок. */
-const GRAPHIFY_CORPORA = ['project', '.forma/manual', 'done-cards', 'site', 'engine'];
+const GRAPHIFY_CORPORA = ['project', 'manual', 'site', 'engine'];
 
 function parseGraphifyLine(trimmed) {
   const m = GRAPHIFY_HEAD_RE.exec(trimmed);
@@ -64,13 +64,12 @@ function readRuns(file) {
 }
 
 /**
- * Разбивка по корпусам. Строки без явного `corpus=` — записи до этой доработки; писал их один
- * `build-done-cards-graph.cjs`, поэтому по факту они относятся к done-cards.
+ * Разбивка по корпусам. Строки без явного `corpus=` — старые записи, относятся к корпусу `legacy`.
  */
 function byCorpusOf(runs) {
   const byCorpus = {};
   for (const r of runs) {
-    const corpus = r.corpus || 'done-cards';
+    const corpus = r.corpus || 'legacy';
     if (!byCorpus[corpus]) byCorpus[corpus] = { corpus, runCount: 0, tokensTotal: 0, costUsdTotal: 0, lastRun: null };
     const c = byCorpus[corpus];
     c.runCount += 1;
@@ -100,14 +99,10 @@ function readGraphifyLog(projectRoot) {
 }
 
 // Метка от graphify-trigger.cjs — накопление событий перевалило за порог из graphify.config.json, граф
-// просит пересборки. Только done-cards.
+// просит пересборки.
 const readGraphifyPending = (projectRoot) => readJson(cachePath(projectRoot, 'graphify-pending.json'), null);
 
-// Метка от build-done-cards-graph.cjs — потолок расхода (budget.maxUsdPerBuild) сработал посреди прогона,
-// граф собран по неполному корпусу. Пишется/снимается тем же скриптом.
-const readGraphifyBudgetStop = (projectRoot) => readJson(cachePath(projectRoot, 'graphify-budget-stop.json'), null);
-
-// Каталог корпуса на диске для каждого имени вкладки (done-cards — не по этому механизму).
+// Каталог корпуса на диске для каждого имени вкладки.
 const CORPUS_SOURCE_DIR = { project: 'project', manual: '.forma/manual' };
 // Служебные подкаталоги не считаем содержимым корпуса: они меняются от кэша и версий, не от правки содержимого.
 const FINGERPRINT_SKIP_DIRS = new Set(['.cache', 'node_modules', '.git']);
@@ -157,27 +152,25 @@ function corpusView(projectRoot, corpus, marks) {
     tokensTotal: fromLog ? fromLog.tokensTotal : 0,
     costUsdTotal: fromLog ? fromLog.costUsdTotal : 0,
     lastRun: fromLog ? fromLog.lastRun : null,
-    stale: corpus === 'done-cards' ? null : checkCorpusStale(projectRoot, corpus),
-    pending: corpus === 'done-cards' ? marks.pending : null,
-    budgetStop: (marks.budgetStop && marks.budgetStop.corpus === corpus) ? marks.budgetStop : null,
+    stale: checkCorpusStale(projectRoot, corpus),
+    pending: null,
   };
 }
 
-/** `{ graphify, graphifyPending, graphifyByCorpus }` — журнал запусков, метка накопления и три корпуса. */
+/** `{ graphify, graphifyPending, graphifyByCorpus }` — журнал запусков, метка накопления и корпуса. */
 function buildGraphify(projectRoot) {
   const log = readGraphifyLog(projectRoot);
   const pending = readGraphifyPending(projectRoot);
-  const budgetStop = readGraphifyBudgetStop(projectRoot);
   const graphifyByCorpus = {};
   for (const corpus of GRAPHIFY_CORPORA) {
-    graphifyByCorpus[corpus] = corpusView(projectRoot, corpus, { log, pending, budgetStop });
+    graphifyByCorpus[corpus] = corpusView(projectRoot, corpus, { log, pending });
   }
   return { graphify: log, graphifyPending: pending, graphifyByCorpus };
 }
 
-/** Собран ли `graph.html` каждого корпуса: `{ manual, 'done-cards', project, site, engine, goals, arsenal, structure, resources, board, central }`. */
+/** Собран ли `graph.html` каждого корпуса: `{ manual, project, site, engine, goals, arsenal, structure, resources, board, central }`. */
 function graphsBuilt(projectRoot) {
-  return Object.fromEntries(['.forma/manual', 'done-cards', 'project', 'site', 'engine', 'goals', 'arsenal', 'structure', 'resources', 'board', 'central'].map((c) => [c, fs.existsSync(path.join(projectRoot, '.forma/living', 'graphs', c, 'graph.html'))]));
+  return Object.fromEntries(['manual', 'project', 'site', 'engine', 'goals', 'arsenal', 'structure', 'resources', 'board', 'central'].map((c) => [c, fs.existsSync(path.join(projectRoot, '.forma/living', 'graphs', c, 'graph.html'))]));
 }
 
 module.exports = { buildGraphify, graphsBuilt };
