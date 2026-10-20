@@ -1,7 +1,7 @@
 ---
 name: extractor
 description: Extractor — text-in/text-out extraction, no routing decisions, no schema knowledge
-model: gemini-3.8-flash
+model: gemini-flash-lite
 effort: low
 tools: Read, Glob, Grep, Write
 omitClaudeMd: true

@@ -96,6 +96,7 @@ exit 1
     · Codex (сведение, не нарушение): .codex/CODEX-8.md: нет §8 этой среды — роли ссылаются в пустоту
     · Codex (сведение, не нарушение): .codex/config.toml: нет конфигурации Codex
     · Codex (сведение, не нарушение): .codex/roles/on-demand/: слоя «по требованию» у Codex нет, у Claude — 25. Закон ссылается на эти файлы по голому имени — узел Codex не найдёт то, на что его послали
+    · Codex (сведение, не нарушение): .agents/skills/engine-switch: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/excalidraw-diagrams: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/forma-grill-with-ui: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/graph-build: нет зеркала навыка Claude
