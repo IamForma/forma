@@ -1,7 +1,7 @@
 ---
 name: plumb-gemini
 description: Plumb, built-in executor — measures role fit for a cleaned task (choice, score, noul), returns JSON only
-model: gemini-3.8-flash
+model: gemini-flash-lite
 effort: low
 tools: Read
 omitClaudeMd: true
