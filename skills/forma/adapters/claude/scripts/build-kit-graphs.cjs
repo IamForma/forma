@@ -657,6 +657,16 @@ function printCentral(r) {
   for (const [role, b] of Object.entries(c.by_role)) console.log(`  ${role}: ${b.first_time}/${b.accepted}`);
 }
 
+// graph.html для вкладки «Графы» дашборда: перерисовываем, когда граф изменился или html ещё нет.
+function renderHtml(rows) {
+  const { main: renderMain, CORPORA } = require('./build-graph-html.cjs');
+  const todo = rows.filter(r => CORPORA.includes(r.name) &&
+    (r.miss || r.gone || !fs.existsSync(path.join(OUT, r.name, 'graph.html')))).map(r => r.name);
+  if (!todo.length) return;
+  try { renderMain(todo); }
+  catch (err) { console.log(`graph.html не собран: ${String(err && err.message || err)}`); }
+}
+
 function main() {
   const cli = makeCli();
   const only = cli.eq('only', '') || cli.value('only', '');
@@ -695,6 +705,7 @@ function main() {
   }
   fs.mkdirSync(OUT, { recursive: true });
   fs.writeFileSync(CACHE, JSON.stringify(cache));
+  renderHtml(rows);
   for (const r of rows) {
     console.log(`${r.name.padEnd(8)} ${String(r.nodes).padStart(5)} узлов ${String(r.edges).padStart(5)} рёбер · ` +
                 `из кэша ${r.hit}, разобрано ${r.miss}, ушло ${r.gone} · модель: 0 токенов`);

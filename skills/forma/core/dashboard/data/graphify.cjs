@@ -175,9 +175,9 @@ function buildGraphify(projectRoot) {
   return { graphify: log, graphifyPending: pending, graphifyByCorpus };
 }
 
-/** Собран ли `graph.html` каждого корпуса: `{ manual, 'done-cards', project, site, engine }`. */
+/** Собран ли `graph.html` каждого корпуса: `{ manual, 'done-cards', project, site, engine, goals, arsenal, structure, resources, board, central }`. */
 function graphsBuilt(projectRoot) {
-  return Object.fromEntries(['.forma/manual', 'done-cards', 'project', 'site', 'engine'].map((c) => [c, fs.existsSync(path.join(projectRoot, '.forma/living', 'graphs', c, 'graph.html'))]));
+  return Object.fromEntries(['.forma/manual', 'done-cards', 'project', 'site', 'engine', 'goals', 'arsenal', 'structure', 'resources', 'board', 'central'].map((c) => [c, fs.existsSync(path.join(projectRoot, '.forma/living', 'graphs', c, 'graph.html'))]));
 }
 
 module.exports = { buildGraphify, graphsBuilt };
