@@ -110,7 +110,7 @@ Write what must result, not what mustn't. Negation is unreliable: a "don't do th
 
 Come from `Kit`, when a node is missing something that can be made up by work. Written out as a regular card with kind `tooling`, and go the normal route. Tooling doesn't move you closer to the end-image — that's exactly what the kind marks. More than two or three accumulating means the cycle has stopped being about the work: tell `Kit` to raise the question of a separate goal with the human.
 
-**Protocol files in the criterion.** A card that changes protocol files (`AGENTS.md`, `.claude/agents`, `.claude/rules`, `.claude/scripts`, `.forma/manual/`, `.forma/dashboard/`) carries in its readiness criterion: "the template `.forma/protocol/skills/forma/` is updated, `node .codex/tests/test-sync-codex.cjs` is green". Otherwise the project passes and the template drifts.
+**Protocol files in the criterion.** A card that changes protocol files (`AGENTS.md`, `.claude/agents`, `.claude/rules`, `.claude/scripts`, `.forma/manual/`, `.forma/dashboard/`) carries in its readiness criterion: "the template `.forma/protocol/skills/forma/` is updated, `node .claude/scripts/sync-engines.cjs --check` shows no core or Gemini breach". Otherwise the project passes and the template drifts.
 
 ## Reworks
 

@@ -89,13 +89,18 @@ function syntaxError(file) {
 const finding = (address, expected, found) => ({ address, expected, found });
 
 /** Layer 1 + core closure: manifest, hashes, skeleton, syntax, JSON. */
+// Dormant engines (`.forma/engines.json`): not verified — neither the engine row nor the files of its folder.
+function dormantIds(root) { try { const l = JSON.parse(fs.readFileSync(path.join(root, '.forma', 'engines.json'), 'utf8')).dormant; return Array.isArray(l) ? l : []; } catch { return []; } }
+
 function checkCore(root, manifest) {
   const out = [];
+  const asleep = dormantIds(root).map((id) => '.' + id + '/');
   if (!fs.existsSync(path.join(root, 'AGENTS.md'))) out.push(finding('AGENTS.md', 'protocol root law', 'file missing'));
   for (const d of manifest.dirs || []) {
     if (!fs.existsSync(path.join(root, d))) out.push(finding(d + '/', 'directory exists', 'directory missing'));
   }
   for (const [r, want] of Object.entries(manifest.files || {})) {
+    if (asleep.some((p) => r.startsWith(p))) continue;
     const f = path.join(root, r);
     if (!fs.existsSync(f)) { out.push(finding(r, 'installer file', 'file missing')); continue; }
     const got = sha256(f);
@@ -139,7 +144,8 @@ function verify(root, { behavior = true } = {}) {
   result.core = checkCore(root, manifest);
   if (result.core.length) result.ok = false;
 
-  const engines = manifest.engines || [];
+  const asleepIds = dormantIds(root);
+  const engines = (manifest.engines || []).filter((e) => !asleepIds.includes(e.id));
   engines.forEach((engine, i) => {
     const role = i === 0 ? 'main' : 'secondary';
     const row = { id: engine.id, role, notes: [], findings: [] };

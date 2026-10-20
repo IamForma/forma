@@ -98,9 +98,9 @@ function readLog(logFile = LOG) {
       errors.push({ ts: '?', reason: `строка не разобрана: ${s}` });
       continue;
     }
-    const [ts, node, agentId, tool] = parts;
+    const [ts, node, agentId, tool, file] = parts;   // пятое поле (путь) необязательно: старые строки без него
     if (HOOK_ERROR.includes(node)) errors.push({ ts, reason: tool });
-    else rows.push({ ts, node, agentId, tool });
+    else rows.push({ ts, node, agentId, tool, file: file || null });
   }
   return { alive: true, rows, errors };
 }
@@ -256,6 +256,20 @@ function countByNode(rows) {
   return byNode;
 }
 
+// Файлы по узлам: сколько разных файлов затронул каждый узел (строки с путём; старые строки без пути не считаются).
+function printFilesByNode(rows) {
+  const by = new Map();
+  for (const r of rows) {
+    if (!r.file) continue;
+    if (!by.has(r.node)) by.set(r.node, new Set());
+    by.get(r.node).add(r.file);
+  }
+  console.log('');
+  if (!by.size) { console.log('Файлы по узлам: строк с путём пока нет.'); return; }
+  console.log('Файлы по узлам (разных файлов в журнале):');
+  for (const [node, set] of [...by].sort((a, b) => b[1].size - a[1].size)) console.log(`  ${node}: ${set.size}`);
+}
+
 // Честная оговорка: журнал хранит голое tool_name, поэтому две записи вида
 // Bash(...) с разными аргументами для него неразличимы.
 function printAmbiguity(role, usedBases) {
@@ -326,6 +340,7 @@ function main() {
   for (const node of nodeNames) printNode(node, byNode.get(node) || new Map(), declared.get(node));
 
   if (rows.length) printCardCut(rows);
+  printFilesByNode(rows);
   printHookErrors(errors);
 }
 
