@@ -16,6 +16,10 @@ const crypto = require('node:crypto')
 const ROOT_DIR = path.join('project', 'extensions')
 const LAYERS = ['', 'template', 'custom'] // '' = project/extensions/<engine>/ directly
 const ENGINE_DIRS = { claude: '.claude', codex: '.codex', agents: '.agents' }
+// project/extensions/shared/<part>/ is one source copied into every engine of SHARED_TARGETS; only parts whose format is the same for them
+const SHARED = 'shared'
+const SHARED_TARGETS = ['claude', 'agents']
+const SHARED_PARTS = ['skills', 'scripts']
 const STATE = path.join('.forma', 'extensions-state.json')
 const BLOCK_START = '# Forma: extension copies (generated from project/extensions/)'
 const BLOCK_END = '# Forma: end of extension copies'
@@ -39,8 +43,15 @@ function sources(root) {
   const byDst = new Map()
   for (const [engine, dirName] of Object.entries(ENGINE_DIRS)) {
     for (const layer of LAYERS) {
-      const base = path.join(root, ROOT_DIR, ...(layer ? [layer] : []), engine)
-      for (const rel of walk(base)) byDst.set(posix(path.join(dirName, rel)), { engine, rel, layer, src: path.join(base, rel), dst: path.join(dirName, rel) })
+      const layerDir = path.join(root, ROOT_DIR, ...(layer ? [layer] : []))
+      // shared/ goes to every engine in SHARED_TARGETS, under the engine's own file of the same name
+      const bases = [...(SHARED_TARGETS.includes(engine) ? [{ base: path.join(layerDir, SHARED), only: SHARED_PARTS }] : []), { base: path.join(layerDir, engine) }]
+      for (const { base, only } of bases) {
+        for (const rel of walk(base)) {
+          if (only && !only.includes(posix(rel).split('/')[0])) continue
+          byDst.set(posix(path.join(dirName, rel)), { engine, rel, layer, src: path.join(base, rel), dst: path.join(dirName, rel) })
+        }
+      }
     }
   }
   return [...byDst.values()]

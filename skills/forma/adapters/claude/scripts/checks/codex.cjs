@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { walk } = require('../../../.forma/dashboard/lib/fs.cjs');
+const { isDormant } = require('./support/dormant.cjs');
 
 const ROLE_NAMES = ['intent', 'spec', 'kit', 'run', 'core', 'extractor'];
 const CLAUDE_ON_DEMAND_DIR = '.claude/agents/on-demand';
@@ -112,6 +113,8 @@ function skillProblems(root) {
 function run({ root, info }) {
   // Среды нет — проверять нечего: Codex может не использоваться, это норма.
   if (!fs.existsSync(path.join(root, '.codex'))) return [];
+  // Спящий режим (`.forma/engines.json`): среда на месте, но не сверяется.
+  if (isDormant(root, 'codex')) { if (info) info.push('    · Codex: спящий режим — не сверяется (реестр .forma/engines.json)'); return []; }
   const notes = [...roleProblems(root), ...eightProblems(root), ...configProblems(root), ...onDemandProblems(root), ...skillProblems(root)];
   if (info) info.push(...notes.map((l) => '    · Codex (сведение, не нарушение): ' + l));
   return [];

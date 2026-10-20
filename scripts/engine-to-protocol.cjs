@@ -98,6 +98,7 @@ const MAP = [
   ['.forma/manual', 'core/manual'],
   ['.forma/skills', 'core/skills'],   // интервью — ядро; .claude/skills/<интервью> — доставленная копия, в адаптер не идёт
   ['.forma/board', 'core/board'],
+  ['.forma/engines.json', 'core/engines.json'],   // реестр спящих движков
   // адаптер Claude (читатели стенограмм Claude живут в .forma/dashboard проекта, но принадлежат адаптеру)
   ['.claude/forma-adapter.cjs', 'adapters/claude/forma-adapter.cjs'],   // граница ядро — адаптер: `dashboard/lib/engines.cjs`
   ['.claude/permission-levels.json', 'adapters/claude/permission-levels.json'],   // уровни доступа: читает permissions-level.cjs

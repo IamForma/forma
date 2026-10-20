@@ -10,7 +10,7 @@
 <img alt="Версия 0.0.x" src="https://img.shields.io/badge/version-0.0.x-blue">
 <img alt="Лицензия MIT" src="https://img.shields.io/badge/license-MIT-green">
 <img alt="Claude Code: готов" src="https://img.shields.io/badge/Claude%20Code-ready-brightgreen">
-<img alt="Codex и Gemini: бета" src="https://img.shields.io/badge/Codex%20%C2%B7%20Gemini-beta-yellow">
+<img alt="Gemini: бета" src="https://img.shields.io/badge/Gemini-beta-yellow">
 </p>
 
 <p align="center"><b><a href="https://yaforma.pro/">yaforma.pro</a></b> · <a href="https://iamforma.pro/#intro">English: iamforma.pro</a> · <a href="https://github.com/IamForma/forma">IamForma/forma</a></p>
@@ -39,7 +39,7 @@
 |---|---|
 | **VS Code** или **Antigravity** | Редактор, в котором живёт доска. |
 | **Kanban Markdown** | Доска. Установщик ставит сам (`--board auto`); вручную: `code --install-extension LachyFS.kanban-markdown`. |
-| **Claude Code** | Движок, на котором идут узлы (Codex и Gemini — бета). |
+| **Claude Code** | Движок, на котором идут узлы (Gemini — бета; Codex спит). |
 | **Node 18+** и **Git** | Установщик и скрипты протокола. |
 | **`bash`** | Хуки Claude Code; на Windows — Git for Windows. Проверка: `node .forma/verify/verify-install.cjs`. |
 
@@ -331,7 +331,7 @@ NNN · дело | страница с формой связи | форма от�
 npx github:IamForma/forma init
 ```
 
-Установщик спрашивает: движки (`claude` готов; `codex`, `gemini` — бета), шаблон проекта (или без шаблона), канбан-доску, язык документов, окно автосжатия. Без вопросов: `npx github:IamForma/forma init --engines claude --template none --board auto`. В реестре npm пакета нет — только `github:`.
+Установщик спрашивает: движки (`claude` готов; `gemini` — бета; `codex` спит — не предлагается и не ставится, пока его не разбудят в `core/engines.json`), шаблон проекта (или без шаблона), канбан-доску, язык документов, окно автосжатия. Без вопросов: `npx github:IamForma/forma init --engines claude --template none --board auto`. В реестре npm пакета нет — только `github:`.
 
 **Способ 2 — git-клон.**
 
@@ -364,7 +364,7 @@ claude plugin install forma@forma
 ```
 AGENTS.md          закон, §1–7
 .claude/           адаптер Claude Code: agents/, hooks/, scripts/, skills/, rules/, settings.json
-.codex/  .agents/  адаптеры Codex и Gemini (бета)
+.codex/  .agents/  адаптер Gemini (бета); Codex спит (не ставится)
 .forma/            ядро: board/, dashboard/, manual/, living/, verify/, extensions/, i18n/,
                    install-manifest.json, protocol/ (клон при способе 2)
 project/           продукт: config/, brief/, extensions/, cards/, ops/ — обновление не трогает

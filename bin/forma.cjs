@@ -30,6 +30,9 @@ const ENGINES = [
   { id: 'codex', label: 'Codex' },
   { id: 'gemini', label: 'Gemini (Antigravity)' },
 ]
+// Dormant engines (core/engines.json): shipped as files, but not offered in the menu and not installed; wake up = remove from the list.
+const DORMANT = (() => { try { return JSON.parse(fs.readFileSync(path.join(CORE, 'engines.json'), 'utf8')).dormant || [] } catch { return [] } })()
+const ACTIVE_ENGINES = ENGINES.filter((e) => !DORMANT.includes(e.id))
 
 // ---------- arguments ----------
 function parseArgs(argv) {
@@ -44,7 +47,7 @@ const HELP = `forma ${VERSION} init — install/update the Forma protocol in the
 
   npx github:IamForma/forma init [flags]
 
-  --engines  claude[,codex,gemini]   engines (codex, gemini — beta, in development, but installable)
+  --engines  claude[,gemini]         engines (gemini — beta; codex is dormant: core/engines.json)
   --template <name>|none             project template from templates/ (default: none)
   --board    auto|skip               Kanban Markdown: find editor CLIs and install (default: auto)
   --lang     <code>                  project document language (default: en). Catalogs shipped: en, ru; any other code (fr, de, ...)
@@ -173,6 +176,7 @@ function installCore(root, protectedPaths) {
   const skip = (d) => protectedPaths.has(path.resolve(d))
   const forma = path.join(root, '.forma')
   copyFile(path.join(CORE, 'AGENTS.md'), path.join(root, 'AGENTS.md'))
+  copyFile(path.join(CORE, 'engines.json'), path.join(forma, 'engines.json'))
   copyTree(path.join(CORE, 'manual'), path.join(forma, 'manual'))
   copyTree(path.join(CORE, 'board'), path.join(forma, 'board'))
   copyTree(path.join(CORE, 'verify'), path.join(forma, 'verify'))
@@ -386,12 +390,15 @@ async function chooseEngines(o, ask) {
   let engines = o.engines
   if (!engines && ask) {
     console.log('\n[1/5] Engines:')
-    ENGINES.forEach((e, i) => console.log(`  ${i + 1}. ${e.label}${e.id === 'claude' ? '' : ' — beta'}`))
+    ACTIVE_ENGINES.forEach((e, i) => console.log(`  ${i + 1}. ${e.label}${e.id === 'claude' ? '' : ' — beta'}`))
     const a = await ask('Numbers, comma-separated [1]: ')
-    engines = (a.trim() || '1').split(/[\s,]+/).map((x) => (ENGINES[Number(x) - 1] || {}).id || x).join(',')
+    engines = (a.trim() || '1').split(/[\s,]+/).map((x) => (ACTIVE_ENGINES[Number(x) - 1] || {}).id || x).join(',')
   }
   engines = (engines || 'claude').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean)
-  for (const e of engines) if (!ENGINES.some((x) => x.id === e)) { console.error(`Unknown engine: ${e}`); process.exit(2) }
+  for (const e of engines) {
+    if (DORMANT.includes(e)) { console.error(`Engine ${e} is dormant in this protocol version and is not installed (core/engines.json)`); process.exit(2) }
+    if (!ENGINES.some((x) => x.id === e)) { console.error(`Unknown engine: ${e}`); process.exit(2) }
+  }
   return engines
 }
 

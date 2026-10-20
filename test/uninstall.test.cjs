@@ -22,7 +22,7 @@ test('не установлено — отказ', () => {
 })
 
 test('dry-run ничего не удаляет, --yes снимает протокол и оставляет project/, .devtool/, .env', () => {
-  const i = spawnSync(process.execPath, [FORMA, 'init', '--dir', dir, '--engines', 'claude,codex,gemini', '--board', 'skip', '--yes'], { encoding: 'utf8' })
+  const i = spawnSync(process.execPath, [FORMA, 'init', '--dir', dir, '--engines', 'claude,gemini', '--board', 'skip', '--yes'], { encoding: 'utf8' })
   assert.equal(i.status, 0, i.stdout + i.stderr)
   fs.writeFileSync(path.join(dir, '.env'), 'KEY=1\n')
   fs.writeFileSync(path.join(dir, '.mcp.json'), '{}\n')
@@ -30,11 +30,11 @@ test('dry-run ничего не удаляет, --yes снимает прото�
   const d = run('uninstall')
   assert.equal(d.status, 0, d.stderr)
   assert.match(d.stdout, /Dry run/)
-  for (const f of ['.claude', '.codex', '.agents', '.forma', 'AGENTS.md']) assert.ok(has(f), f + ' ещё на месте')
+  for (const f of ['.claude', '.agents', '.forma', 'AGENTS.md']) assert.ok(has(f), f + ' ещё на месте')
 
   const r = run('uninstall', '--yes')
   assert.equal(r.status, 0, r.stdout + r.stderr)
-  for (const f of ['.claude', '.codex', '.agents', '.forma', 'AGENTS.md', '.env.example']) assert.ok(!has(f), f + ' удалён')
+  for (const f of ['.claude', '.agents', '.forma', 'AGENTS.md', '.env.example']) assert.ok(!has(f), f + ' удалён')
   for (const f of ['project', '.devtool', '.env', '.mcp.json']) assert.ok(has(f), f + ' остался')
   const gi = fs.readFileSync(path.join(dir, '.gitignore'), 'utf8')
   assert.doesNotMatch(gi, /Forma: dashboard runtime|project\/cards\/\*\/work\//)

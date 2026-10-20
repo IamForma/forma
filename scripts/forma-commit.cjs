@@ -105,6 +105,7 @@ function release() {
 const ENG = '.claude/scripts/sync-engines.cjs';
 const CDX = '.codex/scripts/sync-codex.cjs';
 const E2P = '.forma/protocol/scripts/engine-to-protocol.cjs';
+function codexDormant() { try { return JSON.parse(fs.readFileSync('.forma/engines.json', 'utf8')).dormant.includes('codex'); } catch { return false; } }
 
 // pre-commit проекта: любой коммит, и обычный git commit, переносит Claude → Gemini/Codex
 // и берёт их файлы в тот же коммит. Перенос в исходник протокола и версия — по-прежнему forma-commit.
@@ -145,8 +146,8 @@ function parity(tpl = true) {
       if (cards && /не закрыты `Core`/.test(l)) console.log('! ' + l.trim().replace(/^— /, '') + ' — дело Core, коммит не держит');
     }
   }
-  // Codex — адаптер «не готов»: его сверка — сведение, коммит не держит.
-  if (tpl && fs.existsSync(CDX)) { const r = node(CDX, '--check'); if (r.code) console.log('! адаптер Codex (не готов) расходится со своей сверкой — сведение, коммит не держит'); }
+  // Codex — адаптер «не готов»: его сверка — сведение, коммит не держит; спящий (`.forma/engines.json`) — не сверяется вовсе.
+  if (tpl && fs.existsSync(CDX) && !codexDormant()) { const r = node(CDX, '--check'); if (r.code) console.log('! адаптер Codex (не готов) расходится со своей сверкой — сведение, коммит не держит'); }
   return bad;
 }
 // Движок против исходника протокола
