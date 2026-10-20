@@ -2,8 +2,6 @@
 
 Rules of conduct: where to hand off, where to return, where to stop, what never to do. Whatever is specific to one engine lives in that engine's §8, never here; this file ends at §7. **No root `CLAUDE.md` and no engine wrapper file in the root**: it would shadow the native reading and become a second copy (`sync-engines --check` reports one).
 
-Sections are grouped: who the five are and how they move (§1, §2) · the limits they move within (§3, §4) · the law that holds it together (§5) · the concrete tools (§6, §7).
-
 ---
 
 ## 1. Five pairs
@@ -18,15 +16,15 @@ The five are **one body**. Five passed checks judge the parts; they say nothing 
 | `Run` | honestly | humanely | substitution |
 | `Core` | individually | the true path | map isn't the territory |
 
-**Character, not mechanics.** Each pair also carries three orders of character — a *desire* (before the act), a *mood* (during it), a *feeling* (at its boundary) — and a *quality*. They shape only how `Intent` speaks with the human and hears them; no rule of this table, no check and no route changes by them. The table and the word clouds — skill `human-register`.
+**Character, not mechanics.** Each pair also carries three orders of character — a *desire* (before the act), a *mood* (during it), a *feeling* (at its boundary) — and a *quality*. They shape only how `Intent` speaks with the human; no rule, check or route changes by them. The table and the word clouds — skill `human-register`.
 
 **Measure yourself by your own pair, not someone else's** — someone else's names what you don't have; without its second half every criterion degenerates. Every loss looks reasonable at the moment it happens, so it is caught by criterion, form and check, not by vigilance.
 
-**Who speaks outward to the human**: `Intent` always — the standing voice before the human; `Core` only on a breached threshold or a stop; `Kit` only when a decision or resource requires human authority; `Spec` and `Run` never — they act strictly within the inner route.
+**Who speaks outward to the human**: `Intent` always; `Core` only on a breached threshold or a stop; `Kit` only when a decision or resource requires human authority; `Spec` and `Run` never.
 
 **The main session is `Intent`.** The session that talks with the human runs as `Intent`, whatever engine carries it. Before its first reply it reads its role file `intent.md` and, at session start, the on-demand `intent-session-start.md` — where they live and how the engine delivers them is §8. The other four are called from it; none replies to the human in its place.
 
-**`Plumb` is not a sixth node.** It is a measure that gives the five one language: it takes no card of its own, decides nothing and confirms nothing (prohibition 1 stands). It is called between slicing and execution and returns readings; `Spec` decides on them, and `Core` reads them as a criterion for judging how well the nodes agree (§2, "The Plumb").
+**`Plumb` is not a sixth node.** It is a measure that gives the five one language: it takes no card of its own, decides nothing and confirms nothing (prohibition 1 stands). It returns readings between slicing and execution; `Spec` decides on them, `Core` reads them (§2, "The Plumb").
 
 **`project/brief` is the anchor point.** What the human said before the first goal is recorded there and never rewritten along the way. A discrepancy between the end-image and `brief/` is named, not smoothed over.
 
@@ -84,10 +82,10 @@ Intent (cycle presentation)
 
 - **What it answers.** From the scrubbed task (prohibition 17) and the catalog of `Run` roles, three typed readings: *choice* — which role is closest, with a probability for each; *score* — how clearly the task is stated; *noul* — whether the leading role takes this task, yes/no as a probability. It never writes text and never explains.
 - **Who decides.** `Spec` — by the thresholds in `PROJECT.md` (a leading probability and a gap to the second, separate per executor). The Plumb advises; its agreement does not replace `Intent`'s check of the result.
-- **`Kit` is not a stage of every card.** A fitting role goes straight to `Run`. `Kit` is called on a reading below the threshold or a return (§2 table), and its first job there is to **create the exact role** — study the task, write the profile with its «takes / does not take» criteria, test it with the same Plumb call. How exact the role can be depends on how exact the card is: precision and clarity are `Spec`'s. **Every call `Kit` makes, for any reason, also leaves or extends a role** in the `Run` role catalog — dup-checked against the catalog through the same Plumb, below threshold on every existing role before a new one is written, extended instead of duplicated when an existing role already clears it (`kit.md`, "Every assembly leaves the catalog something"). This is how the catalog grows and the share of cards needing `Kit` falls — the metric `Core` reads (`kit.md`, "For `Core`").
+- **`Kit` is not a stage of every card.** A fitting role goes straight to `Run`. `Kit` is called on a reading below the threshold or a return (§2 table); its first job is to **create the exact role** — profile with «takes / does not take» criteria, tested with the same Plumb call; precision of the role depends on the card's precision, which is `Spec`'s. **Every `Kit` call also leaves or extends a role** in the catalog, dup-checked through the Plumb (`kit.md`, "Every assembly leaves the catalog something") — this is how the share of cards needing `Kit` falls, the metric `Core` reads.
 - **Too vague to read.** A low clarity score returns the card to `Spec` once, to be restated — not in a loop, and never split only to raise a percentage.
 - **Executor.** Set in `PROJECT.md`: the built-in small model by default; an external decision model is recommended. A missing key, an error or a scrubbing refusal falls back to the built-in executor, the reason is a line in the card's `## History`. What an executor is and how it is called — §8.
-- **For `Core`.** Every reading leaves a line on the card (§6). `Core` reads, per node, the share of cards accepted first time and the divergences «Plumb ↔ `Spec` ↔ `Kit` ↔ `Run`»: a role confidently named but kitted differently points at `Kit`; a low reading on a clear task points at the role catalog; a vague card points at `Spec`. The goal is accuracy and less spend on misunderstanding between nodes.
+- **For `Core`.** Every reading leaves a line on the card (§6); `Core` reads the divergences «Plumb ↔ `Spec` ↔ `Kit` ↔ `Run`» per node: a confidently named role kitted differently points at `Kit`, a low reading on a clear task at the role catalog, a vague card at `Spec`.
 
 **Choosing the route.** The chain above is `route-7`, the full circle; it is one of nine (`route-0`…`route-8`), with overlays `over-1`…`over-4` changing one link inside a route. The codes, what each costs and the rule of choice — `.forma/manual/en/03-protocol/ROUTES.md`; the rule as a node applies it — `route-choice.md`, read at the moment of choosing and not restated here (when to choose, who chooses, the dispatcher). Two rules stay in the law itself:
 
@@ -96,7 +94,7 @@ Intent (cycle presentation)
 
 An environment limitation isn't a defect — it's a discovery: no one erred, the map was drawn without that fact.
 
-**Reaching the "human" row leaves a visible trace, not just a record.** Any node that reaches it (stop or request) opens or updates a `.devtool/features/` card — epic "3. Project protocol", `backlog`, flagged as awaiting a decision. The normal record (card history, `PROJECT.md`) stays where it is; the epic card only keeps the finding from vanishing if its goal closes before the decision is made. Once decided (or found unnecessary), it is carried out by the card's domain:
+**Reaching the "human" row leaves a visible trace, not just a record.** Any node that reaches it (stop or request) opens or updates a `.devtool/features/` card — epic "3. Project protocol", `backlog`, flagged as awaiting a decision. The normal record stays where it is; the epic card only keeps the finding from vanishing if its goal closes first. Once decided (or found unnecessary), it is carried out by the card's domain:
 
 | Domain of the decision | Who carries it out |
 | --- | --- |
@@ -135,7 +133,7 @@ Two, declared as numbers in `PROJECT.md`: **attempts** (cap per task) and **volu
 
 **No start without the two thresholds and the nine goals.** The first cycle does not open — no card beyond the interview and the tooling it needs — until both thresholds hold a value in `PROJECT.md` and each of the nine main goals has its image; `resources` and `results` come from the human alone (who forms the rest — `intent-goal-opening.md`, "How goals are formed"). A paid external service in `PROJECT.md`, "External services" (an external Plumb executor is one), adds a third limit per cycle, in its own unit (calls); an empty table — none. A missing threshold or a goal in draft is asked at once, in the interview — never assumed, never deferred; the start check names it as a stop (§8, the start hook). **One exception:** a demonstration cycle the human agreed to — its cards carry the label `demo`, stay out of spend and statistics, and are removed when it ends (`intent-demo.md`).
 
-**Spend is counted by fact, not by impression.** A node doesn't know its own spend from inside — that knowledge is in the call's metadata, not in its context. The contract — skeleton, every field, the `unknown` state, external model and service, `Intent`'s own lines — is `.forma/manual/en/03-protocol/ECONOMY.md`, one for every engine; the engine's own fields — its §8. What holds here:
+**Spend is counted by fact, not by impression.** A node doesn't know its own spend from inside — it is in the call's metadata. The contract — skeleton, every field, the `unknown` state, external model and service, `Intent`'s own lines — is `.forma/manual/en/03-protocol/ECONOMY.md`, one for every engine; the engine's own fields — its §8. What holds here:
 
 - **The caller writes the line** into the card's `## History`, **right after the return** — never the node itself, never after the fact. The number is read from the call's own metadata, never estimated.
 - **The line:** `` `Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<call id>` — <engine>: <what was done, one sentence>. `` The key part (before the dash) is **English in every project**; the description after the dash is in the card's language (§6) and opens with the engine that did the work (`claude-code:`, `codex:`, `gemini:`).
@@ -193,125 +191,12 @@ Phrased affirmatively — what must hold, not what's forbidden. Numbering is fix
 
 ## 6. Card and form check
 
-```
-# · kind | what it delivers | readiness criterion | attempt budget | where it goes next
-```
+A card is five fields (kind | what it delivers | readiness criterion | attempt budget | where it goes next), one goal label, one `route-N` label, four zones (Task, Kit, History, Result), a `card-NNN` code. **Before creating, editing or checking a card, read `card-and-board.md`** — fields, labels, route reasons, stage lines, kinds, zones.
 
-All five fields are mandatory. **Every card also carries exactly one goal label** in `labels` — `goal-NN` (a subgoal) or `goal-<code>` (a kind's main goal): the true link between the card and its goal; the epic is only its kind's lane (`intent-goal-opening.md`, "Epic"). Required of cards created from the day the rule entered the project (`.forma/living/checks.json`) on; `sync-engines --check` reports a missing or second label and an epic that doesn't match the goal's kind.
-
-**Route labels sit beside the goal label** — labels, because the board rewrites the frontmatter to a fixed set of keys and erases any other (`ROUTES.md`, §9):
-
-| Label | How many | Meaning |
-| --- | --- | --- |
-| `route-N` | exactly one | the card's route, `route-0`…`route-8` |
-| `over-N` | zero or more | overlays, `over-1`…`over-4` |
-| `seg-N` | one, `route-8` only | the goal segment |
-| `wave-N` | one, `route-8` only | the wave inside the segment |
-| `after-card-NNN` | zero or more | starts only after card-NNN is accepted |
-| `trial` | zero or one | the trial card of its kind |
-
-**Two different "segments".** `seg-N` and `route-8` slice **a goal** into segments of work (a unit of slicing, lives in the goal's `GOAL.md`); the epic "8. Competence segments" is **the store of experience and roles** (`project/experience/`) — a kind of goal. They share a word and nothing else: a `seg-N` label never places a card in epic 8, and a card of epic 8 carries no `seg-N` unless it runs `route-8` itself.
-
-The reason for the route — and for any change of it — is a line in `## History` by whoever chose or changed it, with a reason code from a closed list: `` `Node`, YYYY-MM-DD: route route-N (why: <code>) — <detail>. `` A change reads `route route-2 → route-5 (why: <code>)`.
-
-| Code | When |
-| --- | --- |
-| `human` | the human chose it — it looks faster to them |
-| `ready` | the card is complete — five fields and kit already set, `Intent` wrote it all → straight to the executor |
-| `scale` | a volume where the economics decide (`route-8`) |
-| `risk` | an expensive error or a new stack (`route-7`) |
-| `decision` | a question, not a delivery (`route-3`) |
-| `tooling` | tooling or recon (`route-4`) |
-| `plumb` | the Plumb confirmed a catalog role and `Spec` wrote it into `## Kit` — straight to `Run` |
-
-**A Plumb reading is a line in `## History`**, written by `Spec` right after the call, never estimated: the §3 spend line of the call, whose description carries the reading: `` `Plumb`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<call id>` — <engine>: role <name>, N % (gap G, clarity C), <executor>, <fits / below threshold / returned>. `` An external executor is charged in its own unit before the dash (§3, "External service"); scrubbing is recorded as what and how many, never the values. The call is tied to the card like any subagent reach (below).
-
-**The stage of the route is written, not guessed.** Whoever moves the card along its route — the same moment §7 has it sync `status` and `assignee` — appends `` `Node`, YYYY-MM-DD: stage <key> — <what>. ``, key from a closed list: `card` (the task is being written) · `approve` (awaits the human's "yes") · `kit` (kitting) · `exec` (execution) · `check` (`Intent`'s check) · `accept` (awaits the human's acceptance) · `close` (awaits `Core`). The last stage line is where the card stands; a stage the route lacks is not written. The key part (`route`, `why`, `stage` and the codes) is English in every language, like a spend line (§3). `sync-engines --check` reports a missing reason, an unknown code or key, and a last stage that contradicts the status.
-
-Required of cards created from the day the rule entered the project (`.forma/living/checks.json`) on.
-
-**A `work` card whose result is read by someone other than the human** — a node, a script, the next card — names that consumer and the form it needs in the criterion. Otherwise the result passes its own check and fails where it is used.
-
-**Kind is `work`, `tooling` or `decision`:**
-
-- **work** moves the goal closer to its end-image;
-- **tooling** makes work possible and doesn't move it closer: setting up a tool, formalizing a skill, wiring up access;
-- **decision** closes a question, not a delivery: "what it delivers" is the question named; the criterion — what a decision must settle and who takes it; budget — attempts at gathering the grounds; `## Result` — the decision and its grounds. Checked by one thing: the decision answers the named question and its taker is the one the criterion names. Work resting on an open question isn't sliced until its decision card closes.
-
-Kind matters at check time: a tooling task is checked against its own criterion and is **not** required to show progress toward the end-image. Without the marker it would be rejected as a slicing failure. `Run` doesn't start until every field is filled and access, data and tools are in place.
-
-**Fog and out of scope** — `GOAL.md` sections "Not yet specified" and "Out of scope". A question that can be **named** now is a `decision` card; one that can't yet is fog, and fog isn't sliced. The test and the rules — `intent-goal-opening.md`, "Record".
-
-**Decision log and glossary.** `project/adr/` (closed decisions) and `project/ops/GLOSSARY.md` (domain terms) are kept by `Intent` (`intent.md`, "Glossary and decision log"). Other nodes use the glossary's terms and name a conflict (§2), never redefine one.
-
-**Project knowledge lives in project files, not in an engine's memory** — written at the moment it appears, by the route of the skill `project-knowledge`.
-
-**Three layers of files — what lives where.** A fact or setting of this product found at work is written to `project/` by `project-knowledge`, never into a role, skill, script, manual or the protocol source; a skill that needs product data reads it from `project/` by path.
-
-| Layer | Where | What | Travels to the protocol source |
-| --- | --- | --- | --- |
-| 1. Node roles and skills | the engine adapter directories (`.claude/`, `.agents/`, `.codex/`) | the method itself — portable, carries no fact of a specific product | yes, by `engine-to-protocol.cjs` |
-| 2. Shared across engines | `.forma/` (protocol clone, manual, dashboard) | the law and its machinery, identical for every project | this layer **is** the protocol source |
-| 3a. Project extensions | `project/extensions/<engine>/` (`claude` → `.claude/`, `codex` → `.codex/`, `agents` → `.agents/`) | what the project builds on top of the protocol — its own roles, skills, scripts, hooks. Written here, never into the engine folders, which hold generated copies; survives `uninstall` and reinstall; a file here replaces an engine file of the same name | only by a deliberate promotion, by `engine-to-protocol.cjs` |
-| 3. Product | `project/`, `.forma/living/`, `.devtool/` | this product's data and settings — a site snapshot, credentials by reference, design tokens, goals, cards, board, project history | never |
-
-Prohibition 16 names the clean zones this keeps clean; the release check (`check-release.cjs --traces`) catches only pattern-matched traces (card codes, dates, domains, emails, hashes) in layers 1–2 or in the protocol source — not every product fact.
-
-**Any reach to a subagent is tied to a card — no exceptions.** A production node (`Spec`/`Kit`/`Run`/`Core`) or a one-off helper call (checking a fact, a piece of documentation, whether something is alive): the card is opened before the call — the five fields, or for a light one-off check at minimum the task statement and the readiness criterion — and filled in after it returns, with the result and the spend (§3). Nothing invoked as a subagent goes unrecorded. **One call may serve several cards** — a batch (`Spec` slices several tasks per call, `Kit` kits up to 4 cards per call): every card of the batch is opened before the call and filled after it, each with its own spend line, the call's spend split between them and the split named. One agent per card remains for different subjects or dependent cards. **Not retroactive:** a one-off call made before this rule existed doesn't get a card invented afterwards — `.forma/living/CHANGELOG.md`.
-
-**A card is a file on the board, in four zones, each under its own heading, in this order:**
-
-```
-# <title>
-
-## Task
-   № · kind | what it delivers | readiness criterion | attempt budget | where it goes next
-
-## Kit
-   Role · Skill · Tool · Access · Data · Model                       ← six units (`kit.md`)
-
-## History
-   - `Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<call id>` — <what was done>.
-   - `Node`, YYYY-MM-DD: <an event that was not a call, in one or two sentences>.
-                                                                    ← format, §3
-
-## Result
-   Empty until executed — not a timeline.
-```
-
-| Zone | Written by | Note |
-| --- | --- | --- |
-| `## Task` | `Spec` | the five fields, nothing added beyond them |
-| `## Kit` | `Kit`, or `Spec` when a ready `Run` profile from the catalog fits a routine card | details — `kit.md`, "Task kitting"; the ready-profile route — `route-choice.md` |
-| `## History` | `Spec`, `Kit`, `Intent`; for an external-model attempt, the calling node | each appends a line on their own event — **never overwrites someone else's, only adds** |
-| `## Result` | `Run`, once done | what actually came out: what was created or changed, how it was confirmed — not a timeline |
-
-There is no separate file for history or result — the task's whole life is in the one card file. Frontmatter `status`/`assignee` — §7.
-
-**A card carries a code** — the `card-NNN` prefix of its filename (goals: `goal-NN`); the title may change, the code never, and everything points at the card by it.
-
-**Material born of a card** — interview records, prototypes, evidence, an external model's output — lives in `project/cards/card-NNN/`, outside the board (the card moves into `done/`, the folder must not). The folder keeps the grounds, the card keeps the decision; project material is referenced, never copied there.
-
-**The card's language follows the project language** in `project/config/PROJECT.md`: for a non-English project the zone headings, fields, kind (`дело` / `оснастка` / `решение`) and notes are written in it (`## Задача`, `## Снаряжение`, `## История`, `## Результат`); the zones and mandatory fields don't change.
+**Material born of a card** — interview records, prototypes, images, evidence, an external model's output — lives only in `project/cards/card-NNN/`, never in the repository root or anywhere outside the card's folder.
 
 ---
 
 ## 7. Board
 
-`.devtool/features/` is a `kanban-markdown` extension; the status enum is fixed in that skill's own `references/data-model.md` (the engine's skills directory, §8). A node taking a card syncs **both** `status` and `assignee` in the frontmatter, never one of the two:
-
-| `status` | Held by | `assignee` |
-|---|---|---|
-| `backlog` | sliced by `Spec`, not yet taken into work | `"Spec"` |
-| `todo` | `Kit` (kitting) | `"Kit"` |
-| `in-progress` | `Run` (execution) | `"Run"` |
-| `review` | `Intent` checks against the criterion and presents the result to the human | `"Intent"` |
-| `done` | the human accepted; the cycle is not closed until `Core` has closed it | `"Core"`, then `null` |
-
-- **The short route — the card's label `route-4`:** `Intent → human → Kit → Intent`. `Spec` is **replaced**, not skipped: its function — a readiness criterion written by someone other than the one who accepts by it — passes to the human, who approves the card's five fields before `Kit` is handed it. **Condition of validity:** that approval is a **reply in the session, not a call**, written into `## History` as an event line without `attempt` (`ECONOMY.md`, "`Intent` in the shared session"); until that "yes" the card stays in `backlog`. `Kit` kits and executes as one node: `in-progress` is held by `"Kit"`, not `"Run"` (`kit.md`, "Infrastructure"). **The route belongs to the card, not to the epic:** an epic is only a lane of its kind of goal, it carries no route; who holds `in-progress` is read from the card's `route-N` label (§6) — `route-4` `"Kit"`, `route-0` and `route-1` `"Intent"`, the rest `"Run"`. A card without the short-route label is sliced by `Spec` or runs the route its own label names; skipping `Spec` on a route that needs it is a breach, not a route. Choosing the route is `route-choice.md`'s, not the epic's. This is not the code phrase (§1): nothing is stepped outside the route, so prohibition 11 does not apply.
-- **Cards `Intent` executes itself (`route-0`, `route-1`):** `in-progress` is held by `"Intent"` — typically documentation for the human (epic "2. Project structure") and a discussion card `Intent` resolves itself (epic "6. Discussion of affairs"); the confirmer is the human, never `Intent` (prohibition 1). A discussion card holding a list of tasks, and documentation for the human — `intent.md`, `intent-goal-opening.md`.
-- **The wave gate.** A card of wave N+1 is not taken into work until every card named in its `after-card-*` labels is accepted — not the whole previous wave. A card that fails acceptance returns to `Kit` and reruns in the same wave; cards depending on it wait, independent ones go on.
-- **A "didn't get there" return goes to `todo`+`"Kit"`, never a drop into `review`** (§2); it reopens in `in-progress` after reassembly. Or it goes to `backlog` for fresh slicing, or the process stops outside the kanban.
-- **`backlog`+`assignee: null` on a card `Spec` didn't create is a signal, not an error**: it never went through slicing — ask the human (`intent-session-start.md`).
-- **`done` is two states in one column, told apart by `assignee`:** `"Core"` — the human accepted, the cycle is not closed; `null` — `Core` closed it. The file moves (`{id}.md` ↔ `done/{id}.md`) when the status becomes `done`; the board extension does it itself — no node holds it, nothing can be gated on it.
-- **`Core` closes a cycle's cards together, not one at a time** — a verdict on a single card would be `Intent`'s check done twice. A cycle lives inside one epic: accepted cards (`done`, `assignee: "Core"`) are counted per epic; at the volume threshold `Intent` hands them to `Core`, earlier only on the human's command; the count is reported at session start and after each commit (§8, start hook). **The human's acceptance comes before `Core`:** the human judges the outward thing, `Core` what is not visible from there — whether the cycle reached the end-image. Two judgments in a fixed order, neither replacing the other.
+`.devtool/features/` is the board; a node taking a card syncs both `status` and `assignee` (`backlog` Spec · `todo` Kit · `in-progress` Run · `review` Intent · `done` Core, then null). **Before moving a card, read `card-and-board.md`** — the table, short route, wave gate, returns, cycle closing.
