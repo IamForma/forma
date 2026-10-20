@@ -2,6 +2,6 @@
   "name": "forma-wordpress-novamira",
   "displayName": "Forma: WordPress development (Novamira)",
   "description": "An optional companion preset to Forma — WordPress development with Novamira MCP (+Elementor) — skills + a stub of the site's architectural snapshot (project/config/SITE.md)",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT"
 }
