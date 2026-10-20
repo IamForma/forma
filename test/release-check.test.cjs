@@ -77,3 +77,13 @@ test('в сам клон протокола следы проекта не пр�
   const bad = scanTraces(path.join(__dirname, '..'));
   assert.deepEqual(bad.map((b) => `${b.file}:${b.line} ${b.rule}`), []);
 });
+
+test('следы проекта: домен, коннектор сайта и число карточек в сообщении', () => {
+  const dir = repoWith({
+    'a.md': 'on formacraft.studio the site\n',
+    'b.md': 'use `mcp__novamira-example-site__execute` here\n',
+    'c.md': 'clean line about mcp__site__ connector\n',
+  });
+  assert.deepEqual([...new Set(scanTraces(dir).map((x) => x.file))].sort(), ['a.md', 'b.md']);
+  assert.deepEqual(scanMessages(['Core closed 11 cards', 'Add graph renderer']).map((x) => x.rule), ['card-count']);
+});
