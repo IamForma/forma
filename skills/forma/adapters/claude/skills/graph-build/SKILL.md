@@ -1,6 +1,6 @@
 ---
 name: graph-build
-description: Сборка графов Kit — какой командой строится каждый граф (goals, board, arsenal, done-cards, tendons, manual, project, site), что делать при 429 и битой записи кэша, как проверить результат. Применять, когда карточка велит построить или обновить граф.
+description: Сборка графов Kit — какой командой строится каждый граф (goals, board, arsenal, structure, resources, central, done-cards, tendons, manual, project, site), что делать при 429 и битой записи кэша, как проверить результат. Применять, когда карточка велит построить или обновить граф.
 ---
 
 # graph-build
@@ -11,7 +11,8 @@ description: Сборка графов Kit — какой командой ст�
 
 | Граф | Команда | Модель |
 |---|---|---|
-| goals, board, arsenal | `node .claude/scripts/build-kit-graphs.cjs` (один: `--only goals\|board\|arsenal`) | нет |
+| goals, board, arsenal, structure, resources, central | `node .claude/scripts/build-kit-graphs.cjs` (один: `--only goals\|board\|arsenal\|structure\|resources\|central`); `central` объединяет остальные и печатает отчёт об обрывах для Core. Повторный прогон без изменений: «разобрано 0» | нет |
+| реестр ресурсов (вход графа resources) | `node .claude/scripts/resources.cjs sort\|inventory\|report` — до графа; `prepare`, `batch`, `apply`, `register`, `decide` — см. ниже | нет (описание изображений — агент `asset-describer-haiku`, один раз по sha256) |
 | done-cards (опыт) | `node .claude/scripts/build-done-cards-graph.cjs --channel=external` | `deepseek/deepseek-v4-flash`, OpenRouter, ключ `OPENROUTER_API_KEY` (`.env`) |
 | tendons | `node .claude/scripts/build-tendons.cjs` — **последним** | нет |
 | manual, project | `node .claude/scripts/build-done-cards-graph.cjs --corpus=manual --channel=external` (и `--corpus=project`); сначала `--dry-run` — список cache-miss и оценка токенов без модели; `--limit=N` — пробный прогон на N файлах. Только `*.md` | то же, что done-cards |
@@ -22,6 +23,12 @@ description: Сборка графов Kit — какой командой ст�
 | engine (graph.html) | `node .claude/scripts/build-engine-graph-html.cjs` — после слоя смысла, для вкладки дашборда | нет (тот же Python-рендерер `graphify.to_html`, что у site) |
 
 Порядок: kit-графы → done-cards → manual/project → tendons. Tendons требует `.forma/living/graphs/manual` и `.forma/living/graphs/project`; их нет — tendons не запускать, назвать в Результате. **Граф сайта независим от tendons** — своя команда, свой кэш, не входит в цепочку и ничего в неё не добавляет.
+
+### Графы structure и resources
+
+`structure` — зоны и файлы `project/`, рёбра карточка → зона, расход по зонам. `resources` — реестр `project/resources/_assets.json` (ключ sha256): узел `asset:<sha12>`, рёбра `made_by` (карточка), `serves` (цель), `used_in` (зона потребителя), `contains` (зона → ресурс); состояние ресурса `в работе` / `в запасе` / `бесхозный`. ТЗ — `project/ops/GRAPHS-STRUCTURE-SITE.md`, правила — `project/config/resources.rules.json`.
+
+Порядок для resources: `resources.cjs sort` (класс ресурс/черновик/неясное; неясное — списком по папкам, решает человек: `resources.cjs decide <папка> resource|draft`) → `inventory` (записи реестра) → `prepare`/`batch --n N` (уменьшение до ~1024 px и кадры видео через ffmpeg → `project/work/prep`, манифест `project/work/batch.json`) → агент `asset-describer-haiku` читает манифест и возвращает JSON → `apply <json>` (пишет в реестр скрипт, не модель) → `build-kit-graphs.cjs --only resources` → `report` (файл без записи, запись без файла, без описания). Сначала замер на 5–10 файлах, показ человеку, полный прогон — только по его «да». Ничего не удаляется; черновики лежат в `project/work/` (в `.gitignore`).
 
 ### Граф сайта
 

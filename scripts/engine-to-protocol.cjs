@@ -91,6 +91,8 @@ const mask = (rel, s) => { if (s == null) return null; const rs = MASK[rel]; s =
 
 // проект → шаблон. living/ и project/ исключены намеренно: это история и содержимое конкретного проекта.
 // Пути шаблона — от protocol/skills/forma/. Сравниваются только файлы, которые в шаблоне уже есть.
+// Dormant Codex (`.forma/engines.json`): its folder is not carried into the protocol source; the shared `.agents/skills` mirror still is.
+const CODEX_ASLEEP = (() => { try { return JSON.parse(fs.readFileSync('.forma/engines.json', 'utf8')).dormant.includes('codex'); } catch { return false; } })();
 const MAP = [
   // ядро
   ['AGENTS.md', 'core/AGENTS.md'],
@@ -115,7 +117,7 @@ const MAP = [
   ['.agents/tests', 'adapters/gemini/tests'],                           // тест соответствия адаптера (прописан в adapter-conformance.cjs)
   ['.agents/skills', 'adapters/codex/.agents/skills'],
   ['.codex', 'adapters/codex/.codex'],
-];
+].filter(([p]) => !(CODEX_ASLEEP && p === '.codex'));
 // Файл проекта, уже известный одному из отображений (например dashboard/floor.cjs — адаптеру Claude),
 // для другого отображения того же каталога не «новый».
 const KNOWN = new Set();
@@ -256,7 +258,7 @@ if (mark) {
 
 // Новый файл в папке движка, который не лежит ни в project/extensions/template/, ни в custom/, не в шаблоне протокола
 // и не назван в --add, — неразложенный: стоп с вопросом, молча не переносится и не остаётся.
-const ENGINE_PREFIX = ['.claude/', '.agents/', '.codex/'];
+const ENGINE_PREFIX = CODEX_ASLEEP ? ['.claude/', '.agents/'] : ['.claude/', '.agents/', '.codex/'];
 const unsorted = R.fresh.filter((x) => ENGINE_PREFIX.some((e) => x.rel.startsWith(e)) && !adds.includes(x.rel));
 if (unsorted.length) {
   console.error('\nСТОП: неразложенные новые файлы в папках движка — куда они?');

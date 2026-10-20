@@ -44,6 +44,7 @@ Template version **0.0.1**, assembled against protocol **0.0.1**. History — [C
 | `loco-pipeline.py` | translating the ru_RU.po of plugins in wp-content/languages/loco/plugins/ in one run (the run-scripts contract). |
 | `po_shift_check.py` | Finding shifted translations in .po (a translation sits not at its own string). |
 | `report-extract.cjs` | pulls a string field out of a site-php.cjs report's return_value into a local file (backup, mirror). |
+| `audit-css-literals.cjs` | Read-only inventory of colour, px, radius and height literals in a CSS folder, JSON out (`run-css-audit`). |
 | `shot-page.cjs` | Screenshot a local page with headless Chrome at several widths and save the console log. |
 | `site-php.cjs` | a PHP file to the site through the novamira CLI; only a summary to the console (the run-scripts contract). |
 | `site.cjs` | node .claude/scripts/site.cjs <novamira arguments>  →  novamira --site <SITE_SLUG from .env> <arguments> A pass-through wrapper: the stdio and exit code of novamira ar... |
@@ -52,16 +53,18 @@ Template version **0.0.1**, assembled against protocol **0.0.1**. History — [C
 | `tokenize-spacing.cjs` | Replace bare px spacing literals with scale tokens in an HTML file, with a before/after report. |
 | `translate-blocks-pipeline.cjs` | Конвейер перевода текстовых узлов блоков Gutenberg: пачка -> перевод -> подстановка. |
 
-### `Run` profiles → `.claude/agents/run/` (6)
+### `Run` profiles → `.claude/agents/run/` (8)
 
 | Profile | What it does |
 |---|---|
+| `run-css-audit` | reads a theme's CSS files, lists every colour/px/rgba/radius/height literal with address and proposes the design-role it maps to, in a report; reads, never edits CSS |
 | `run-html-audit` | opens a local HTML page in the browser at desktop and mobile widths, runs the design detector and the audit, writes a report with screenshots; reads, never edits the page |
 | `run-html-mockup` | edits a local HTML/CSS mockup file (design tokens, typography, layout, tone, performance, hardening) against a list criterion; local files only, no site access |
 | `run-image-audit` | views an image's own pixel content directly (text baked into a cover/illustration) and reports what it shows |
 | `run-pillow-translate` | translates text on a raster image with Pillow/OpenCV by a card's own script, local output only |
 | `run-schema-markup` | write structured markup (JSON-LD / schema.org) into a local file from local snapshot data, validated by the card's validator script; no site access |
 | `run-site-upload` | put a local binary file (image, webp, pdf) into the site's media library through the site CLI and verify it as a guest; backup = delete only what it created |
+| `run-theme-local` | edits local WordPress theme files and theme build tooling (functions.php, node build scripts, preview server, CSS), runs the local builds and checks the local preview; never writes to the site |
 
 ### Project config stubs → `project/config/` (2)
 
@@ -116,7 +119,7 @@ The plugin does not connect them itself — Claude Code has no way to install an
 | `skills/forma-wordpress-novamira/SKILL.md` | the installer — puts the `project/config/SITE.md` stub into the target project |
 | `skills/forma-wordpress-novamira/template/project/config/SITE.md` | the stub itself: an empty skeleton of the site's architectural snapshot |
 | `skills/forma-wordpress-novamira/template/scripts/` | site and translation scripts → the project's `.claude/scripts/`: `site.cjs` (novamira CLI on `SITE_SLUG` from `.env`), `site-php.cjs` (a PHP file to the site via execute-php, a JSON report), `loco-pipeline.py` (translating the ru_RU.po of Loco plugins in one run), `tokenator_translator.py` (auto-translating .po through `TOKENATOR_API_KEY`), `po_shift_check.py` (finding shifted translations in .po), `report-extract.cjs` (a string field from a `site-php.cjs` report into a local file inside `project/`), and the block translation scripts: `extract-ru-strings.cjs`, `translate-blocks-pipeline.cjs`, `split-translations.cjs`, `apply-line-strings.cjs`, `apply-json-pointer.cjs`, `apply-comment-translations.cjs`, `apply-shell-translation.cjs`, `assemble-home-blocks.cjs`, `build-core-html-payload.cjs`, `build-page-payload.cjs`. Keys and site — only from `.env` |
-| `skills/forma-wordpress-novamira/template/agents/run/` | ready `Run` profiles of this stack → the project's `.claude/agents/run/`: `run-site-upload` (replace a binary file on the site with a checksum), `run-schema-markup` (JSON-LD / schema.org written into a local file from local data, validator-checked, no site access), `run-image-audit` (view an image's pixels and report text baked into it), `run-pillow-translate` (translate text on a raster image with Pillow/OpenCV by the card's script) |
+| `skills/forma-wordpress-novamira/template/agents/run/` | ready `Run` profiles of this stack → the project's `.claude/agents/run/`: `run-site-upload` (replace a binary file on the site with a checksum), `run-schema-markup` (JSON-LD / schema.org written into a local file from local data, validator-checked, no site access), `run-image-audit` (view an image's pixels and report text baked into it), `run-pillow-translate` (translate text on a raster image with Pillow/OpenCV by the card's script), `run-theme-local` (edit local theme files and build tooling, run the local builds, never write to the site), `run-css-audit` (inventory CSS literals into a report, read-only) |
 
 ## Known limitations
 

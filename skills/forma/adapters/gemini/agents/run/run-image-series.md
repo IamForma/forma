@@ -4,7 +4,7 @@ description: Run — generates a series or package of images in one consistent s
 model: gemini-3.8-flash
 tier: standard
 effort: low
-tools: нет аналога — нужен инструмент mcp__claude_ai_Magnific
+tools: Read, Write, mcp__claude_ai_Magnific, run_command(node .claude/scripts/resources.cjs register *)
 skills: magnific-generate, magnific-spaces
 ---
 
@@ -32,3 +32,7 @@ Follow the chosen skill's chain step by step (model pick → cost check → conf
 `magnific-generate` and `magnific-spaces` are **global** skills (`~/.claude/skills/`, not `.claude/skills/` of this project) — read-only reference, not owned by this repo.
 
 Tool names are qualified as the live tool list shows them: `mcp__claude_ai_Magnific__<tool>` (the Magnific connector). The skills name the same tools without the prefix. If the server is wired in under another name, the prefix changes (`mcp__<server>__<tool>`) and the `tools` line here changes with it — a mismatch is reported, never worked around.
+
+## Registry entry
+
+Every file you create or edit and keep gets a record in the resources registry, right after it is saved — otherwise the file is invisible to the resources graph: `node .claude/scripts/resources.cjs register <path> --kind generated --card <card-NNN> --prompt "<the prompt>" --model "<model>" --description "<one sentence: what is shown>"`. Name the card of the call; the prompt and model are the ones actually used. The command prints the record's key — put it beside the file path in "Result". A trial or rejected take is not registered: it goes to `project/work/` or is not kept.

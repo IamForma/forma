@@ -23,7 +23,7 @@
 // Отчёт: карточки без цели и без роли, роли и цели без карточек, доля принятых с первого раза
 // (по числу строк attempt роли Run в History) в разрезе ролей — метрика для Core.
 //
-//   node .claude/scripts/build-kit-graphs.cjs [--only goals|board|arsenal|structure|central]
+//   node .claude/scripts/build-kit-graphs.cjs [--only goals|board|arsenal|structure|resources|central]
 //
 // Выход: .forma/living/graphs/{goals,board,arsenal,central}/graph.json — формат graphify
 // ({nodes:[{id,label,type,source_file}], edges:[{source,target,relation}]}),
@@ -512,11 +512,69 @@ function printStructure(r) {
   console.log(`обрывы structure: зон без README ${f(p.zones_without_readme)} · зон без карточек ${f(p.zones_without_cards)} · карточек без зон ${f(p.cards_without_zones)} · карточек с несуществующим путём ${f(p.cards_with_missing_path)} · целей без зоны ${f(p.goals_without_zone)}`);
 }
 
+// --- resources: реестр ресурсов (asset:, ресурс → карточка/цель/зона) -----------------------
+// Источник — project/resources/_assets.json (ведёт .claude/scripts/resources.cjs). Узел asset:<sha256[:12]>,
+// рёбра: made_by → карточка, serves → цель, used_in → зона файла-потребителя, contains: зона → ресурс.
+// Модель не вызывается; кэш — хэш файла реестра и версия сборщика (изменений нет — разобрано 0).
+
+const RES_V = 1;
+const RES_FILE = path.join(ROOT, 'project/resources/_assets.json');
+
+function buildResources(cache, goalIds) {
+  const file = path.join(OUT, 'resources', 'graph.json');
+  const raw = fs.existsSync(RES_FILE) ? fs.readFileSync(RES_FILE, 'utf8') : '';
+  const zones = new Set(zoneTree().map(z => z.path));
+  const goalKey = [...goalIds].sort().join(',');
+  const h = hash(RES_V + raw + goalKey + [...zones].join(','));
+  const prev = fs.existsSync(file) ? readJson(file, null) : null;
+  if (cache.resources && cache.resources.hash === h && prev && prev.report) {
+    return { name: 'resources', nodes: prev.nodes.length, edges: prev.edges.length, hit: 1, miss: 0, gone: 0, report: prev.report, graph: prev };
+  }
+  const reg = raw ? JSON.parse(raw) : { entries: {} };
+  const zoneOf = p => { const a = p.split('/'); for (let n = Math.min(3, a.length - 1); n >= 1; n--) { const z = a.slice(0, n).join('/'); if (zones.has(z)) return z; } return null; };
+  const nodes = new Map(), edges = new Map();
+  const addEdge = (s, t, r, sf) => edges.set(`${s}|${t}|${r}`, { source: s, target: t, relation: r, source_file: sf });
+  const report = { assets: 0, by_state: {}, without_description: 0, without_file: [], without_entry: [], unclear: 0, orphan: [] };
+  for (const [sha, e] of Object.entries(reg.entries)) {
+    const id = 'asset:' + sha.slice(0, 12);
+    report.assets++;
+    report.by_state[e.state] = (report.by_state[e.state] || 0) + 1;
+    if (e.format !== 'svg' && !e.description) report.without_description++;
+    if (!fs.existsSync(path.join(ROOT, e.path))) report.without_file.push(e.path);
+    if (e.state === 'бесхозный') report.orphan.push(e.path);
+    nodes.set(id, { id, label: e.description ? e.description.slice(0, 70) : path.posix.basename(e.path), type: 'asset', source_file: 'project/resources/_assets.json',
+      path: e.path, also: e.also, format: e.format, width: e.width, height: e.height, bytes: e.bytes, kind: e.kind, state: e.state, tags: e.tags, asset_type: e.type, used_in: e.used_in, described: !!e.description });
+    const z = zoneOf(e.path);
+    if (z) addEdge('zone:' + z, id, 'contains', e.path);
+    if (e.card) { if (!nodes.has('card:' + e.card)) nodes.set('card:' + e.card, { id: 'card:' + e.card, label: e.card, type: 'card', source_file: '.forma/living/graphs/board/graph.json' }); addEdge(id, 'card:' + e.card, 'made_by', e.path); }
+    if (e.goal && goalIds.has(e.goal)) { const g = 'goal:' + e.goal; if (!nodes.has(g)) nodes.set(g, { id: g, label: e.goal, type: 'goal', source_file: '.forma/living/graphs/goals/graph.json' }); addEdge(id, g, 'serves', e.path); }
+    for (const u of e.used_in || []) { const uz = zoneOf(u); if (uz) addEdge(id, 'zone:' + uz, 'used_in', u); }
+  }
+  const sort = readJson(path.join(ROOT, 'project/resources/_sort.json'), null);
+  report.unclear = sort ? sort.count.unclear : null;
+  if (sort) {
+    const known = new Set(Object.values(reg.entries).flatMap(e => [e.path, ...(e.also || [])]));
+    report.without_entry = Object.entries(sort.files).filter(([p, v]) => v.class === 'resource' && !known.has(p)).map(([p]) => p);
+  }
+  const N = [...nodes.values()], E = [...edges.values()];
+  const graph = { built: new Date().toISOString(), extractor: 'deterministic', model_tokens: 0, nodes: N, edges: E, report };
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(graph, null, 1));
+  cache.resources = { hash: h };
+  return { name: 'resources', nodes: N.length, edges: E.length, hit: 0, miss: report.assets, gone: 0, report, graph };
+}
+
+function printResources(r) {
+  const p = r.report, f = l => `${l.length}` + (l.length ? ' (' + l.slice(0, 3).join(', ') + (l.length > 3 ? ', …' : '') + ')' : '');
+  console.log(`resources: ресурсов ${p.assets} · ` + Object.entries(p.by_state).map(([k, v]) => `${k} ${v}`).join(', ') + ` · без описания ${p.without_description} · неясных файлов ${p.unclear === null ? 'n/a' : p.unclear}`);
+  console.log(`обрывы resources: запись без файла ${f(p.without_file)} · файл без записи ${f(p.without_entry)}`);
+}
+
 // --- central: объединение графов ---------------------------------------------------
 
-const CENTRAL_V = 2;
-const LAYER = t => ({ card: 'board', file: 'board', goal: 'goals', epic: 'goals', zone: 'structure' }[t] || 'arsenal');
-const CENTRAL_PARTS = ['goals', 'arsenal', 'structure', 'board'];   // structure до board: заглушки карточек не затирают подписи доски
+const CENTRAL_V = 3;
+const LAYER = t => ({ card: 'board', file: 'board', goal: 'goals', epic: 'goals', zone: 'structure', asset: 'resources' }[t] || 'arsenal');
+const CENTRAL_PARTS = ['goals', 'arsenal', 'structure', 'resources', 'board'];   // structure до board: заглушки карточек не затирают подписи доски
 
 function buildCentral(cache, graphs) {
   const strip = g => ({ nodes: g.nodes, edges: g.edges });
@@ -575,6 +633,7 @@ function buildCentral(cache, graphs) {
     roles_without_cards: N.filter(n => n.type === 'role' && !inn('uses_role').has(n.id)).map(n => n.id),
     goals_without_cards: N.filter(n => n.id.startsWith('goal:') && !inn('serves').has(n.id)).map(n => n.id),
     core: { accepted_with_attempts: known, first_time: first, first_time_share: known ? Math.round(first / known * 1000) / 1000 : null, by_role: byRole },
+    resources: graphs.resources.report ? (({ assets, by_state, without_description, without_file, without_entry, unclear }) => ({ assets, by_state, without_description, without_file: without_file.length, without_entry: without_entry.length, unclear }))(graphs.resources.report) : null,
     structure: graphs.structure.report ? (({ zones, card_zone_edges, dropped_edges, zones_without_readme, zones_without_cards, cards_without_zones, cards_with_missing_path, goals_without_zone }) =>
       ({ zones, card_zone_edges, dropped_edges, zones_without_readme: zones_without_readme.length, zones_without_cards: zones_without_cards.length,
          cards_without_zones: cards_without_zones.length, cards_with_missing_path: cards_with_missing_path.length, goals_without_zone: goals_without_zone.length }))(graphs.structure.report) : null,
@@ -583,7 +642,7 @@ function buildCentral(cache, graphs) {
   const graph = { built: new Date().toISOString(), extractor: 'deterministic', model_tokens: 0, nodes: N, edges: E, report };
   fs.writeFileSync(file, JSON.stringify(graph, null, 1));
   cache.central = { hash: h };
-  return { name: 'central', nodes: N.length, edges: E.length, hit: 0, miss: 4, gone: 0, report, graph };
+  return { name: 'central', nodes: N.length, edges: E.length, hit: 0, miss: 5, gone: 0, report, graph };
 }
 
 function printCentral(r) {
@@ -598,6 +657,16 @@ function printCentral(r) {
   for (const [role, b] of Object.entries(c.by_role)) console.log(`  ${role}: ${b.first_time}/${b.accepted}`);
 }
 
+// graph.html для вкладки «Графы» дашборда: перерисовываем, когда граф изменился или html ещё нет.
+function renderHtml(rows) {
+  const { main: renderMain, CORPORA } = require('./build-graph-html.cjs');
+  const todo = rows.filter(r => CORPORA.includes(r.name) &&
+    (r.miss || r.gone || !fs.existsSync(path.join(OUT, r.name, 'graph.html')))).map(r => r.name);
+  if (!todo.length) return;
+  try { renderMain(todo); }
+  catch (err) { console.log(`graph.html не собран: ${String(err && err.message || err)}`); }
+}
+
 function main() {
   const cli = makeCli();
   const only = cli.eq('only', '') || cli.value('only', '');
@@ -610,8 +679,13 @@ function main() {
     const g = arsenal || readJson(path.join(OUT, 'arsenal', 'graph.json'), { nodes: [] });
     return (roles = new Set(g.nodes.filter(n => n.type === 'role').map(n => n.id)));
   };
-  for (const name of ['goals', 'arsenal', 'structure', 'board']) {
+  for (const name of ['goals', 'arsenal', 'structure', 'resources', 'board']) {
     if (only && only !== name) continue;
+    if (name === 'resources') {
+      const gg = (rows.find(r => r.name === 'goals') || {}).graph || readJson(path.join(OUT, 'goals', 'graph.json'), { nodes: [] });
+      rows.push(buildResources(cache, new Set(gg.nodes.filter(n => /^goal-/.test(n.id) && n.type !== 'card').map(n => n.id))));
+      continue;
+    }
     if (name === 'structure') {
       const gg = (rows.find(r => r.name === 'goals') || {}).graph || readJson(path.join(OUT, 'goals', 'graph.json'), { nodes: [] });
       rows.push(buildStructure(cache, new Set(gg.nodes.filter(n => /^goal-/.test(n.id) && n.type !== 'card').map(n => n.id))));
@@ -631,6 +705,7 @@ function main() {
   }
   fs.mkdirSync(OUT, { recursive: true });
   fs.writeFileSync(CACHE, JSON.stringify(cache));
+  renderHtml(rows);
   for (const r of rows) {
     console.log(`${r.name.padEnd(8)} ${String(r.nodes).padStart(5)} узлов ${String(r.edges).padStart(5)} рёбер · ` +
                 `из кэша ${r.hit}, разобрано ${r.miss}, ушло ${r.gone} · модель: 0 токенов`);
@@ -639,6 +714,8 @@ function main() {
   if (cen) printCentral(cen);
   const st = rows.find(r => r.name === 'structure');
   if (st) printStructure(st);
+  const rs = rows.find(r => r.name === 'resources');
+  if (rs) printResources(rs);
   const a = rows.find(r => r.name === 'arsenal');
   if (a && a.dangling) {
     const names = [...new Set(a.dangling.map(e => e.source.slice(5) + ' → ' + e.target))];

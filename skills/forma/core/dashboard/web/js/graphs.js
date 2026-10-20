@@ -55,9 +55,12 @@ function renderGraphifyPanels(data){
   }
 }
 
+// Графы Kit строятся скриптом без модели — журнала Graphify у них нет.
+const KIT_GRAPHS = ['goals', 'arsenal', 'structure', 'resources', 'board', 'central'];
+
 function showGraph(c) {
   document.querySelectorAll('#graphs .side-tab').forEach(b => b.classList.toggle('on', b.dataset.c === c));
-  document.getElementById('gp').innerHTML = graphifyPanelHtml(c, (latestData.graphifyByCorpus || {})[c]) + ((latestData.graphsBuilt || {})[c]
+  document.getElementById('gp').innerHTML = (KIT_GRAPHS.includes(c) ? '' : graphifyPanelHtml(c, (latestData.graphifyByCorpus || {})[c])) + ((latestData.graphsBuilt || {})[c]
     ? `<iframe class="graph-frame" src="/graphs/${c}/graph.html" title="${esc(t('gr.frameTitle', {c}))}"></iframe>`
     : `<div class="graph-empty">${t('gr.empty')}</div>`);
 }

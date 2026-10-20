@@ -2,6 +2,11 @@
 
 Newest first. The version is `.claude-plugin/plugin.json`; no dates (clean zone).
 
+## 0.0.2
+
+- `Run` profiles: `run-theme-local`, `run-css-audit`.
+- Scripts: `audit-css-literals.cjs` (CSS literal inventory for `run-css-audit`).
+
 ## 0.0.1
 
 First release.

@@ -3,7 +3,7 @@ name: intent
 description: Intent — end-image, arrival criterion, task check
 model: gemini-3.8-flash
 tier: standard
-effort: low
+effort: medium
 tools: Read, Grep, Glob, Write, Edit, AskUserQuestion, browser_subagent
 skills: forma-grill-with-ui, grilling, synthesis, project-knowledge, skill-authoring
 ---

@@ -21,7 +21,8 @@ Antigravity operates in two distinct session modes depending on platform startup
      - `Run`: `model: gemini-3.8-flash`, write tools enabled (base template in `agents/run.md`, specific task profiles registered on demand from `agents/run/*.md` per the wave matrix);
       - `Core`: `model: gemini-3.8-flash`, read-only tools;
       - `plumb-gemini`: `model: gemini-3.8-flash`, read-only tools, no project context, returns JSON only;
-      - `extractor`: `model: gemini-3.8-flash`, read/write tools only — registered only when a graph build needs model extraction (`kit.md`, "Graphs").
+      - `extractor`: `model: gemini-3.8-flash`, read/write tools only — registered only when a graph build needs model extraction (`kit.md`, "Graphs");
+      - `asset-describer`: `model: gemini-flash-lite`, read-only tools, no project context, returns JSON only.
     * **Execution:** Once defined, `Intent` dispatches tasks along the route using `invoke_subagent`. Each subagent executes in a strictly isolated context without parent memory. Prohibitions 1 (independent confirmation) and 7 (clean context) are physically guaranteed.
 
 2. **Mode 1: Single-Agent Session / Fallback (`invoke_subagent` absent in toolbox)**
@@ -63,6 +64,7 @@ Which model each node runs on is an engine matter, not a rule of the protocol �
 | `Core` | `gemini-3.8-flash` (effort low) |
 | `plumb-gemini` | `gemini-3.8-flash` (effort low) |
 | `extractor` | `gemini-3.8-flash` (effort low) |
+| `asset-describer` | `gemini-flash-lite` (effort low) |
 
 ## Spend fields (§3)
 

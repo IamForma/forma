@@ -2,7 +2,10 @@
 # PreToolUse (all tools): appends one line to .forma/dashboard/tool-usage.log per tool call - who called and what.
 # It decides nothing and never blocks: the exit is always 0, even when the hook itself is broken.
 #
-# Line:   YYYY-MM-DDTHH:MM · <node> · <agent_id> · <tool_name>
+# Line:   YYYY-MM-DDTHH:MM · <node> · <agent_id> · <tool_name> [· <path>]
+# Path    - optional fifth field, project-relative: the file of a Read/Write/Edit/NotebookEdit/Grep/Glob call, or the first
+#         project path (project/, .claude/, .forma/, .devtool/) named in a Bash command. Never content, never a value;
+#         a call on .env or VARS/ writes the path only. Old four-field lines stay valid.
 # Node  - the agent_type field of the input, lowercase (extractor, kit, run...). Calls of the shared session have no
 #         such field: they are marked with the word `session` rather than merged with the nodes.
 #
@@ -56,7 +59,9 @@ if [ -z "$INPUT" ]; then
   emit "$TS · !ERROR · - · PreToolUse input is empty"
 fi
 
-FIELDS=$(printf '%s' "$INPUT" | jq -r '[(.agent_type // "session"), (.agent_id // "-"), (.tool_name // "-")] | join("\t")' 2>/dev/null)
+FIELDS=$(printf '%s' "$INPUT" | jq -r '[(.agent_type // "session"), (.agent_id // "-"), (.tool_name // "-"),
+  ((.tool_input.file_path // .tool_input.notebook_path // .tool_input.path
+    // (try ((.tool_input.command // "") | match("(?:project|\\.claude|\\.forma|\\.devtool)/[^\\s\"'"'"';|&<>`]+") | .string) catch null)) // "-")] | join("\t")' 2>/dev/null)
 
 if [ -z "$FIELDS" ]; then
   emit "$TS · !ERROR · - · input not parsed (no jq or input is not JSON)"
@@ -64,7 +69,7 @@ fi
 
 OLDIFS=$IFS
 IFS=$(printf '\t')
-read -r AGENT_TYPE AGENT_ID TOOL_NAME <<EOF
+read -r AGENT_TYPE AGENT_ID TOOL_NAME FILE_PATH <<EOF
 $FIELDS
 EOF
 IFS=$OLDIFS
@@ -74,6 +79,14 @@ IFS=$OLDIFS
 
 if [ -z "$TOOL_NAME" ] || [ "$TOOL_NAME" = "-" ]; then
   emit "$TS · !ERROR · $AGENT_ID · no tool_name in the input"
+fi
+
+# project-relative, forward slashes; a path outside the project stays as given
+if [ -n "$FILE_PATH" ] && [ "$FILE_PATH" != "-" ]; then
+  FILE_PATH=$(printf '%s' "$FILE_PATH" | sed 's|\\|/|g' | tr -d '\r\n')
+  BASE=$(basename "$PWD")
+  case "$FILE_PATH" in *"/$BASE/"*) FILE_PATH=${FILE_PATH#*"/$BASE/"} ;; esac
+  emit "$TS · $AGENT_TYPE · $AGENT_ID · $TOOL_NAME · $FILE_PATH"
 fi
 
 emit "$TS · $AGENT_TYPE · $AGENT_ID · $TOOL_NAME"
