@@ -5,8 +5,35 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { run } = require('../../.forma/board/checks/ledger-parity.cjs');
-const { deriveSpendLineForCall } = require('../scripts/sync-ledger.cjs');
+
+function resolveLedgerParity() {
+  const candidates = [
+    path.resolve(__dirname, '../../.forma/board/checks/ledger-parity.cjs'),
+    path.resolve(__dirname, '../../../core/board/checks/ledger-parity.cjs'),
+    path.resolve(process.cwd(), '.forma/board/checks/ledger-parity.cjs'),
+    path.resolve(process.cwd(), '.forma/protocol/skills/forma/core/board/checks/ledger-parity.cjs'),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return candidates[0];
+}
+
+function resolveSyncLedger() {
+  const candidates = [
+    path.resolve(__dirname, '../scripts/sync-ledger.cjs'),
+    path.resolve(__dirname, '../../gemini/scripts/sync-ledger.cjs'),
+    path.resolve(process.cwd(), '.agents/scripts/sync-ledger.cjs'),
+    path.resolve(process.cwd(), '.forma/protocol/skills/forma/adapters/gemini/scripts/sync-ledger.cjs'),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return candidates[0];
+}
+
+const { run } = require(resolveLedgerParity());
+const { deriveSpendLineForCall } = require(resolveSyncLedger());
 
 let passed = 0;
 const it = (name, fn) => {
@@ -41,6 +68,12 @@ try {
     const ledgerDir = path.join(tmpDir, '.agents', '.ledger');
     fs.mkdirSync(boardDir, { recursive: true });
     fs.mkdirSync(ledgerDir, { recursive: true });
+
+    // Создаем фикстуру адаптера, чтобы loadAdapters(tmpDir) видел его
+    fs.writeFileSync(
+      path.join(tmpDir, '.agents', 'forma-adapter.cjs'),
+      "module.exports = { engine: 'gemini' };\n"
+    );
 
     const cardPath = path.join(boardDir, `${cardPrefix}-test.md`);
     fs.writeFileSync(

@@ -5,6 +5,20 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+function resolveGuardDelete() {
+  const candidates = [
+    path.resolve(__dirname, '../../.forma/rules/guard-delete.cjs'),
+    path.resolve(__dirname, '../../../core/rules/guard-delete.cjs'),
+    path.resolve(__dirname, '../../../../core/rules/guard-delete.cjs'),
+    path.resolve(process.cwd(), '.forma/rules/guard-delete.cjs'),
+    path.resolve(process.cwd(), '.forma/protocol/skills/forma/core/rules/guard-delete.cjs'),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return candidates[0];
+}
+
 const {
   isProtectedPath,
   checkCommand,
@@ -12,7 +26,7 @@ const {
   consumeUnlock,
   isUnlockActive,
   runGuard,
-} = require('../../.forma/rules/guard-delete.cjs');
+} = require(resolveGuardDelete());
 
 let passed = 0;
 const it = (name, fn) => {

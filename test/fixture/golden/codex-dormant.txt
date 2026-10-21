@@ -11,7 +11,7 @@ exit 0
     ✓ адаптер Claude Code: тест соответствия пройден
     · Codex: спящий режим — не сверяется (реестр .forma/engines.json)
 
-Паритет ролей Claude↔Gemini — сведение, не нарушение (роли не копируются, адаптер Gemini не готов):
+Паритет ролей Claude↔Gemini — сведение, не нарушение (роли не копируются):
 | Компонент | Claude файл | Gemini файл | Статус |
 |---|---|---|---|
 | Agent: Core               | .claude/agents/core.md              | .agents/plugins/forma/agents/core.md          | ✗ Дрейф (missing_gemini) |

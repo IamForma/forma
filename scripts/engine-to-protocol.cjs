@@ -115,6 +115,8 @@ const MAP = [
   ['.agents/plugins/forma/agents', 'adapters/gemini/agents'],
   ['.agents/rules', 'adapters/gemini/rules'],
   ['.agents/tests', 'adapters/gemini/tests'],                           // тест соответствия адаптера (прописан в adapter-conformance.cjs)
+  ['.agents/hooks', 'adapters/gemini/hooks'],
+  ['.agents/scripts', 'adapters/gemini/scripts'],
   ['.agents/skills', 'adapters/codex/.agents/skills'],
   ['.codex', 'adapters/codex/.codex'],
 ].filter(([p]) => !(CODEX_ASLEEP && p === '.codex'));

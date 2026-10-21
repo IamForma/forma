@@ -142,7 +142,10 @@ test('хуки: один и тот же стоп на en, ru и французс
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const file = path.join(dir, 'project', 'config', 'PROJECT.md');
   const original = fs.readFileSync(file, 'utf8');
-  const hook = (name, input) => spawnSync('bash', [path.join(dir, '.claude', 'hooks', name)], { cwd: dir, encoding: 'utf8', input, env: { ...process.env, CLAUDE_PROJECT_DIR: dir, FORMA_LANG: '' } });
+  const bashCmd = process.platform === 'win32' && fs.existsSync('C:\\Program Files\\Git\\bin\\bash.exe')
+    ? 'C:\\Program Files\\Git\\bin\\bash.exe'
+    : 'bash';
+  const hook = (name, input) => spawnSync(bashCmd, [path.join(dir, '.claude', 'hooks', name)], { cwd: dir, encoding: 'utf8', input, env: { ...process.env, CLAUDE_PROJECT_DIR: dir, FORMA_LANG: '' } });
   try {
     assert.match(hook('check-ready.sh').stdout, /START STOP/);
 

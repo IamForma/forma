@@ -10,7 +10,7 @@ exit 1
 Ядро и адаптеры:
   размер правил: AGENTS.md — больше 20000 байт, близко к лимиту (22000)
 
-Паритет ролей Claude↔Gemini — сведение, не нарушение (роли не копируются, адаптер Gemini не готов):
+Паритет ролей Claude↔Gemini — сведение, не нарушение (роли не копируются):
 | Компонент | Claude файл | Gemini файл | Статус |
 |---|---|---|---|
 | Agent: Core               | .claude/agents/core.md              | .agents/plugins/forma/agents/core.md          | ✗ Дрейф (missing_gemini) |

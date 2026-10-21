@@ -48,6 +48,8 @@ fs.mkdirSync(path.join(targetDir, 'tests'), { recursive: true });
 fs.mkdirSync(path.join(targetDir, 'hooks'), { recursive: true });
 fs.mkdirSync(path.join(targetDir, 'roles'), { recursive: true });
 fs.mkdirSync(path.join(targetDir, 'skills'), { recursive: true });
+fs.mkdirSync(path.join(targetDir, '.ledger'), { recursive: true });
+fs.writeFileSync(path.join(targetDir, '.ledger', 'calls.jsonl'), '', 'utf8');
 
 // 1. forma-adapter.cjs
 const adapterCode = `'use strict';

@@ -107,7 +107,7 @@ exit 1
     · Codex (сведение, не нарушение): .agents/skills/project-knowledge: нет зеркала навыка Claude
     · Codex (сведение, не нарушение): .agents/skills/skill-authoring: нет зеркала навыка Claude
 
-Паритет ролей Claude↔Gemini — сведение, не нарушение (роли не копируются, адаптер Gemini не готов):
+Паритет ролей Claude↔Gemini — сведение, не нарушение (роли не копируются):
 | Компонент | Claude файл | Gemini файл | Статус |
 |---|---|---|---|
 | Agent: Core               | .claude/agents/core.md              | .agents/plugins/forma/agents/core.md          | ✗ Дрейф (drift) |

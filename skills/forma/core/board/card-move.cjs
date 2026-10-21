@@ -166,6 +166,32 @@ if (target !== file) { fs.mkdirSync(path.dirname(target), { recursive: true }); 
 fs.writeFileSync(target, text);
 console.log(path.relative(ROOT, target).replace(/\\/g, '/'));
 
+// 6б. Инвалидация / пересчет кэша дашборда при обновлении карточки
+try {
+  const cacheFile = path.join(ROOT, '.forma', 'dashboard', '.cache', 'data.json');
+  if (fs.existsSync(cacheFile)) {
+    let rebuilt = false;
+    const candidates = [
+      path.join(ROOT, '.forma', 'dashboard', 'generate.js'),
+      path.resolve(__dirname, '../dashboard/generate.js'),
+    ];
+    for (const genFile of candidates) {
+      if (fs.existsSync(genFile)) {
+        try {
+          const { buildData } = require(genFile);
+          const data = buildData(ROOT);
+          fs.writeFileSync(cacheFile, JSON.stringify(data, null, 2), 'utf8');
+          rebuilt = true;
+          break;
+        } catch {}
+      }
+    }
+    if (!rebuilt) {
+      fs.rmSync(cacheFile, { force: true });
+    }
+  }
+} catch {}
+
 // 7. Проверка по этой карточке; счёт «принятых, но не закрытых Core» — сводка цикла, а не нарушение карточки
 const mine = checkBoard(ROOT).filter((p) => p.includes(cardId) && !p.includes('не закрыты `Core`'));
 if (mine.length) { console.error(mine.join('\n')); process.exit(1); }

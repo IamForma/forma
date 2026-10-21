@@ -26,6 +26,20 @@ const { formatSpendLine } = require('../../.forma/dashboard/spend-line.cjs');
 const { tally } = require('../../.forma/dashboard/tally.cjs');
 const { inCleanZone, scanCleanFile, cleanOwn } = require('../../.claude/scripts/checks/support/clean-zone.cjs');
 
+function resolveAdapter() {
+  const candidates = [
+    path.resolve(__dirname, '../forma-adapter.cjs'),
+    path.resolve(__dirname, '../../gemini/forma-adapter.cjs'),
+    path.resolve(process.cwd(), '.agents/forma-adapter.cjs'),
+    path.resolve(process.cwd(), '.forma/protocol/skills/forma/adapters/gemini/forma-adapter.cjs'),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return candidates[0];
+}
+const adapter = require(resolveAdapter());
+
 let passed = 0;
 const it = (name, fn) => { fn(); passed += 1; console.log('ok  ' + name); };
 
@@ -127,6 +141,76 @@ it('файлы адаптера .agents/ соответствуют запрет
       assert.deepEqual(problems, [], `След проекта в ${rel}: ${problems.join('; ')}`);
     }
   }
+});
+
+// 6. Расширенные поля адаптера дашборда
+it('forma-adapter.cjs предоставляет transcriptsDir и parseUsage для стенограмм Antigravity', () => {
+  assert.equal(typeof adapter.transcriptsDir, 'function');
+  const tDir = adapter.transcriptsDir(root);
+  assert.ok(tDir === null || typeof tDir === 'string');
+
+  assert.equal(typeof adapter.parseUsage, 'function');
+  const u1 = adapter.parseUsage({
+    input_tokens: 1200,
+    output_tokens: 300,
+    cache_read_tokens: 450,
+    cache_write_tokens: 100,
+  });
+  assert.deepEqual(u1, {
+    tokens_in: 1200,
+    tokens_out: 300,
+    cache_read: 450,
+    cache_write: 100,
+  });
+
+  const uEmpty = adapter.parseUsage(null);
+  assert.deepEqual(uEmpty, {
+    tokens_in: null,
+    tokens_out: null,
+    cache_read: null,
+    cache_write: null,
+  });
+});
+
+it('forma-adapter.cjs объявляет usageRefresh с выгрузкой в gemini-usage.json', () => {
+  assert.ok(Array.isArray(adapter.usageRefresh));
+  assert.equal(adapter.usageRefresh.length, 1);
+  assert.equal(adapter.usageRefresh[0].cache, 'gemini-usage.json');
+  assert.match(adapter.usageRefresh[0].script, /sync-ledger\.cjs/);
+});
+
+it('forma-adapter.cjs engineSettings возвращает структуру MCP, хуков и активных узлов', () => {
+  assert.equal(typeof adapter.engineSettings, 'function');
+  const settings = adapter.engineSettings(root);
+  assert.equal(settings.present, true);
+  assert.ok(Array.isArray(settings.hooks));
+  if (fs.existsSync(path.join(root, '.agents', 'hooks.json'))) {
+    assert.ok(settings.hooks.some((h) => h.name === 'forma-guard-delete'));
+  }
+  assert.ok(Array.isArray(settings.nodes));
+  const nodeNames = settings.nodes.map((n) => n.name);
+  for (const exp of ['intent', 'spec', 'kit', 'run', 'core']) {
+    assert.ok(nodeNames.includes(exp), `узел ${exp} должен быть в списке узлов`);
+  }
+  assert.ok(settings.mcp && Array.isArray(settings.mcp.project));
+});
+
+it('forma-adapter.cjs предоставляет instructionWeight и stepsFromCacheRead для gemini-3.8-flash', () => {
+  assert.equal(typeof adapter.instructionWeight, 'function');
+  const iw = adapter.instructionWeight(root);
+  assert.equal(iw.estimate, true);
+  assert.equal(iw.model, 'gemini-3.8-flash');
+  assert.ok(iw.common.tokens > 0);
+  for (const n of ['Intent', 'Spec', 'Kit', 'Run', 'Core']) {
+    assert.ok(iw.byNode[n], `узел ${n} должен присутствовать в byNode`);
+    assert.ok(iw.byNode[n].perStep > iw.common.tokens);
+    assert.equal(iw.byNode[n].model, 'gemini-3.8-flash');
+  }
+
+  assert.equal(typeof adapter.stepsFromCacheRead, 'function');
+  assert.equal(adapter.stepsFromCacheRead(5000, 1000), 5);
+  assert.equal(adapter.stepsFromCacheRead(null, 1000), null);
+  assert.equal(adapter.stepsFromCacheRead(5000, 0), null);
 });
 
 console.log(`\nВсе ${passed} проверок адаптера Gemini пройдены успешно.`);

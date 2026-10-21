@@ -1,0 +1,37 @@
+{
+  "forma-guard-delete": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node hooks/guard-delete.cjs",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "forma-unlock-delete": {
+    "enabled": true,
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node hooks/unlock-delete.cjs",
+        "timeout": 10
+      }
+    ]
+  },
+  "forma-ledger-recorder": {
+    "enabled": true,
+    "PostInvocation": [
+      {
+        "type": "command",
+        "command": "node hooks/post-invocation.cjs",
+        "timeout": 10
+      }
+    ]
+  }
+}

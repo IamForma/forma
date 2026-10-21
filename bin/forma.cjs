@@ -503,9 +503,24 @@ function installGemini(root) {
   copyTree(path.join(A, 'rules'), path.join(root, '.agents', 'rules'))
   copyFile(path.join(A, 'forma-adapter.cjs'), path.join(root, '.agents', 'forma-adapter.cjs'))
   copyTree(path.join(A, 'tests'), path.join(root, '.agents', 'tests')) // test-gemini-adapter.cjs: adapter-conformance.cjs looks for it here
+  if (fs.existsSync(path.join(A, 'scripts'))) {
+    copyTree(path.join(A, 'scripts'), path.join(root, '.agents', 'scripts'))
+  }
+  if (fs.existsSync(path.join(A, 'hooks'))) {
+    copyTree(path.join(A, 'hooks'), path.join(root, '.agents', 'hooks'))
+  }
+  if (fs.existsSync(path.join(A, 'hooks.json'))) {
+    copyFile(path.join(A, 'hooks.json'), path.join(root, '.agents', 'hooks.json'), { overwrite: false })
+  }
   copyFile(path.join(A, 'plugin.json'), path.join(P, 'plugin.json'))
   copyTree(path.join(A, 'agents'), path.join(P, 'agents'))
   copyFile(path.join(A, 'mcp_config.json'), path.join(P, 'mcp_config.json'), { overwrite: false })
+  if (fs.existsSync(path.join(A, 'mcp_config.json'))) {
+    copyFile(path.join(A, 'mcp_config.json'), path.join(root, '.agents', 'mcp_config.json'), { overwrite: false })
+  }
+  fs.mkdirSync(path.join(root, '.agents', '.ledger'), { recursive: true })
+  const ledgerCalls = path.join(root, '.agents', '.ledger', 'calls.jsonl')
+  if (!fs.existsSync(ledgerCalls)) fs.writeFileSync(ledgerCalls, '', 'utf8')
   return ['Gemini (Antigravity, beta): .agents/rules, .agents/tests, .agents/plugins/forma (roles, plugin.json) — installed']
 }
 
