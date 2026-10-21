@@ -12,7 +12,7 @@ Every engine must systematically declare for each of the nine contracts whether 
 - **Proof:** Native import (`@AGENTS.md`) or native reading; verified by `node .claude/scripts/sync-engines.cjs --check`.
 
 ### 2. Context Isolation (`isolation`)
-- **What it guarantees:** Physical separation of agent contexts between `Intent`, `Spec`, `Kit`, `Run`, and `Core` to satisfy Prohibitions 1 (independent confirmation) and 7 (clean context).
+- **What it guarantees:** Physical separation of agent contexts between `Intent`, `Spec`, `Kit`, `Run`, and `Core` to satisfy Prohibitions 1 (independent confirmation) and 7 (clean context). By default, tasks are dispatched to isolated subagents (in parallel waves when independent) unless the human explicitly commands single-session execution ("Действуй сам").
 - **Proof:** Mode 2 (subagent execution via separate conversations) with gate in `new-card.cjs` preventing production card creation in degraded Mode 1 without isolation; recorded in `.state/capabilities.json`.
 
 ### 3. Role Delivery (`role-delivery`)
