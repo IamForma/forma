@@ -32,7 +32,7 @@
 const fs = require('fs');
 const path = require('path');
 const { makeCli } = require('../dashboard/lib/cli.cjs');
-const { cardFiles, parseFrontmatter, zoneHeading, labelsOf } = require('../dashboard/lib/card.cjs');
+const { cardFiles, parseFrontmatter, frontmatterBlock, zoneHeading, labelsOf } = require('../dashboard/lib/card.cjs');
 const { normalize } = require('./run-in-card.cjs');
 const { checkBoard } = require('./check-board.cjs');
 const i18n = require('../i18n/index.cjs');
@@ -196,3 +196,29 @@ try {
 const mine = checkBoard(ROOT).filter((p) => p.includes(cardId) && !p.includes('не закрыты `Core`'));
 if (mine.length) { console.error(mine.join('\n')); process.exit(1); }
 console.log(`ok: ${cardId} → ${t.status}/${assignee} · stage ${t.stage}`);
+
+if (to === 'close') {
+  const epic = fm.epic;
+  if (epic) {
+    const vm = projectMd.match(/<!--\s*k:volume\s*-->\s*\|\s*(\d+)/i) ||
+               projectMd.match(/^\|\s*(?:Объём\s*(?:круга|цикла)|Cycle volume)[^|]*\|\s*(\d+)/mi);
+    const cycleVol = vm ? +vm[1] : 25;
+    const doneDir = path.join(BOARD, 'done');
+    let count = 0;
+    if (fs.existsSync(doneDir)) {
+      for (const f of fs.readdirSync(doneDir)) {
+        if (!f.endsWith('.md')) continue;
+        try {
+          const cText = fs.readFileSync(path.join(doneDir, f), 'utf8');
+          const cBlock = frontmatterBlock(cText) || '';
+          const cEpic = (cBlock.match(/^epic:\s*"(.+?)"/m) || [])[1];
+          const cAssignee = (cBlock.match(/^assignee:\s*"?(.+?)"?\s*$/m) || [])[1];
+          const cStatus = (cBlock.match(/^status:\s*"(.+?)"/m) || [])[1];
+          if (cEpic === epic && cStatus === 'done' && cAssignee === 'Core') count++;
+        } catch {}
+      }
+    }
+    const note = count >= cycleVol ? 'Пора Core.' : 'Накопление в done/Core продолжается.';
+    console.log(`Круг по эпику "${epic}": ${count}/${cycleVol} карточек. ${note}`);
+  }
+}

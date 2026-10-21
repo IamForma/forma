@@ -14,6 +14,21 @@
       }
     ]
   },
+  "forma-guard-core-cycle": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "invoke_subagent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node hooks/guard-core-cycle.cjs",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "forma-unlock-delete": {
     "enabled": true,
     "PreInvocation": [
