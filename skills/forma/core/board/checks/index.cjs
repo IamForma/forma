@@ -18,4 +18,5 @@ module.exports = [
   require('./attempt-format.cjs'),
   require('./agent-id.cjs'),
   require('./engine-tag.cjs'),
+  require('./ledger-parity.cjs'),
 ];

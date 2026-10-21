@@ -46,6 +46,17 @@ if (!kind || !title) die('нужны --kind <код> и --title "<заголов
 if (!lanes.has(kind)) die(`неизвестный код "${kind}". Коды: ` + [...lanes.keys()].join(', '));
 const epic = lanes.get(kind);
 
+// 1б. Гейт изоляции (AGENTS.md §2, запреты 1 и 7)
+const capFile = path.join(ROOT, '.agents', '.state', 'capabilities.json');
+if (fs.existsSync(capFile)) {
+  try {
+    const caps = JSON.parse(fs.readFileSync(capFile, 'utf8'));
+    if (caps.isolation && caps.isolation.available === false && kind === 'channels' && !flag('force')) {
+      die('гейт изоляции закрыт: движок находится в деградированном режиме (Mode 1 без Teamwork). Производственный круг требует физической изоляции (запреты 1 и 7). Включите режим Teamwork (/teamwork-preview или /boost) либо передайте --force.');
+    }
+  } catch {}
+}
+
 // 2. Метка цели
 const goal = arg('goal', 'goal-' + kind);
 if (!/^goal-(\d+|[a-z-]+)$/.test(goal)) die(`метка цели "${goal}" не вида goal-NN / goal-<код>`);

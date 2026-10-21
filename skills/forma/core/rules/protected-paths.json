@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "description": "Реестр охраняемых файлов и каталогов протокола Форма (AGENTS.md §2, запрет 1)",
+  "protectedRoots": [
+    ".claude",
+    ".agents",
+    ".codex",
+    ".devtool",
+    ".forma",
+    "manual",
+    "living",
+    "VARS"
+  ],
+  "protectedFiles": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "PROJECT.md",
+    "GOAL.md",
+    "gemini-8.md",
+    "CODEX-8.md",
+    "claude-8.md"
+  ],
+  "protectedPatterns": [
+    "^\\.claude(/|\\\\|$)",
+    "^\\.agents(/|\\\\|$)",
+    "^\\.codex(/|\\\\|$)",
+    "^\\.devtool(/|\\\\|$)",
+    "^\\.forma(/|\\\\|$)",
+    "(^|/|\\\\)VARS(/|\\\\|$)",
+    "(^|/|\\\\)AGENTS\\.md$",
+    "(^|/|\\\\)CLAUDE\\.md$",
+    "(^|/|\\\\)PROJECT\\.md$",
+    "(^|/|\\\\)GOAL\\.md$",
+    "(^|/|\\\\)gemini-8\\.md$",
+    "(^|/|\\\\)CODEX-8\\.md$",
+    "(^|/|\\\\)claude-8\\.md$"
+  ]
+}

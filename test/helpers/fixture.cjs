@@ -31,7 +31,9 @@ function makeFixture() {
   { encoding: 'utf8', env: isolatedEnv(home) });
   if (r.status !== 0) throw new Error('forma init упал:\n' + r.stdout + r.stderr);
   copyTree(OVERLAY, root);
-  return { base, root, home, env: isolatedEnv(home), cleanup: () => fs.rmSync(base, { recursive: true, force: true }) };
+  return { base, root, home, env: isolatedEnv(home), cleanup: () => {
+    try { fs.rmSync(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }); } catch {}
+  } };
 }
 
 function runNode(fx, args) {
