@@ -1,7 +1,7 @@
 name: release
 
 # Срабатывает при каждом пуше в main. Смотрит версию в .claude-plugin/plugin.json;
-# если тег с таким номером ещё не существует — создаёт git-тег и GitHub Release
+# если релиз с таким номером ещё не существует — создаёт git-тег и GitHub Release
 # с названием, равным ровно номеру версии, без дополнительного текста.
 # Ничего не публикует, если версия не изменилась с последнего релиза.
 
@@ -10,6 +10,7 @@ on:
     branches: [main]
     paths:
       - ".claude-plugin/plugin.json"
+      - "package.json"
 
 permissions:
   contents: write
@@ -28,10 +29,12 @@ jobs:
           VERSION=$(node -p "require('./.claude-plugin/plugin.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Skip if tag already exists
+      - name: Skip if release already exists
         id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if git rev-parse --verify --quiet "refs/tags/v${{ steps.v.outputs.version }}" >/dev/null 2>&1; then
+          if gh release view "v${{ steps.v.outputs.version }}" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
