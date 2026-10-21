@@ -23,7 +23,8 @@ Antigravity operates in two distinct session modes depending on platform startup
      - `plumb-gemini`: `model: gemini-3.8-flash`, read-only tools, no project context, returns JSON only;
      - `extractor`: `model: gemini-3.8-flash`, read/write tools only — registered only when a graph build needs model extraction (`kit.md`, "Graphs");
      - `asset-describer`: `model: gemini-flash-lite`, read-only tools, no project context, returns JSON only.
-   * **Execution:** Once defined, `Intent` dispatches tasks along the route using `invoke_subagent`. Each subagent executes in a strictly isolated context without parent memory. Prohibitions 1 (independent confirmation) and 7 (clean context) are physically guaranteed.
+   * **Execution & Default Routing:** By default in Mode 2, `Intent` delegates all tasks along the route to isolated subagents via `invoke_subagent`. Independent tasks run in parallel waves to prevent main session stall. Prohibitions 1 (independent confirmation) and 7 (clean context) are physically guaranteed.
+   * **Single-Session Override («Действуй сам»):** When the human explicitly commands «Действуй сам», «делай в сессии», or directly approves short-route execution (`route-1` / `route-4`), `Intent` is authorized to carry out the task directly within the main session context without subagent dispatch.
 
 2. **Mode 1: Single-Agent Session / Fallback (`invoke_subagent` absent in toolbox)**
    * In a standard quick chat session where subagent tools are missing, physical context isolation between nodes is unavailable.
