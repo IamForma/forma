@@ -99,6 +99,17 @@ function release() {
   const mk = node(E2P, '--mark');
   if (mk.code) console.error('! --mark не записал базу (движок и шаблон расходятся) — следующая сверка покажет ложные конфликты:\n' + mk.out);
   ok('protocol/ отправлен: main и dev');
+  try {
+    if (run('gh', ['auth', 'status']).code === 0) {
+      const rel = run('gh', ['release', 'create', `v${nv}`, '--title', nv, '--notes', `Release v${nv}`, '--latest', '-R', 'IamForma/forma']);
+      if (rel.code === 0) ok('GitHub Release v' + nv + ' создан через gh CLI');
+      else console.log('! gh release create не удался, релиз подхватит GitHub Actions:\n' + rel.out);
+    } else {
+      console.log('! gh CLI не авторизован — релиз будет создан через GitHub Actions');
+    }
+  } catch {
+    console.log('! gh CLI недоступен — релиз будет создан через GitHub Actions');
+  }
   git('add', '.forma/protocol');
   if (git('diff', '--cached', '--quiet').code) git('commit', '-q', '-m', `Protocol release v${nv}: ${list.length} commit(s)\n\n${CO}`);
 }
