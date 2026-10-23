@@ -179,6 +179,18 @@ function modeOf(adapter) {
 const under = (rel, dir) => rel === dir || rel.startsWith(dir + '/');
 
 /**
+ * Папка пакета движка по `sources.packageManifest`: каталог манифеста; если манифест лежит в служебной папке
+ * с точкой в имени (метаданные плагина), пакетом считается её родитель. Без манифеста — `null`. Имён движков нет.
+ */
+function packageZone(adapter) {
+  const m = adapter && adapter.sources && adapter.sources.packageManifest;
+  if (typeof m !== 'string' || !m) return null;
+  let dir = path.posix.dirname(m.split('\\').join('/'));
+  if (dir !== '.' && path.posix.basename(dir).startsWith('.')) dir = path.posix.dirname(dir);
+  return dir === '.' || dir === '' || dir === '..' || dir.startsWith('../') || path.posix.isAbsolute(dir) ? null : dir;
+}
+
+/**
  * Пункты контракта для адаптера: `[{ item, ok, detail }]`. Читает диск только для существования объявленных источников.
  * Движок пишет только в свою папку и карточки; Kit создаёт роли в rolesDir движка, который их исполняет.
  */
@@ -203,8 +215,11 @@ function checkAdapter(adapter, root) {
     'нужны Intent, Spec, Kit, Run, Core');
   const zones = adapter.writeZones;
   const own = adapter.dir ? String(adapter.dir) : null;
-  const zonesOk = Array.isArray(zones) && zones.length > 0 && zones.every((z) => (own && under(z, own)) || under(z, CARDS_ZONE));
-  add('writeZones: только своя папка и карточки', zonesOk, `разрешены ${own || 'папка движка'} и ${CARDS_ZONE}`);
+  const pkg = packageZone(adapter);
+  const zonesOk = Array.isArray(zones) && zones.length > 0
+    && zones.every((z) => (own && under(z, own)) || under(z, CARDS_ZONE) || (pkg && under(z, pkg)));
+  add('writeZones: только своя папка, карточки и папка пакета', zonesOk,
+    `разрешены ${own || 'папка движка'}, ${CARDS_ZONE}${pkg ? ' и ' + pkg : ''}`);
   add('rolesDir внутри зоны записи движка', own != null && under(src.rolesDir, own), `${src.rolesDir} вне ${own}`);
   // Проба разбора: шаг с выходными токенами в частых именах поля, плоский и под usage; ждём tokens_out = 7.
   const flat = { tokens_out: 7, output_tokens: 7, outputTokens: 7, completion_tokens: 7, candidatesTokenCount: 7 };
