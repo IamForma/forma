@@ -292,7 +292,10 @@ if (only) {
   for (const nm of only) {
     if (R.engine.some((x) => x.rel === nm)) continue;
     let why;
-    if (R.fresh.some((x) => x.rel === nm)) why = 'новый файл: переносится по --add ' + nm;
+    if (R.fresh.some((x) => x.rel === nm)) {
+      if (adds.includes(nm)) continue;   // назван и в --apply, и в --add: перенос ниже
+      why = 'новый файл: переносится по --add ' + nm;
+    }
     else if (R.conflict.some((x) => x.rel === nm)) why = 'конфликт, решает человек';
     else if (R.template.some((x) => x.rel === nm)) why = 'изменён только шаблон: «обнови протокол Форма»';
     else if (R.same.some((x) => x.rel === nm)) why = 'отличается только исключениями';
