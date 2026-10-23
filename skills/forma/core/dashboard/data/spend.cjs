@@ -113,8 +113,15 @@ function buildSpend(projectRoot, rawCards) {
   economy.byEngine = readByEngine(projectRoot);
   economy.engines = engineViews(projectRoot, cards, w);
   // Скорость и эффективность по движкам и модель/усилие по узлам из контракта адаптера (`nodeModels`) — для каждого движка.
-  economy.speed = buildSpeed(cards, adapterEngines(projectRoot).filter((e) => !e.aliases.some((x) => cards.some((c) => c.attempts.some((z) => z.engine === x)))).map((e) => e.tag));
-  economy.nodeModels = engines.nodeModelTables(projectRoot).map(({ tag, nodeModels }) => ({ tag, nodes: nodeModels }));
+  const tables = engines.nodeModelTables(projectRoot);
+  // Модель попытки — по таблице узел-модель адаптера её движка; нет таблицы или узла в ней — `unknown` в срезе.
+  const modelOf = (engine, node) => {
+    const t = tables.find((x) => canon(x.tag) === engine);
+    const row = t && t.nodeModels && t.nodeModels[node];
+    return row && typeof row.model === 'string' ? row.model : null;
+  };
+  economy.speed = buildSpeed(cards, adapterEngines(projectRoot).filter((e) => !e.aliases.some((x) => cards.some((c) => c.attempts.some((z) => z.engine === x)))).map((e) => e.tag), modelOf);
+  economy.nodeModels = tables.map(({ tag, nodeModels }) => ({ tag, nodes: nodeModels }));
   return { byNode, economy };
 }
 

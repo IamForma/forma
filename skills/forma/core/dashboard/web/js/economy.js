@@ -752,6 +752,18 @@ function speedHtml(e){
       <td class="n">${speedNum(r.cacheShare, v => Math.round(v * 100) + '%')}</td>
       <td class="n">${fmt(r.closedCards)}</td></tr>`;
   }).join('');
+  const mrows = sp.byKind[SPEED_KIND].models || [];
+  const mbody = mrows.map(r => {
+    const unk = r.outUnknown
+      ? `<br><small class="dim">${t('econ.speed.outUnknown', {n: fmt(r.outUnknown), a: fmt(r.attempts)})}</small>` : '';
+    const mdl = r.model === 'unknown' ? `<span class="dim">${t('econ.speed.modelUnknown')}</span>` : `<span class="mono">${esc(r.model)}</span>`;
+    return `<tr><td class="elbl"><b>${esc(engineLabel(r.engine))}</b></td><td>${mdl}</td>
+      <td class="n">${speedNum(r.outPerSec, v => dec(v, 1))}${unk}</td>
+      <td class="n">${fmt(r.out)}</td><td class="n">${secText(Math.round(r.outSeconds))}</td><td class="n">${fmt(r.attempts)}</td></tr>`;
+  }).join('');
+  const models = mrows.length
+    ? `<h3>${t('econ.speed.modelTitle')}</h3><div class="etable-scroll"><table class="etable"><thead><tr><th>${t('econ.speed.thEngine')}</th><th>${t('econ.config.model')}</th><th class="n">${t('econ.speed.thOut')}</th><th class="n">${t('econ.speed.thOutTok')}</th><th class="n">${t('econ.speed.thOutSec')}</th><th class="n">${t('econ.speed.thAttempts')}</th></tr></thead><tbody>${mbody}</tbody></table></div>`
+    : '';
   const kinds = ['all', ...sp.kinds];
   const filter = `<div class="e-seg" data-speed-kinds><span class="dim">${t('econ.speed.kind')}:</span> ${kinds.map(k =>
     `<span class="${k === SPEED_KIND ? 'on' : ''}" data-speed-kind="${esc(k)}">${k === 'all' ? t('econ.speed.kindAll') : esc(k)}</span>`).join('')}</div>`;
@@ -760,7 +772,7 @@ function speedHtml(e){
     : `<div class="nodata">${t('econ.speed.noData')}</div>`;
   return `<div class="tier"><div class="tier-lab">${t('econ.speed.title')}</div>
     ${hintFold(`<p class="hint">${t('econ.speed.hint')}</p>`)}
-    ${filter}${speed}${nodeModelsHtml(e.nodeModels)}</div>`;
+    ${filter}${speed}${models}${nodeModelsHtml(e.nodeModels)}</div>`;
 }
 
 function nodeModelsHtml(tables){

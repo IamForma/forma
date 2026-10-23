@@ -120,4 +120,27 @@ it('алиасы тега одного движка сводятся в один
   assert.deepEqual(Object.keys(e.engines), ['mini']);
 });
 
+it('ток/с по паре движок+модель: две метки, две модели, неизвестная модель — отдельная строка, out unknown не занижает', () => {
+  const root = fakeRoot({
+    '.a': `module.exports = { engine: 'eng-a', spendTag: 'eng-a', nodeModels: ${NM('model-a', 'high')} };`,
+    '.m': `module.exports = { engine: 'mini-code', spendTag: 'mini', id: 'mini', nodeModels: { ...${NM('model-m', 'low')}, Run: { model: 'model-m2', effort: 'low' } } };`,
+  });
+  const l = (node, extra, tag, n) => line(extra, tag).replace('`Run`', '`' + node + '`').replace('abcdef0123456789', 'abcdef01234567' + (10 + n));
+  const cards = [card('c1', 'build', 'done', [
+    l('Intent', ', 600 out, 10 s', 'eng-a', 0), l('Run', ', 300 out, 30 s', 'eng-a', 1), l('Run', ', out unknown, 99 s', 'eng-a', 2),
+    l('Run', ', 90 out, 3 s', 'mini-code', 3), l('Intent', ', 50 out, 10 s', 'mini', 4), l('Helper', ', 7 out, 1 s', 'mini', 5),
+  ])];
+  const rows = buildSpend(root, cards).economy.speed.byKind.all.models;
+  const get = (eng, mdl) => rows.find((r) => r.engine === eng && r.model === mdl);
+  assert.equal(get('eng-a', 'model-a').out, 900);
+  assert.equal(get('eng-a', 'model-a').outSeconds, 40);
+  assert.equal(get('eng-a', 'model-a').outPerSec, 22.5);
+  assert.equal(get('eng-a', 'model-a').attempts, 3);
+  assert.equal(get('eng-a', 'model-a').outUnknown, 1);
+  assert.equal(get('mini', 'model-m2').outPerSec, 30);
+  assert.equal(get('mini', 'model-m').outPerSec, 5);
+  assert.equal(get('mini', 'unknown').outPerSec, 7);
+  assert.equal(rows.length, 4);
+});
+
 console.log(`\n${passed} passed`);

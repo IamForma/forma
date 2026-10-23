@@ -43,6 +43,29 @@ function finish(r) {
   };
 }
 
+/**
+ * Срез «движок + модель»: модель — из `z.model` строки, иначе из таблицы узел-модель адаптера (`modelOf(движок, узел)`),
+ * нет ни того ни другого — строка `unknown` (не ноль). Знаменатель скорости — только попытки с известными out и секундами.
+ */
+const UNKNOWN_MODEL = 'unknown';
+function modelRows(cards, modelOf) {
+  const acc = {};
+  for (const c of cards) {
+    for (const z of c.attempts) {
+      const model = (typeof z.model === 'string' && z.model) || (modelOf && modelOf(z.engine, z.node)) || UNKNOWN_MODEL;
+      const key = z.engine + '|' + model;
+      const r = acc[key] || (acc[key] = { engine: z.engine, model, attempts: 0, out: 0, outSeconds: 0, outAttempts: 0, outUnknown: 0 });
+      r.attempts += 1;
+      const sec = num(z.seconds), out = num(z.tokensOut);
+      if (out != null && sec != null && sec > 0) { r.out += out; r.outSeconds += sec; r.outAttempts += 1; }
+      else if (out == null) r.outUnknown += 1;
+    }
+  }
+  return Object.values(acc)
+    .map((r) => ({ ...r, outPerSec: r.outSeconds > 0 ? r.out / r.outSeconds : null }))
+    .sort((a, b) => a.engine.localeCompare(b.engine) || (a.model === UNKNOWN_MODEL) - (b.model === UNKNOWN_MODEL) || a.model.localeCompare(b.model));
+}
+
 /** Строки по движкам для набора карточек. */
 function rowsOf(cards) {
   const acc = {};
@@ -78,14 +101,17 @@ function rowsOf(cards) {
  * в каждом `{ engines: { тег: строка } }`. Движки без попыток в выборке отсутствуют; список `extraTags` (движки
  * с адаптером) добавляется пустыми строками, чтобы колонка была от папки движка.
  */
-function buildSpeed(cards, extraTags = []) {
+function buildSpeed(cards, extraTags = [], modelOf = null) {
   const kinds = [...new Set(cards.filter((c) => c.attempts.length && c.kind).map((c) => c.kind))].sort((a, b) => a.localeCompare(b, 'ru'));
-  const byKind = { [ALL]: { engines: rowsOf(cards) } };
-  for (const k of kinds) byKind[k] = { engines: rowsOf(cards.filter((c) => c.kind === k)) };
+  const byKind = { [ALL]: { engines: rowsOf(cards), models: modelRows(cards, modelOf) } };
+  for (const k of kinds) {
+    const sub = cards.filter((c) => c.kind === k);
+    byKind[k] = { engines: rowsOf(sub), models: modelRows(sub, modelOf) };
+  }
   for (const v of Object.values(byKind)) {
     for (const tag of extraTags) if (!(tag in v.engines)) v.engines[tag] = finish(emptyRow());
   }
   return { kinds, byKind };
 }
 
-module.exports = { buildSpeed, ALL };
+module.exports = { buildSpeed, ALL, UNKNOWN_MODEL };
