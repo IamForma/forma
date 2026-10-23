@@ -236,6 +236,27 @@ function formaRoles(root = process.cwd()) {
 
 module.exports = {
   engine: 'gemini',
+  id: 'gemini',
+  spendTag: 'gemini',
+
+  // Контракт движка (ENGINE-CONTRACT.md): источники, возможности, таблица узел -> модель, зоны записи.
+  sources: {
+    rolesDir: '.agents/plugins/forma/agents',
+    onDemandRolesDir: '.agents/plugins/forma/agents/on-demand',
+    runRolesDir: '.agents/plugins/forma/agents/run',
+    scriptsDir: '.agents/scripts',
+    testsDir: '.agents/tests',
+    mcpConfigs: ['.agents/mcp_config.json'],
+  },
+  capabilities: { subagents: true, sendMessage: true, hooks: true, mcp: true },
+  nodeModels: {
+    Intent: { model: 'gemini-3.8-flash', effort: 'medium' },
+    Spec: { model: 'gemini-3.8-flash', effort: 'low' },
+    Kit: { model: 'gemini-3.8-flash', effort: 'low' },
+    Run: { model: 'gemini-3.8-flash', effort: 'low' },
+    Core: { model: 'gemini-3.8-flash', effort: 'low' },
+  },
+  writeZones: ['.agents', '.devtool/features'],
   rolesDir: '.agents/plugins/forma/agents',
   onDemandRolesDir: '.agents/plugins/forma/agents/on-demand',
   engineRulesFile: '.agents/rules/gemini-8.md',

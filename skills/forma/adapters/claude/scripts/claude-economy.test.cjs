@@ -54,7 +54,7 @@ it('нет стенограммы: cache_read и cache_write — unknown (null),
 
 it('пустые поля <usage> → unknown tokens / unknown s / id unknown', () => {
   const s = line(fromAgentResult({}, null));
-  assert.match(s, /attempt, unknown tokens \(cache-read unknown\), unknown s, `id unknown` —/);
+  assert.match(s, /attempt, unknown tokens \(cache-read unknown\), out unknown, unknown s, `id unknown` —/);
   const n = tallyLines([s]).byNode.Run;
   assert.deepEqual([n.tokensUnknown, n.cacheUnknown, n.secondsUnknown, n.idUnknown], [1, 1, 1, 1]);
 });
@@ -62,6 +62,18 @@ it('пустые поля <usage> → unknown tokens / unknown s / id unknown', 
 it('шаг транскрипта: поле отсутствует — null, присутствует 0 — 0', () => {
   const u = claudeUsage({ input_tokens: 0, output_tokens: 5, cache_read_input_tokens: 9 });
   assert.deepEqual(u, { tokens_in: 0, tokens_out: 5, cache_read: 9, cache_write: null });
+});
+
+it('сегмент «O out»: новая строка несёт его, старая читается как out unknown и не меняется', () => {
+  const { outTokens } = require('../../.forma/dashboard/spend-line.cjs');
+  const withOut = line({ tokens: 900, cache_read: 100, tokens_out: 2500, duration_s: 5, call_id: 'abcdef123456' });
+  assert.match(withOut, /\(100 cache-read\), 2 500 out, 5 s,/);
+  assert.equal(outTokens(withOut), 2500);
+  assert.equal(outTokens(line({ tokens: 9, cache_read: 1, duration_s: 5, call_id: 'abcdef123456' })), null);
+  const old = '`Run`, ' + D + ': attempt, 900 tokens (100 cache-read), 5 s, `second-call-id` — claude-code: x.';
+  assert.equal(outTokens(old), null);
+  const n = tallyLines([withOut, old]).byNode.Run;
+  assert.equal(n.tokens, 1800); // обе строки читаются разбором расхода
 });
 
 console.log(`\n${passed} проверок пройдено`);

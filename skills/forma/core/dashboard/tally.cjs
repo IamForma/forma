@@ -28,7 +28,7 @@ const economy = require('./economy.cjs');
 const { walk } = require('./lib/fs.cjs');
 const { frontmatterBlock } = require('./lib/card.cjs');
 const engines = require('./lib/engines.cjs');
-const { toEnglish, SPEND_SOURCE, CLAIM_RE, CACHE_UNKNOWN_RE, TOKENS_UNKNOWN_RE, ID_UNKNOWN_RE, toInt, sessionWindowEnd } = require('./spend-line.cjs');
+const { toEnglish, SPEND_SOURCE, CLAIM_RE, CACHE_UNKNOWN_RE, TOKENS_UNKNOWN_RE, ID_UNKNOWN_RE, toInt, sessionWindowEnd, outTokens } = require('./spend-line.cjs');
 
 // Три вещи, на которых этот разбор ломался или сломался бы:
 //   1. Разряды числа пишут через пробел («52 339 tokens») — простое \d+ такую строку не берёт.
@@ -110,6 +110,7 @@ function attemptRecord(m, line, idMatch) {
     engine: engineKey(line),
     tokens: TOKENS_UNKNOWN_RE.test(line) ? null : toInt(tokensStr),
     cache_read: cacheStr != null ? toInt(cacheStr) : (CACHE_UNKNOWN_RE.test(line) ? null : undefined),
+    tokens_out: outTokens(line), // null — «out unknown» и старые строки без сегмента
     duration_s: secondsStr == null ? undefined : (secondsStr === 'unknown' ? null : toInt(secondsStr)),
     turns: turnsStr == null ? undefined : toInt(turnsStr),
     call_id: ID_UNKNOWN_RE.test(line) ? null : (idMatch ? idMatch[1] : undefined),
