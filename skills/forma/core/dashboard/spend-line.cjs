@@ -16,6 +16,10 @@
  * неразрывный пробел в классе не находится `Edit`-ом (project/experience/razborschiki-stroki-rashoda.md).
  */
 
+const path = require('path');
+const engines = require('./lib/engines.cjs');
+
+const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const DIGITS = '\\d[\\d \\u00a0\\u202f]*?';
 
 function toEnglish(line) {
@@ -117,8 +121,14 @@ const ATTEMPT_FORMAT_RE = /`([^`]+)`,\s*(\d{4}-\d{2}-\d{2}):\s*attempt,\s*((?=[\
 // без кавычек или в них; опознаватель внешнего провайдера — в обратных кавычках, буквы/цифры/дефис,
 // внешние id не сводятся к hex, AGENTS.md §3 «External model») или маркер unknown.
 const HAS_CALL_ID_RE = /,\s*(?:`?(?:[0-9a-f]{8,}|[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})`?|`[A-Za-z][\w-]{9,}`|`?id unknown`?)\s*—/i;
-// Метка движка после тире.
-const ENGINE_TAG_RE = /\s—\s*(?:claude-code|codex|gemini):/;
+// Метка движка после тире строится из меток загруженных адаптеров (`spendTag`, `engine`, `id`): ни одно имя
+// движка здесь не зашито. Метка вне списка — нарушение. Адаптеров нет — судить не по чему: годится любая метка вида `имя:`.
+const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function engineTagRe(root) {
+  const tags = engines.spendTags(root || PROJECT_ROOT);
+  const alt = tags.length ? tags.map(escapeRe).join('|') : '[a-z][a-z0-9-]*';
+  return new RegExp('\\s—\\s*(?:' + alt + '):');
+}
 // Опознаватель для сшивки карточки с журналом инструментов: 1 узел, 2 дата, 3 id (или маркер unknown).
 // Внешний id (ветка `[A-Za-z][\w-]{9,}`) журналу инструментов неизвестен — сшивки не даёт, но строка
 // остаётся разборной, не отбрасывается как бракованная.
@@ -135,5 +145,5 @@ module.exports = {
   SESSION_WINDOW_END_RE, sessionWindowEnd,
   formatSpendLine, outTokens, toEnglish, isNonCanonical, SPEND_SOURCE, CLAIM_RE, CACHE_UNKNOWN_RE, TOKENS_UNKNOWN_RE, ID_UNKNOWN_RE, toInt,
   RU_CLAIM_LINE_RE, EN_CLAIM_LINE_RE, CLAIM_LINE_RE, PARSES_RE, SPEND_TOKENS_RE, SPEND_TOKENS_OR_UNKNOWN_RE,
-  ATTEMPT_FORMAT_RE, HAS_CALL_ID_RE, ENGINE_TAG_RE, CALL_ID_RE, CALL_ID_UNKNOWN_RE,
+  ATTEMPT_FORMAT_RE, HAS_CALL_ID_RE, engineTagRe, CALL_ID_RE, CALL_ID_UNKNOWN_RE,
 };

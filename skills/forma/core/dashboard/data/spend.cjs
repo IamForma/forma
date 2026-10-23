@@ -10,6 +10,7 @@ const path = require('path');
 const { boardDir } = require('../lib/card.cjs');
 const engines = require('../lib/engines.cjs');
 const { spendViews } = require('./spend-views.cjs');
+const { buildSpeed } = require('./speed.cjs');
 
 /**
  * Вес инструктажа от адаптера. Нет адаптера или поля веса — величины 'unknown', не null и не 0
@@ -45,17 +46,26 @@ function countAccepted(projectRoot) {
  * Разрез по движкам: колонка на тег, токены разных движков не складываются. Общая строка — только общие
  * поля: заходы, время, принятые карточки.
  */
+/** Движки проекта по адаптерам (`engines.engineTags`). */
+const adapterEngines = (projectRoot) => engines.engineTags(projectRoot);
+
 function readByEngine(projectRoot) {
   try {
     const t = require('../tally.cjs').tally([boardDir(projectRoot)]);
-    const keys = Object.keys(t.byEngine).sort((a, b) => (a === 'untagged') - (b === 'untagged') || a.localeCompare(b));
+    const columns = { ...t.byEngine };
+    // Движок с адаптером получает колонку от самой папки движка, даже без единой строки расхода.
+    for (const { tag, aliases } of adapterEngines(projectRoot)) {
+      if (aliases.some((x) => x in columns)) continue;
+      columns[tag] = { attempts: 0, tokens: 0, cacheRead: 0, withCacheRead: 0, seconds: 0, withSeconds: 0, usd: 0, cards: 0, unknown: require('../economy.cjs').unknownCount(require('../economy.cjs').emptyAcc()) };
+    }
+    const keys = Object.keys(columns).sort((a, b) => (a === 'untagged') - (b === 'untagged') || a.localeCompare(b));
     const common = { attempts: 0, seconds: 0, withSeconds: 0, secondsUnknown: 0, accepted: countAccepted(projectRoot) };
     for (const k of keys) {
-      const v = t.byEngine[k];
+      const v = columns[k];
       common.attempts += v.attempts; common.seconds += v.seconds;
       common.withSeconds += v.withSeconds; common.secondsUnknown += v.unknown.duration_s;
     }
-    return { keys, columns: t.byEngine, common };
+    return { keys, columns, common };
   } catch { return null; } // нет разбора — вкладка покажет «нет данных»
 }
 
@@ -70,7 +80,9 @@ function cardsOfEngine(cards, engine) {
 /** Токенные разрезы — по движку: корпусные поля токенов сложены из разных движков и на вкладке не показываются. */
 function engineViews(projectRoot, cards, w) {
   const out = {};
-  for (const k of new Set(cards.flatMap((c) => c.attempts.map((z) => z.engine)))) {
+  const seen = new Set(cards.flatMap((c) => c.attempts.map((z) => z.engine)));
+  for (const { tag, aliases } of adapterEngines(projectRoot)) if (!aliases.some((x) => seen.has(x))) seen.add(tag);
+  for (const k of seen) {
     const v = spendViews(cardsOfEngine(cards, k), w);
     out[k] = {
       byNode: v.byNode, totals: v.economy.totals, coverage: v.economy.coverage,
@@ -97,6 +109,9 @@ function buildSpend(projectRoot, cards) {
   for (const k of ['totals', 'topCards', 'byDate', 'efficiency']) delete economy[k];
   economy.byEngine = readByEngine(projectRoot);
   economy.engines = engineViews(projectRoot, cards, w);
+  // Скорость и эффективность по движкам и модель/усилие по узлам из контракта адаптера (`nodeModels`) — для каждого движка.
+  economy.speed = buildSpeed(cards, adapterEngines(projectRoot).filter((e) => !e.aliases.some((x) => cards.some((c) => c.attempts.some((z) => z.engine === x)))).map((e) => e.tag));
+  economy.nodeModels = engines.nodeModelTables(projectRoot).map(({ tag, nodeModels }) => ({ tag, nodes: nodeModels }));
   return { byNode, economy };
 }
 

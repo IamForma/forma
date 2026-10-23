@@ -11,9 +11,6 @@
 
 const engines = require('../lib/engines.cjs');
 
-/** Claude Code идёт первым — он основной движок проекта; остальные — по имени каталога адаптера. */
-const FIRST_ENGINE = 'claude-code';
-
 function readEngineTab(adapter, projectRoot) {
   let cat;
   try { cat = adapter.formaRoles(projectRoot); } catch { return null; }
@@ -35,8 +32,7 @@ function readFormaCatalog(projectRoot) {
   const tabs = engines.loadAdapters(projectRoot)
     .filter((a) => typeof a.formaRoles === 'function')
     .map((a) => readEngineTab(a, projectRoot))
-    .filter(Boolean)
-    .sort((a, b) => (b.engine === FIRST_ENGINE) - (a.engine === FIRST_ENGINE));
+    .filter(Boolean); // порядок — по имени каталога адаптера (`loadAdapters`), ни один движок не стоит первым по имени
   return { engines: tabs };
 }
 

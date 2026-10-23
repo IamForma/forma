@@ -245,6 +245,54 @@ function collect(root, field) {
   return loadAdapters(root).flatMap((a) => (typeof a[field] === 'function' ? a[field](root) : []));
 }
 
+/**
+ * Метки движков в строке расхода: `spendTag`, `engine` и `id` каждого адаптера (строка может нести любую из них).
+ * Нет ни одного адаптера — пустой список (метку судить не по чему).
+ */
+function spendTags(root) {
+  const tags = new Set();
+  for (const a of loadAdapters(root)) {
+    for (const v of [a.spendTag, a.engine, idOf(a)]) if (typeof v === 'string' && v && v !== UNKNOWN) tags.add(v);
+  }
+  return [...tags];
+}
+
+/**
+ * Движки проекта по адаптерам: `[{ tag, aliases }]`. `tag` — основная метка (`spendTag`, иначе `engine`), `aliases` — все
+ * метки, под которыми движок может стоять в строке расхода (`spendTag`, `engine`, `id`). Вкладка и колонка расхода
+ * строятся от этого списка: появилась папка движка с адаптером — движок в списке, удалена — нет.
+ */
+function engineTags(root) {
+  return loadAdapters(root).map((a) => {
+    const tag = a.spendTag || a.engine || idOf(a);
+    const aliases = [...new Set([a.spendTag, a.engine, idOf(a)].filter((v) => typeof v === 'string' && v && v !== UNKNOWN))];
+    return { tag, aliases: aliases.includes(tag) ? aliases : [tag, ...aliases] };
+  });
+}
+
+/**
+ * Каталоги стенограмм всех адаптеров: `[{ tag, dir, parseUsage }]`, `tag` — метка движка (`spendTag` или `engine`).
+ * Адаптер без `transcriptsDir`, бросивший или не нашедший каталог — пропускается.
+ */
+function transcriptDirs(root) {
+  const out = [];
+  for (const a of loadAdapters(root)) {
+    if (typeof a.transcriptsDir !== 'function') continue;
+    let dir = null;
+    try { dir = a.transcriptsDir(root); } catch { dir = null; }
+    if (!dir || !fs.existsSync(dir)) continue;
+    out.push({ tag: a.spendTag || a.engine || idOf(a), dir, parseUsage: typeof a.parseUsage === 'function' ? a.parseUsage : null });
+  }
+  return out;
+}
+
+/** Таблица узел -> { model, effort } каждого адаптера: `[{ tag, dir, nodeModels }]` (адаптеры без таблицы пропускаются). */
+function nodeModelTables(root) {
+  return loadAdapters(root)
+    .filter((a) => a.nodeModels && typeof a.nodeModels === 'object')
+    .map((a) => ({ tag: a.spendTag || a.engine || idOf(a), dir: a.dir, nodeModels: a.nodeModels }));
+}
+
 /** Абсолютный путь по пути от корня проекта, записанному через `/`. */
 const resolveRel = (root, rel) => path.join(root, ...rel.split('/'));
 
@@ -255,7 +303,7 @@ function firstPath(root, field) {
 }
 
 module.exports = {
-  loadAdapters, first, all, collect, firstPath, resolveRel, validateAdapter, SHAPE, UNKNOWN,
+  loadAdapters, first, all, collect, firstPath, engineTags, spendTags, transcriptDirs, nodeModelTables, resolveRel, validateAdapter, SHAPE, UNKNOWN,
   idOf, sourcesOf, modeOf, checkAdapter, MODE_FULL, MODE_DEGRADED,
 };
 

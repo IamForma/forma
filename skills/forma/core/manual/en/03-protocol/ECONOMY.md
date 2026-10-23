@@ -38,7 +38,7 @@ The engine tag after the dash is the grouping key. Tokens of different engine ta
 ## The key part is English; the engine opens the description
 
 - **Language.** The key part — everything before the dash: `attempt`, `tokens`, `cache-read`, `s`, the markers, the external-model and external-service segments — is written **in English, in every project, whatever its language**; the description after the dash is in the card's language (`AGENTS.md` §6). The key part is what the counters parse: one encoding keeps them reading every project the same. Lines written earlier in another language stay as they are (prohibition 5) and are still read; a new one written so is reported by `sync-engines --check`.
-- **Engine.** The description after the dash **opens with the engine that did the work** — `claude-code:`, `codex:`, `gemini:` — so a card shows who executed it and who left its spend unrecorded.
+- **Engine.** The description after the dash **opens with the engine that did the work** — the `spendTag` of its adapter (`engine`, then `id`, are accepted as aliases) — so a card shows who executed it and who left its spend unrecorded. The set of valid tags is built from the loaded adapters, never hard-coded: a tag no adapter declares is a violation of the engine-tag check, and a new engine folder with an adapter becomes valid, and gets its own economy column and tab, with no change to the dashboard. The dashboard's «Speed and efficiency» section compares engines by their own tags: output tokens per second and seconds per attempt, attempts, tokens and price per closed card, cache share; rows with `out unknown` stay out of the speed denominator and are marked.
 
 ## T, R, K and the call id
 

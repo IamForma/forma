@@ -54,12 +54,28 @@ function currentDialog(current) {
   return { ...current.totals, generatedAt: current.generatedAt, sessionIds: current.sessions.map((s) => s.sessionId) };
 }
 
+/**
+ * Чьи это ведомости: метка движка → имена кэшей, что объявил его адаптер в `usageRefresh`, и владелец ведомости сессий
+ * (`session-current.json`/`session-economy.json`) — первый адаптер, объявивший её. Имён движков здесь нет: UI сверяется с этим.
+ */
+function ledgerOwners(projectRoot) {
+  const usageCaches = {};
+  let sessionOwner = null;
+  for (const a of engines.loadAdapters(projectRoot)) {
+    const tag = a.spendTag || a.engine || engines.idOf(a);
+    const caches = (Array.isArray(a.usageRefresh) ? a.usageRefresh : []).map((r) => r && r.cache).filter(Boolean);
+    if (caches.length) usageCaches[tag] = caches;
+    if (!sessionOwner && caches.some((c) => c === 'session-current.json' || c === 'session-economy.json')) sessionOwner = tag;
+  }
+  return { sessionOwner, usageCaches };
+}
+
 function readDialog(projectRoot) {
   refreshUsageCaches(projectRoot);
   const current = readJson(cachePath(projectRoot, 'session-current.json'), null);
   const se = readSessionEconomy(projectRoot);
   const codex = readJson(cachePath(projectRoot, 'codex-usage.json'), null);
-  return { current: currentDialog(current), all: totalDialog(se), codex };
+  return { current: currentDialog(current), all: totalDialog(se), codex, ...ledgerOwners(projectRoot) };
 }
 
 module.exports = { readSessionEconomy, readDialog };
