@@ -246,6 +246,7 @@ module.exports = {
     runRolesDir: '.agents/plugins/forma/agents/run',
     scriptsDir: '.agents/scripts',
     testsDir: '.agents/tests',
+    packageManifest: '.agents/plugins/forma/plugin.json',
     mcpConfigs: ['.agents/mcp_config.json'],
   },
   capabilities: { subagents: true, sendMessage: true, hooks: true, mcp: true },

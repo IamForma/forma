@@ -2,7 +2,7 @@
 // Передача карточки следующему узлу одним вызовом: status + assignee + строка этапа + проверка доски (AGENTS.md §6–7).
 //
 //   node .forma/board/card-move.cjs <card> --to kit|run|intent|accept|close --note "<что сделано>" [--node <узел>] [--dry]
-//                                 [--tokens N --duration-ms MS --agent-id <id> [--cache-read R] [--turns K] [--engine claude-code]]
+//                                 [--tokens N --duration-ms MS --agent-id <id> [--cache-read R] [--turns K] [--engine <тег движка>]]
 //                                 [--kit "<текст>"|-] [--result "<текст>"|-]
 //
 // <card>  — «NNN» или «card-NNN»; карточка живая (в done/ — уже закрыта, передавать нечего).
@@ -18,7 +18,7 @@
 // --node  — чья строка; по умолчанию узел, который делает эту передачу (см. таблицу; для `intent` — прежний исполнитель).
 // Расход (AGENTS.md §3, ECONOMY.md) — вызывающий пишет его сразу после возврата узла; тот же вызов дописывает и строку расхода:
 //           --tokens N (итог вызова), --duration-ms MS (секунды округляются), --agent-id <id вызова>; нужны все три сразу.
-//           --cache-read R — иначе «(cache-read unknown)» с причиной в описании; --turns K — «K turns»; --engine — тег движка (claude-code).
+//           --cache-read R — иначе «(cache-read unknown)» с причиной в описании; --turns K — «K turns»; --engine — тег движка; без него — движок, чьи стенограммы свежее всех (адаптеры), иначе единственный адаптер.
 //           Строка расхода идёт от узла `--node` (того, чей вызов вернулся), перед строкой этапа. Без этих флагов расход не пишется.
 // Секции карточки — тем же вызовом, без отдельной правки файла:
 //           --kit    — тело зоны «Комплект» (шесть единиц, AGENTS.md §6); только с --to run: Kit записывает комплект при передаче.
@@ -62,15 +62,41 @@ if (!TARGETS[to]) die(`--to "${to}" — нет такого перехода (${
 if (!note || /[\n]/.test(note)) die('нужен --note "<что сделано>" в одну строку');
 const t = TARGETS[to];
 
+
+/** Тег движка по умолчанию: адаптер с самой свежей стенограммой; иначе единственный адаптер; иначе пусто (нужен --engine). */
+function activeEngineTag() {
+  const E = require('../dashboard/lib/engines.cjs');
+  const newest = (dir, depth) => {
+    let t = 0;
+    try {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const f = path.join(dir, e.name);
+        if (e.isFile()) t = Math.max(t, fs.statSync(f).mtimeMs);
+        else if (e.isDirectory() && depth > 0) t = Math.max(t, newest(f, depth - 1));
+      }
+    } catch {}
+    return t;
+  };
+  let best = null;
+  for (const d of E.transcriptDirs(ROOT)) {
+    const t = newest(d.dir, 2);
+    if (t && (!best || t > best.t)) best = { t, tag: d.tag };
+  }
+  if (best) return best.tag;
+  const tags = E.engineTags(ROOT);
+  return tags.length === 1 ? tags[0].tag : '';
+}
+
 // Расход: все три обязательных поля сразу или ни одного
 const tokens = arg('tokens'), durationMs = arg('duration-ms'), agentId = arg('agent-id');
-const cacheRead = arg('cache-read'), turns = arg('turns'), engine = arg('engine') || 'claude-code';
+const cacheRead = arg('cache-read'), turns = arg('turns'), engine = arg('engine') || activeEngineTag();
 const spendGiven = [tokens, durationMs, agentId].some((v) => v != null);
 if (spendGiven) {
   if (tokens == null || durationMs == null || agentId == null) die('расход: нужны --tokens, --duration-ms и --agent-id вместе');
   const num = { tokens, 'duration-ms': durationMs, ...(cacheRead != null && { 'cache-read': cacheRead }), ...(turns != null && { turns }) };
   for (const [k, v] of Object.entries(num)) if (!/^\d+$/.test(v)) die(`--${k} "${v}" — нужно целое число`);
   if (!/^[\w.:-]+$/.test(agentId)) die(`--agent-id "${agentId}" — не похоже на id вызова`);
+  if (!engine) die('не удалось определить движок по адаптерам: передайте --engine <тег>');
   if (!/^[a-z][\w-]*$/.test(engine)) die(`--engine "${engine}" — не тег движка`);
 }
 

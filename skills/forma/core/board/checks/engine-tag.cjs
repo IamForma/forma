@@ -9,6 +9,9 @@ const { cardLines, bulletList } = require('./support/lines.cjs');
 
 function run({ root, since }) {
   const tagRe = engineTagRe(root);
+  // Движок выключен или удалён — его прошлые строки остаются в карточках (запрет 5): метка вида `имя:` после тире
+  // принимается и без загруженного адаптера. Нарушение — строка вовсе без метки.
+  const shapedRe = /\s—\s*[a-z][a-z0-9-]*:/;
   const known = require('../../dashboard/lib/engines.cjs').spendTags(root);
   const untagged = [];
   const zero = [];
@@ -16,7 +19,7 @@ function run({ root, since }) {
     const t = toEnglish(line.trim());
     const m = SPEND_TOKENS_OR_UNKNOWN_RE.exec(t);
     if (!m || m[2] < since) continue;
-    if (!tagRe.test(t)) untagged.push(`${file}: ${m[1]} ${m[2]}`);
+    if (!tagRe.test(t) && !shapedRe.test(t)) untagged.push(`${file}: ${m[1]} ${m[2]}`);
     if (m[3] !== 'unknown' && Number(m[3].replace(/[\s  ]/g, '')) === 0) zero.push(`${file}: ${m[1]} ${m[2]}`);
   }
   const problems = [];

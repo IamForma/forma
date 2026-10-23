@@ -11,7 +11,9 @@ const WARN_BYTES = 20000;
 
 function ruleFiles(root) {
   const files = ['AGENTS.md', 'GEMINI.md'];
-  for (const dir of ['.claude/rules', '.agents/rules']) {
+  const E = require('../../../.forma/dashboard/lib/engines.cjs');
+  const dirs = E.loadAdapters(root).map((a) => a.engineRulesFile).filter((f) => typeof f === 'string').map((f) => path.posix.dirname(f));
+  for (const dir of [...new Set(dirs)]) {
     const abs = path.join(root, dir);
     if (fs.existsSync(abs)) for (const f of fs.readdirSync(abs)) if (f.endsWith('.md')) files.push(`${dir}/${f}`);
   }

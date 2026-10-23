@@ -223,8 +223,11 @@ const tagOf = (a) => (a ? (a.engine || engines.UNKNOWN) : null);
 function buildBort(projectRoot) {
   const floor = readFloor(projectRoot);
   const { servers, scanned: mcpScanned } = readMcpConfigs(projectRoot);
-  const toolUsage = engines.first(projectRoot, 'toolUsage');
-  const rolesDir = engines.firstPath(projectRoot, 'rolesDir');
+  // Журнал инструментов и каталог ролей берутся у ОДНОГО адаптера — первого с `toolUsage`: разбор одного движка
+  // не читает каталог другого (иначе при выключенном первом движке пути ролей чужие).
+  const owner = engines.loadAdapters(projectRoot).find((a) => a.toolUsage && typeof a.rolesDir === 'string');
+  const toolUsage = owner ? owner.toolUsage : null;
+  const rolesDir = owner ? engines.resolveRel(projectRoot, owner.rolesDir) : null;
 
   if (!toolUsage || !rolesDir) {
     // Ярус узлов построить не на чем — и это сказано вслух (`source: null`), а не молча пусто.
