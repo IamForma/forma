@@ -14,6 +14,7 @@ const { parseAttempts } = require('./data/attempts.cjs');
 const { buildSpeed } = require('./data/speed.cjs');
 const { buildSpend } = require('./data/spend.cjs');
 const engines = require('./lib/engines.cjs');
+const { readNodeConfig } = require('./data/nodes.cjs');
 
 let passed = 0;
 const it = (name, fn) => { fn(); passed += 1; console.log('ok  ' + name); };
@@ -83,6 +84,40 @@ it('колонка и срез скорости появляются от пап
   const after = buildSpend(root, []).economy;
   assert.deepEqual(Object.keys(after.engines), []);
   assert.equal(engines.engineTags(root).length, 0);
+});
+
+const NM = (m, e) => `{ Intent: { model: '${m}', effort: '${e}' }, Spec: { model: '${m}', effort: '${e}' }, Kit: { model: '${m}', effort: '${e}' }, Run: { model: '${m}', effort: '${e}' }, Core: { model: '${m}', effort: '${e}' } }`;
+
+it('два адаптера с таблицами дают две группы строк, адаптер без таблицы — пустую группу', () => {
+  const root = fakeRoot({
+    '.a': `module.exports = { engine: 'eng-a', spendTag: 'eng-a', nodeModels: ${NM('model-a', 'high')} };`,
+    '.m': `module.exports = { engine: 'mini-code', spendTag: 'mini', id: 'mini', nodeModels: ${NM('model-m', 'medium')} };`,
+    '.z': adapter('eng-z', 'eng-z'),
+  });
+  const rows = readNodeConfig(root);
+  const of = (e) => rows.filter((r) => r.engine === e);
+  assert.equal(of('eng-a').length, 5);
+  assert.equal(of('mini').length, 5);
+  assert.ok(of('mini').every((r) => r.model === 'model-m' && r.effort === 'medium'));
+  assert.ok(of('eng-a').every((r) => r.model === 'model-a'));
+  assert.equal(of('eng-z').length, 1);
+  assert.equal(of('eng-z')[0].empty, true);
+  assert.deepEqual(readNodeConfig(fakeRoot({})), []);
+});
+
+it('алиасы тега одного движка сводятся в один ключ byEngine и speed', () => {
+  const root = fakeRoot({ '.m': adapter('mini-code', 'mini', 'mini') });
+  const dir = path.join(root, '.devtool', 'features');
+  let n = 0;
+  const l = (tag) => line(', 5 out, 10 s', tag).replace('abcdef0123456789', 'abcdef01234567' + (10 + n++));
+  fs.writeFileSync(path.join(dir, 'case-x.md'), `---\nid: "case-x"\nstatus: "done"\n---\n## History\n${l('mini')}\n${l('mini')}\n${l('mini-code')}\n`);
+  const cards = [card('c1', 'build', 'done', [l('mini'), l('mini'), l('mini-code')])];
+  const e = buildSpend(root, cards).economy;
+  assert.deepEqual(e.byEngine.keys, ['mini']);
+  assert.equal(e.byEngine.columns.mini.attempts, 3);
+  assert.deepEqual(Object.keys(e.speed.byKind.all.engines), ['mini']);
+  assert.equal(e.speed.byKind.all.engines.mini.attempts, 3);
+  assert.deepEqual(Object.keys(e.engines), ['mini']);
 });
 
 console.log(`\n${passed} passed`);

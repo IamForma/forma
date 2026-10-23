@@ -905,5 +905,8 @@
   "econ.speed.outUnknown": "out unknown — исключено: {n} из {a}",
   "econ.speed.noData": "нет данных",
   "econ.models.title": "Модель и усилие по узлам (контракт движка)",
-  "econ.models.none": "Ни один движок не объявил таблицу узлов."
+  "econ.models.none": "Ни один движок не объявил таблицу узлов.",
+  "nodes.th.engine": "Движок",
+  "nodes.noTable": "движок не объявил таблицу узлов",
+  "econ.config.noTable": "движок не объявил таблицу узлов"
 }

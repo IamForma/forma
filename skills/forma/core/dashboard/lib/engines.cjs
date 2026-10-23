@@ -270,6 +270,13 @@ function engineTags(root) {
   });
 }
 
+/** Функция тег -> основная метка движка: алиасы одного адаптера (`spendTag`, `engine`, `id`) сводятся к `tag`; чужой тег — как есть. */
+function canonicalTag(root) {
+  const map = new Map();
+  for (const { tag, aliases } of engineTags(root)) for (const x of aliases) if (!map.has(x)) map.set(x, tag);
+  return (k) => (map.has(k) ? map.get(k) : k);
+}
+
 /**
  * Каталоги стенограмм всех адаптеров: `[{ tag, dir, parseUsage }]`, `tag` — метка движка (`spendTag` или `engine`).
  * Адаптер без `transcriptsDir`, бросивший или не нашедший каталог — пропускается.
@@ -286,11 +293,11 @@ function transcriptDirs(root) {
   return out;
 }
 
-/** Таблица узел -> { model, effort } каждого адаптера: `[{ tag, dir, nodeModels }]` (адаптеры без таблицы пропускаются). */
+/** Таблица узел -> { model, effort } каждого адаптера: `[{ tag, dir, rolesDir, nodeModels }]` (адаптеры без таблицы пропускаются). */
 function nodeModelTables(root) {
   return loadAdapters(root)
     .filter((a) => a.nodeModels && typeof a.nodeModels === 'object')
-    .map((a) => ({ tag: a.spendTag || a.engine || idOf(a), dir: a.dir, nodeModels: a.nodeModels }));
+    .map((a) => ({ tag: a.spendTag || a.engine || idOf(a), dir: a.dir, rolesDir: typeof a.rolesDir === 'string' ? a.rolesDir : null, nodeModels: a.nodeModels }));
 }
 
 /** Абсолютный путь по пути от корня проекта, записанному через `/`. */
@@ -303,7 +310,7 @@ function firstPath(root, field) {
 }
 
 module.exports = {
-  loadAdapters, first, all, collect, firstPath, engineTags, spendTags, transcriptDirs, nodeModelTables, resolveRel, validateAdapter, SHAPE, UNKNOWN,
+  loadAdapters, first, all, collect, firstPath, engineTags, canonicalTag, spendTags, transcriptDirs, nodeModelTables, resolveRel, validateAdapter, SHAPE, UNKNOWN,
   idOf, sourcesOf, modeOf, checkAdapter, MODE_FULL, MODE_DEGRADED,
 };
 

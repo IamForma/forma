@@ -31,7 +31,7 @@ function weightContext(projectRoot) {
 /** Разрез по меткам маршрутов для одного движка; `tally.cjs` не читается — `null`. */
 function readByRoute(projectRoot, engine) {
   try {
-    return require('../tally.cjs').byRoute([boardDir(projectRoot)], engine);
+    return require('../tally.cjs').byRoute([boardDir(projectRoot)], engine, engines.canonicalTag(projectRoot));
   } catch { return null; } // нет разбора — вкладка покажет «нет данных», а не ноль
 }
 
@@ -51,7 +51,7 @@ const adapterEngines = (projectRoot) => engines.engineTags(projectRoot);
 
 function readByEngine(projectRoot) {
   try {
-    const t = require('../tally.cjs').tally([boardDir(projectRoot)]);
+    const t = require('../tally.cjs').tally([boardDir(projectRoot)], engines.canonicalTag(projectRoot));
     const columns = { ...t.byEngine };
     // Движок с адаптером получает колонку от самой папки движка, даже без единой строки расхода.
     for (const { tag, aliases } of adapterEngines(projectRoot)) {
@@ -97,7 +97,10 @@ function engineViews(projectRoot, cards, w) {
  * Расход: `byNode` и `economy` корпуса — только поля без токенов (покрытие, сервисы, слепые пятна, неисправные
  * строки) — плюс `economy.byEngine` и `economy.engines[тег]`.
  */
-function buildSpend(projectRoot, cards) {
+function buildSpend(projectRoot, rawCards) {
+  // Алиасы тега одного движка сводятся в одну колонку; строки расхода в карточках не переписываются.
+  const canon = engines.canonicalTag(projectRoot);
+  const cards = rawCards.map((c) => ({ ...c, attempts: c.attempts.map((z) => ({ ...z, engine: canon(z.engine) })) }));
   const w = weightContext(projectRoot);
   const corpus = spendViews(cards.map((c) => ({ ...c, tokensTotal: 0 })), w);
   const byNode = corpus.byNode.map((n) => ({

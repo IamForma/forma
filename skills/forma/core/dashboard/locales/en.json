@@ -891,5 +891,8 @@
   "econ.speed.outUnknown": "out unknown — excluded: {n} of {a}",
   "econ.speed.noData": "no data",
   "econ.models.title": "Model and effort by node (engine contract)",
-  "econ.models.none": "No engine declares a node table."
+  "econ.models.none": "No engine declares a node table.",
+  "nodes.th.engine": "Engine",
+  "nodes.noTable": "no node table in the engine contract",
+  "econ.config.noTable": "no node table in the engine contract"
 }

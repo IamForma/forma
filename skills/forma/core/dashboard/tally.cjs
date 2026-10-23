@@ -61,12 +61,15 @@ function collectFiles(targets) {
   return files;
 }
 
-function tally(targets) {
-  return tallyFiles(collectFiles(targets), new Set());
+function tally(targets, canon) {
+  return tallyFiles(collectFiles(targets), new Set(), undefined, canon);
 }
 
 /** Ключ движка строки: тег после тире; нет тега — undefined (в разрезе — `untagged`, economy.byEngine). */
 const engineKey = (line) => { const m = /—\s*([a-z][a-z0-9-]*):/.exec(line); return m ? m[1] : undefined; };
+
+/** Ключ с приведением алиасов тега к основной метке движка (`canon` — функция тег -> тег; без неё ключ как в строке). */
+const canonKey = (line, canon) => { const k = engineKey(line); return k !== undefined && canon ? canon(k) : k; };
 
 //** «N <unit> (<service>/<operation>)» из хвоста строки: расход внешних сервисов. */
 function serviceUnits(tail) {
@@ -103,11 +106,11 @@ function dedupKey(line, file, id, m) {
 
 // Строка → канонические переменные (.forma/manual/en/03-protocol/ECONOMY.md); счёт — economy.cjs.
 // null — маркер `unknown` (отдельно), undefined — поле не записано.
-function attemptRecord(m, line, idMatch) {
+function attemptRecord(m, line, idMatch, canon) {
   const [, node, , tokensStr, cacheStr, secondsStr, turnsStr, costStr, , tail] = m;
   return {
     node,
-    engine: engineKey(line),
+    engine: canonKey(line, canon),
     tokens: TOKENS_UNKNOWN_RE.test(line) ? null : toInt(tokensStr),
     cache_read: cacheStr != null ? toInt(cacheStr) : (CACHE_UNKNOWN_RE.test(line) ? null : undefined),
     tokens_out: outTokens(line), // null — «out unknown» и старые строки без сегмента
@@ -120,7 +123,7 @@ function attemptRecord(m, line, idMatch) {
 }
 
 // Что сделать со строкой: { unparsed } — назвать; { dup } — id уже учтён; { rec } — записать; {} — пропустить.
-function readLine(raw, file, engine, seenIds) {
+function readLine(raw, file, engine, seenIds, canon) {
   const line = toEnglish(raw.trim());
   const m = LINE_RE.exec(line);
   if (!m) return SUSPECT_RE.test(line) ? { unparsed: line } : {};
@@ -129,14 +132,14 @@ function readLine(raw, file, engine, seenIds) {
   // независимая от строгости формы защита: нечисло в сумму не попадает НИКОГДА,
   // а строка уходит в unparsed — то есть называется файлом и текстом.
   if (!TOKENS_UNKNOWN_RE.test(line) && !Number.isFinite(toInt(m[3]))) return { unparsed: line };
-  if (engine && (engineKey(line) || 'untagged') !== engine) return {};
+  if (engine && (canonKey(line, canon) || 'untagged') !== engine) return {};
   const idMatch = callIdMatch(line, m[9]);
   if (idMatch) {
     const key = dedupKey(line, file, idMatch[1], m);
     if (seenIds.has(key)) return { dup: true };
     seenIds.add(key);
   }
-  return { rec: attemptRecord(m, line, idMatch) };
+  return { rec: attemptRecord(m, line, idMatch, canon) };
 }
 
 function newTallyState() {
@@ -220,10 +223,10 @@ function summarizeEngines(records, engineFiles) {
 // Один вызов, обслуживший несколько карточек, записан в каждой той же строкой
 // (AGENTS.md §3, id вызова). Считается один раз — по id.
 // Строки без id (`id unknown`, заход без отдельного вызова) не схлопываются.
-function tallyFiles(files, seenIds, engine) {
+function tallyFiles(files, seenIds, engine, canon) {
   const st = newTallyState();
   for (const file of files) {
-    for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) absorb(st, file, readLine(raw, file, engine, seenIds));
+    for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) absorb(st, file, readLine(raw, file, engine, seenIds, canon));
   }
   const { nodesOut, total } = summarizeNodes(st.byNode);
   return {
@@ -261,13 +264,13 @@ function emptyRow(key) {
     seconds: 0, secondsUnknown: 0, turns: 0, returns: 0, prepTokens: 0, prepNodes: 'Spec+Kit' };
 }
 
-function byRoute(targets, engine) {
+function byRoute(targets, engine, canon) {
   const files = collectFiles(targets);
   const seenIds = new Set();
   const tables = { route: {}, over: {}, seg: {}, wave: {} };
   for (const file of files) {
     const labels = readLabels(fs.readFileSync(file, 'utf8'));
-    const t = tallyFiles([file], seenIds, engine);
+    const t = tallyFiles([file], seenIds, engine, canon);
     if (engine && !Object.keys(t.byNode).length) continue;
     const route = labels.find((l) => /^route-\d+$/.test(l));
     const prep = route === 'route-4' ? ['Spec'] : ['Spec', 'Kit'];

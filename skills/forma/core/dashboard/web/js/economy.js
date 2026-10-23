@@ -56,11 +56,13 @@ const NODE_COLORS = {
 function configHtml(nodeConfig){
   if (!nodeConfig || !nodeConfig.length) return '';
   const rows = nodeConfig.map(n => {
+    if (n.empty) return `<tr class="engine-empty"><td colspan="6"><b>${esc(engineLabel(n.engine))}</b> <span class="dim">${t('econ.config.noTable')}</span></td></tr>`;
     const color = NODE_COLORS[n.node] || "#8891A2";
     const ext = n.externalModel
       ? `<span class="external-yes">${t('econ.yes')}</span>`
       : '<span class="external-no">—</span>';
     return `<tr>
+      <td class="mono-cell">${esc(engineLabel(n.engine))}</td>
       <td><span class="node-name" style="--node-color:${color}">${n.node}</span></td>
       <td class="mono-cell">${n.model || '—'}</td>
       <td class="mono-cell">${n.effort || '—'}</td>
@@ -71,7 +73,7 @@ function configHtml(nodeConfig){
   return `<section class="config-card">
     <h2>${t('econ.config.title')}</h2>
     <table class="config-table">
-      <thead><tr><th>${t('econ.th.node')}</th><th>${t('econ.config.model')}</th><th>${t('econ.config.effort')}</th><th>${t('econ.config.tools')}</th><th>${t('econ.config.external')}</th></tr></thead>
+      <thead><tr><th>${t('econ.speed.thEngine')}</th><th>${t('econ.th.node')}</th><th>${t('econ.config.model')}</th><th>${t('econ.config.effort')}</th><th>${t('econ.config.tools')}</th><th>${t('econ.config.external')}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </section>`;
