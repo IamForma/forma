@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// Plumb-драйвер внешнего исполнителя (plumb: jev, OpenRouter Decisions API, typesafe/jev-1.13).
+// Plumb-драйвер внешнего исполнителя (plumb: jev, OpenRouter Decisions API, typesafe/jev-1.14).
 // Очищенная карточка + каталог ролей -> мост (external-model-bridge.cjs, Decisions API) ->
 // строгий JSON {choice, score, noul}. Сам не вызывает haiku (у скрипта нет инструмента Agent) —
 // при отсутствии ключа, ошибке моста или отказе очистки печатает {fallback:"haiku", reason:...}
@@ -17,7 +17,7 @@ const path = require('path');
 const { extractTask, loadSecrets, scrub, residue } = require('./plumb-scrub.cjs');
 const { loadEnvKeyOptional, callDecisions, estimateCostUsd } = require('./external-model-bridge.cjs');
 
-const MODEL = 'typesafe/jev-1.13';
+const MODEL = 'typesafe/jev-1.14';
 
 function parseArgs(argv) {
   const a = { card: null, root: process.cwd(), site: [], out: null };

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// Общий Plumb-драйвер внешнего исполнителя (plumb: jev, OpenRouter Decisions API, typesafe/jev-1.13).
+// Общий Plumb-драйвер внешнего исполнителя (plumb: jev, OpenRouter Decisions API, typesafe/jev-1.14).
 // Движко-независимый модуль: работает с любым каталогом ролей (Claude, Gemini, Codex).
 //
 // Использование:
@@ -26,7 +26,7 @@ try {
 const { extractTask, loadSecrets, scrub, residue } = scrubMod;
 const { loadEnvKeyOptional, callDecisions, estimateCostUsd } = bridgeMod;
 
-const MODEL = 'typesafe/jev-1.13';
+const MODEL = 'typesafe/jev-1.14';
 
 function parseArgs(argv) {
   const a = { card: null, root: process.cwd(), site: [], out: null, rolesDir: null };

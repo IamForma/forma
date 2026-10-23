@@ -20,7 +20,7 @@ The protocol itself is `AGENTS.md`, imported by the line above — sections 1–
 
 ### The Plumb (Contract 8: constructive)
 
-* Built-in executor and external executor (`typesafe/jev-1.13`) routing.
+* Built-in executor and external executor (`typesafe/jev-1.14`) routing.
 
 ## Models per node
 

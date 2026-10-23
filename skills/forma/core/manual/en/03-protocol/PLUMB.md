@@ -30,7 +30,7 @@ A decision model that writes no text and explains nothing. Three typed readings,
 
 Set by `plumb` in `PROJECT.md`. Default — the built-in small model (`plumb-haiku`), nothing leaves the model family. Recommended — an external decision model, behind the scrubbing script. A missing key, an error or a scrubbing refusal falls back to the built-in one, the reason goes into the card's history.
 
-**`jev` (Claude Code).** The driver `plumb-run.cjs` scrubs the task and the role catalog, then calls the OpenRouter Decisions API (`typesafe/jev-1.13`) through the bridge: a typed `questions`+`state` request, not `chat/completions` — the model answers `choice`/`score`/`noul` directly, one call. On a missing key, a bridge error or a scrub refusal it prints a fallback marker instead of calling Jev; the caller then runs the built-in executor and records that attempt as such, the reason named — never as a `jev` reading that didn't happen. The one-time switch `plumb-switch.cjs` flips only the `plumb` selector in `PROJECT.md`; it stops without writing anything when the key is absent, and never sets the cycle's call limit or jev's own thresholds — the human sets both.
+**`jev` (Claude Code).** The driver `plumb-run.cjs` scrubs the task and the role catalog, then calls the OpenRouter Decisions API (`typesafe/jev-1.14`) through the bridge: a typed `questions`+`state` request, not `chat/completions` — the model answers `choice`/`score`/`noul` directly, one call. On a missing key, a bridge error or a scrub refusal it prints a fallback marker instead of calling Jev; the caller then runs the built-in executor and records that attempt as such, the reason named — never as a `jev` reading that didn't happen. The one-time switch `plumb-switch.cjs` flips only the `plumb` selector in `PROJECT.md`; it stops without writing anything when the key is absent, and never sets the cycle's call limit or jev's own thresholds — the human sets both.
 
 ## Scrubbing (prohibition 17)
 
@@ -68,7 +68,7 @@ The script only prepares and scores; the engine's own executor does the reading,
 | `plumb-scrub.cjs` | scrubs a card's task; `--site` adds hosts to mask; exits 2 on a refusal; test: `plumb-scrub.test.cjs` |
 | `plumb-measure.cjs` | `prepare` builds a batch from closed cards (role used = ground truth), `score` compares an executor's answers to it |
 | `plumb-haiku` | the built-in executor, a subagent with the `Read` tool only |
-| `plumb-run.cjs` | Claude Code's `jev` driver: scrub → OpenRouter Decisions API (`typesafe/jev-1.13`) via the bridge → `{choice, score, noul}`, or a fallback marker on a missing key / bridge error / scrub refusal |
+| `plumb-run.cjs` | Claude Code's `jev` driver: scrub → OpenRouter Decisions API (`typesafe/jev-1.14`) via the bridge → `{choice, score, noul}`, or a fallback marker on a missing key / bridge error / scrub refusal |
 | `plumb-switch.cjs` | flips the `plumb` selector in `PROJECT.md`; stops without writing when the key is absent; never sets the call limit or jev's thresholds |
 
 An executor earns the right to decide alone only after a measurement on closed cards: the match with the role actually used, and the match at the confidence threshold, both recorded in `PROJECT.md`.
