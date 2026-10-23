@@ -34,12 +34,18 @@ assert(first.written.length === 0 && first.problems.length === 0, 'dry-run on re
 // 3) Drift detection + fix, on a disposable scratch copy (never touches the real mirror).
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gen-gemini-roles-selfcheck-'));
 try {
-  const claudeSrc = path.join(ROOT, '.claude', 'agents');
-  const geminiSrc = path.join(ROOT, '.agents', 'plugins', 'forma', 'agents');
-  const claudeDst = path.join(tmp, '.claude', 'agents');
-  const geminiDst = path.join(tmp, '.agents', 'plugins', 'forma', 'agents');
-  copyDir(claudeSrc, claudeDst);
-  copyDir(geminiSrc, geminiDst);
+  // Папки зеркала — из адаптеров реального проекта; во временной копии адаптеры — заглушки с теми же sources.
+  const ctx = gen.ctxOf(ROOT);
+  const claudeDst = path.join(tmp, ctx.from.src.rolesDir);
+  const geminiDst = path.join(tmp, ctx.to.src.rolesDir);
+  copyDir(path.join(ROOT, ctx.from.src.rolesDir), claudeDst);
+  copyDir(path.join(ROOT, ctx.to.src.rolesDir), geminiDst);
+  for (const e of [ctx.from, ctx.to]) {
+    const stub = `module.exports = ${JSON.stringify({ engine: e.id, id: e.id, sources: e.src })};
+`;
+    fs.mkdirSync(path.join(tmp, e.dir), { recursive: true });
+    fs.writeFileSync(path.join(tmp, e.dir, 'forma-adapter.cjs'), stub);
+  }
 
   const kitPath = path.join(geminiDst, 'kit.md');
   const before = fs.readFileSync(kitPath, 'utf8');
