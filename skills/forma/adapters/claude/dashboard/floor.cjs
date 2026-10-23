@@ -53,6 +53,17 @@ const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
  *  нуля: ведущий ноль читается глазами как «окно бесплатное» — ровно наоборот. */
 const NO_TRANSCRIPTS = 'no-transcripts'; // код: браузер переводит `bort.fl.u.<код>`
 
+/** Метка времени шага → строка ISO; нечитаемая или пустая — `null`. */
+function isoOf(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' && Number.isFinite(v)) {
+    const d = new Date(v < 1e11 ? v * 1000 : v);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+  }
+  return null;
+}
+
 /**
  * Одна стенограмма → пол. Потоком, с дедупликацией.
  * @returns {Promise<null|{calls, floor, model, floorAnyModel, anyModel, first, last}>}
@@ -93,7 +104,9 @@ async function parseFloor(file, parseUsage) {
     if (window < m.min) m.min = window;
 
     if (anyMin == null || window < anyMin) { anyMin = window; anyModel = model; }
-    if (j.timestamp) { if (!first) first = j.timestamp; last = j.timestamp; }
+    // Метка времени у разных движков — строка ISO или число (мс/с от эпохи): приводится к строке ISO.
+    const ts = isoOf(j.timestamp);
+    if (ts) { if (!first) first = ts; last = ts; }
   }
   rl.close();
 
