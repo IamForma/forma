@@ -30,6 +30,9 @@
 //           --session-spend NNN — только с --to accept|close: тем же вызовом дописывает строку расхода `Intent` по карточке
 //           (вывод `card-session-spend.cjs NNN --write` адаптера движка, строка перед строкой этапа); NNN — номер этой же карточки.
 //           Скрипта у адаптеров нет или он ничего не дал — ошибка до любой записи. Нового расхода нет — строка не пишется, это не ошибка.
+// Закрытие круга: node .forma/board/card-move.cjs --to core-close <NNN…> --note "<основание>" [--dry] — пишет `Core`: на каждой названной
+//           карточке (done, assignee "Core") строка «закрыто — <основание>» в «История» и assignee: null; остальное не меняется.
+//           Неизвестный номер, повтор или карточка не в done/Core — стоп до любой записи. Флаги расхода и секций здесь не принимаются.
 // --dry   — показать изменения, файл не писать.
 // Пишет `modified` (на `close` — и `completedAt`), дописывает строку в «История», затем проверяет доску по этой карточке.
 // Часть ядра: одна для всех движков, путей движка не знает.
@@ -62,6 +65,54 @@ const TARGETS = {
 const id = normalize(cli.positional()[0]);
 const to = arg('to');
 const note = arg('note');
+
+// Закрытие круга (`Core`): --to core-close <NNN…> --note "<основание>" — на каждой названной карточке строка «закрыто — …» и assignee: null.
+// Карточки уже в done/ с assignee "Core"; статус и прочие поля не меняются. Любой неверный номер — стоп до первой записи.
+if (to === 'core-close') {
+  const words = [];
+  for (let i = 0; i < cli.argv.length; i++) {
+    if (cli.argv[i] === '--dry') continue;
+    if (cli.argv[i].startsWith('--')) { i++; continue; }
+    words.push(cli.argv[i]);
+  }
+  const ids = words.map(normalize);
+  if (!ids.length || ids.some((x) => !x)) die('core-close: нужны номера карточек — --to core-close NNN [NNN…] --note "<основание>"');
+  if (!note || /[\n]/.test(note)) die('нужен --note "<основание>" в одну строку');
+  if (['kit', 'result', 'session-spend', 'tokens', 'duration-ms', 'agent-id'].some((k) => process.argv.includes('--' + k))) die('core-close: другие флаги расхода и секций не принимаются');
+  const day0 = new Date().toISOString().slice(0, 10);
+  const pj = fs.readFileSync(projectFile(ROOT, 'PROJECT.md'), 'utf8');
+  const w0 = (i18n.reader(pj).inline('language') || '').split(/\s+/)[0];
+  const anch0 = !!w0 && !(i18n.langCode(w0) in i18n.KEYS.languages);
+  const plan = [];
+  for (const cid of ids) {
+    const fs0 = cardFiles(ROOT, (n) => n.startsWith(cid + '-') && n.endsWith('.md'));
+    if (!fs0.length) die(`карточки ${cid} нет на доске — ничего не записано`);
+    if (plan.some((p) => p.cid === path.basename(fs0[0], '.md'))) die(`${cid} назван дважды — ничего не записано`);
+    const f0 = fs0[0];
+    const cid0 = path.basename(f0, '.md');
+    let tx = fs.readFileSync(f0, 'utf8');
+    const fm0 = parseFrontmatter(tx);
+    if (fm0.status !== 'done' || fm0.assignee !== 'Core') die(`${cid0}: нужны status "done" и assignee "Core" (сейчас ${fm0.status}/${fm0.assignee}) — ничего не записано`);
+    const hs = ['ru', 'en'].map((l) => ({ hist: zoneHeading('history', l, anch0), res: zoneHeading('result', l, anch0) }));
+    const z = hs.find((h) => tx.includes('\n## ' + h.hist));
+    if (!z) die(`${cid0}: нет зоны «История» — ничего не записано`);
+    const hAt = tx.indexOf('\n## ' + z.hist);
+    const rAt = tx.indexOf('\n## ' + z.res, hAt + 1);
+    const hEnd = rAt === -1 ? tx.length : rAt;
+    const hb = tx.slice(hAt, hEnd).replace(/\s*$/, '');
+    tx = tx.slice(0, hAt) + hb + '\n- `Core`, ' + day0 + ': закрыто — ' + note.replace(/\.?\s*$/, '.') + '\n' + (rAt === -1 ? '' : tx.slice(rAt));
+    if (!/^assignee:.*$/m.test(tx)) die(`${cid0}: в frontmatter нет поля assignee — ничего не записано`);
+    tx = tx.replace(/^assignee:.*$/m, 'assignee: null');
+    plan.push({ cid: cid0, file: f0, text: tx, before: fs.readFileSync(f0, 'utf8') });
+  }
+  if (flag('dry')) { for (const p of plan) console.log(path.relative(ROOT, p.file).replace(/\\/g, '/') + '\n' + p.text); process.exit(0); }
+  for (const p of plan) fs.writeFileSync(p.file, p.text);
+  const bad = checkBoard(ROOT).filter((p) => plan.some((q) => p.includes(q.cid)));
+  for (const p of plan) console.log(`ok: ${p.cid} → done/null · закрыто`);
+  if (bad.length) { console.error(bad.join('\n')); process.exit(1); }
+  process.exit(0);
+}
+
 if (!id || !to) die(`нужны <card> и --to ${Object.keys(TARGETS).join('|')}`);
 if (!TARGETS[to]) die(`--to "${to}" — нет такого перехода (${Object.keys(TARGETS).join('|')})`);
 if (!note || /[\n]/.test(note)) die('нужен --note "<что сделано>" в одну строку');

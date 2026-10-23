@@ -8,7 +8,11 @@
 //
 // Использование:
 //   node .forma/plumb/plumb-run.cjs <card.md> [--root DIR] [--engine ID | --roles-dir PATH]
-//                                   [--site host[,host]] [--out FILE]
+//                                   [--site host[,host]] [--out FILE] [--write]
+//
+// --write: при ответе jev дописывает в конец «## История / ## History» карточки одну строку Отвеса
+// (роль, уверенность, зазор, ясность, noul, исполнитель, итог по порогам PROJECT.md, расход в
+// своей единице: токены, мс, USD) и печатает тот же JSON. При {fallback:haiku} строка не пишется.
 //
 // Каталог ролей: --roles-dir (путь как есть) либо runRolesDir адаптера движка --engine
 // (.forma/dashboard/lib/engines.cjs, sourcesOf; ID — id, engine, spendTag или имя папки адаптера).
@@ -35,7 +39,7 @@ const MODEL = 'typesafe/jev-1.14';
 const DEFAULT_ROLES_REL = '.claude/agents/run';
 
 function parseArgs(argv) {
-  const a = { card: null, root: process.cwd(), site: [], out: null, engine: null, rolesDir: null };
+  const a = { card: null, root: process.cwd(), site: [], out: null, engine: null, rolesDir: null, write: false };
   for (let i = 0; i < argv.length; i++) {
     const v = argv[i];
     if (v === '--root') a.root = path.resolve(argv[++i]);
@@ -43,6 +47,7 @@ function parseArgs(argv) {
     else if (v === '--roles-dir') a.rolesDir = argv[++i];
     else if (v === '--site') a.site.push(...argv[++i].split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
     else if (v === '--out') a.out = argv[++i];
+    else if (v === '--write') a.write = true;
     else if (!a.card) a.card = v;
   }
   return a;
@@ -74,6 +79,66 @@ function buildCatalog(roleDir) {
   return roles;
 }
 
+// Пороги из PROJECT.md (строка таблицы «Отвес»): лидер ≥ N, зазор ≥ N, noul ≥ X, ясность ≥ N.
+function readThresholds(root) {
+  try {
+    const md = fs.readFileSync(path.join(root, 'project', 'config', 'PROJECT.md'), 'utf8');
+    const row = md.split(/\r?\n/).find((l) => /plumb/.test(l) && /≥/.test(l));
+    if (!row) return null;
+    const num = (re) => { const m = re.exec(row); return m ? Number(m[1].replace(',', '.')) : null; };
+    const t = {
+      leader: num(/(?:лидер|leader)\s*≥\s*([\d.,]+)/i),
+      gap: num(/(?:зазор|gap)[^≥]*≥\s*([\d.,]+)/i),
+      noul: num(/noul[^≥]*≥\s*([\d.,]+)/i),
+      clarity: num(/(?:ясность|clarity)\s*≥\s*([\d.,]+)/i),
+    };
+    return Object.values(t).some((v) => v === null) ? null : t;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Строка Отвеса для истории карточки.
+function plumbLine(result, root) {
+  const { choice, score, noul, meta } = result;
+  const probs = Object.entries(choice.probabilities).sort((x, y) => y[1] - x[1]);
+  const lead = probs[0] ? probs[0][1] : 0;
+  const second = probs[1] ? probs[1][1] : 0;
+  const gap = lead - second;
+  const leadNoul = noul[choice.role];
+  const t = readThresholds(root);
+  let outcome;
+  if (!t) outcome = 'пороги PROJECT.md не прочитаны';
+  else {
+    const miss = [];
+    if (lead < t.leader) miss.push(`лидер ${lead} < ${t.leader}`);
+    if (gap < t.gap) miss.push(`зазор ${gap} < ${t.gap}`);
+    if (typeof leadNoul !== 'number' || leadNoul < t.noul) miss.push(`noul ${leadNoul ?? 'нет'} < ${t.noul}`);
+    if (score.clarity < t.clarity) miss.push(`ясность ${score.clarity} < ${t.clarity}`);
+    outcome = miss.length ? `ниже порога (${miss.join('; ')})` : 'пороги пройдены';
+  }
+  const u = meta.usage || {};
+  const d = new Date();
+  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const spend = `${meta.model_requested}, ${meta.id || 'id unknown'}, ${u.prompt_tokens ?? 'unknown'} in / ${u.completion_tokens ?? 'unknown'} out, ${meta.duration_ms} мс, ${meta.cost_usd === null ? 'cost unknown' : '$' + meta.cost_usd}`;
+  return `- \`Plumb\`, ${date}: ${meta.executor} (${spend}) — роль ${choice.role}, уверенность ${lead}, зазор ${gap}, ясность ${score.clarity}/4, noul ${leadNoul ?? 'нет'}; ${outcome}. Строку записал драйвер (--write).`;
+}
+
+// Дописывает строку в конец зоны «## История / ## History»; нет зоны — ошибка.
+function appendHistory(cardFile, line) {
+  const md = fs.readFileSync(cardFile, 'utf8');
+  const nl = md.includes('\r\n') ? '\r\n' : '\n';
+  const lines = md.split(/\r?\n/);
+  const start = lines.findIndex((l) => /^##\s+(История|History)\s*$/.test(l));
+  if (start < 0) throw new Error('card has no ## History / ## История zone');
+  let end = lines.findIndex((l, i) => i > start && /^##\s/.test(l));
+  if (end < 0) end = lines.length;
+  let at = end;
+  while (at > start + 1 && lines[at - 1].trim() === '') at--;
+  lines.splice(at, 0, line);
+  fs.writeFileSync(cardFile, lines.join(nl));
+}
+
 function emit(obj, outFile) {
   const json = JSON.stringify(obj, null, 2);
   if (outFile) fs.writeFileSync(outFile, json);
@@ -88,7 +153,7 @@ function fallback(reason, extra, outFile) {
 async function main() {
   const a = parseArgs(process.argv.slice(2));
   if (!a.card) {
-    console.error('usage: plumb-run.cjs <card.md> [--root DIR] [--engine ID | --roles-dir PATH] [--site host] [--out FILE]');
+    console.error('usage: plumb-run.cjs <card.md> [--root DIR] [--engine ID | --roles-dir PATH] [--site host] [--out FILE] [--write]');
     process.exit(1);
   }
 
@@ -219,26 +284,33 @@ async function main() {
       ? usage.cost
       : estimateCostUsd('openrouter', MODEL, { prompt_tokens: usage.input_tokens, completion_tokens: usage.output_tokens });
 
-  emit(
-    {
-      choice,
-      score,
-      noul,
-      meta: {
-        executor: 'jev',
-        model_requested: MODEL,
-        model_served: res.model || null,
-        id: res.id || null,
-        usage: { prompt_tokens: usage.input_tokens ?? null, completion_tokens: usage.output_tokens ?? null },
-        cost_usd: costUsd === null ? null : Number(costUsd.toFixed(6)),
-        duration_ms: durationMs,
-        scrub_report: { task: taskCounts, catalog: catalogCounts },
-        roles_dir: path.relative(a.root, rolesDir).split(path.sep).join('/'),
-        roles: roles.map((r) => r.name),
-      },
+  const result = {
+    choice,
+    score,
+    noul,
+    meta: {
+      executor: 'jev',
+      model_requested: MODEL,
+      model_served: res.model || null,
+      id: res.id || null,
+      usage: { prompt_tokens: usage.input_tokens ?? null, completion_tokens: usage.output_tokens ?? null },
+      cost_usd: costUsd === null ? null : Number(costUsd.toFixed(6)),
+      duration_ms: durationMs,
+      scrub_report: { task: taskCounts, catalog: catalogCounts },
+      roles_dir: path.relative(a.root, rolesDir).split(path.sep).join('/'),
+      roles: roles.map((r) => r.name),
     },
-    a.out
-  );
+  };
+  if (a.write) {
+    try {
+      appendHistory(a.card, plumbLine(result, a.root));
+    } catch (e) {
+      console.error(`--write failed: ${e.message}`);
+      emit(result, a.out);
+      process.exit(1);
+    }
+  }
+  emit(result, a.out);
 }
 
 main().catch((e) => {
