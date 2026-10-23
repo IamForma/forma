@@ -79,7 +79,11 @@ function main(argv = process.argv.slice(2)) {
   const tmpPy = path.join(os.tmpdir(), `kit-graph-html-${process.pid}.py`);
   fs.writeFileSync(tmpPy, PY, 'utf8');
   try {
-    for (const c of list) console.log(`${c}: ${render(c, tmpPy)}`);
+    // один корпус упал (например, пустой граф) — остальные всё равно рисуются
+    for (const c of list) {
+      try { console.log(`${c}: ${render(c, tmpPy)}`); }
+      catch (err) { console.log(`${c}: graph.html не собран — ${String(err && err.message || err).split('\n')[0]}`); }
+    }
   } finally {
     fs.unlinkSync(tmpPy);
   }

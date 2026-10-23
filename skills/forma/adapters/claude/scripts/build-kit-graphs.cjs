@@ -260,9 +260,17 @@ function mcpFromSettings(f, text) {
   return { nodes: [...names].map(s => ({ id: 'mcp:' + s, label: s, type: 'mcp' })), edges: [] };
 }
 
+// Скрипт: один узел script:<имя> на имя; одноимённые файлы разных движков сходятся в него (узлы сливаются по id),
+// а у узла — ребро implemented_by на каждый движок, в чьём scriptsDir лежит файл.
 function scriptForArsenal(f) {
-  return { nodes: [{ id: 'script:' + path.basename(f), label: path.basename(f), type: 'script' }], edges: [] };
+  const name = path.basename(f), id = 'script:' + name, nodes = [{ id, label: name, type: 'script' }], edges = [];
+  for (const e of adapters().filter(e => e.src.scriptsDir && e.src.scriptsDir === dirOfRel(f))) {
+    nodes.push({ id: 'engine:' + e.tag, label: e.tag, type: 'engine' });
+    edges.push({ source: id, target: 'engine:' + e.tag, relation: 'implemented_by' });
+  }
+  return { nodes, edges };
 }
+scriptForArsenal.v = () => 2 + adaptersSig();
 
 // Журнал инструментов дописывается строками — разбирается целиком, но без модели.
 function logForArsenal(f, text) {
