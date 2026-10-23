@@ -2,8 +2,8 @@
 // Передача карточки следующему узлу одним вызовом: status + assignee + строка этапа + проверка доски (AGENTS.md §6–7).
 //
 //   node .forma/board/card-move.cjs <card> --to kit|run|intent|accept|close --note "<что сделано>" [--node <узел>] [--dry]
-//                                 [--tokens N --duration-ms MS --agent-id <id> [--cache-read R] [--turns K] [--engine <тег движка>]]
-//                                 [--kit "<текст>"|-] [--result "<текст>"|-]
+//                                 [--duration-ms MS --agent-id <id> [--tokens N] [--cache-read R] [--turns K] [--engine <тег движка>]]
+//                                 [--kit "<текст>"|-] [--result "<текст>"|-] [--session-spend <NNN>]
 //
 // <card>  — «NNN» или «card-NNN»; карточка живая (в done/ — уже закрыта, передавать нечего).
 // --to    — куда передаём; таблица §7 → поля frontmatter, ключ этапа §6:
@@ -17,7 +17,9 @@
 // --note  — «что» в строке этапа; без него — ошибка: пустая строка этапа ничего не говорит.
 // --node  — чья строка; по умолчанию узел, который делает эту передачу (см. таблицу; для `intent` — прежний исполнитель).
 // Расход (AGENTS.md §3, ECONOMY.md) — вызывающий пишет его сразу после возврата узла; тот же вызов дописывает и строку расхода:
-//           --tokens N (итог вызова), --duration-ms MS (секунды округляются), --agent-id <id вызова>; нужны все три сразу.
+//           --duration-ms MS (секунды округляются), --agent-id <id вызова>; нужны оба. N, R и O читаются из стенограммы вызова
+//           (как `claude-economy.cjs line`); --tokens N — запасное значение: с ним строка пишется как есть, без чтения стенограммы.
+//           Стенограммы нет и --tokens нет — N, R и O = unknown с причиной в описании, не ноль.
 //           --cache-read R — иначе «(cache-read unknown)» с причиной в описании; --turns K — «K turns»; --engine — тег движка; без него — движок, чьи стенограммы свежее всех (адаптеры), иначе единственный адаптер.
 //           Строка расхода идёт от узла `--node` (того, чей вызов вернулся), перед строкой этапа. Без этих флагов расход не пишется.
 // Секции карточки — тем же вызовом, без отдельной правки файла:
@@ -25,6 +27,9 @@
 //           --result — тело зоны «Результат»; только с --to intent: исполнитель записывает итог при возврате на проверку.
 //           Значение «-» читает текст из stdin (многострочный текст — через heredoc); иначе берётся сам аргумент. Тело зоны заменяется
 //           целиком (при правке комплекта после возврата — новый комплект, а не дописывание). Только одно из двух может быть «-».
+//           --session-spend NNN — только с --to accept|close: тем же вызовом дописывает строку расхода `Intent` по карточке
+//           (вывод `card-session-spend.cjs NNN --write` адаптера движка, строка перед строкой этапа); NNN — номер этой же карточки.
+//           Скрипта у адаптеров нет или он ничего не дал — ошибка до любой записи. Нового расхода нет — строка не пишется, это не ошибка.
 // --dry   — показать изменения, файл не писать.
 // Пишет `modified` (на `close` — и `completedAt`), дописывает строку в «История», затем проверяет доску по этой карточке.
 // Часть ядра: одна для всех движков, путей движка не знает.
@@ -87,17 +92,55 @@ function activeEngineTag() {
   return tags.length === 1 ? tags[0].tag : '';
 }
 
-// Расход: все три обязательных поля сразу или ни одного
+// Расход: --duration-ms и --agent-id обязательны; --tokens — запасное значение, если стенограммы вызова нет
 const tokens = arg('tokens'), durationMs = arg('duration-ms'), agentId = arg('agent-id');
 const cacheRead = arg('cache-read'), turns = arg('turns'), engine = arg('engine') || activeEngineTag();
 const spendGiven = [tokens, durationMs, agentId].some((v) => v != null);
 if (spendGiven) {
-  if (tokens == null || durationMs == null || agentId == null) die('расход: нужны --tokens, --duration-ms и --agent-id вместе');
-  const num = { tokens, 'duration-ms': durationMs, ...(cacheRead != null && { 'cache-read': cacheRead }), ...(turns != null && { turns }) };
+  if (durationMs == null || agentId == null) die('расход: нужны --duration-ms и --agent-id (--tokens — запасное значение, без него N читается из стенограммы)');
+  const num = { ...(tokens != null && { tokens }), 'duration-ms': durationMs, ...(cacheRead != null && { 'cache-read': cacheRead }), ...(turns != null && { turns }) };
   for (const [k, v] of Object.entries(num)) if (!/^\d+$/.test(v)) die(`--${k} "${v}" — нужно целое число`);
   if (!/^[\w.:-]+$/.test(agentId)) die(`--agent-id "${agentId}" — не похоже на id вызова`);
   if (!engine) die('не удалось определить движок по адаптерам: передайте --engine <тег>');
   if (!/^[a-z][\w-]*$/.test(engine)) die(`--engine "${engine}" — не тег движка`);
+}
+// Без --tokens N, R и O читаются из стенограммы вызова: каталог и разбор шага даёт адаптер того движка, чей тег в строке
+// (`transcriptDirs`: tag, dir, parseUsage); только чтение. Шаги одной записи дедуплицируются по requestId (иначе завышение).
+// Стенограммы нет — N, R и O остаются unknown с причиной в описании, не ноль.
+function readTranscript(agentId, tag) {
+  const E = require('../dashboard/lib/engines.cjs');
+  const d = E.transcriptDirs(ROOT).find((x) => x.tag === tag && typeof x.parseUsage === 'function');
+  if (!d || !/^[A-Za-z0-9_-]+$/.test(agentId)) return null;
+  let file = null, mt = 0;
+  try {
+    for (const s of fs.readdirSync(d.dir, { withFileTypes: true })) {
+      if (!s.isDirectory()) continue;
+      const f = path.join(d.dir, s.name, 'subagents', `agent-${agentId}.jsonl`);
+      try { const m = fs.statSync(f).mtimeMs; if (m > mt) { mt = m; file = f; } } catch {}
+    }
+  } catch { return null; }
+  if (!file) return null;
+  const seen = new Set(), sum = { in: 0, write: 0, read: 0, out: 0 };
+  let steps = 0;
+  for (const ln of fs.readFileSync(file, 'utf8').split('\n')) {
+    if (!ln.includes('cache_read_input_tokens')) continue;
+    let j; try { j = JSON.parse(ln); } catch { continue; }
+    const u = j.message && j.message.usage;
+    if (!u || u.cache_read_input_tokens == null) continue;
+    const key = j.requestId || j.uuid;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const p = d.parseUsage(u);
+    if (![p.tokens_in, p.tokens_out, p.cache_read, p.cache_write].every((x) => x != null && Number.isFinite(Number(x)))) return null;
+    sum.in += Number(p.tokens_in); sum.write += Number(p.cache_write); sum.read += Number(p.cache_read); sum.out += Number(p.tokens_out);
+    steps++;
+  }
+  return steps ? { input: sum.in, cacheCreate: sum.write, cacheRead: sum.read, output: sum.out } : null;
+}
+let fromTr = null, trWhy = '';
+if (spendGiven && tokens == null) {
+  fromTr = readTranscript(agentId, engine);
+  if (!fromTr) trWhy = ' N, R и O неизвестны: стенограмма вызова не найдена, --tokens не передан.';
 }
 
 // Секции: только на «своих» передачах, чтобы текст не попал не в ту зону
@@ -116,6 +159,27 @@ const zoneBody = (v, what) => {
 };
 const kitBody = kitText != null ? zoneBody(kitText, 'kit') : null;
 const resultBody = resultText != null ? zoneBody(resultText, 'result') : null;
+
+// Расход основной сессии (`Intent`): строки даёт скрипт адаптера движка, ядро путей не знает — ищет в каталоге скриптов адаптеров
+const sessionSpendArg = arg('session-spend');
+if (process.argv.includes('--session-spend') && (sessionSpendArg == null || sessionSpendArg === '')) die('--session-spend: нужен номер карточки NNN');
+if (sessionSpendArg != null) {
+  if (to !== 'accept' && to !== 'close') die('--session-spend пишется только при --to accept|close (расход Intent дописывается при принятии)');
+  if (!/^\d{1,4}$/.test(sessionSpendArg)) die(`--session-spend "${sessionSpendArg}" — нужен номер карточки NNN`);
+  if (sessionSpendArg.padStart(3, '0') !== id.replace(/^card-0*(\d+)$/, (m, d) => d.padStart(3, '0'))) die(`--session-spend ${sessionSpendArg} — не номер карточки ${id}`);
+}
+function sessionSpendLines(num) {
+  const E = require('../dashboard/lib/engines.cjs');
+  let script = null;
+  for (const a of E.loadAdapters(ROOT)) {
+    const f = path.join(ROOT, E.sourcesOf(a).scriptsDir, 'card-session-spend.cjs');
+    if (fs.existsSync(f) && (!script || a.spendTag === engine || a.engine === engine)) script = f;
+  }
+  if (!script) die('--session-spend: у адаптеров движка нет card-session-spend.cjs');
+  const r = require('child_process').spawnSync(process.execPath, [script, num], { cwd: ROOT, encoding: 'utf8' });
+  if (r.status !== 0) die(`--session-spend: card-session-spend.cjs ${num} — ${(r.stderr || r.stdout || 'код ' + r.status).trim()}`);
+  return r.stdout.split(/\r?\n/).filter((l) => l.startsWith('- '));
+}
 
 // 1. Карточка: только живая
 const files = cardFiles(ROOT, (n) => n.startsWith(id + '-') && n.endsWith('.md'));
@@ -179,11 +243,16 @@ const histEnd = resAt === -1 ? text.length : resAt;
 const body = text.slice(histAt, histEnd).replace(/\s*$/, '');
 const n = note.replace(/\.?\s*$/, '.');
 const spend = !spendGiven ? '' : formatSpendLine({
-  node, date: day, tokens: Number(tokens), cache_read: cacheRead != null ? Number(cacheRead) : null,
+  node, date: day,
+  tokens: fromTr ? fromTr.input + fromTr.cacheCreate + fromTr.cacheRead + fromTr.output : (tokens != null ? Number(tokens) : null),
+  cache_read: cacheRead != null ? Number(cacheRead) : (fromTr ? fromTr.cacheRead : null),
+  tokens_out: fromTr ? fromTr.output : undefined,
   duration_s: Math.round(Number(durationMs) / 1000), turns: turns != null ? Number(turns) : undefined,
-  call_id: agentId, engine, desc: n + (cacheRead != null ? '' : ' cache-read движок не вернул.'),
+  call_id: agentId, engine, desc: n + (cacheRead != null || fromTr || trWhy ? '' : ' cache-read движок не вернул.') + trWhy,
 }).replace(/^/, '- ') + '\n';
-text = text.slice(0, histAt) + body + '\n' + spend + line + '\n' + (resAt === -1 ? '' : text.slice(resAt));
+const sessionLines = sessionSpendArg == null ? '' : sessionSpendLines(sessionSpendArg.padStart(3, '0'))
+  .filter((l) => !text.includes(l.split(' — ')[0])).map((l) => l + '\n').join('');
+text = text.slice(0, histAt) + body + '\n' + spend + sessionLines + line + '\n' + (resAt === -1 ? '' : text.slice(resAt));
 
 // 6. Запись; на close файл уходит в done/ (расширение доски делает это само, без него — мы)
 const target = to === 'close' ? path.join(BOARD, 'done', cardId + '.md') : file;
