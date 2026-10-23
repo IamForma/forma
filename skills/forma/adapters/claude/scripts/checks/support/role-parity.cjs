@@ -74,6 +74,13 @@ const NORMALIZERS_BEFORE_PATHS = [
   [/GEMINI\.md/g, 'ENGINE_RULES.md'],
   [/\s*\((Gemini Engine|Claude Code)\)/g, ''],
 ];
+// Tool equivalence as data: each row is one action that engines name differently. A name in a row reads as the
+// row's first word in both texts; any other difference stays a drift. Add a row for a new pair — no code change.
+const TOOL_EQUIVALENCE = [
+  ['SendMessage', 'task_append'], // continue the live call of a node by its id
+];
+const toolRules = (table = TOOL_EQUIVALENCE) => table.flatMap(([canon, ...names]) => names.map((n) => [new RegExp(`\\b${roots.escapeRe(n)}\\b`, 'g'), canon]));
+
 const AGENT_NORMALIZERS = [
   [/\b[A-Za-z]+-8\.md/g, 'ENGINE_RULES.md'], // §8 of any engine is `<engine>-8.md`; named without a path it needs no adapter to be read
   [/agents\/on-demand\//g, 'AGENTS_DIR/on-demand/'],
@@ -114,11 +121,11 @@ const AGENT_NORMALIZERS = [
 ];
 
 /** Текст к сравнению: без различий переводов строк и концевых пробелов; у ролей — ещё и без различий движка. */
-function normalizeText(text, type, pathRules = []) {
+function normalizeText(text, type, pathRules = [], tools = toolRules()) {
   let norm = text.replace(/\r\n/g, '\n');
   norm = norm.split('\n').map((l) => l.trimEnd()).join('\n').trim();
   if (type === 'agent' || type === 'on-demand') {
-    for (const [re, to] of [...NORMALIZERS_BEFORE_PATHS, ...pathRules, ...AGENT_NORMALIZERS]) norm = norm.replace(re, to);
+    for (const [re, to] of [...NORMALIZERS_BEFORE_PATHS, ...pathRules, ...AGENT_NORMALIZERS, ...tools]) norm = norm.replace(re, to);
     // Игнорируем специфичные поля фронтматтера (model, tools, effort)
     norm = norm.replace(/^---[\s\S]*?---\n/m, '');
   }
@@ -142,8 +149,26 @@ function lineDiffs(baseNorm, peerNorm) {
   return diffs.join('\n');
 }
 
+/**
+ * Own roles of an engine, read by one rule from its rules file (§8): a paragraph that says a role is "written by
+ * this zone" declares every backticked `<rolesDir>/…md` path in it as the engine's own role (not a mirror).
+ * Returns a Set of project-relative posix paths.
+ */
+function ownRolesOf(root, peer) {
+  const out = new Set();
+  const rules = peer.adapter.engineRulesFile;
+  const file = rules && path.join(root, rules);
+  if (!file || !fs.existsSync(file) || !peer.src.rolesDir) return out;
+  const prefix = peer.src.rolesDir.replace(/\/+$/, '') + '/';
+  for (const para of fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n').split(/\n\s*\n/)) {
+    if (!/written by this zone/i.test(para.replace(/\s+/g, ' '))) continue;
+    for (const m of para.matchAll(/`([^`\s]+\.md)`/g)) if (m[1].startsWith(prefix)) out.add(m[1]);
+  }
+  return out;
+}
+
 /** Пара файлов: `{ status: synced|drift|missing_*, diff }`. */
-function comparePair(root, pair, pathRules = pathNormalizers(root)) {
+function comparePair(root, pair, pathRules = pathNormalizers(root), own = new Set(), tools = toolRules()) {
   const basePath = path.join(root, pair.base);
   const peerPath = path.join(root, pair.peer);
   const baseExists = fs.existsSync(basePath);
@@ -151,8 +176,9 @@ function comparePair(root, pair, pathRules = pathNormalizers(root)) {
   if (!baseExists && !peerExists) return { status: 'missing_both', diff: 'Both files missing' };
   if (!baseExists) return { status: 'missing_' + pair.from, diff: `Missing ${pair.base}` };
   if (!peerExists) return { status: 'missing_' + pair.to, diff: `Missing ${pair.peer}` };
-  const baseNorm = normalizeText(fs.readFileSync(basePath, 'utf8'), pair.type, pathRules);
-  const peerNorm = normalizeText(fs.readFileSync(peerPath, 'utf8'), pair.type, pathRules);
+  if (own.has(pair.peer)) return { status: 'own', diff: null }; // declared in the engine's §8: its own role, not a mirror
+  const baseNorm = normalizeText(fs.readFileSync(basePath, 'utf8'), pair.type, pathRules, tools);
+  const peerNorm = normalizeText(fs.readFileSync(peerPath, 'utf8'), pair.type, pathRules, tools);
   if (baseNorm === peerNorm) return { status: 'synced', diff: null };
   return { status: 'drift', diff: lineDiffs(baseNorm, peerNorm) };
 }
@@ -162,8 +188,10 @@ function compareRoles(root, { only } = {}) {
   const base = roots.own(root);
   if (!base || !base.src.rolesDir) return [];
   const pathRules = pathNormalizers(root);
-  return roots.peers(root).filter((p) => !only || [].concat(only).includes(p.id)).flatMap((peer) => pairsFor(root, base, peer))
-    .map((pair) => ({ pair, res: comparePair(root, pair, pathRules) }));
+  return roots.peers(root).filter((p) => !only || [].concat(only).includes(p.id)).flatMap((peer) => {
+    const own = ownRolesOf(root, peer);
+    return pairsFor(root, base, peer).map((pair) => ({ pair, res: comparePair(root, pair, pathRules, own) }));
+  });
 }
 
 /** Заголовок и строки таблицы паритета — в порядке печати. */
@@ -174,7 +202,7 @@ function parityTable(results) {
     '|---|---|---|---|',
   ];
   for (const { pair, res } of results) {
-    const icon = res.status === 'synced' ? '✓ Паритет' : `✗ Дрейф (${res.status})`;
+    const icon = res.status === 'synced' ? '✓ Паритет' : res.status === 'own' ? '◇ Своя роль' : `✗ Дрейф (${res.status})`;
     lines.push(`| ${pair.name.padEnd(25)} | ${pair.base.padEnd(35)} | ${pair.peer.padEnd(45)} | ${icon} |`);
   }
   return lines;
@@ -184,10 +212,10 @@ function parityTable(results) {
 function driftDetails(results) {
   const lines = [];
   for (const { pair, res } of results) {
-    if (res.status === 'synced' || !res.diff) continue;
+    if (res.status === 'synced' || res.status === 'own' || !res.diff) continue;
     lines.push(`--- [ ${pair.name} ] ---`, res.diff, RULE + '\n');
   }
   return lines;
 }
 
-module.exports = { RULE, compareRoles, comparePair, normalizeText, parityTable, driftDetails };
+module.exports = { RULE, compareRoles, comparePair, normalizeText, ownRolesOf, toolRules, TOOL_EQUIVALENCE, parityTable, driftDetails };
