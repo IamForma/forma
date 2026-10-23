@@ -38,16 +38,18 @@ function dashKpiHtml(totals, epics, cards) {
     const o = byEngine[k] || (byEngine[k] = { tokens: 0, cache: 0 }); o.tokens += v.tokens; o.cache += v.cache;
   }
   const keys = Object.keys(byEngine).sort((a, b) => byEngine[b].tokens - byEngine[a].tokens);
-  const top = keys[0], tok = top ? byEngine[top] : null;
+  // Плитка — сумма по всем движкам; разбивка по движкам строкой ниже
+  const tok = keys.length ? keys.reduce((s, k) => ({ tokens: s.tokens + byEngine[k].tokens, cache: s.cache + byEngine[k].cache }), { tokens: 0, cache: 0 }) : null;
   const cachePct = tok && tok.tokens ? Math.round(tok.cache / tok.tokens * 100) : 0;
+  const split = keys.length > 1 ? `<div class="lbl">${keys.map(k => `${esc(engineLabel(k))} ${fmt(byEngine[k].tokens)}`).join(' · ')}</div>` : '';
   const tiles = [
     { cls: 'hero', lbl: t('dash.kpi.progress'), num: pct0 + '%' },
     { lbl: t('dash.kpi.accepted'), num: done + '/' + totals.cardCount },
     { lbl: STATUS_LABEL['in-progress'], num: inProgress },
     { lbl: STATUS_LABEL.review, num: review },
     { lbl: t('dash.kpi.epics'), num: activeEpics + '/' + epics.length },
-    { lbl: top ? t('dash.kpi.tokensOf', { e: engineLabel(top) }) : t('dash.kpi.tokens'), num: tok ? fmt(tok.tokens) : '—',
-      sub: tok && tok.cache ? `<div class="lbl">${t('dash.kpi.cache', { p: cachePct })}</div>` : '' },
+    { lbl: tok ? (keys.length > 1 ? t('dash.kpi.tokensAll') : t('dash.kpi.tokensOf', { e: engineLabel(keys[0]) })) : t('dash.kpi.tokens'), num: tok ? fmt(tok.tokens) : '—',
+      sub: split + (tok && tok.cache ? `<div class="lbl">${t('dash.kpi.cache', { p: cachePct })}</div>` : '') },
   ];
   return `<section class="tiles">${tiles.map(x => `<div class="tile kpi ${x.cls || ''}"><div class="lbl">${x.lbl}</div><div class="num mono">${x.num}</div>${x.sub || ''}</div>`).join('')}</section>`;
 }

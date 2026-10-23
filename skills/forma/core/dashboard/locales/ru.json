@@ -869,6 +869,7 @@
   "dash.kpi.epics": "эпиков в цикле",
   "dash.kpi.tokens": "токены не записаны",
   "dash.kpi.tokensOf": "токенов ({e})",
+  "dash.kpi.tokensAll": "токенов (все движки)",
   "dash.kpi.cache": "из них cache-read ~{p}%",
   "dash.epics.title": "Прогресс по эпикам",
   "dash.epics.empty": "эпиков нет",

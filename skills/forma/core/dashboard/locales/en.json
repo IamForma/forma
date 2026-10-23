@@ -855,6 +855,7 @@
   "dash.kpi.epics": "epics in cycle",
   "dash.kpi.tokens": "tokens not recorded",
   "dash.kpi.tokensOf": "tokens ({e})",
+  "dash.kpi.tokensAll": "tokens (all engines)",
   "dash.kpi.cache": "of which cache-read ~{p}%",
   "dash.epics.title": "Progress by epic",
   "dash.epics.empty": "no epics",
