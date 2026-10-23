@@ -1,0 +1,13 @@
+{
+ "_comment": "Ресурс — любой нетекстовый файл проекта (картинки, видео, аудио, PDF, шрифты, 3D, архивы), кроме черновиков. Документация (.md и прочий текст) — структура, не ресурс. Черновики — материалы карточек (project/cards/), рабочие копии (project/work/) и макеты (project/mockups/). Решение по отдельной папке — в folders: { \"путь\": \"resource\" | \"draft\" }.",
+ "scan_root": "project",
+ "skip_dirs": ["node_modules", ".git", ".cache", "VARS", "project/work/prep"],
+ "media_ext": ["png", "jpg", "jpeg", "webp", "gif", "avif", "svg", "ico", "bmp", "tif", "tiff", "heic", "psd", "ai", "eps", "fig", "mp4", "mov", "webm", "mkv", "avi", "mp3", "wav", "ogg", "m4a", "flac", "pdf", "ttf", "otf", "woff", "woff2", "glb", "gltf", "fbx", "obj", "blend", "zip"],
+ "use_text_ext": ["md", "html", "css", "js", "cjs", "json", "php", "txt"],
+ "use_roots": ["project"],
+ "draft_paths": ["^project/cards/", "^project/work/", "^project/mockups/", "(^|/)(drafts?|tmp|temp|черновик[иа]?)/"],
+ "draft_names": ["^(draft|tmp|temp|черновик)[-_. ]", "[-_. ](draft|wip|черновик)\\."],
+ "reference_paths": ["^project/"],
+ "kind_by_path": [],
+ "folders": {}
+}
