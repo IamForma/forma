@@ -5,6 +5,7 @@
 // Только для автора: работает, лишь если protocol/ — git-клон (есть protocol/.git).
 //   node .forma/protocol/scripts/engine-to-protocol.cjs      — показать классификацию, ничего не пишет
 //   ... --apply                                              — перенести «изменён только движок»
+//   ... --apply <файл> [<файл> ...]                          — перенести только названные файлы (пути от корня проекта); чужие расхождения не трогаются
 //   ... --add <путь-в-проекте> [--add ...]                   — явно перенести новый файл
 //   ... --mark                                               — записать базу: движок = шаблон на HEAD protocol/
 //   ... --before-push                                        — проверка перед push: версия строго выше опубликованной
@@ -59,7 +60,11 @@ if (args.includes('--before-push')) {
 const apply = args.includes('--apply');
 const mark = args.includes('--mark');
 const adds = [];
-for (let i = 0; i < args.length; i++) if (args[i] === '--add' && args[i + 1]) adds.push(args[++i].replace(/\\/g, '/'));
+const named = [];   // имена после --apply: переносятся только они
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--add' && args[i + 1]) adds.push(args[++i].replace(/\\/g, '/'));
+  else if (!args[i].startsWith('--')) named.push((path.isAbsolute(args[i]) ? path.relative(root, args[i]) : args[i]).replace(/\\/g, '/').replace(/^\.\//, ''));
+}
 
 // --- исключения ---
 const SKIP = [], MASK = {};
@@ -100,6 +105,7 @@ const MAP = [
   ['.forma/manual', 'core/manual'],
   ['.forma/skills', 'core/skills'],   // интервью — ядро; .claude/skills/<интервью> — доставленная копия, в адаптер не идёт
   ['.forma/board', 'core/board'],
+  ['.forma/plumb', 'core/plumb'],   // Отвес: plumb-run.cjs и соседи
   ['.forma/engines.json', 'core/engines.json'],   // реестр спящих движков
   // адаптер Claude (читатели стенограмм Claude живут в .forma/dashboard проекта, но принадлежат адаптеру)
   ['.claude/forma-adapter.cjs', 'adapters/claude/forma-adapter.cjs'],   // граница ядро — адаптер: `dashboard/lib/engines.cjs`
@@ -278,6 +284,25 @@ if (forbiddenAdds.length) {
 }
 const bad = adds.filter((a) => !R.fresh.some((x) => x.rel === a));
 if (bad.length) { console.error('СТОП: --add не из списка новых: ' + bad.join(', ')); process.exit(1); }
+if (named.length && !apply) { console.error('СТОП: имена файлов принимает только --apply <файл>.'); process.exit(1); }
+const only = apply && named.length ? new Set(named) : null;
+if (only) {
+  // отказ целиком, до любой записи: каждое имя должно быть в «изменён только движок» или в «новых» (с --add)
+  const refuse = [];
+  for (const nm of only) {
+    if (R.engine.some((x) => x.rel === nm)) continue;
+    let why;
+    if (R.fresh.some((x) => x.rel === nm)) why = 'новый файл: переносится по --add ' + nm;
+    else if (R.conflict.some((x) => x.rel === nm)) why = 'конфликт, решает человек';
+    else if (R.template.some((x) => x.rel === nm)) why = 'изменён только шаблон: «обнови протокол Форма»';
+    else if (R.same.some((x) => x.rel === nm)) why = 'отличается только исключениями';
+    else if (forbidden(nm) || isExtCopy(nm) || SKIP.some((r) => r.test(nm))) why = 'исключён (слой 4, копия расширений или exceptions)';
+    else if (!MAP.some(([p]) => nm === p || nm.startsWith(p + '/'))) why = 'вне MAP (нет отображения в шаблон)';
+    else why = 'нет расхождения движка с шаблоном';
+    refuse.push('  ' + nm + ' — ' + why);
+  }
+  if (refuse.length) { console.error('СТОП: --apply отказан, ничего не записано:\n' + refuse.join('\n')); process.exit(1); }
+}
 if (!apply) { console.log('\nНичего не записано. Перенести: --apply' + (R.fresh.length ? ' [--add <путь>]' : '') + '.'); process.exit(0); }
 
 // перенос: содержимое движка, но маскированные строки берутся из шаблона (обезличивание не утекает)
@@ -292,11 +317,12 @@ function merge(x) {
 }
 let n = 0;
 for (const x of R.engine) {
+  if (only && !only.has(x.rel)) continue;
   const c = merge(x);
   if (c == null) { console.error('ПРОПУЩЕН ' + x.rel + ': число строк-исключений в движке и шаблоне разное.'); continue; }
   fs.writeFileSync(x.dst, x.hRaw.includes('\r\n') ? c.replace(/\n/g, '\r\n') : c); n++;
 }
-for (const x of R.fresh.filter((x) => adds.includes(x.rel))) {
+for (const x of R.fresh.filter((x) => adds.includes(x.rel) && (!only || only.has(x.rel)))) {
   fs.mkdirSync(path.dirname(x.dst), { recursive: true });
   if (x.dir) fs.cpSync(x.src, x.dst, { recursive: true }); else fs.copyFileSync(x.src, x.dst);
   n++;
