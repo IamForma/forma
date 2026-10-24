@@ -25,12 +25,15 @@ function findTest(root, src) {
   return null;
 }
 
+/** Читаемое имя движка из его тега: `claude-code` -> `Claude Code` (отдельного поля имени в форме адаптера нет). */
+const humanName = (tag) => String(tag).split(/[-_]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
+
 /** Адаптеры проекта (папка с forma-adapter.cjs) и статичные: [{ id?, name, eight, test }]. */
 function listAdapters(root) {
   const E = require('../../../.forma/dashboard/lib/engines.cjs');
   const found = E.loadAdapters(root)
     .filter((a) => typeof a.engineRulesFile === 'string')
-    .map((a) => ({ id: E.idOf(a), name: a.engine || E.idOf(a), eight: a.engineRulesFile, test: findTest(root, E.sourcesOf(a)) }));
+    .map((a) => ({ id: E.idOf(a), name: humanName(a.engine || E.idOf(a)), eight: a.engineRulesFile, test: findTest(root, E.sourcesOf(a)) }));
   return [...found, ...STATIC];
 }
 

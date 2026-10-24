@@ -124,9 +124,12 @@ const HAS_CALL_ID_RE = /,\s*(?:`?(?:[0-9a-f]{8,}|[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-
 // Метка движка после тире строится из меток загруженных адаптеров (`spendTag`, `engine`, `id`): ни одно имя
 // движка здесь не зашито. Метка вне списка — нарушение. Адаптеров нет — судить не по чему: годится любая метка вида `имя:`.
 const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const ANY_TAG = '[a-z][a-z0-9-]*';
+// Без списка адаптеров: годится любая метка вида `имя:` (то же, что `engineTagRe` при пустом списке).
+const ENGINE_TAG_RE = new RegExp('\\s—\\s*' + ANY_TAG + ':');
 function engineTagRe(root) {
   const tags = engines.spendTags(root || PROJECT_ROOT);
-  const alt = tags.length ? tags.map(escapeRe).join('|') : '[a-z][a-z0-9-]*';
+  const alt = tags.length ? tags.map(escapeRe).join('|') : ANY_TAG;
   return new RegExp('\\s—\\s*(?:' + alt + '):');
 }
 // Опознаватель для сшивки карточки с журналом инструментов: 1 узел, 2 дата, 3 id (или маркер unknown).
@@ -145,5 +148,5 @@ module.exports = {
   SESSION_WINDOW_END_RE, sessionWindowEnd,
   formatSpendLine, outTokens, toEnglish, isNonCanonical, SPEND_SOURCE, CLAIM_RE, CACHE_UNKNOWN_RE, TOKENS_UNKNOWN_RE, ID_UNKNOWN_RE, toInt,
   RU_CLAIM_LINE_RE, EN_CLAIM_LINE_RE, CLAIM_LINE_RE, PARSES_RE, SPEND_TOKENS_RE, SPEND_TOKENS_OR_UNKNOWN_RE,
-  ATTEMPT_FORMAT_RE, HAS_CALL_ID_RE, engineTagRe, CALL_ID_RE, CALL_ID_UNKNOWN_RE,
+  ATTEMPT_FORMAT_RE, HAS_CALL_ID_RE, ENGINE_TAG_RE, engineTagRe, CALL_ID_RE, CALL_ID_UNKNOWN_RE,
 };
