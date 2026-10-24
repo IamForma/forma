@@ -7,7 +7,7 @@
 //                                     [--delivers "<что даёт>"] [--criterion "<критерий>"] [--budget "<попытки>"] [--next "<куда дальше>"]
 //                                     [--why <код>] [--why-detail "<пояснение>"] [--stage card|approve]
 //
-// --kind   — код вида из PROJECT.md, «Эпики проекта» (value, docs, forma, resources, core, incoming, goal, experience, results).
+// --kind   — код вида из PROJECT.md, «Эпики проекта» (analytics, structure, protocol, resources, balance, discussion, channels, competencies, results).
 //            Имя эпика подставляется точно из таблицы — поле `epic` (AGENTS.md §7).
 // --goal   — метка цели; по умолчанию главная цель вида `goal-<код>` (AGENTS.md §6, ровно одна метка).
 // --route/--over/--seg/--wave/--after/--trial — метки маршрута (AGENTS.md §6; ROUTES.md §9). --over и --after повторяемы.
