@@ -17,7 +17,7 @@ A tooling card whose result is a changed engine script that syncs project extens
 
 ## Takes / does not take
 
-- **Takes:** «teach `extensions.cjs` to copy a `template/<engine>` folder, then `custom/<engine>` over it, `check` without drift»; «`engine-to-protocol.cjs` skips both folders and stops with a question on an unsorted new file»; «sort 5 profiles and 16 scripts into template/custom, remove the custom ones from the protocol core in a separate commit».
+- **Takes:** «teach `extensions.cjs` to copy a `template/<engine>` folder, then `custom/<engine>` over it, `check` without drift»; «`engine-to-protocol.cjs` skips both folders and stops with a question on an unsorted new file»; «sort 5 profiles and 16 scripts into template/custom, remove the custom ones from the protocol core in a separate commit»; «`--apply <file> --add <file>` moves a new file into the template»; «add an engine to the dormant registry and to the `REBUILD` table of `engine-switch.cjs`, with the wake/sleep check».
 - **Does not take:** «extend a graph builder in `.claude/scripts/`» (→ `run-protocol-script`); «edit wording of a role or skill markdown, copies in step» (→ `run-protocol-docs`); «run a finished script and report» (→ `run-script`); «apply a step over an explicit list» (→ `run-mechanical`).
 
 ## Boundary

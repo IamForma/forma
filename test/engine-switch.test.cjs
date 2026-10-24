@@ -97,3 +97,59 @@ test('сверка читает реестр: спящий движок не с�
   assert.match(fs.readFileSync(path.join(dir, 'support', 'role-parity.cjs'), 'utf8'), /!isDormant\(root, p\.id\)/);
   assert.match(fs.readFileSync(path.join(dir, 'adapter-conformance.cjs'), 'utf8'), /id: E\.idOf\(a\)/);
 });
+
+// rebuild: все активные движки по таблице REBUILD, спящие не трогаются.
+const GEM_STEP = '.claude/scripts/sync-engines.cjs';
+const rbProject = (dormantList, withGemini) => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-switch-rb-'));
+  fs.mkdirSync(path.join(d, '.forma'));
+  fs.writeFileSync(path.join(d, '.forma', 'engines.json'), JSON.stringify({ dormant: dormantList }) + '\n');
+  if (withGemini) {
+    fs.mkdirSync(path.dirname(path.join(d, GEM_STEP)), { recursive: true });
+    fs.writeFileSync(path.join(d, GEM_STEP), `require('fs').appendFileSync(${JSON.stringify(path.join(d, 'order.log'))}, process.argv.slice(2).join(' ') + '\\n');`);
+  }
+  return d;
+};
+
+test('rebuild: активный gemini пересобирается один раз, спящие codex и minimax не тронуты', () => {
+  const d = rbProject(['codex', 'minimax'], true);
+  try {
+    const r = swIn(d, 'rebuild');
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.deepEqual(fs.readFileSync(path.join(d, 'order.log'), 'utf8').trim().split(/\r?\n/), ['--apply']);
+    assert.match(r.stdout, /пересобраны: gemini/);
+    assert.match(r.stdout, /спят, не тронуты: codex, minimax/);
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});
+
+test('rebuild: шаг gemini падает с кодом 1 — команда стоп, не молчаливый успех', () => {
+  const d = rbProject(['codex', 'minimax'], true);
+  fs.writeFileSync(path.join(d, GEM_STEP), 'process.exit(1);');
+  try {
+    const r = swIn(d, 'rebuild');
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /пересборка gemini не прошла/);
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});
+
+test('rebuild: нет скрипта шага активного движка — стоп с именем файла', () => {
+  const d = rbProject(['codex', 'minimax'], false);
+  try {
+    const r = swIn(d, 'rebuild');
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /нет \.claude\/scripts\/sync-engines\.cjs/);
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});
+
+test('rebuild: разбуженный minimax входит в пересборку по порядку REBUILD', () => {
+  const d = rbProject(['codex'], true);
+  for (const s of MM_STEPS) {
+    fs.mkdirSync(path.dirname(path.join(d, s)), { recursive: true });
+    fs.writeFileSync(path.join(d, s), `require('fs').appendFileSync(${JSON.stringify(path.join(d, 'order.log'))}, ${JSON.stringify(s)} + '\\n');`);
+  }
+  try {
+    const r = swIn(d, 'rebuild');
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.deepEqual(fs.readFileSync(path.join(d, 'order.log'), 'utf8').trim().split(/\r?\n/), ['--apply', ...MM_STEPS]);
+  } finally { fs.rmSync(d, { recursive: true, force: true }); }
+});

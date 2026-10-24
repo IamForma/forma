@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const roots = require('./engine-roots.cjs');
+const { ROLE_EQUIVALENCE } = require('./role-parity.cjs');
 
 // Источник — движок, в чьей папке лежит этот скрипт; приёмник — движок зеркала (по id адаптера).
 // Папки ролей и скиллов обоих берутся из `sources` их адаптеров (engines.cjs); нет адаптера — зеркала нет, план пуст.
@@ -92,7 +93,10 @@ function listRoleFiles(root, ctx) {
   const top = fs.readdirSync(base).filter((f) => f.endsWith('.md'));
   const runDir = path.join(base, 'run');
   const run = fs.existsSync(runDir) ? fs.readdirSync(runDir).filter((f) => f.endsWith('.md')).map((f) => path.join('run', f)) : [];
-  return [...top, ...run];
+  // A role the mirror carries under another name (equivalence table) has no pair by design: skipped.
+  const skip = new Set(ROLE_EQUIVALENCE.map(([src]) => src + '.md'));
+  const topPaired = top.filter((f) => !skip.has(f));
+  return [...topPaired, ...run];
 }
 
 /** Список on-demand файлов (относительно `on-demand/` каталога ролей источника). */

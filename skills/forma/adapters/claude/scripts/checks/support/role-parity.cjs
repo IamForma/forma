@@ -80,6 +80,11 @@ const NORMALIZERS_BEFORE_PATHS = [
 const TOOL_EQUIVALENCE = [
   ['SendMessage', 'task_append'], // continue the live call of a node by its id
 ];
+// Role equivalence as data: a source-engine role with no pair in the mirror, because the mirror engine carries its own
+// analogue under another name. Each row is [source role, mirror analogue]; the generator skips the source role.
+const ROLE_EQUIVALENCE = [
+  ['plumb-haiku', 'plumb-gemini'], // the Plumb's built-in executor, one per engine
+];
 const toolRules = (table = TOOL_EQUIVALENCE) => table.flatMap(([canon, ...names]) => names.map((n) => [new RegExp(`\\b${roots.escapeRe(n)}\\b`, 'g'), canon]));
 
 const AGENT_NORMALIZERS = [
@@ -219,4 +224,4 @@ function driftDetails(results) {
   return lines;
 }
 
-module.exports = { RULE, compareRoles, comparePair, normalizeText, ownRolesOf, toolRules, TOOL_EQUIVALENCE, parityTable, driftDetails };
+module.exports = { RULE, compareRoles, comparePair, normalizeText, ownRolesOf, toolRules, TOOL_EQUIVALENCE, ROLE_EQUIVALENCE,parityTable, driftDetails };

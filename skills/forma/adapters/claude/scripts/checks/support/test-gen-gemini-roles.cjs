@@ -14,6 +14,7 @@ const os = require('os');
 
 const ROOT = path.resolve(__dirname, '../../../..');
 const gen = require('./gen-gemini-roles.cjs');
+const { ROLE_EQUIVALENCE } = require('./role-parity.cjs');
 
 let failures = 0;
 function assert(cond, label) {
@@ -63,6 +64,18 @@ try {
 
   const secondApply = gen.applyAll(tmp, { dryRun: false });
   assert(secondApply.written.length === 0, 'second apply is a no-op (idempotent)');
+
+  // 4) Role-equivalence table: a table role with no pair is skipped; any other unpaired role is a problem.
+  const [[eqSrc]] = ROLE_EQUIVALENCE;
+  const eqFile = path.join(claudeDst, eqSrc + '.md');
+  assert(fs.existsSync(eqFile) && !fs.existsSync(path.join(geminiDst, eqSrc + '.md')), `fixture: table role ${eqSrc} present, no pair`);
+  const eqRun = gen.applyAll(tmp, { dryRun: false });
+  assert(eqRun.problems.length === 0 && !eqRun.written.some((w) => w.relFile === eqSrc + '.md'), 'role from the equivalence table is skipped, no problem');
+  const orphan = path.join(claudeDst, 'orphan-not-in-table.md');
+  fs.copyFileSync(eqFile, orphan);
+  const orphanRun = gen.applyAll(tmp, { dryRun: false });
+  assert(orphanRun.problems.some((p) => JSON.stringify(p).includes('orphan-not-in-table')), 'unpaired role outside the table is a problem');
+  fs.rmSync(orphan);
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
