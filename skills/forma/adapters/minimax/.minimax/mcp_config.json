@@ -1,0 +1,13 @@
+{
+  "$comment": "MCP-конфигурация движка MiniMax: переносимая, без машинных путей. Фактическая регистрация рантайма — профильная (C:/Users/<user>/.minimax/mcp.json), этот файл — декларация зоны, из которой ставится профиль.",
+  "mcpServers": {
+    "excalidraw": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-excalidraw-server"],
+      "env": {
+        "EXCALIDRAW_EXPORT_DIR": "."
+      }
+    }
+  }
+}

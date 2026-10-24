@@ -125,6 +125,9 @@ const MAP = [
   ['.agents/scripts', 'adapters/gemini/scripts'],
   ['.agents/skills', 'adapters/codex/.agents/skills'],
   ['.codex', 'adapters/codex/.codex'],
+  // MiniMax: заготовка в шаблоне, движок спит по умолчанию; переносится независимо от реестра спящих
+  ['.minimax', 'adapters/minimax/.minimax'],
+  ['miniapps/minimax-engine', 'adapters/minimax/miniapps/minimax-engine'],
 ].filter(([p]) => !(CODEX_ASLEEP && p === '.codex'));
 // Файл проекта, уже известный одному из отображений (например dashboard/floor.cjs — адаптеру Claude),
 // для другого отображения того же каталога не «новый».

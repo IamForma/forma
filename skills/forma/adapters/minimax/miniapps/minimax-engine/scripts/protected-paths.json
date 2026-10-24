@@ -1,0 +1,17 @@
+{
+  "$comment": "Защищённый набор движника MiniMax. Ядро со временем отдаст свой список в .forma/rules/protected-paths.json — хук читает его оттуда, если файл есть, иначе берёт этот.",
+  "paths": [
+    ".claude",
+    ".agents",
+    ".codex",
+    ".minimax",
+    ".devtool",
+    ".forma/manual",
+    ".forma/living",
+    "miniapps",
+    "AGENTS.md",
+    "PROJECT.md",
+    "GOAL.md",
+    "VARS"
+  ]
+}
