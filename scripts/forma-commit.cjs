@@ -225,7 +225,12 @@ function templateDrift() {
   for (const f of ['generate.js', 'index.html', 'economy.cjs', 'tally.cjs', 'spend-line.cjs']) pairs.push([path.join(root, 'dashboard', f), path.join(CORE, 'dashboard', f)]);
   tree('dashboard/web', CORE, 'dashboard/web');
   const rd = (f) => { try { return fs.readFileSync(f, 'utf8').replace(/\r\n/g, '\n'); } catch { return null; } };
-  return pairs.filter(([a, b]) => { const x = rd(a), y = rd(b); return x !== null && x !== y; })
+  // Копии из project/extensions/ — файлы проекта, не движка: их отличие от шаблона не отставание (как в engine-to-protocol.cjs).
+  // Профили run-protocol-* — инструмент движка и идут в шаблон, даже если проект доставляет их копией.
+  const ext = new Set();
+  try { for (const x of require('../skills/forma/core/extensions/extensions.cjs').sources(root)) ext.add(x.dst.split(path.sep).join('/')); } catch { /* нет модуля — копий нет */ }
+  const isExtCopy = (a) => { const rel = path.relative(root, a).replace(/\\/g, '/'); return ext.has(rel) && !/(^|\/)agents\/run\/run-protocol-[^/]+\.md$/.test(rel); };
+  return pairs.filter(([a, b]) => { if (isExtCopy(a)) return false; const x = rd(a), y = rd(b); return x !== null && x !== y; })
     .map(([a]) => path.relative(root, a).replace(/\\/g, '/'));
 }
 
