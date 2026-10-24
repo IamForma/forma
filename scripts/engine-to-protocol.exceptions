@@ -44,3 +44,6 @@ skip ^\.(claude|agents)/skills/skill-creator(/|$)
 
 # MiniMax: runtime of a running engine (call ledger, observed state, transcripts) is the project's, never the template's
 skip ^\.minimax/\.(ledger|state|transcripts)/
+
+# реестр спящих движков проекта — состояние проекта, не шаблона (в протоколе minimax и codex спят)
+skip ^\.forma/engines\.json$

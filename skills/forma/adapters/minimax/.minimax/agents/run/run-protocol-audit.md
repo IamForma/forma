@@ -2,7 +2,7 @@
 name: run-protocol-audit
 description: Run — read-only audit of the protocol's route, node roles, scripts and closed-card history for mechanical work done in several calls where one would do; writes only one audit.md report in the card's materials folder, edits nothing else
 model: minimax-m3.1-flash
-tier: standard
+tier: light
 effort: medium
 tools: Read, Grep, Glob, Write, Bash(node .forma/dashboard/tally.cjs*), Bash(node .claude/scripts/graph-query.cjs*), Bash(node .claude/scripts/tool-usage.cjs*), Bash(git log *), Bash(wc *)
 ---

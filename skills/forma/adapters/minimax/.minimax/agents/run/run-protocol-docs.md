@@ -2,9 +2,9 @@
 name: run-protocol-docs
 description: Run — text-only edit of protocol role/skill markdown (agents, SKILL.md) in the project and in the protocol clone (dev), copies kept byte-identical, engine check, commit in the protocol clone without push
 model: minimax-m3.1-flash
-tier: standard
+tier: light
 effort: low
-tools: Read, Edit, Write, Grep, Glob, Bash(node .claude/scripts/sync-engines.cjs*), Bash(node .forma/protocol/scripts/engine-to-protocol.cjs*), Bash(git diff *), Bash(git status *), Bash(git -C .forma/protocol add *), Bash(git -C .forma/protocol commit *), Bash(git -C .forma/protocol status*), Bash(git -C .forma/protocol diff *), Bash(git -C .forma/protocol branch*), Bash(cmp *)
+tools: Read, Edit, Write, Grep, Glob, Bash(node .claude/scripts/sync-engines.cjs*), Bash(node .forma/protocol/scripts/engine-to-protocol.cjs*), Bash(git diff *), Bash(git status *), Bash(git -C .forma/protocol add *), Bash(git -C .forma/protocol commit *), Bash(git -C .forma/protocol status*), Bash(git -C .forma/protocol diff *), Bash(git -C .forma/protocol branch*), Bash(cmp *), Bash(node .claude/scripts/engine-switch.cjs rebuild*), Bash(node .claude/scripts/engine-switch.cjs status*)
 ---
 
 # `run-protocol-docs`
@@ -17,7 +17,7 @@ A tooling card whose result is changed wording in named protocol markdown files 
 
 ## Takes / does not take
 
-- **Takes:** «in `kit.md` require choosing template or custom for a new extension file and logging the choice in History; same text in the protocol copy»; «in a skill, take template tooling from `template/`, delete the lines about the old layer list».
+- **Takes:** «in `kit.md` require choosing template or custom for a new extension file and logging the choice in History; same text in the protocol copy»; «switch `model`/`tier` in the frontmatter of named `agents/run/*.md` profiles (and their template copy), then rebuild the engine mirrors with `engine-switch.cjs rebuild`»; «in a skill, take template tooling from `template/`, delete the lines about the old layer list».
 - **Does not take:** «draft prose with no repository files or commits» (→ `run-text`); «change `extensions.cjs` or `engine-to-protocol.cjs`, sort files» (→ `run-protocol-engine`); «edit a Node script» (→ `run-protocol-script`); «write wording into the site» (→ `run-site-php`).
 
 ## Boundary
