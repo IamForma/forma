@@ -46,14 +46,15 @@ function loadRules() {
   const r = readJson(RULES, null);
   if (!r) { console.error('нет ' + rel(RULES)); process.exit(2); }
   const re = l => (l || []).map(s => new RegExp(s, 'i'));
-  return { ...r, draftRe: re(r.draft_paths), draftNameRe: re(r.draft_names), refRe: re(r.reference_paths), kindRe: (r.kind_by_path || []).map(([p, k]) => [new RegExp(p), k]), mediaRe: new RegExp('\\.(' + r.media_ext.join('|') + ')$', 'i') };
+  return { ...r, draftRe: re(r.draft_paths), draftNameRe: re(r.draft_names), refRe: re(r.reference_paths), kindRe: (r.kind_by_path || []).map(([p, k]) => [new RegExp(p), k]), mediaRe: new RegExp('\\.(' + [...r.media_ext, ...(r.source_ext || []), ...(r.text_ext || [])].join('|') + ')$', 'i'), skipRe: re(r.skip_names), exclRe: re(r.exclude_paths), classRe: Object.entries(r.classes || {}).map(([k, l]) => [k, re(l)]) };
 }
 
 function walk(dir, rules, out = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const f = path.join(dir, e.name), r = rel(f);
     if (e.isDirectory()) { if (!rules.skip_dirs.some(s => e.name === s || r === s)) walk(f, rules, out); }
-    else if (rules.mediaRe.test(e.name)) out.push(f);
+    else if (f === REG || f === SORT) continue;            // сам реестр и сортировка — не ресурсы
+    else if (rules.mediaRe.test(e.name) &&!rules.skipRe.some(x => x.test(e.name)) && !rules.exclRe.some(x => x.test(r))) out.push(f);
   }
   return out;
 }
@@ -124,7 +125,8 @@ function classify(rules, files, refs) {
     else if (used.length) { cls = 'resource'; reason = 'ссылка из файла продукта'; }
     else if (rules.refRe.some(x => x.test(r))) { cls = 'resource'; reason = 'папка референсов'; }
     else { cls = 'unclear'; reason = 'нет правила'; }
-    return { path: r, sha256: sha(buf), bytes: buf.length, cls, reason, used_in: used, ext: name.split('.').pop(), buf };
+    const klass = (rules.classRe.find(([, l]) => l.some(x => x.test(r))) || [, 'other'])[0];
+    return { klass, path: r, sha256: sha(buf), bytes: buf.length, cls, reason, used_in: used, ext: name.split('.').pop(), buf };
   });
   // дубли по хешу: ресурсы сливаются в одну запись; из неясных/черновых остаётся один неясный, остальные — черновик
   const groups = new Map();
@@ -190,7 +192,7 @@ function cmdInventory() {
     const used = [...new Set(g.flatMap(x => x.used_in))].sort();
     const e = {
       path: first.path, also: g.slice(1).map(x => x.path), format: first.ext, ...dims(first.buf, first.ext), bytes: first.bytes,
-      kind: old?.kind || kindOf(rules, first.path), card: card || null, goal: old?.goal || meta.goal || null, used_in: used,
+      class: first.klass, kind: old?.kind || kindOf(rules, first.path), card: card || null, card_note: card ? null : 'нет карточки: ' + first.klass, goal: old?.goal || meta.goal || null, used_in: used,
       type: old?.type || null, tags: old?.tags || [], description: old?.description || null, prompt: old?.prompt || null, model: old?.model || null,
       described: old?.described || null, added: old?.added || today(),
     };
@@ -198,6 +200,8 @@ function cmdInventory() {
     if (old) updated++; else added++;
     reg.entries[h] = e;
   }
+  const live = new Set(rows.filter(x => x.cls === 'resource').map(x => x.sha256));
+  for (const h of Object.keys(reg.entries)) if (!live.has(h) && !reg.entries[h].description) delete reg.entries[h];   // ушедшие из ресурсов и не описанные
   reg.generated = today();
   writeJson(REG, reg);
   console.log(`реестр: записей ${Object.keys(reg.entries).length} (новых ${added}, обновлено ${updated})`);
