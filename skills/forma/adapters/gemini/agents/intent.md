@@ -5,7 +5,7 @@ model: gemini-3.8-flash
 tier: standard
 effort: medium
 tools: Read, Grep, Glob, Write, Edit, AskUserQuestion, browser_subagent
-skills: forma-grill-with-ui, grilling, synthesis, project-knowledge, skill-authoring
+skills: forma-grill-with-ui, grilling, project-knowledge, skill-authoring
 ---
 # `Intent` (Gemini Engine)
 
