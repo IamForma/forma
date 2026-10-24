@@ -118,7 +118,15 @@ function main() {
   if (argv.includes('--no-tests')) return;
   for (const [label, args] of [['тесты', ['test']], ['линтер', ['run', 'lint']]]) {
     const r = spawnSync('npm', args, { cwd: dir, encoding: 'utf8', shell: true });
-    if (r.status) { console.error(`СТОП: ${label} красные:\n` + (r.stdout + r.stderr).split(/\r?\n/).slice(-25).join('\n')); process.exit(1); }
+    if (r.status) {
+      const lines = (r.stdout + r.stderr).split(/\r?\n/);
+      // Красные тесты — по именам и числу, а не по хвосту вывода: хвост занижает их число.
+      const names = [...new Set(lines.filter((l) => /^\s*✖\s/.test(l) && !/failing tests/.test(l)).map((l) => l.trim().replace(/\s*\([\d.]+ms\)$/, '')))];
+      const summary = lines.filter((l) => /^ℹ (tests|pass|fail|skipped) /.test(l));
+      const head = label === 'тесты' && names.length ? `\nУпавшие (${names.length}):\n` + names.slice(0, 60).join('\n') + '\n' + summary.join('\n') : '';
+      console.error(`СТОП: ${label} красные:${head}\n` + lines.slice(-25).join('\n'));
+      process.exit(1);
+    }
     console.log('✓ ' + label + ' зелёные');
   }
 }

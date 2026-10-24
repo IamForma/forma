@@ -378,6 +378,7 @@ Three layers (`AGENTS.md` §6): 1 — engine roles and skills; 2 — `.forma/`, 
 - **Current version.** `npx github:IamForma/forma --version`; inside a project — the `version` field in `.forma/install-manifest.json`.
 - **Notification.** Once a day at session start, the Claude Code hook compares the version with the latest on GitHub and reports only if GitHub has a newer one. Without network access it stays silent.
 - **Update.** Run `npx github:IamForma/forma init` again in the project folder; `project/`, the board, and `living/` are preserved.
+- **Update without questions.** `npx github:IamForma/forma init --yes` pulls the latest version from GitHub and overwrites the schema configuration with no menu and no prompts (defaults for anything missing). Add `--no-adopt` to skip the first-install question about moving root files, `--no-dashboard` not to start the dashboard. Only the project extensions: `npx github:IamForma/forma extensions` (`--check` reports without copying).
 - **Auto-compaction window.** The installer suggests 250000 tokens (`.claude/settings.json`) and does not overwrite your existing value. `--compact <tokens>` sets a different limit, `--compact off` leaves the Claude Code default.
 
 ## If something doesn't work

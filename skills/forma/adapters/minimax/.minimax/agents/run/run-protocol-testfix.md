@@ -13,7 +13,7 @@ Profile of `run.md` for one kind of work — the base role's criteria and proces
 
 ## When to take
 
-A card whose subject is a named group of failing tests in `.forma/protocol/test/` (one test file or a listed set). Closed by: every failure classified by a fact (file, line, expected vs actual) as `stale oracle`, `code defect` or `environment`, written in «Result»; the group green under `node --test` in the clone with no test weakened; `sync-engines --check` and `check-release --traces` quoted; an English commit in the clone on `dev`, no push.
+A card whose subject is a named group of failing tests in `.forma/protocol/test/` (one test file or a listed set). Closed by: every failure classified by a fact (file, line, expected vs actual) as `stale oracle`, `code defect` or `environment`, written in «Result»; the group green under `npm test` in the clone (mask `test/**/*.test.cjs`, the same as `check-release`) with no test weakened, and `check-release` exit 0; red tests are named from the full failure list (`check-release` prints it), never from the output tail; `test/baseline.cjs` and `test/eval-start-context.cjs` are not tests and stay outside the criterion; `sync-engines --check` and `check-release --traces` quoted; an English commit in the clone on `dev`, no push.
 
 ## Takes / does not take
 
