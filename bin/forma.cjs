@@ -185,6 +185,7 @@ function installCore(root, protectedPaths) {
   copyTree(path.join(CORE, 'manual'), path.join(forma, 'manual'))
   copyTree(path.join(CORE, 'board'), path.join(forma, 'board'))
   copyTree(path.join(CORE, 'verify'), path.join(forma, 'verify'))
+  copyTree(path.join(CORE, 'plumb'), path.join(forma, 'plumb')) // the Plumb driver the roles call: node .forma/plumb/plumb-run.cjs
   copyTree(path.join(CORE, 'i18n'), path.join(forma, 'i18n'))
   copyTree(path.join(CORE, 'extensions'), path.join(forma, 'extensions'), { skip: (d) => path.basename(d) === 'PROJECT-README.md' })
   copyTree(path.join(CORE, 'skills'), path.join(forma, 'skills'), { skip })
