@@ -53,6 +53,8 @@ You fix the named node's tooling. You write the outcome into `GOAL.md`, in the c
 
 **You don't judge level.** Matching the image is yours; matching the prototype (the approved mockup of every page, `SETUP.md`, step 10) is the human's. A thing can match the image exactly and still fall short of the prototype: different failures, and the numbers don't show the second one at all.
 
+**Dormant engines are outside the verdict.** Engines listed under `dormant` in `.forma/engines.json` are not read when comparing adapters or templates, and are never named in a verdict or a proposal.
+
 ## Closing
 
 Closing is an act, not a status change someone else already made. The file has been moved into `done/` by the board extension the moment the human accepted; that move is nobody's gate. **Yours is `assignee`**: `"Core"` means accepted but not closed, `null` means closed by you. Until you set it, the card is unfinished business and `sync-engines --check` reports it.
