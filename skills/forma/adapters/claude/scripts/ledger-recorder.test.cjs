@@ -151,6 +151,22 @@ it('нет стенограммы: журнал с null, строка с unknown
   assert.ok(fs.existsSync(f));
 });
 
+it('first_response_s: первый вызов — от промпта до первого ответа; продолжение — от сообщения-продолжения; нет данных — null', () => {
+  const x = rows().filter((q) => q.conversationId === 'aaa111');
+  assert.equal(x[0].first_response_s, 10);  // промпт 10:00:00, первый ответ 10:00:10
+  assert.equal(x[1].first_response_s, 40);  // продолжение 10:30:00, новый ответ 10:30:40
+  assert.equal(rows().find((q) => q.conversationId === 'eee555').first_response_s, 5);
+  assert.equal(rows().find((q) => q.conversationId === 'ccc333').first_response_s, null); // нет стенограммы
+  // результат инструмента — не сообщение пользователя; стенограмма без промпта даёт null, не ноль
+  const t4 = path.join(root, 'agent-fff666.jsonl');
+  fs.writeFileSync(t4, [
+    JSON.stringify({ type: 'user', timestamp: T('@DT11:00:00.000Z'), message: { role: 'user', content: [{ type: 'tool_result', content: 'x' }] } }),
+    step(1, 'w1', T('@DT11:00:05.000Z'), { input_tokens: 1, output_tokens: 1, cache_read_input_tokens: 1, cache_creation_input_tokens: 1 }),
+  ].join(NL));
+  record({ agent_id: 'fff666', agent_type: 'run-text', agent_transcript_path: t4 }, { root });
+  assert.equal(rows().find((q) => q.conversationId === 'fff666').first_response_s, null);
+});
+
 it('битый вход и пустой ввод: exit 0, причина в errors.log', () => {
   const run = (input) => spawnSync(process.execPath, [path.join(__dirname, 'ledger-recorder.cjs')], { input, encoding: 'utf8', env: { ...process.env, CLAUDE_LEDGER_ROOT: root } });
   for (const input of ['{не json', '', '{"agent_type":"kit"}']) {

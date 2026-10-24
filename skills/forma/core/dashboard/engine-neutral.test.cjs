@@ -11,7 +11,7 @@ const os = require('os');
 const path = require('path');
 const { engineTagRe } = require('./spend-line.cjs');
 const { parseAttempts } = require('./data/attempts.cjs');
-const { buildSpeed } = require('./data/speed.cjs');
+const { buildSpeed, buildSummary } = require('./data/speed.cjs');
 const { buildSpend } = require('./data/spend.cjs');
 const engines = require('./lib/engines.cjs');
 const { readNodeConfig } = require('./data/nodes.cjs');
@@ -141,6 +141,56 @@ it('ток/с по паре движок+модель: две метки, две
   assert.equal(get('mini', 'model-m').outPerSec, 5);
   assert.equal(get('mini', 'unknown').outPerSec, 7);
   assert.equal(rows.length, 4);
+});
+
+it('сводка: секунды и токены на закрытую карточку с рейтингом, медиана задержки, ток/с активной работы, малые выборки', () => {
+  // eng-a: 5 закрытых карточек по 1 попытке (10 s, 1000 tokens), 5 записей журнала; eng-b: 1 карточка с 3 попытками, журнал без поля
+  const a = Array.from({ length: 5 }, (_, i) => card('a' + i, 'build', 'done', [line(', 100 out, 10 s', 'eng-a')]));
+  const b = card('b0', 'build', 'done', [line(', out unknown, 40 s', 'eng-b'), line(', out unknown, 40 s', 'eng-b'), line(', out unknown, 40 s', 'eng-b')]);
+  const open = card('o0', 'build', 'review', [line(', 5 out, 1 s', 'eng-a')]); // не закрыта: в «на закрытую» не входит
+  const ledgers = {
+    'eng-a': [
+      { conversationId: 'x1', timestamp: '1', output_tokens: 100, duration_s: 10, first_response_s: 2 },
+      { conversationId: 'x2', timestamp: '2', output_tokens: 100, duration_s: 10, first_response_s: 4 },
+      { conversationId: 'x3', timestamp: '3', output_tokens: 100, duration_s: 10, first_response_s: 6 },
+      { conversationId: 'x4', timestamp: '4', output_tokens: 100, duration_s: 10, first_response_s: null },
+      // продолжение: выход — прирост (100 -> 200 = 100), время — active_s (20), не накопленные итоги
+      { conversationId: 'x3', timestamp: '5', output_tokens: 200, duration_s: 900, active_s: 20, continuation: true, first_response_s: 8 },
+    ],
+    'eng-b': [{ conversationId: 'y1', timestamp: '1', output_tokens: 50, duration_s: 10 }],
+  };
+  const sm = buildSummary([...a, b, open], ledgers, ['eng-c']);
+  const A = sm.engines['eng-a'], B = sm.engines['eng-b'], C = sm.engines['eng-c'];
+  assert.deepEqual([A.secPerClosed.v, A.secPerClosed.n, A.secPerClosed.m, A.secPerClosed.low], [10, 5, 5, false]);
+  assert.equal(A.tokensPerClosed.v, 1000);
+  assert.equal(B.secPerClosed.v, 120); assert.equal(B.tokensPerClosed.v, 3000);
+  assert.equal(A.secPerClosed.rank, 1); assert.equal(B.secPerClosed.rank, 2);
+  assert.equal(A.tokensPerClosed.rank, 1); assert.equal(B.tokensPerClosed.rank, 2);
+  assert.equal(B.secPerClosed.low, true); assert.deepEqual([B.secPerClosed.n, B.secPerClosed.m], [1, 1]);
+  assert.equal(A.firstResponse.v, 5); // медиана 2, 4, 6, 8
+  assert.deepEqual([A.firstResponse.n, A.firstResponse.m, A.firstResponse.low], [4, 5, true]);
+  assert.equal(B.firstResponse.v, null); // поля нет — null, не ноль
+  assert.equal(A.outPerActiveSec.v, 500 / 60); // (100*4 + 100 прироста) / (10*4 + 20) с
+  assert.equal(A.retryShare.v, 0); assert.ok(Math.abs(B.retryShare.v - 2 / 3) < 1e-9);
+  assert.equal(C.secPerClosed.v, null); assert.equal(C.secPerClosed.rank, undefined); assert.equal(C.outPerActiveSec.v, null);
+  // выход известен меньше чем у половины попыток — ток/с помечен малой выборкой при любом объёме
+  const lowOut = buildSummary([card('d0', 'build', 'done', [line(', 5 out, 10 s', 'eng-d'), ...Array.from({ length: 4 }, () => line(', out unknown, 10 s', 'eng-d'))])],
+    { 'eng-d': Array.from({ length: 6 }, (_, i) => ({ conversationId: 'z' + i, timestamp: String(i), output_tokens: 10, duration_s: 10 })) });
+  assert.equal(lowOut.engines['eng-d'].outPerActiveSec.low, true);
+  assert.equal(lowOut.engines['eng-d'].outPerActiveSec.v, 1);
+});
+
+it('сводка из каталога адаптера: журнал читается по списку адаптеров, нет файла — «нет данных», не ноль', () => {
+  const root = fakeRoot({ '.a': adapter('eng-a', 'eng-a'), '.m': adapter('mini-code', 'mini', 'mini') });
+  fs.mkdirSync(path.join(root, '.a', '.ledger'));
+  fs.writeFileSync(path.join(root, '.a', '.ledger', 'calls.jsonl'),
+    JSON.stringify({ conversationId: 'q1', timestamp: '1', output_tokens: 30, duration_s: 10, first_response_s: 3 }) + '\n{битая строка\n');
+  const sm = buildSpend(root, []).economy.speed.summary;
+  assert.deepEqual(sm.tags, ['eng-a', 'mini']);
+  assert.equal(sm.engines['eng-a'].firstResponse.v, 3);
+  assert.equal(sm.engines['eng-a'].outPerActiveSec.v, 3);
+  assert.equal(sm.engines.mini.firstResponse.v, null);
+  assert.equal(sm.engines.mini.outPerActiveSec.v, null);
 });
 
 console.log(`\n${passed} passed`);

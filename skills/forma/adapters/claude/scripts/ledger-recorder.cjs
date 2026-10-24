@@ -12,6 +12,7 @@
  *    node: agent_type, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, duration_s, cards }.
  *    Числа записи — нарастающие итоги стенограммы. Запись несёт `until` — метку последнего учтённого шага; T продолжения (`active_s`, в карточку) — время только записей после неё. Повторный SubagentStop того же agent_id (SendMessage-продолжение) —
  *    новая запись с continuation: true; тот же итог без прироста — не пишется.
+ * Запись несёт `first_response_s` — секунды от сообщения-промпта до первой записи ассистента (у продолжения — от сообщения-продолжения до первой новой записи); null, если не удаётся.
  * 3. В `## История` каждой карточки из cards (номера `card-NNN` из первого сообщения пользователя стенограммы (правило — `cardsIn`)), найденной на
  *    доске или в done/, дописывает строку §3 через formatSpendLine. K>1 найденных карточек — N, R, O, T делятся
  *    (splitForBatch, пометка `batch I/K`). В карточку идёт доля минус уже учтённое по этому call id (продолжение — дельта);
@@ -64,11 +65,21 @@ function readCall(file) {
   const t = economy.emptyUsage();
   let first = null, last = null, prompt = null, lastStep = null;
   const stamps = [];
+  const prompts = [], replies = []; // метки сообщений пользователя (не результатов инструментов) и записей ассистента
   for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     if (!line.trim()) continue;
     let j;
     try { j = JSON.parse(line); } catch { continue; }
     const ts = j.timestamp ? Date.parse(j.timestamp) : NaN;
+    if (Number.isFinite(ts)) {
+      if (j.type === 'assistant') replies.push(ts);
+      else if (j.type === 'user' && j.message && j.message.role === 'user') {
+        const c = j.message.content;
+        const own = typeof c === 'string' ? c.trim() !== ''
+          : Array.isArray(c) && c.some((b) => b && b.type === 'text') && !c.some((b) => b && b.type === 'tool_result');
+        if (own) prompts.push(ts);
+      }
+    }
     if (Number.isFinite(ts)) { stamps.push(ts); if (first == null || ts < first) first = ts; if (last == null || ts > last) last = ts; }
     if (prompt == null && j.type === 'user' && j.message && j.message.role === 'user') {
       const c = j.message.content;
@@ -88,8 +99,21 @@ function readCall(file) {
   return {
     steps: t.calls, tokens_in: t.tokens_in, tokens_out: t.tokens_out, cache_read: t.cache_read, cache_write: t.cache_write,
     duration_s: first != null && last != null ? Math.round((last - first) / 1000) : null,
-    prompt: prompt || '', stamps, until: lastStep,
+    prompt: prompt || '', stamps, until: lastStep, prompts, replies,
   };
+}
+
+/**
+ * Задержка до первого ответа, целые секунды: от сообщения пользователя до первой записи ассистента после него.
+ * Первый вызов (`after` нет) — от первого сообщения (промпта вызова); продолжение — от первого сообщения после
+ * метки `after` (границы прошлой записи журнала). Не нашлось сообщения или ответа — null.
+ */
+function firstResponse(call, after = null) {
+  if (!call) return null;
+  const from = after == null ? call.prompts[0] : call.prompts.find((x) => x > after);
+  if (from == null) return null;
+  const reply = call.replies.filter((x) => x >= from).sort((a, b) => a - b)[0];
+  return reply == null ? null : Math.round((reply - from) / 1000);
 }
 
 function readLedger(file) {
@@ -172,6 +196,7 @@ function record(payload, opts = {}) {
     cache_read_tokens: call ? call.cache_read : null, cache_write_tokens: call ? call.cache_write : null,
     duration_s: call ? call.duration_s : null, cards,
     until: call && call.until != null ? new Date(call.until).toISOString() : null,
+    first_response_s: firstResponse(call),
   };
   // T продолжения — время только новых записей стенограммы (после границы `until` прошлой записи), без простоя между остановками.
   let activeNew = null;
@@ -184,6 +209,7 @@ function record(payload, opts = {}) {
       activeNew = fresh.length ? Math.round((Math.max(...fresh) - Math.min(...fresh)) / 1000) : 0;
       rec.active_s = activeNew;
     }
+    rec.first_response_s = Number.isFinite(pu) ? firstResponse(call, pu) : null;
     const same = ['input_tokens', 'output_tokens', 'cache_read_tokens', 'cache_write_tokens'].every((k) => p[k] === rec[k]);
     if (same && call) { result.skipped.push('нет прироста против последней записи журнала'); return result; }
   }
@@ -231,7 +257,7 @@ function record(payload, opts = {}) {
   return result;
 }
 
-module.exports = { record, readCall, nodeOf, cardsIn, accountedInCard, insertIntoHistory };
+module.exports = { record, readCall, firstResponse, nodeOf, cardsIn, accountedInCard, insertIntoHistory };
 
 if (require.main === module) {
   const root = process.env.CLAUDE_LEDGER_ROOT || DEFAULT_ROOT;

@@ -10,7 +10,7 @@ const path = require('path');
 const { boardDir } = require('../lib/card.cjs');
 const engines = require('../lib/engines.cjs');
 const { spendViews } = require('./spend-views.cjs');
-const { buildSpeed } = require('./speed.cjs');
+const { buildSpeed, buildSummary } = require('./speed.cjs');
 
 /**
  * Вес инструктажа от адаптера. Нет адаптера или поля веса — величины 'unknown', не null и не 0
@@ -33,6 +33,19 @@ function readByRoute(projectRoot, engine) {
   try {
     return require('../tally.cjs').byRoute([boardDir(projectRoot)], engine, engines.canonicalTag(projectRoot));
   } catch { return null; } // нет разбора — вкладка покажет «нет данных», а не ноль
+}
+
+/** Журналы вызовов адаптеров: { основная метка движка: [записи] } из <каталог адаптера>/.ledger/calls.jsonl; нет файла или битая строка — пропуск. */
+function readLedgers(projectRoot, canon) {
+  const out = {};
+  for (const a of engines.loadAdapters(projectRoot)) {
+    const tag = canon(a.spendTag || a.engine || engines.idOf(a));
+    let text = '';
+    try { text = fs.readFileSync(path.join(projectRoot, a.dir, '.ledger', 'calls.jsonl'), 'utf8'); } catch { continue; }
+    const list = out[tag] || (out[tag] = []);
+    for (const l of text.split(String.fromCharCode(10))) { if (!l.trim()) continue; try { list.push(JSON.parse(l)); } catch {} }
+  }
+  return out;
 }
 
 /** Принятые карточки — файлы `done/` (нет каталога — 0). */
@@ -121,6 +134,7 @@ function buildSpend(projectRoot, rawCards) {
     return row && typeof row.model === 'string' ? row.model : null;
   };
   economy.speed = buildSpeed(cards, adapterEngines(projectRoot).filter((e) => !e.aliases.some((x) => cards.some((c) => c.attempts.some((z) => z.engine === x)))).map((e) => e.tag), modelOf);
+  economy.speed.summary = buildSummary(cards, readLedgers(projectRoot, canon), adapterEngines(projectRoot).map((e) => e.tag));
   economy.nodeModels = tables.map(({ tag, nodeModels }) => ({ tag, nodes: nodeModels }));
   return { byNode, economy };
 }
