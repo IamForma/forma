@@ -27,7 +27,11 @@ description: Сборка графов Kit — какой командой ст�
 
 ### Графы structure и resources
 
-`structure` — зоны и файлы `project/`, рёбра карточка → зона, расход по зонам. `resources` — реестр `project/resources/_assets.json` (ключ sha256): узел `asset:<sha12>`, рёбра `made_by` (карточка), `serves` (цель), `used_in` (зона потребителя), `contains` (зона → ресурс); состояние `в работе` / `в запасе` / `бесхозный`. ТЗ — `project/ops/GRAPHS-STRUCTURE-SITE.md`, правила — `project/config/resources.rules.json`.
+`structure` — зоны и файлы `project/`, рёбра карточка → зона, расход по зонам. `resources` — реестр `project/resources/_assets.json` (ключ sha256): узел `asset:<sha12>`, рёбра `made_by` (карточка), `serves` (цель), `used_in` (зона потребителя), `contains` (зона → ресурс); состояние `в работе` / `в запасе` / `бесхозный`. Правила — `project/config/resources.rules.json`.
+
+**Ресурс** — любой материал проекта, кроме черновиков (`work/`, tmp, drafts, имена draft/wip) и служебного (`~$*`, `.bkp`, `VARS`, сам реестр). Класс по пути (первое совпадение в `classes`): `source`, `generated`, `reference`, `prompt`, `script`, `doc`, `config`, `data`. Скрипты и файлы протокола (`.claude/scripts`, `.forma/`) ресурсами не считаются (`exclude_paths`).
+
+**Описания.** Картинки и видео — агент `asset-describer-haiku`. Тексты, таблицы, схемы — `resources.cjs describe` без модели (заголовки, листы, шапки). Смысловые теги — второй проход: `resources.cjs tag-batch` → модель ставит теги только из закрытого словаря `domain_tags` → `resources.cjs apply-tags`. Поиск ресурса по слову из описания — `node .claude/scripts/graph-query.cjs find <слово>`.
 
 Порядок для resources: `resources.cjs sort` (класс ресурс/черновик/неясное; неясное — списком по папкам, решает человек: `resources.cjs decide <папка> resource|draft`) → `inventory` → `prepare`/`batch --n N` (уменьшение до ~1024 px и кадры видео через ffmpeg → `project/work/prep`, манифест `project/work/batch.json`) → агент `asset-describer-haiku` читает манифест и возвращает JSON (один раз по sha256) → `apply <json>` (пишет в реестр скрипт) → `build-kit-graphs.cjs --only resources` → `report` (файл без записи, запись без файла, без описания). Сначала замер на 5–10 файлах, показ человеку, полный прогон — только по его «да». Ничего не удаляется; черновики — в `project/work/` (в `.gitignore`).
 

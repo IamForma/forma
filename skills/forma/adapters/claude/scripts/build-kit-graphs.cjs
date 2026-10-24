@@ -601,7 +601,7 @@ function printStructure(r) {
 // рёбра: made_by → карточка, serves → цель, used_in → зона файла-потребителя, contains: зона → ресурс.
 // Модель не вызывается; кэш — хэш файла реестра и версия сборщика (изменений нет — разобрано 0).
 
-const RES_V = 1;
+const RES_V = 3;
 const RES_FILE = path.join(ROOT, 'project/resources/_assets.json');
 
 function buildResources(cache, goalIds) {
@@ -614,12 +614,14 @@ function buildResources(cache, goalIds) {
   if (cache.resources && cache.resources.hash === h && prev && prev.report) {
     return { name: 'resources', nodes: prev.nodes.length, edges: prev.edges.length, hit: 1, miss: 0, gone: 0, report: prev.report, graph: prev };
   }
-  const reg = raw ? JSON.parse(raw) : { entries: {} };
+  const reg = raw ? JSON.parse(raw) : {};
+  if (!reg.entries || typeof reg.entries !== 'object') reg.entries = {};   // пустой или отсутствующий реестр не роняет сборку
   const zoneOf = p => { const a = p.split('/'); for (let n = Math.min(3, a.length - 1); n >= 1; n--) { const z = a.slice(0, n).join('/'); if (zones.has(z)) return z; } return null; };
   const nodes = new Map(), edges = new Map();
   const addEdge = (s, t, r, sf) => edges.set(`${s}|${t}|${r}`, { source: s, target: t, relation: r, source_file: sf });
   const report = { assets: 0, by_state: {}, without_description: 0, without_file: [], without_entry: [], unclear: 0, orphan: [] };
   for (const [sha, e] of Object.entries(reg.entries)) {
+    if (!e || !e.path || /^\.(claude|forma)\//.test(e.path)) continue;   // скрипты протокола ресурсами не считаются
     const id = 'asset:' + sha.slice(0, 12);
     report.assets++;
     report.by_state[e.state] = (report.by_state[e.state] || 0) + 1;
@@ -627,19 +629,21 @@ function buildResources(cache, goalIds) {
     if (!fs.existsSync(path.join(ROOT, e.path))) report.without_file.push(e.path);
     if (e.state === 'бесхозный') report.orphan.push(e.path);
     nodes.set(id, { id, label: e.description ? e.description.slice(0, 70) : path.posix.basename(e.path), type: 'asset', source_file: 'project/resources/_assets.json',
-      path: e.path, also: e.also, format: e.format, width: e.width, height: e.height, bytes: e.bytes, kind: e.kind, state: e.state, tags: e.tags, asset_type: e.type, used_in: e.used_in, described: !!e.description });
+      path: e.path, also: e.also, format: e.format, width: e.width, height: e.height, bytes: e.bytes, kind: e.kind, state: e.state, class: e.class, card: e.card, card_note: e.card_note, goal: e.goal, description: e.description, tags: e.tags, semantic_tags: e.semantic_tags, asset_type: e.type, used_in: e.used_in, described: !!e.description });
     const z = zoneOf(e.path);
-    if (z) addEdge('zone:' + z, id, 'contains', e.path);
+    if (z) { if (!nodes.has('zone:' + z)) nodes.set('zone:' + z, { id: 'zone:' + z, label: z, type: 'zone', stub: true, source_file: '.forma/living/graphs/structure/graph.json' }); addEdge('zone:' + z, id, 'contains', e.path); }
+    if (!e.description) { const rid = 'report:resource-without-description'; if (!nodes.has(rid)) nodes.set(rid, { id: rid, label: 'ресурс без описания', type: 'report', stub: true, source_file: 'project/resources/_assets.json' }); addEdge(id, rid, 'report', e.path); }
     if (e.card) { if (!nodes.has('card:' + e.card)) nodes.set('card:' + e.card, { id: 'card:' + e.card, label: e.card, type: 'card', source_file: '.forma/living/graphs/board/graph.json' }); addEdge(id, 'card:' + e.card, 'made_by', e.path); }
     if (e.goal && goalIds.has(e.goal)) { const g = 'goal:' + e.goal; if (!nodes.has(g)) nodes.set(g, { id: g, label: e.goal, type: 'goal', source_file: '.forma/living/graphs/goals/graph.json' }); addEdge(id, g, 'serves', e.path); }
-    for (const u of e.used_in || []) { const uz = zoneOf(u); if (uz) addEdge(id, 'zone:' + uz, 'used_in', u); }
+    for (const u of e.used_in || []) { const uz = zoneOf(u); if (uz) { if (!nodes.has('zone:' + uz)) nodes.set('zone:' + uz, { id: 'zone:' + uz, label: uz, type: 'zone', stub: true, source_file: '.forma/living/graphs/structure/graph.json' }); addEdge(id, 'zone:' + uz, 'used_in', u); } }
   }
   const sort = readJson(path.join(ROOT, 'project/resources/_sort.json'), null);
   report.unclear = sort ? sort.count.unclear : null;
   if (sort) {
     const known = new Set(Object.values(reg.entries).flatMap(e => [e.path, ...(e.also || [])]));
-    report.without_entry = Object.entries(sort.files).filter(([p, v]) => v.class === 'resource' && !known.has(p)).map(([p]) => p);
+    report.without_entry = Object.entries(sort.files).filter(([p, v]) => v.class === 'resource' && !known.has(p) && !/^project\/resources\/_(assets|sort)\.json$/.test(p)).map(([p]) => p);
   }
+  for (const [k, x] of edges) if (!nodes.has(x.source) || !nodes.has(x.target)) edges.delete(k);
   const N = [...nodes.values()], E = [...edges.values()];
   const graph = { built: new Date().toISOString(), extractor: 'deterministic', model_tokens: 0, nodes: N, edges: E, report };
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -679,7 +683,9 @@ function buildCentral(cache, graphs) {
   for (const name of CENTRAL_PARTS) {
     const g = graphs[name], fallback = '.forma/living/graphs/' + name + '/graph.json', types = new Map(g.nodes.map(n => [n.id, n.type]));
     for (const n of g.nodes) {
-      const id = mapId(n.id, n.type), old = nodes.get(id), type = id.startsWith('epic:') ? 'epic' : id.startsWith('goal:') ? (n.type === 'goal' && old ? old.type : n.type) : n.type;
+      const id = mapId(n.id, n.type), old = nodes.get(id);
+      if (n.stub && old) continue;   // заглушка не затирает настоящий узел
+      const type = id.startsWith('epic:') ? 'epic' : id.startsWith('goal:') ? (n.type === 'goal' && old ? old.type : n.type) : n.type;
       nodes.set(id, { ...old, ...n, id, type, label: n.label || old?.label || id, source_file: old?.source_file || n.source_file || fallback });
     }
     for (const e of g.edges) {

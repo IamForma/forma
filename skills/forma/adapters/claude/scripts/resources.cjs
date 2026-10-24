@@ -10,6 +10,9 @@
 //   node .claude/scripts/resources.cjs batch --n N [--size 512] [--from answers.json] [--out f]     -> манифест пачки для описателя
 //   node .claude/scripts/resources.cjs apply <answers.json> [--card N]  -> ответы описателя в реестр
 //   node .claude/scripts/resources.cjs register <path> --kind K [--card N] [--prompt P] [--model M] [--description D] [--type T] [--tags a,b]
+//   node .claude/scripts/resources.cjs describe [--redo <regex пути>]  -> (--redo пере-описывает записи без model)description и tags текстов/таблиц/схем из заголовков, листов, шапок (без модели; картинки и уже описанное пропускает)
+//   node .claude/scripts/resources.cjs tag-batch --n N [--out f]  -> манифест {domain_tags, items} для записей без semantic_tags (теги ставит главная сессия)
+//   node .claude/scripts/resources.cjs apply-tags <answers.json>  -> [{sha256, tags}]: в semantic_tags и tags идут только теги из domain_tags (до 5)
 //   node .claude/scripts/resources.cjs decide <folder> resource|draft  -> правило папки в правилах
 
 const fs = require('fs');
@@ -42,11 +45,14 @@ function args() {
   return { pos, opt };
 }
 
+// нормализация слова: NFKC, нижний регистр, повторная сборка, снятие остаточных комбинируемых знаков
+function normWord(s) { return String(s).normalize('NFKC').toLowerCase().normalize('NFC').replace(/\p{M}/gu, ''); }
+
 function loadRules() {
   const r = readJson(RULES, null);
   if (!r) { console.error('нет ' + rel(RULES)); process.exit(2); }
   const re = l => (l || []).map(s => new RegExp(s, 'i'));
-  return { ...r, draftRe: re(r.draft_paths), draftNameRe: re(r.draft_names), refRe: re(r.reference_paths), kindRe: (r.kind_by_path || []).map(([p, k]) => [new RegExp(p), k]), mediaRe: new RegExp('\\.(' + [...r.media_ext, ...(r.source_ext || []), ...(r.text_ext || [])].join('|') + ')$', 'i'), skipRe: re(r.skip_names), exclRe: re(r.exclude_paths), classRe: Object.entries(r.classes || {}).map(([k, l]) => [k, re(l)]) };
+  return { ...r, draftRe: re(r.draft_paths), draftNameRe: re(r.draft_names), refRe: re(r.reference_paths), kindRe: (r.kind_by_path || []).map(([p, k]) => [new RegExp(p), k]), mediaRe: new RegExp('\\.(' + [...r.media_ext, ...(r.source_ext || []), ...(r.text_ext || [])].join('|') + ')$', 'i'), skipRe: re(r.skip_names), exclRe: re(r.exclude_paths), classRe: Object.entries(r.classes || {}).map(([k, l]) => [k, re(l)]), goalRe: (r.goal_by_path || []).map(([p, g]) => [new RegExp(p), g]), stopSet: new Set((r.stop_words || []).map(normWord)) };
 }
 
 function walk(dir, rules, out = []) {
@@ -192,19 +198,25 @@ function cmdInventory() {
     const used = [...new Set(g.flatMap(x => x.used_in))].sort();
     const e = {
       path: first.path, also: g.slice(1).map(x => x.path), format: first.ext, ...dims(first.buf, first.ext), bytes: first.bytes,
-      class: first.klass, kind: old?.kind || kindOf(rules, first.path), card: card || null, card_note: card ? null : 'нет карточки: ' + first.klass, goal: old?.goal || meta.goal || null, used_in: used,
+      class: first.klass, kind: old?.kind || kindOf(rules, first.path), card: card || null, card_note: card ? null : 'нет карточки: ' + first.klass, goal: card ? (old?.goal || meta.goal || null) : ((rules.goalRe.find(([re]) => re.test(first.path)) || [])[1] || old?.goal || null), used_in: used,
       type: old?.type || null, tags: old?.tags || [], description: old?.description || null, prompt: old?.prompt || null, model: old?.model || null,
-      described: old?.described || null, added: old?.added || today(),
+      described: old?.described || null, ...(old?.semantic_tags ? { semantic_tags: old.semantic_tags } : {}), added: old?.added || today(),
     };
     e.state = stateOf(e);
     if (old) updated++; else added++;
     reg.entries[h] = e;
   }
   const live = new Set(rows.filter(x => x.cls === 'resource').map(x => x.sha256));
-  for (const h of Object.keys(reg.entries)) if (!live.has(h) && !reg.entries[h].description) delete reg.entries[h];   // ушедшие из ресурсов и не описанные
+  const livePaths = new Set(rows.filter(x => x.cls === 'resource').flatMap(x => [x.path]));
+  let moved = 0;
+  for (const h of Object.keys(reg.entries)) {
+    if (live.has(h)) continue;
+    if (livePaths.has(reg.entries[h].path)) { delete reg.entries[h]; moved++; }        // файл на месте, хеш сменился: запись уже заведена под новым ключом (описание сброшено), старая уходит
+    else if (!reg.entries[h].description) delete reg.entries[h];                      // ушедшие из ресурсов и не описанные
+  }
   reg.generated = today();
   writeJson(REG, reg);
-  console.log(`реестр: записей ${Object.keys(reg.entries).length} (новых ${added}, обновлено ${updated})`);
+  console.log(`реестр: записей ${Object.keys(reg.entries).length} (новых ${added}, обновлено ${updated}, перенесено под новый хеш ${moved})`);
   return reg;
 }
 
@@ -317,6 +329,150 @@ function cmdRegister(p, opt) {
   console.log(`${old ? 'обновлена' : 'добавлена'} запись ${h.slice(0, 12)} · ${e.path} · ${e.state}`);
 }
 
+// --- описатель без модели: description и tags из заголовков, листов, шапок, первых строк ----
+const zlib = require('zlib');
+const STOP = new Set('это как для что при или также если быть чтобы который которые только можно нужно the and for with from that this are not you your'.split(' '));
+
+function zipEntries(buf) {                                // минимальный чтец zip: имя -> () => Buffer
+  const out = {};
+  let e = -1;
+  for (let i = buf.length - 22; i >= Math.max(0, buf.length - 65600); i--) if (buf.readUInt32LE(i) === 0x06054b50) { e = i; break; }
+  if (e < 0) return out;
+  let p = buf.readUInt32LE(e + 16);
+  const n = buf.readUInt16LE(e + 10);
+  for (let k = 0; k < n && buf.readUInt32LE(p) === 0x02014b50; k++) {
+    const method = buf.readUInt16LE(p + 10), csize = buf.readUInt32LE(p + 20), nl = buf.readUInt16LE(p + 28), xl = buf.readUInt16LE(p + 30), cl = buf.readUInt16LE(p + 32), off = buf.readUInt32LE(p + 42);
+    const name = buf.toString('utf8', p + 46, p + 46 + nl);
+    out[name] = () => {
+      const s = off + 30 + buf.readUInt16LE(off + 26) + buf.readUInt16LE(off + 28), raw = buf.subarray(s, s + csize);
+      return method === 0 ? raw : zlib.inflateRawSync(raw);
+    };
+    p += 46 + nl + xl + cl;
+  }
+  return out;
+}
+const unxml = s => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d)).replace(/&amp;/g, '&');
+const xmlTexts = (xml, tag) => [...xml.matchAll(new RegExp('<' + tag + '(?:\\s[^>]*)?>([\\s\\S]*?)</' + tag + '>', 'g'))].map(m => unxml(m[1].replace(/<[^>]+>/g, '')).trim());
+const clean = s => s.replace(/[#*`|>_]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+function describeParts(f, ext) {                          // -> { heads, body, sheets, cols }
+  const buf = fs.readFileSync(f), r = { heads: [], body: '', sheets: [], cols: [] };
+  const txt = () => buf.toString('utf8').replace(/^﻿/, '');
+  if (['md', 'txt', 'csv', 'json', 'cjs', 'js'].includes(ext)) {
+    const t = txt(), lines = t.split(/\r?\n/);
+    if (ext === 'md') {
+      r.heads = lines.filter(l => /^#{1,3}\s/.test(l)).map(l => clean(l)).slice(0, 6);
+      r.body = lines.filter(l => l.trim() && !/^(#|---|```|\||\w+:\s)/.test(l.trim()))[0] || '';
+    } else if (ext === 'csv') { r.cols = (lines[0] || '').split(/[;,\t]/).map(s => s.replace(/^"|"$/g, '').trim()).filter(Boolean).slice(0, 12); }
+    else if (ext === 'json') { try { const o = JSON.parse(t); r.cols = Object.keys(Array.isArray(o) ? (o[0] || {}) : o).slice(0, 12); } catch { r.body = lines[0] || ''; } }
+    else if (ext === 'cjs' || ext === 'js') r.body = lines.filter(l => /^\s*\/\/\s*\S/.test(l)).slice(0, 2).map(l => l.replace(/^\s*\/\/\s*/, '')).join(' ');
+    else r.body = lines.filter(l => l.trim()).slice(0, 2).join(' ');
+  } else if (ext === 'html') {
+    const t = txt();
+    r.heads = [...xmlTexts(t, 'title'), ...xmlTexts(t, 'h1'), ...xmlTexts(t, 'h2')].filter(Boolean).slice(0, 6);
+    r.body = xmlTexts(t, 'p')[0] || '';
+  } else if (ext === 'drawio') {
+    const t = txt();
+    let x = t;
+    const d = t.match(/<diagram[^>]*>([^<]+)<\/diagram>/);                     // сжатый вариант
+    if (d) { try { x = decodeURIComponent(zlib.inflateRawSync(Buffer.from(d[1], 'base64')).toString('utf8')); } catch { /* оставить */ } }
+    r.heads = [...t.matchAll(/<diagram[^>]*\sname="([^"]*)"/g)].map(m => unxml(m[1]));
+    r.cols = [...x.matchAll(/\svalue="([^"]*)"/g)].map(m => clean(unxml(unxml(m[1]).replace(/<[^>]+>/g, ' ')))).filter(Boolean).slice(0, 14);
+  } else if (ext === 'docx') {
+    const z = zipEntries(buf), doc = z['word/document.xml'] && z['word/document.xml']().toString('utf8');
+    if (doc) {
+      const paras = [...doc.matchAll(/<w:p[ >][\s\S]*?<\/w:p>/g)].map(m => ({ h: /<w:pStyle w:val="(?:Heading|Title|Заголовок)/i.test(m[0]), t: xmlTexts(m[0], 'w:t').join('') })).filter(p => p.t);
+      r.heads = paras.filter(p => p.h).map(p => p.t).slice(0, 5);
+      r.body = (paras.find(p => !p.h) || {}).t || '';
+    }
+  } else if (ext === 'pptx') {
+    const z = zipEntries(buf), nn = s => parseInt(s.replace(/\D/g, ''));
+    const names = Object.keys(z).filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a, b) => nn(a) - nn(b));
+    for (const n of names.slice(0, 6)) { const t = xmlTexts(z[n]().toString('utf8'), 'a:t').filter(Boolean); if (t[0]) r.heads.push(t[0]); if (!r.body && t[1]) r.body = t[1]; }
+  } else if (ext === 'xlsx') {
+    const z = zipEntries(buf), wb = z['xl/workbook.xml'] && z['xl/workbook.xml']().toString('utf8');
+    const ss = z['xl/sharedStrings.xml'] ? [...z['xl/sharedStrings.xml']().toString('utf8').matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m => unxml(m[1].replace(/<[^>]+>/g, ''))) : [];
+    if (wb) r.sheets = [...wb.matchAll(/<sheet\s[^>]*name="([^"]*)"/g)].map(m => unxml(m[1]));
+    const s1 = z['xl/worksheets/sheet1.xml'] && z['xl/worksheets/sheet1.xml']().toString('utf8');
+    if (s1) {
+      const row = (s1.match(/<row[ >][\s\S]*?<\/row>/) || [''])[0];
+      r.cols = [...row.matchAll(/<c\s([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)].map(m => {
+        const v = (m[2] || '').match(/<v>([\s\S]*?)<\/v>/), is = (m[2] || '').match(/<is>([\s\S]*?)<\/is>/);
+        return /t="s"/.test(m[1]) && v ? ss[+v[1]] : is ? unxml(is[1].replace(/<[^>]+>/g, '')) : v ? v[1] : '';
+      }).map(s => (s || '').trim()).filter(Boolean).slice(0, 12);
+    }
+  }
+  return r;
+}
+
+function describeEntry(e) {
+  const ext = (e.format || '').toLowerCase(), name = path.basename(e.path, path.extname(e.path)).replace(/[-_]+/g, ' ');
+  let p = { heads: [], body: '', sheets: [], cols: [] };
+  try { p = describeParts(path.join(ROOT, e.path), ext); } catch { /* описание из имени и класса */ }
+  const parts = [];
+  if (p.sheets.length) parts.push('Листы: ' + p.sheets.join(', '));
+  if (p.cols.length) parts.push((ext === 'drawio' ? 'Подписи узлов: ' : ext === 'json' ? 'Ключи: ' : 'Колонки: ') + p.cols.join(', '));
+  if (p.heads.length) parts.push((ext === 'pptx' ? 'Слайды: ' : ext === 'drawio' ? 'Схема: ' : 'Заголовки: ') + p.heads.join(' / '));
+  if (p.body) parts.push(clean(p.body));
+  let d = `${name} (${ext}). ` + (parts.length ? parts.join('. ') : `${e.class || 'файл'}, описание из имени`);
+  d = d.replace(/\s+/g, ' ');
+  if (d.length > 300) d = d.slice(0, 299).replace(/[\s,;:.\/]+\S*$/, '') + '…';
+  if (d.length > 300) d = d.slice(0, 300);
+  const stop = loadRules().stopSet;
+  const words = (normWord(p.sheets.concat(p.cols, p.heads, [name, p.body]).join(' ')).match(/\p{L}[\p{L}\p{N}]{3,}/gu) || []).filter(w => !STOP.has(w) && !stop.has(w));
+  const freq = {};
+  for (const w of words) freq[w] = (freq[w] || 0) + 1;
+  const top = Object.entries(freq).sort((a, b) => b[1] - a[1] || a[0].length - b[0].length).slice(0, 5).map(x => x[0]);
+  return { description: d, tags: [...new Set([e.class, ext, ...top].filter(Boolean))] };
+}
+
+function cmdDescribe(opt = {}) {
+  const reg = readJson(REG, { entries: {} });
+  const redo = typeof opt.redo === 'string' ? new RegExp(opt.redo) : null;   // --redo <regex пути>: пере-описать записи, описанные скриптом (без model)
+  let done = 0, kept = 0, skipped = 0;
+  for (const e of Object.values(reg.entries)) {
+    const again = redo && redo.test(e.path) && !e.model;
+    if (e.description && !again) { kept++; continue; }                     // уже описано (в т.ч. описателем-моделью)
+    if (e.class === 'generated' || ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'mp4', 'webm', 'mov'].includes(e.format)) { skipped++; continue; }
+    const r = describeEntry(e);
+    Object.assign(e, { description: r.description, tags: r.tags, described: today() });
+    done++;
+  }
+  writeJson(REG, reg);
+  console.log(`описано без модели: ${done}, оставлено (уже есть описание): ${kept}, пропущено (картинки/кадры): ${skipped}`);
+}
+
+// --- смысловые теги: второй проход, модель вызывает главная сессия ----------------------------
+const SEM_CLASSES = ['source', 'reference', 'doc', 'data', 'config', 'script'];
+
+function cmdTagBatch(opt) {
+  const rules = loadRules(), reg = readJson(REG, { entries: {} }), n = opt.n ? +opt.n : 20;
+  const items = Object.entries(reg.entries).filter(([, e]) => SEM_CLASSES.includes(e.class) && !e.semantic_tags && fs.existsSync(path.join(ROOT, e.path))).slice(0, n)
+    .map(([h, e]) => ({ sha256: h, path: e.path, class: e.class, description: e.description || null, tags: e.tags || [] }));
+  const f = path.resolve(ROOT, opt.out || 'project/work/tag-batch.json');
+  writeJson(f, { domain_tags: rules.domain_tags || [], items });
+  console.log(`пачка смысловых тегов: ${items.length} → ${rel(f)}`);
+}
+
+function cmdApplyTags(file) {
+  const rules = loadRules(), reg = readJson(REG, { entries: {} }), ans = file ? readJson(path.resolve(file), null) : null;
+  if (!ans) { console.error('не прочитан ' + file); process.exit(2); }
+  const dict = new Map((rules.domain_tags || []).map(t => [normWord(t), t]));
+  const list = Array.isArray(ans) ? ans : ans.items || ans.answers || [];
+  let ok = 0, dropped = 0, missing = 0;
+  for (const a of list) {
+    const e = reg.entries[a.sha256] || Object.entries(reg.entries).find(([h]) => h.startsWith(a.sha256 || '#'))?.[1];
+    if (!e) { missing++; continue; }
+    const good = [];
+    for (const t of a.tags || []) { const c = dict.get(normWord(t)); if (c) { if (!good.includes(c)) good.push(c); } else dropped++; }
+    e.semantic_tags = good.slice(0, 5);
+    e.tags = [...new Set([...(e.tags || []), ...e.semantic_tags])];
+    ok++;
+  }
+  writeJson(REG, reg);
+  console.log(`смысловые теги записаны: ${ok}, отброшено вне словаря: ${dropped}, нет записи: ${missing}`);
+}
+
 function cmdDecide(folder, cls) {
   if (!folder || !['resource', 'draft'].includes(cls)) { console.error('использование: decide <папка> resource|draft'); process.exit(2); }
   const r = readJson(RULES, {});
@@ -334,9 +490,12 @@ function main() {
   else if (cmd === 'prepare') cmdPrepare(opt);
   else if (cmd === 'batch') cmdBatch(opt);
   else if (cmd === 'apply') cmdApply(pos[1], opt);
+  else if (cmd === 'describe') cmdDescribe(opt);
+  else if (cmd === 'tag-batch') cmdTagBatch(opt);
+  else if (cmd === 'apply-tags') cmdApplyTags(pos[1]);
   else if (cmd === 'register') cmdRegister(pos[1], opt);
   else if (cmd === 'decide') cmdDecide(pos[1], pos[2]);
-  else { console.error('команды: sort | inventory | report | prepare | batch | apply | register | decide'); process.exit(2); }
+  else { console.error('команды: sort | inventory | report | prepare | batch | apply | register | describe | tag-batch | apply-tags | decide'); process.exit(2); }
 }
 
 if (require.main === module) main();

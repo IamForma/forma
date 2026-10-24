@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Вопросы к графам Kit без модели: узел, соседи, путь, поиск, дайджест обрывов.
 //   node .claude/scripts/graph-query.cjs find <текст> [--graph central] [--type card|goal|role|file|...]
+//     ресурс (type asset) ищется ещё по description, tags, semantic_tags, class; несколько слов — все должны встретиться; теги выше описания:
+//   node .claude/scripts/graph-query.cjs find Паспорт --type asset      (слово из описания) · find generated --type asset (класс)
 //   node .claude/scripts/graph-query.cjs node <id|метка> [--graph central]   — узел и его рёбра по отношениям
 //   node .claude/scripts/graph-query.cjs path <откуда> <куда> [--graph central]  — кратчайший путь (рёбра без направления)
 //   node .claude/scripts/graph-query.cjs digest                              — обрывы из отчёта central, несколько строк
@@ -50,9 +52,27 @@ function cmdFind() {
   const g = load(flag('graph', 'central')), type = flag('type', '');
   const q = rest.join(' ').toLowerCase();
   if (!q) { console.error('find <текст>'); process.exit(2); }
-  const hits = g.nodes.filter(n => (!type || n.type === type) && (n.id.toLowerCase().includes(q) || String(n.label || '').toLowerCase().includes(q)));
+  const words = q.split(/\s+/).filter(Boolean);
+  const flat = v => (Array.isArray(v) ? v.join(' ') : String(v == null ? '' : v)).toLowerCase();
+  const score = n => {
+    if (n.type !== 'asset') return 0;
+    const tg = flat(n.semantic_tags) + ' ' + flat(n.tags), ds = flat(n.description), cl = flat(n.class), id = (n.id + ' ' + (n.label || '') + ' ' + (n.path || '')).toLowerCase();
+    let sc = 0;
+    for (const w of words) {
+      const k = tg.includes(w) ? 3 : cl.includes(w) ? 2 : ds.includes(w) ? 1 : id.includes(w) ? 1 : 0;
+      if (!k) return 0;
+      sc += k;
+    }
+    return sc;
+  };
+  const hits = g.nodes.filter(n => (!type || n.type === type) && (n.id.toLowerCase().includes(q) || String(n.label || '').toLowerCase().includes(q) || score(n) > 0));
+  const sc = new Map(hits.map(n => [n, n.type === 'asset' ? Math.max(score(n), 1) : 0]));
+  hits.sort((x, y) => sc.get(y) - sc.get(x));   // стабильно: не-ресурсы остаются в прежнем порядке
   console.log(`${hits.length} узлов`);
-  hits.slice(0, 30).forEach(n => console.log('  ' + short(n)));
+  hits.slice(0, 30).forEach(n => {
+    console.log('  ' + short(n));
+    if (n.type === 'asset') console.log(`      класс: ${n.class || '—'} · ${n.card ? 'карточка: ' + n.card : n.card_note || 'карточки нет'}${n.goal ? ' · цель: ' + n.goal : ''} · путь: ${n.path}`);
+  });
   if (hits.length > 30) console.log(`  … ещё ${hits.length - 30}, сузьте запрос или --type`);
 }
 
