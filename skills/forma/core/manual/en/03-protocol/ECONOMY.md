@@ -82,3 +82,17 @@ Work `Intent` does inside the shared session — executing a card itself, checki
 ## Adapter duty
 
 Each engine's §8 — or the on-demand file it points to — names which of its return fields map to which variable and how R is read. Its line must pass the conformance test.
+
+## Automatic recording (adapter duty)
+
+The spend line is derived from a fact the engine records, not typed by hand.
+
+- **Journal:** `<adapter dir>/.ledger/calls.jsonl`, one JSON object per line, appended. Fields: `timestamp`, `conversationId` (the call id — the key `ledger-parity.cjs` reads), `engine`, `node`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, `duration_s`, `cards` (card numbers the call served); `continuation: true` on a repeat record of a call already in the journal. A number the engine did not return is `null`, never 0.
+- **Trigger:** the return of a subagent call. An engine with a stop hook for it records from the hook; the numbers come from the call's transcript, as in "T, R, K and the call id".
+- **Card line:** derived from the journal record through `.forma/dashboard/spend-line.cjs` (`formatSpendLine`) into the `## History` of every card in `cards` found on the board or in `done/`; the description after the dash opens with the engine tag and names the automatic recording. A batch call is split as in "Splitting one call's spend across a batch". A continuation writes only the delta against what the card already holds for that call id.
+- **Dedup:** by call id — a card that already holds a line with the id of a first-time record gets no second line; a repeat event with no new spend writes nothing.
+- **Failure is silent:** a recorder error never blocks the engine; the reason goes to a log beside the journal. A card not found leaves the journal record alone — the parity check shows it as an orphan.
+- **Check:** `.forma/board/checks/ledger-parity.cjs` — every `conversationId` in an adapter's journal must stand as a call id on some card line.
+- **No hook in the engine:** the node (or caller) appends the record with the adapter's `sync-ledger --append` command right after the return. This is discipline, weaker than a hook: the journal then holds what the node read, not what the engine recorded.
+
+Reference implementation: Claude Code, `.claude/scripts/ledger-recorder.cjs` (hook `SubagentStop`).
