@@ -47,8 +47,10 @@ if (!lanes.has(kind)) die(`неизвестный код "${kind}". Коды: ` 
 const epic = lanes.get(kind);
 
 // 1б. Гейт изоляции (AGENTS.md §2, запреты 1 и 7)
-const capFile = path.join(ROOT, '.agents', '.state', 'capabilities.json');
-if (fs.existsSync(capFile)) {
+// Файл проб — у каждого адаптера в его папке (`<папка>/.state/capabilities.json`); ядро обходит адаптеры, имён не знает.
+const capFiles = require('../dashboard/lib/engines.cjs').loadAdapters(ROOT).map((a) => path.join(ROOT, a.dir, '.state', 'capabilities.json'));
+for (const capFile of capFiles) {
+  if (!fs.existsSync(capFile)) continue;
   try {
     const caps = JSON.parse(fs.readFileSync(capFile, 'utf8'));
     if (caps.isolation && caps.isolation.available === false && kind === 'channels' && !flag('force')) {

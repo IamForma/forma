@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "name": "minimax-engine",
+  "displayName": "Forma · MiniMax Code",
+  "version": "1.0.0",
+  "description": "Движок MiniMax Code для протокола «Формы»: роли узлов как изолированные субагенты, охрана удалений, доставка роли главной сессии, журнал вызовов.",
+  "author": "User",
+  "icon": "icon.png",
+  "darkIcon": "icon-dark.png",
+  "category": "Other",
+  "exampleQueries": [
+    "Нарежь задачу на карточки по протоколу «Форма».",
+    "Снаряди задачу и выбери профиль Run.",
+    "Вынеси вердикт по закрытому кругу."
+  ],
+  "apps": [],
+  "mcpServers": [],
+  "skills": [],
+  "agents": [
+    "agents/spec.md",
+    "agents/kit.md",
+    "agents/run.md",
+    "agents/core.md",
+    "agents/extractor.md",
+    "agents/plumb-haiku.md",
+    "agents/asset-describer-haiku.md"
+  ],
+  "hooks": ["hooks/hooks.json"]
+}

@@ -57,7 +57,7 @@ try {
     };
 
     const line = deriveSpendLineForCall(callRecord, 'Run', 'выполнена задача.');
-    assert.match(line, new RegExp('`Run`, ' + d + ': attempt, 1[\\s ]?500 tokens \\(450 cache-read\\), 5 s, `conv-test-9999` — gemini: выполнена задача\\.'));
+    assert.match(line, new RegExp('`Run`, ' + d + ': attempt, 1[\\s ]?500 tokens \\(450 cache-read\\), 300 out, 5 s, `conv-test-9999` — gemini: выполнена задача\\.'));
   });
 
   it('ledger-parity фиксирует расхождения и подтверждает соответствие', () => {
@@ -78,7 +78,7 @@ try {
     const cardPath = path.join(boardDir, `${cardPrefix}-test.md`);
     fs.writeFileSync(
       cardPath,
-      `# ${cardPrefix}\n\n## History\n- \`Run\`, ${d}: attempt, 1500 tokens (450 cache-read), 5 s, \`conv-test-9999\` — gemini: тест.\n`
+      `# ${cardPrefix}\n\n## History\n- \`Run\`, ${d}: attempt, 1500 tokens (450 cache-read), 300 out, 5 s, \`conv-test-9999\` — gemini: тест.\n`
     );
 
     const callsPath = path.join(ledgerDir, 'calls.jsonl');

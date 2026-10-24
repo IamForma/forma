@@ -38,10 +38,10 @@ const PRICING = {
     'qwen/qwen3.7-flash': { input: 0.03 / 1e6, output: 0.13 / 1e6 },
     // Цена — openrouter.ai
     'deepseek/deepseek-v4-flash': { input: 0.049 / 1e6, output: 0.097 / 1e6 },
-    // Цена — openrouter.ai/typesafe/jev-1.13: вход $0.042/1M, выход бесплатный (Decisions API
+    // Цена — openrouter.ai/typesafe/jev-1.14: вход $0.042/1M, выход бесплатный (Decisions API
     // берёт плату только за входные токены — openrouter.ai/docs/guides/community/jev,
     // «How much does Jev cost?»). Ответ `usage.cost` предпочтительнее этой оценки, см. estimateCostUsd.
-    'typesafe/jev-1.13': { input: 0.042 / 1e6, output: 0 },
+    'typesafe/jev-1.14': { input: 0.042 / 1e6, output: 0 },
   },
 };
 
@@ -94,7 +94,7 @@ function loadEnvKeyOptional(name, root) {
   }
 }
 
-// Вызов Decisions API (typesafe/jev-1.13) — типизированный выход choice/score/noul напрямую,
+// Вызов Decisions API (typesafe/jev-1.14) — типизированный выход choice/score/noul напрямую,
 // без прогона через chat/completions (другая форма запроса: questions+state, не messages).
 // openrouter.ai/docs/api/api-reference/alphadecisions/submit-a-decisions-request
 function callDecisions({ apiKey, model, questions, state, timeoutMs }) {

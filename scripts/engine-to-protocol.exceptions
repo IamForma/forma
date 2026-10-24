@@ -41,3 +41,6 @@ skip ^\.claude/scripts/tokenator_translator\.py$
 # вендорный skill-creator (anthropics/skills) живёт в проекте, но шаблон его не поставляет —
 # подключается плагином (kit.md); без строки e2p предлагал бы вернуть копии
 skip ^\.(claude|agents)/skills/skill-creator(/|$)
+
+# MiniMax: runtime of a running engine (call ledger, observed state, transcripts) is the project's, never the template's
+skip ^\.minimax/\.(ledger|state|transcripts)/

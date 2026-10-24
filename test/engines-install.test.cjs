@@ -1,4 +1,4 @@
-// Gemini (бета) ставится установщиком; Codex спит (core/engines.json) — не ставится, явный запрос отклоняется.
+// Gemini (бета) ставится установщиком; Codex и MiniMax спят (core/engines.json) — не ставится, явный запрос отклоняется.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -41,4 +41,33 @@ test('--engines codex: спящий движок отклоняется кодо
     assert.match(r.stderr, /dormant/);
     assert.ok(!fs.existsSync(path.join(d2, '.codex')));
   } finally { fs.rmSync(d2, { recursive: true, force: true }); }
+});
+
+test('--engines minimax: спящий движок отклоняется кодом 2, ничего не ставится', () => {
+  const d2 = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-engines3-'));
+  try {
+    const r = spawnSync(process.execPath, [FORMA, 'init', '--dir', d2, '--engines', 'minimax', '--board', 'skip', '--yes'], { encoding: 'utf8' });
+    assert.equal(r.status, 2, r.stdout + r.stderr);
+    assert.match(r.stderr, /minimax is dormant/);
+    assert.ok(!fs.existsSync(path.join(d2, '.minimax')));
+    assert.ok(!fs.existsSync(path.join(d2, 'miniapps', 'minimax-engine')));
+  } finally { fs.rmSync(d2, { recursive: true, force: true }); }
+});
+
+test('справка --engines не предлагает minimax как выбор', () => {
+  const r = spawnSync(process.execPath, [FORMA, 'init', '--help'], { encoding: 'utf8' });
+  const line = r.stdout.split(String.fromCharCode(10)).find((l) => l.includes('--engines'));
+  assert.match(line, /minimax are dormant/);
+  assert.ok(!line.includes('claude[,minimax'));
+});
+
+test('установка по умолчанию: ни .minimax/, ни miniapps/minimax-engine/', () => {
+  const d3 = fs.mkdtempSync(path.join(os.tmpdir(), 'forma-engines4-'));
+  try {
+    const r = spawnSync(process.execPath, [FORMA, 'init', '--dir', d3, '--board', 'skip', '--yes'], { encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.ok(!fs.existsSync(path.join(d3, '.minimax')));
+    assert.ok(!fs.existsSync(path.join(d3, 'miniapps', 'minimax-engine')));
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(d3, '.forma', 'engines.json'), 'utf8')).dormant, ['codex', 'minimax']);
+  } finally { fs.rmSync(d3, { recursive: true, force: true }); }
 });

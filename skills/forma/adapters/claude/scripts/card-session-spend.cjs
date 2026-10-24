@@ -197,14 +197,14 @@ function spendLine(r) {
   const window = MANUAL ? `окно ${hm(r.from)}–${hm(r.to)} UTC (${MANUAL_MARK})` : `окно ${hm(r.from)}–${hm(r.to)} UTC`;
   const edge = MANUAL ? '' : `, граница ${new Date(r.to).toISOString()}`;
   return '- ' + formatSpendLine({ node: 'Intent', date: new Date(r.to).toISOString().slice(0, 10), tokens: economy.usageTokens(r),
-    cache_read: r.cache_read, duration_s: Math.round(r.active / 1000), call_id: r.id, engine: 'claude-code', desc: '' }) +
+    cache_read: r.cache_read, tokens_out: r.tokens_out, duration_s: Math.round(r.active / 1000), call_id: r.id, engine: require('../forma-adapter.cjs').spendTag, desc: '' }) +
     `расход основной сессии по журналу (card-session-spend): ${r.calls} ответов, ${window}, ` +
     `выход ${sp(r.tokens_out)}, запись в кеш ${sp(r.cache_write)}${edge}.`;
 }
 
 /** Строка `--mark-unknown`: журналы прочитаны, доли карточки в них нет — исключение §3 с пометками и причиной. */
 const unknownLine = () => '- ' + formatSpendLine({ node: 'Intent', date: new Date().toISOString().slice(0, 10), tokens: null,
-  cache_read: null, duration_s: 0, call_id: null, engine: 'claude-code', desc: '' }) +
+  cache_read: null, duration_s: 0, call_id: null, engine: require('../forma-adapter.cjs').spendTag, desc: '' }) +
   `расход основной сессии не найден (card-session-spend): в журналах ${projDir.split(/[\\/]/).pop()} ` +
   `нет записи карточки, коммита или вызова субагента по ней — журнал удалён, работа шла в другом движке или без записи в карточку.`;
 

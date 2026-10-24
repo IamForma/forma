@@ -17,7 +17,7 @@
  * Канон ключевой части — английский; русские строки приводятся `toEnglish()` до разбора.
  */
 
-const { toEnglish, SPEND_SOURCE, ID_UNKNOWN_RE, CLAIM_RE, sessionWindowEnd } = require('../spend-line.cjs');
+const { toEnglish, SPEND_SOURCE, ID_UNKNOWN_RE, CLAIM_RE, sessionWindowEnd, outTokens } = require('../spend-line.cjs');
 
 const ATTEMPT_RE = new RegExp(SPEND_SOURCE, 'g');
 
@@ -134,6 +134,8 @@ function attemptRecord(m, line) {
     // Кэш-чтение — постоянные накладные вызова: загрузка закона и роли (§3). Это и есть «инструктаж»;
     // остаток — работа собственно по карточке. Тоньше внутри одного вызова не делится.
     cacheRead,
+    // Выходные токены: число или `null` — «out unknown» и старая строка без сегмента (читается как есть, не как 0).
+    tokensOut: outTokens(english),
     // Три состояния (ECONOMY.md, «The `unknown` marker»): число записано; поля нет вовсе (старая строка); движок числа
     // не вернул и узел это НАЗВАЛ. Третье считается отдельной величиной и никогда не складывается нулём.
     cacheReadUnknown: /cache-read unknown/.test(m[0]),

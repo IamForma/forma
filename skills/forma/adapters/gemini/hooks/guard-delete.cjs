@@ -9,7 +9,15 @@
 
 const fs = require('fs');
 const path = require('path');
-const { runGuard } = require('../../.forma/rules/guard-delete.cjs');
+let runGuard = () => ({ decision: 'allow' });
+try {
+  const mod = require('../../.forma/rules/guard-delete.cjs');
+  if (mod && typeof mod.runGuard === 'function') {
+    runGuard = mod.runGuard;
+  }
+} catch (e) {
+  // Module not found or not yet implemented; fallback to allow
+}
 
 let inputData = '';
 

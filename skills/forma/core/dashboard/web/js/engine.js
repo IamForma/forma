@@ -55,7 +55,7 @@ function engineSettingsHtml(e){
       <div class="set-hook-h"><b>${esc(h.event)}</b>${h.matcher ? setPill(h.matcher, '', 'matcher') : `<span class="dim">${t('eng.hooks.any')}</span>`}</div>
       <ol class="set-chain">${h.commands.map(cmd => `<li><code>${esc(cmd.replace(/^\.claude\/hooks\//, ''))}</code>${engHelp(cmd, descs[cmd])}</li>`).join('')}</ol></div>`).join('')}</div>` : setEmpty();
   const nodes = e.nodes.length ? `<table class="chain-table"><thead><tr><th>${t('eng.th.node')}</th><th>${t('eng.th.model')}</th><th>${t('eng.th.effort')}</th><th>${t('eng.th.tools')}</th></tr></thead><tbody>${e.nodes.map(n =>
-    `<tr><td><b>${esc(n.name)}</b>${engHelp(n.name, t('eng.nodes.tools', {list: n.tools.join(', ')}))}</td><td>${n.model ? setPill(n.model) : setEmpty()}</td><td>${n.effort ? esc(n.effort) : setEmpty()}</td><td>${n.tools.length}</td></tr>`).join('')}</tbody></table>
+    `<tr><td><b>${esc(n.name)}</b>${engHelp(n.name, t('eng.nodes.tools', {list: (n.tools || []).join(', ')}))}</td><td>${n.model ? setPill(n.model) : setEmpty()}</td><td>${n.effort ? esc(n.effort) : setEmpty()}</td><td>${(n.tools || []).length}</td></tr>`).join('')}</tbody></table>
     <p class="set-src">${t('eng.nodes.foot')}</p>` : setEmpty();
   const pills = (a, cls = '') => a && a.length ? `<div class="set-pills">${a.map(x => setPill(x, cls)).join('')}</div>` : `<span class="dim">${t('eng.none')}</span>`;
   const mcp = `<p class="set-line">${t('eng.mcp.project')}:</p>${e.mcp.project.map(p => `<div class="set-line dim"><code>${esc(p.file)}</code> ${p.servers ? pills(p.servers, 'set-ok') : `<span class="set-empty">${t('eng.mcp.noFile')}</span>`}</div>`).join('')}

@@ -74,7 +74,7 @@ const CASES = [
 
   // --- сверка движков: адаптер Claude ---
   { name: 'root-rules-section', registry: 'sync', id: 'root-rules',
-    apply: (m) => m.edit('AGENTS.md', (t) => t.replace('## 3.', '## Три.')),
+    apply: (m) => m.edit('AGENTS.md', (t) => t.replace('## 3.', '## Z.')),
     expect: /AGENTS\.md: нет раздела ## 3\./ },
   { name: 'root-rules-claude-md', registry: 'sync', id: 'root-rules',
     apply: (m) => m.write('CLAUDE.md', '@AGENTS.md\n'),

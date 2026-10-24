@@ -1,0 +1,67 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/scripts/hook.mjs\"",
+            "commandWindows": "node \"${PLUGIN_ROOT}\\scripts\\hook.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/scripts/hook.mjs\"",
+            "commandWindows": "node \"${PLUGIN_ROOT}\\scripts\\hook.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/scripts/hook.mjs\"",
+            "commandWindows": "node \"${PLUGIN_ROOT}\\scripts\\hook.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "minimax-engine:spec|minimax-engine:kit|minimax-engine:run|minimax-engine:core|minimax-engine:extractor|minimax-engine:plumb-haiku|minimax-engine:asset-describer-haiku",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/scripts/hook.mjs\"",
+            "commandWindows": "node \"${PLUGIN_ROOT}\\scripts\\hook.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "minimax-engine:spec|minimax-engine:kit|minimax-engine:run|minimax-engine:core|minimax-engine:extractor|minimax-engine:plumb-haiku|minimax-engine:asset-describer-haiku",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/scripts/hook.mjs\"",
+            "commandWindows": "node \"${PLUGIN_ROOT}\\scripts\\hook.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -91,9 +91,40 @@ const NO_ENGINE_SETTINGS = {
   mcp: { project: [], user: [], userProject: [] }, check: { ran: false },
 };
 
+// Последний по времени файл в каталоге (неглубоко); нет каталога — 0.
+function newestMtime(dir) {
+  let best = 0;
+  const walk = (d, depth) => {
+    let list = [];
+    try { list = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of list) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) { if (depth < 2) walk(p, depth + 1); continue; }
+      try { best = Math.max(best, fs.statSync(p).mtimeMs); } catch { /* файл исчез — пропуск */ }
+    }
+  };
+  walk(dir, 0);
+  return best;
+}
+
+// Движок вкладки — тот, чья последняя сессия свежее; без стенограмм — первый объявивший настройки.
+function activeAdapter(projectRoot) {
+  const list = engines.loadAdapters(projectRoot).filter((a) => typeof a.engineSettings === 'function');
+  let pick = list[0] || null, best = -1;
+  for (const a of list) {
+    let dir = null;
+    try { dir = typeof a.transcriptsDir === 'function' ? a.transcriptsDir(projectRoot) : null; } catch { dir = null; }
+    const m = dir ? newestMtime(dir) : 0;
+    if (m > best) { best = m; pick = a; }
+  }
+  return pick;
+}
+
 function readEngineSettings(projectRoot) {
-  const read = engines.first(projectRoot, 'engineSettings');
-  const tag = engines.first(projectRoot, 'engine');
+  const active = activeAdapter(projectRoot);
+  const read = active ? active.engineSettings : null;
+  // Адаптер без engineSettings тег движка всё равно объявил: тег — от активного, иначе от первого объявившего.
+  const tag = (active ? active.engine : engines.first(projectRoot, 'engine')) || null;
   const eng = read ? read(projectRoot) : NO_ENGINE_SETTINGS;
   // описание хука — из шапки его скрипта (как в «Структуре»); нет шапки — нет описания, не выдумка
   const { describe } = require('../structure.cjs');

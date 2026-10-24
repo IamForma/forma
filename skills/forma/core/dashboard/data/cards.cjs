@@ -55,12 +55,21 @@ function closedDateOf(fm, raw) {
   return (fm.completedAt && String(fm.completedAt).slice(0, 10)) || parseClosedDate(raw) || null;
 }
 
+/** Card kind: the word after the middle dot in the first task field (code · kind | ...); no field — empty. Task heading is matched in ru (escaped) and en. */
+function kindOf(raw) {
+  const m = /^##\s+(?:\u0417\u0430\u0434\u0430\u0447\u0430|Task)\s*$/m.exec(raw);
+  if (!m) return '';
+  const first = raw.slice(m.index + m[0].length).split(/\r?\n/).find((l) => l.trim()) || '';
+  return (first.split('|')[0].split('\u00b7')[1] || '').trim();
+}
+
 function spendCard({ projectRoot, file, raw, fm }, seen) {
   const attempts = dedupeAttempts(parseAttempts(raw), file, seen);
   return {
     id: fm.id,
     title: cardTitle(raw) || fm.id,
     status: fm.status || null,
+    kind: kindOf(raw),
     priority: fm.priority || null,
     assignee: fm.assignee || null,
     epic: fm.epic || null,

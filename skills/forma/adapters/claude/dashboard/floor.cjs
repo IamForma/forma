@@ -45,7 +45,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-const { transcriptDir } = require('./subagent-transcript.cjs');
+const engines = require('./lib/engines.cjs');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 
@@ -53,12 +53,23 @@ const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
  *  нуля: ведущий ноль читается глазами как «окно бесплатное» — ровно наоборот. */
 const NO_TRANSCRIPTS = 'no-transcripts'; // код: браузер переводит `bort.fl.u.<код>`
 
+/** Метка времени шага → строка ISO; нечитаемая или пустая — `null`. */
+function isoOf(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' && Number.isFinite(v)) {
+    const d = new Date(v < 1e11 ? v * 1000 : v);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+  }
+  return null;
+}
+
 /**
  * Одна стенограмма → пол. Потоком, с дедупликацией.
  * @returns {Promise<null|{calls, floor, model, floorAnyModel, anyModel, first, last}>}
  *   `null` — в файле нет ни одного вызова с usage. Это не ноль, а нечитаемая стенограмма.
  */
-async function parseFloor(file) {
+async function parseFloor(file, parseUsage) {
   const seen = new Set();
   // Минимум и число вызовов держатся ПОМОДЕЛЬНО — иначе служебная модель утянет пол вниз.
   const byModel = new Map(); // model -> { calls, min }
@@ -70,18 +81,21 @@ async function parseFloor(file) {
     crlfDelay: Infinity,
   });
   for await (const line of rl) {
-    if (!line.includes('cache_read_input_tokens')) continue; // отсев до разбора
+    if (!line.includes('cache')) continue; // отсев до разбора: без кэш-полей шаг в пол не берётся
     let j;
     try { j = JSON.parse(line); } catch { continue; }
-    const u = j.message && j.message.usage;
-    if (!u || u.cache_read_input_tokens == null) continue;
-    const key = j.requestId || j.uuid;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const raw = (j.message && j.message.usage) || j.usage;
+    if (!raw) continue;
+    // Разбор шага — у адаптера движка (канонические переменные); адаптер без разбора — поля Claude-формата.
+    let r;
+    try {
+      r = parseUsage ? parseUsage(raw) : { tokens_in: raw.input_tokens, cache_read: raw.cache_read_input_tokens, cache_write: raw.cache_creation_input_tokens };
+    } catch { continue; }
+    if (!r || r.cache_read == null) continue;
+    const key = j.requestId || j.uuid || j.id;
+    if (key != null) { if (seen.has(key)) continue; seen.add(key); }
 
-    const window = u.cache_read_input_tokens
-      + (u.cache_creation_input_tokens || 0)
-      + (u.input_tokens || 0);
+    const window = r.cache_read + (r.cache_write || 0) + (r.tokens_in || 0);
 
     const model = (j.message && j.message.model) || 'unknown';
     let m = byModel.get(model);
@@ -90,7 +104,9 @@ async function parseFloor(file) {
     if (window < m.min) m.min = window;
 
     if (anyMin == null || window < anyMin) { anyMin = window; anyModel = model; }
-    if (j.timestamp) { if (!first) first = j.timestamp; last = j.timestamp; }
+    // Метка времени у разных движков — строка ISO или число (мс/с от эпохи): приводится к строке ISO.
+    const ts = isoOf(j.timestamp);
+    if (ts) { if (!first) first = ts; last = ts; }
   }
   rl.close();
 
@@ -115,10 +131,10 @@ async function parseFloor(file) {
  * незачем. Живая сессия растёт — у неё меняется размер, и она пересчитывается.
  */
 async function build(root = PROJECT_ROOT) {
-  const dir = transcriptDir(root);
+  const dirs = engines.transcriptDirs(root);
   const cacheFile = path.join(root, '.forma/dashboard', '.cache', 'floor.json');
 
-  if (!dir) {
+  if (!dirs.length) {
     return { generatedAt: new Date().toISOString(), unavailable: NO_TRANSCRIPTS, sessions: [], byDate: [] };
   }
 
@@ -126,23 +142,28 @@ async function build(root = PROJECT_ROOT) {
   try { prev = (JSON.parse(fs.readFileSync(cacheFile, 'utf8')).cache) || {}; } catch { /* нет кэша — посчитаем всё */ }
   const cache = {};
 
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.jsonl'));
   const sessions = [];
-  for (const f of files) {
-    const full = path.join(dir, f);
-    let st;
-    try { st = fs.statSync(full); } catch { continue; }
-    const sessionId = f.replace(/\.jsonl$/, '');
-    const hit = prev[sessionId];
-    let row;
-    if (hit && hit.size === st.size && hit.mtimeMs === st.mtimeMs) {
-      row = hit.row;
-    } else {
-      row = await parseFloor(full);
+  // Все движки: стенограммы каждого адаптера. Ключ кэша — движок + сессия (id сессий разных движков могут совпасть).
+  for (const { tag, dir, parseUsage } of dirs) {
+    let files = [];
+    try { files = fs.readdirSync(dir).filter((f) => f.endsWith('.jsonl')); } catch { continue; }
+    for (const f of files) {
+      const full = path.join(dir, f);
+      let st;
+      try { st = fs.statSync(full); } catch { continue; }
+      const sessionId = f.replace(/\.jsonl$/, '');
+      const ck = tag + ':' + sessionId;
+      const hit = prev[ck];
+      let row;
+      if (hit && hit.size === st.size && hit.mtimeMs === st.mtimeMs) {
+        row = hit.row;
+      } else {
+        row = await parseFloor(full, parseUsage);
+      }
+      cache[ck] = { size: st.size, mtimeMs: st.mtimeMs, row };
+      if (!row) continue; // нечитаемая стенограмма — не ноль, просто нет строки
+      sessions.push({ sessionId, engine: tag, date: (row.first || '').slice(0, 10) || null, ...row });
     }
-    cache[sessionId] = { size: st.size, mtimeMs: st.mtimeMs, row };
-    if (!row) continue; // нечитаемая стенограмма — не ноль, просто нет строки
-    sessions.push({ sessionId, date: (row.first || '').slice(0, 10) || null, ...row });
   }
 
   sessions.sort((a, b) => String(a.date).localeCompare(String(b.date)));

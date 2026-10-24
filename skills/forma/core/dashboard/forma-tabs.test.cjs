@@ -25,10 +25,10 @@ function fakeRoot(adapters) {
 }
 const ok = (engine, title) => `module.exports = { engine: '${engine}', formaRoles: () => ({ title: '${title}', nodes: [], runRoles: [] }) };`;
 
-it('три адаптера → три вкладки, Claude первым', () => {
+it('три адаптера → три вкладки, порядок по каталогу адаптера, без первого по имени', () => {
   const root = fakeRoot({ '.a': ok('eng-a', 'A'), '.b': ok('claude-code', 'B'), '.c': ok('eng-c', 'C') });
   const tabs = readFormaCatalog(root).engines;
-  assert.deepEqual(tabs.map((t) => t.engine), ['claude-code', 'eng-a', 'eng-c']);
+  assert.deepEqual(tabs.map((t) => t.engine), ['eng-a', 'claude-code', 'eng-c']);
 });
 
 it('убрали адаптер → две вкладки', () => {

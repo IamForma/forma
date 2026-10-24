@@ -106,6 +106,7 @@ function printReport({ problems, info, results, isDiff }) {
 
   if (!hasDrift) { console.log('Закон, ядро и готовые адаптеры в порядке.'); return; }
   console.log('Сбой — в проверках выше (конструкция, ядро, адаптеры, доска, журнал).\n');
+  if (results.some(({ res }) => res.status !== 'synced' && res.status !== 'own')) console.log('Дрейф зеркал ролей: пересобрать командой  node .claude/scripts/engine-switch.cjs rebuild\n');
   if (isDiff) for (const l of parity.driftDetails(results)) console.log(l);
   else console.log('Для просмотра строк с расхождениями запустите с флагом --diff');
 }

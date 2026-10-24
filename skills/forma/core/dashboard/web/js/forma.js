@@ -61,8 +61,8 @@ let formaShown = null; // выбранный движок: renderPanels пере
 
 function formaEngineHtml(e) {
   formaBortNodes = [];
-  // Борт считается по одному движку — тому, у кого есть журнал вызовов (claude-code); остальным полосы не рисуются.
-  const bort = e.engine === 'claude-code' && latestData && latestData.bort && latestData.bort.source ? latestData.bort : null;
+  // Борт считается по одному движку — тому, чей адаптер объявил журнал вызовов (`bort.engine`); остальным полосы не рисуются.
+  const bort = latestData && latestData.bort && latestData.bort.engine === e.engine && latestData.bort.source ? latestData.bort : null;
   const card = (r) => formaCardHtml(r, bort && bortFind(bort, r.name));
   const nodesPart = e.rolesMissing
     ? `<div class="chain-clean">${t('fm.rolesMissing')}</div>`

@@ -39,6 +39,16 @@
  *                          по вкладке на каждый адаптер с этим полем
  *   structure              { key, title, note, roots, notes } — группа     группы в «Структуре» нет
  *                          дерева «Структура»; notes — подписи каталогов
+ *   id                     имя движка для `check <engine>`, строка         имя каталога без точки
+ *   spendTag               метка движка в строке расхода §3 после тире     значение `engine`
+ *   sources                { rolesDir, onDemandRolesDir, runRolesDir,      значения по соглашению
+ *                          scriptsDir, skillsDir, testsDir (строки),       от каталога адаптера
+ *                          packageManifest (строка), mcpConfigs (список) } (`sourcesOf`)
+ *   capabilities           { subagents, sendMessage, hooks, mcp } —        режим «деградированный»
+ *                          булевы; subagents: true даёт режим «полный»     (`modeOf`)
+ *   nodeModels             { Узел: { model, effort } } для пяти узлов      таблицы нет
+ *   writeZones             список путей, куда движок пишет: своя папка и   пишет только в свою папку
+ *                          карточки (.devtool/features)                    (проверка `check`)
  *
  * Полей несколько адаптеров: одиночные берутся у первого, кто их объявил; списки склеиваются.
  */
@@ -68,7 +78,33 @@ const SHAPE = {
   engineSettings: 'function',
   formaRoles: 'function',
   structure: 'object',
+  id: 'string',
+  spendTag: 'string',
+  sources: 'object',
+  capabilities: 'object',
+  nodeModels: 'object',
+  writeZones: 'array',
 };
+
+/** Поля `sources` и тип каждого. */
+const SOURCE_FIELDS = {
+  rolesDir: 'string',
+  onDemandRolesDir: 'string',
+  runRolesDir: 'string',
+  scriptsDir: 'string',
+  skillsDir: 'string',
+  testsDir: 'string',
+  packageManifest: 'string',
+  mcpConfigs: 'array',
+};
+/** Возможности движка: каждая — булево. */
+const CAPABILITY_FIELDS = ['subagents', 'sendMessage', 'hooks', 'mcp'];
+/** Пять узлов таблицы `nodeModels`. */
+const NODES = ['Intent', 'Spec', 'Kit', 'Run', 'Core'];
+const MODE_FULL = 'полный';
+const MODE_DEGRADED = 'деградированный';
+/** Карточки — вторая разрешённая зона записи, кроме собственной папки движка. */
+const CARDS_ZONE = '.devtool/features';
 
 const typeOf = (v) => (Array.isArray(v) ? 'array' : typeof v);
 
@@ -83,7 +119,113 @@ function validateAdapter(adapter) {
   for (const field of Object.keys(adapter)) {
     if (field !== 'dir' && !(field in SHAPE)) problems.push(`${field}: поля нет в объявленной форме`);
   }
+  const { sources, capabilities, nodeModels, writeZones } = adapter;
+  if (typeOf(sources) === 'object') {
+    for (const [k, v] of Object.entries(sources)) {
+      if (!(k in SOURCE_FIELDS)) problems.push(`sources.${k}: поля нет в объявленной форме`);
+      else if (typeOf(v) !== SOURCE_FIELDS[k]) problems.push(`sources.${k}: ждали ${SOURCE_FIELDS[k]}, пришло ${typeOf(v)}`);
+      else if (k === 'mcpConfigs' && v.some((x) => typeof x !== 'string')) problems.push('sources.mcpConfigs: ждали список строк');
+    }
+  }
+  if (typeOf(capabilities) === 'object') {
+    for (const [k, v] of Object.entries(capabilities)) {
+      if (!CAPABILITY_FIELDS.includes(k)) problems.push(`capabilities.${k}: поля нет в объявленной форме`);
+      else if (typeof v !== 'boolean') problems.push(`capabilities.${k}: ждали boolean, пришло ${typeOf(v)}`);
+    }
+  }
+  if (typeOf(nodeModels) === 'object') {
+    for (const [node, row] of Object.entries(nodeModels)) {
+      if (!NODES.includes(node)) problems.push(`nodeModels.${node}: узла нет среди пяти`);
+      else if (typeOf(row) !== 'object' || typeof row.model !== 'string' || typeof row.effort !== 'string') problems.push(`nodeModels.${node}: ждали { model, effort } строками`);
+    }
+  }
+  if (Array.isArray(writeZones) && writeZones.some((x) => typeof x !== 'string')) problems.push('writeZones: ждали список строк');
   return problems;
+}
+
+/** Имя движка: `id` или имя каталога адаптера без точки. */
+function idOf(adapter) {
+  if (adapter && typeof adapter.id === 'string' && adapter.id) return adapter.id;
+  return adapter && adapter.dir ? String(adapter.dir).replace(/^\./, '') : UNKNOWN;
+}
+
+/**
+ * Источники адаптера: объявленные в `sources` как есть; адаптер без `sources` — значения по соглашению
+ * от его каталога (`<каталог>/agents`, `/agents/on-demand`, `/agents/run`, `/scripts`, `/skills`, `/tests`);
+ * `packageManifest` по соглашению — `null`, `mcpConfigs` — пустой список. Объявленное соглашением не затирается.
+ */
+function sourcesOf(adapter) {
+  const dir = adapter && adapter.dir ? String(adapter.dir) : '.' + idOf(adapter);
+  const byConvention = {
+    rolesDir: `${dir}/agents`,
+    onDemandRolesDir: `${dir}/agents/on-demand`,
+    runRolesDir: `${dir}/agents/run`,
+    scriptsDir: `${dir}/scripts`,
+    skillsDir: `${dir}/skills`,
+    testsDir: `${dir}/tests`,
+    packageManifest: null,
+    mcpConfigs: [],
+  };
+  const declared = adapter && adapter.sources && typeof adapter.sources === 'object' ? adapter.sources : null;
+  return declared ? { ...byConvention, ...declared } : byConvention;
+}
+
+/** Режим движка (AGENTS.md §2): «полный», если объявлен вызов субагентов, иначе «деградированный». */
+function modeOf(adapter) {
+  const c = adapter && adapter.capabilities;
+  return c && typeof c === 'object' && c.subagents === true ? MODE_FULL : MODE_DEGRADED;
+}
+
+const under = (rel, dir) => rel === dir || rel.startsWith(dir + '/');
+
+/**
+ * Папка пакета движка по `sources.packageManifest`: каталог манифеста; если манифест лежит в служебной папке
+ * с точкой в имени (метаданные плагина), пакетом считается её родитель. Без манифеста — `null`. Имён движков нет.
+ */
+function packageZone(adapter) {
+  const m = adapter && adapter.sources && adapter.sources.packageManifest;
+  if (typeof m !== 'string' || !m) return null;
+  let dir = path.posix.dirname(m.split('\\').join('/'));
+  if (dir !== '.' && path.posix.basename(dir).startsWith('.')) dir = path.posix.dirname(dir);
+  return dir === '.' || dir === '' || dir === '..' || dir.startsWith('../') || path.posix.isAbsolute(dir) ? null : dir;
+}
+
+/**
+ * Пункты контракта для адаптера: `[{ item, ok, detail }]`. Читает диск только для существования объявленных источников.
+ * Движок пишет только в свою папку и карточки; Kit создаёт роли в rolesDir движка, который их исполняет.
+ */
+function checkAdapter(adapter, root) {
+  const out = [];
+  const add = (item, ok, detail = '') => out.push({ item, ok: Boolean(ok), detail });
+  const shape = validateAdapter(adapter);
+  add('форма адаптера соблюдена', shape.length === 0, shape.join('; '));
+  add('метка расхода (spendTag или engine)', typeof (adapter.spendTag || adapter.engine) === 'string', 'ни spendTag, ни engine не объявлены');
+  const src = sourcesOf(adapter);
+  add('sources объявлены', adapter.sources != null, 'поле sources не объявлено, действует соглашение');
+  for (const k of ['rolesDir', 'onDemandRolesDir', 'runRolesDir', 'scriptsDir', 'skillsDir', 'testsDir', 'packageManifest']) {
+    if (adapter.sources == null || adapter.sources[k] == null) continue;
+    add(`sources.${k} существует`, fs.existsSync(resolveRel(root, src[k])), src[k]);
+  }
+  const cap = adapter.capabilities;
+  const capOk = cap && typeof cap === 'object' && CAPABILITY_FIELDS.every((k) => typeof cap[k] === 'boolean');
+  add('capabilities объявлены (subagents, sendMessage, hooks, mcp)', capOk, 'нужны четыре булевых поля');
+  add(`режим движка: ${modeOf(adapter)}`, true);
+  const nm = adapter.nodeModels;
+  add('nodeModels: пять узлов с моделью и усилием', nm && typeof nm === 'object' && NODES.every((n) => nm[n] && nm[n].model && nm[n].effort),
+    'нужны Intent, Spec, Kit, Run, Core');
+  const zones = adapter.writeZones;
+  const own = adapter.dir ? String(adapter.dir) : null;
+  const pkg = packageZone(adapter);
+  const zonesOk = Array.isArray(zones) && zones.length > 0
+    && zones.every((z) => (own && under(z, own)) || under(z, CARDS_ZONE) || (pkg && under(z, pkg)));
+  add('writeZones: только своя папка, карточки и папка пакета', zonesOk,
+    `разрешены ${own || 'папка движка'}, ${CARDS_ZONE}${pkg ? ' и ' + pkg : ''}`);
+  add('rolesDir внутри зоны записи движка', own != null && under(src.rolesDir, own), `${src.rolesDir} вне ${own}`);
+  // Проба разбора: шаг с выходными токенами в частых именах поля, плоский и под usage; ждём tokens_out = 7.
+  const flat = { tokens_out: 7, output_tokens: 7, outputTokens: 7, completion_tokens: 7, candidatesTokenCount: 7 };
+  const reads = (step) => { try { const r = adapter.parseUsage(step); return Boolean(r) && typeof r === 'object' && r.tokens_out === 7; } catch { return false; } };
+  add('parseUsage отдаёт tokens_out', typeof adapter.parseUsage === 'function' && (reads(flat) || reads({ usage: flat })), 'шаг с 7 выходными токенами не дал tokens_out = 7');
+  return out;
 }
 
 /** Адаптеры проекта: `[{ ...поля, dir }]`, `dir` — имя каталога адаптера в корне. */
@@ -118,6 +260,61 @@ function collect(root, field) {
   return loadAdapters(root).flatMap((a) => (typeof a[field] === 'function' ? a[field](root) : []));
 }
 
+/**
+ * Метки движков в строке расхода: `spendTag`, `engine` и `id` каждого адаптера (строка может нести любую из них).
+ * Нет ни одного адаптера — пустой список (метку судить не по чему).
+ */
+function spendTags(root) {
+  const tags = new Set();
+  for (const a of loadAdapters(root)) {
+    for (const v of [a.spendTag, a.engine, idOf(a)]) if (typeof v === 'string' && v && v !== UNKNOWN) tags.add(v);
+  }
+  return [...tags];
+}
+
+/**
+ * Движки проекта по адаптерам: `[{ tag, aliases }]`. `tag` — основная метка (`spendTag`, иначе `engine`), `aliases` — все
+ * метки, под которыми движок может стоять в строке расхода (`spendTag`, `engine`, `id`). Вкладка и колонка расхода
+ * строятся от этого списка: появилась папка движка с адаптером — движок в списке, удалена — нет.
+ */
+function engineTags(root) {
+  return loadAdapters(root).map((a) => {
+    const tag = a.spendTag || a.engine || idOf(a);
+    const aliases = [...new Set([a.spendTag, a.engine, idOf(a)].filter((v) => typeof v === 'string' && v && v !== UNKNOWN))];
+    return { tag, aliases: aliases.includes(tag) ? aliases : [tag, ...aliases] };
+  });
+}
+
+/** Функция тег -> основная метка движка: алиасы одного адаптера (`spendTag`, `engine`, `id`) сводятся к `tag`; чужой тег — как есть. */
+function canonicalTag(root) {
+  const map = new Map();
+  for (const { tag, aliases } of engineTags(root)) for (const x of aliases) if (!map.has(x)) map.set(x, tag);
+  return (k) => (map.has(k) ? map.get(k) : k);
+}
+
+/**
+ * Каталоги стенограмм всех адаптеров: `[{ tag, dir, parseUsage }]`, `tag` — метка движка (`spendTag` или `engine`).
+ * Адаптер без `transcriptsDir`, бросивший или не нашедший каталог — пропускается.
+ */
+function transcriptDirs(root) {
+  const out = [];
+  for (const a of loadAdapters(root)) {
+    if (typeof a.transcriptsDir !== 'function') continue;
+    let dir = null;
+    try { dir = a.transcriptsDir(root); } catch { dir = null; }
+    if (!dir || !fs.existsSync(dir)) continue;
+    out.push({ tag: a.spendTag || a.engine || idOf(a), dir, parseUsage: typeof a.parseUsage === 'function' ? a.parseUsage : null });
+  }
+  return out;
+}
+
+/** Таблица узел -> { model, effort } каждого адаптера: `[{ tag, dir, rolesDir, nodeModels }]` (адаптеры без таблицы пропускаются). */
+function nodeModelTables(root) {
+  return loadAdapters(root)
+    .filter((a) => a.nodeModels && typeof a.nodeModels === 'object')
+    .map((a) => ({ tag: a.spendTag || a.engine || idOf(a), dir: a.dir, rolesDir: typeof a.rolesDir === 'string' ? a.rolesDir : null, nodeModels: a.nodeModels }));
+}
+
 /** Абсолютный путь по пути от корня проекта, записанному через `/`. */
 const resolveRel = (root, rel) => path.join(root, ...rel.split('/'));
 
@@ -127,4 +324,32 @@ function firstPath(root, field) {
   return rel ? resolveRel(root, rel) : null;
 }
 
-module.exports = { loadAdapters, first, all, collect, firstPath, resolveRel, validateAdapter, SHAPE, UNKNOWN };
+module.exports = {
+  loadAdapters, first, all, collect, firstPath, engineTags, canonicalTag, spendTags, transcriptDirs, nodeModelTables, resolveRel, validateAdapter, SHAPE, UNKNOWN,
+  idOf, sourcesOf, modeOf, checkAdapter, MODE_FULL, MODE_DEGRADED,
+};
+
+/**
+ * `node engines.cjs check <engine> [--root <dir>]` — печатает пункты контракта: `✓` пройден, `✗` не пройден.
+ * Код выхода: 0 — все пройдены, 1 — есть непройденный, 2 — нет движка или неверный вызов. Ничего не пишет.
+ */
+if (require.main === module) {
+  const argv = process.argv.slice(2);
+  const ri = argv.indexOf('--root');
+  const root = ri >= 0 ? path.resolve(argv[ri + 1] || '.') : process.cwd();
+  const rest = argv.filter((a, i) => a !== '--root' && (ri < 0 || i !== ri + 1));
+  if (rest[0] !== 'check' || !rest[1]) {
+    console.error('usage: node .forma/dashboard/lib/engines.cjs check <engine> [--root <dir>]');
+    process.exit(2);
+  }
+  const a = loadAdapters(root).find((x) => idOf(x) === rest[1] || x.engine === rest[1] || x.dir === rest[1]);
+  if (!a) {
+    console.error(`engine not found: ${rest[1]} (adapters: ${loadAdapters(root).map(idOf).join(', ') || 'none'})`);
+    process.exit(2);
+  }
+  const items = checkAdapter(a, root);
+  for (const r of items) console.log(`${r.ok ? '✓' : '✗'} ${r.item}${!r.ok && r.detail ? ' — ' + r.detail : ''}`);
+  const failed = items.filter((r) => !r.ok).length;
+  console.log(`${idOf(a)}: passed ${items.length - failed}, failed ${failed}`);
+  process.exit(failed ? 1 : 0);
+}

@@ -136,8 +136,8 @@ Two, declared as numbers in `PROJECT.md`: **attempts** (cap per task) and **volu
 **Spend is counted by fact, not by impression.** A node doesn't know its own spend from inside — it is in the call's metadata. The contract — skeleton, every field, the `unknown` state, external model and service, `Intent`'s own lines — is `.forma/manual/en/03-protocol/ECONOMY.md`, one for every engine; the engine's own fields — its §8. What holds here:
 
 - **The caller writes the line** into the card's `## History`, **right after the return** — never the node itself, never after the fact. The number is read from the call's own metadata, never estimated.
-- **The line:** `` `Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), T s, `<call id>` — <engine>: <what was done, one sentence>. `` The key part (before the dash) is **English in every project**; the description after the dash is in the card's language (§6) and opens with the engine that did the work (`claude-code:`, `codex:`, `gemini:`).
-- **R and T are not optional:** a line lacking either is reported by `sync-engines --check`.
+- **The line:** `` `Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), O out, T s, `<call id>` — <engine>: <what was done, one sentence>. `` The key part (before the dash) is **English in every project**; the description after the dash is in the card's language (§6) and opens with the engine's tag (`spendTag`, §8: `claude-code:`).
+- **R and T are not optional:** a line lacking either is reported by `sync-engines --check`. `O out` is output tokens; an older line lacking it reads `out unknown`.
 - **What the engine never returned is written with the `unknown` marker** — `(cache-read unknown)`, `` `id unknown` `` — only after an attempt to read the number from the call's own transcript, with the reason after the dash; never instead of a number the call did return, never as zero.
 - **The call id stands last in the spend block, immediately before the dash**, after any external-model or external-service segment.
 

@@ -61,9 +61,9 @@ Closing is an act, not a status change someone else already made. The file has b
 On closing, for the cycle's cards together:
 
 1. **The verdict** — reached or not, into `GOAL.md`'s cycle table, as before.
-2. **One line in each card's history**, opening with `закрыто —`: on what grounds, one sentence. This is the only place you write into a card; the four zones stay whose they are (§6).
+2. **One line in each card's history**, opening with `закрыто —`: on what grounds, one sentence. This is the only place you write into a card; the four zones stay whose they are (§6). Steps 2 and 4 are one call for all the cycle's cards: `node .forma/board/card-move.cjs --to core-close <NNN…> --note "<grounds>"` — it writes the line and sets `assignee: null` on each named card; an unknown number or a card not in `done`/`"Core"` stops it before any write.
 3. **The trend** — the seven numbers below. **Only here.** Nowhere else do you read them, and nothing else triggers a trend read except a breached threshold or a "not reached" verdict.
-4. **`assignee` → `null`** on each card.
+4. **`assignee` → `null`** on each card (the same `core-close` call, step 2).
 
 **What the human could not see, and you can.** They judged the outward thing — it looks right, it is what they asked for. You are reading the distance between the result and the image, the limits, and what the numbers have been doing across cycles. A cycle can be accepted by the human and still not have reached: different judgments, and the second one is not visible from where they stood.
 

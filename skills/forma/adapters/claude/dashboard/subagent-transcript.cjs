@@ -46,34 +46,34 @@ const engines = require('./lib/engines.cjs');
  *  чтобы «ноль» не просочился ни в лог, ни в отчёт, ни в строку захода. */
 const NO_TRANSCRIPT = 'стенограмма не найдена';
 
-/** Каталог стенограмм этого проекта — как его находит адаптер движка; адаптера или каталога нет — `null`.
+/** Каталоги стенограмм проекта по тегу движка — как в `card-move.cjs` (`readTranscript`): `[{ tag, dir, parseUsage }]`
+ *  через `engines.transcriptDirs`. С `tag` — только этого движка; без тега — всех адаптеров (берётся свежайший файл).
+ *  Первый адаптер не выбирается: стенограмма принадлежит тому движку, чей тег в строке захода.
  *  Зашивать сюда путь проекта значит сделать скрипт непереносимым ровно в тот день,
  *  когда плагин «Форма» уедет на другой проект. */
-function transcriptDir(root = PROJECT_ROOT) {
-  const find = engines.first(root, 'transcriptsDir');
-  return find ? find(root) : null;
+function transcriptDirs(root = PROJECT_ROOT, tag = null) {
+  return engines.transcriptDirs(root).filter((d) => !tag || d.tag === tag);
 }
 
-/** Ищет `agent-<id>.jsonl` по всем сессиям проекта. Сессия не задаётся снаружи:
- *  вызывающий знает `agent_id` из возврата вызова и не знает `sessionId`. */
-function findTranscript(agentId, root = PROJECT_ROOT) {
+/** Ищет `agent-<id>.jsonl` по всем сессиям каталогов движка (`tag`) или всех движков. Сессия не задаётся снаружи:
+ *  вызывающий знает `agent_id` из возврата вызова и не знает `sessionId`. Нет каталога у тега — `null`. */
+function findTranscript(agentId, root = PROJECT_ROOT, tag = null) {
   if (!agentId || !/^[A-Za-z0-9_-]+$/.test(agentId)) return null;
-  const dir = transcriptDir(root);
-  if (!dir) return null;
-  let sessions;
-  try { sessions = fs.readdirSync(dir, { withFileTypes: true }); } catch { return null; }
-
   let newest = null;
-  for (const s of sessions) {
-    if (!s.isDirectory()) continue;
-    const file = path.join(dir, s.name, 'subagents', `agent-${agentId}.jsonl`);
-    let st;
-    try { st = fs.statSync(file); } catch { continue; }
-    if (!st.isFile()) continue;
-    /* Один и тот же id теоретически может встретиться в двух сессиях. Берём свежайший:
-       строка захода пишется сразу после возврата, то есть про последний заход. */
-    if (!newest || st.mtimeMs > newest.mtimeMs) {
-      newest = { file, mtimeMs: st.mtimeMs, sessionId: s.name };
+  for (const d of transcriptDirs(root, tag)) {
+    let sessions;
+    try { sessions = fs.readdirSync(d.dir, { withFileTypes: true }); } catch { continue; }
+    for (const s of sessions) {
+      if (!s.isDirectory()) continue;
+      const file = path.join(d.dir, s.name, 'subagents', `agent-${agentId}.jsonl`);
+      let st;
+      try { st = fs.statSync(file); } catch { continue; }
+      if (!st.isFile()) continue;
+      /* Один и тот же id теоретически может встретиться в двух сессиях. Берём свежайший:
+         строка захода пишется сразу после возврата, то есть про последний заход. */
+      if (!newest || st.mtimeMs > newest.mtimeMs) {
+        newest = { file, mtimeMs: st.mtimeMs, sessionId: s.name, tag: d.tag, parseUsage: d.parseUsage };
+      }
     }
   }
   return newest;
@@ -93,11 +93,10 @@ function readMeta(jsonlFile) {
  *   spawnDepth, steps, cacheRead, cacheCreate, input, output, models, first, last}>}
  *   `null` — стенограммы нет. Это НЕ ноль, см. пункт 2 в шапке.
  */
-async function readSubagentTranscript(agentId, root = PROJECT_ROOT) {
-  const parseUsage = engines.first(root, 'parseUsage');
-  if (!parseUsage) return null;
-  const found = findTranscript(agentId, root);
-  if (!found) return null;
+async function readSubagentTranscript(agentId, root = PROJECT_ROOT, tag = null) {
+  const found = findTranscript(agentId, root, tag);
+  if (!found || typeof found.parseUsage !== 'function') return null;
+  const parseUsage = found.parseUsage;
 
   const seen = new Set();
   const t = economy.emptyUsage();
@@ -147,7 +146,7 @@ async function readSubagentTranscript(agentId, root = PROJECT_ROOT) {
   };
 }
 
-module.exports = { readSubagentTranscript, findTranscript, transcriptDir, NO_TRANSCRIPT };
+module.exports = { readSubagentTranscript, findTranscript, transcriptDirs, NO_TRANSCRIPT };
 
 // ---- CLI: node .forma/dashboard/subagent-transcript.cjs <agent_id> [...] ----
 if (require.main === module) {

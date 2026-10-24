@@ -27,7 +27,13 @@ const CACHE_FILE = path.join(OUT_DIR, '.cache.json');
 
 const SCAN_DIRS = ['.claude/scripts', '.claude/hooks', '.forma/board', '.forma/dashboard', '.forma/protocol/bin', '.forma/protocol/scripts'];
 const EXTS = ['.cjs', '.js', '.py', '.sh'];
-const MIRROR_DIRS = { '.codex': 'mirror:codex', '.agents': 'mirror:agents' };
+// Зеркала — папки других движков: Codex (адаптера нет) и каждый адаптер проекта, кроме папки этого движка.
+const MIRROR_DIRS = (() => {
+  const own = path.basename(path.resolve(__dirname, '..'));
+  const dirs = { '.codex': 'mirror:codex' };
+  for (const a of require('../../.forma/dashboard/lib/engines.cjs').loadAdapters(ROOT)) if (a.dir !== own) dirs[a.dir] = 'mirror:' + a.dir.replace(/^\./, '');
+  return dirs;
+})();
 
 const rel = (f) => path.relative(ROOT, f).split(path.sep).join('/');
 const hash = (s) => crypto.createHash('sha1').update(s).digest('hex');
@@ -145,7 +151,7 @@ function extract(file, text) {
     edges.push({ source: id, target: r.file, relation: 'requires' });
   }
   for (const m of mirrorsUsed) {
-    const label = m === 'mirror:codex' ? 'Зеркало .codex' : 'Зеркало .agents';
+    const label = 'Зеркало .' + m.slice('mirror:'.length);
     nodes.push({ id: m, label, type: 'mirror' });
   }
   return { nodes, edges, excluded: null };

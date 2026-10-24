@@ -9,7 +9,7 @@ function tilesHtml(tot, dialog){
   // Три статьи расхода (AGENTS.md §3): узлы по `## История`, диалог Intent ↔ человек
   // по стенограмме основной сессии (работа без кэш-чтения), и их сумма.
   // Токены по узлам и «всего» здесь не стоят: они сложены из разных движков —
-  // по движкам см. таблицу выше. Диалог — стенограмма одного движка (claude-code).
+  // по движкам см. таблицу выше. Диалог — стенограмма движка, чей адаптер объявил ведомость (`dialog.sessionOwner`).
   const dlg = dialog && dialog.all ? dialog.all.work : 0;
   const tiles = [
     {num:tot.epicCount, lbl:t('econ.tile.epics')},
@@ -56,11 +56,13 @@ const NODE_COLORS = {
 function configHtml(nodeConfig){
   if (!nodeConfig || !nodeConfig.length) return '';
   const rows = nodeConfig.map(n => {
+    if (n.empty) return `<tr class="engine-empty"><td colspan="6"><b>${esc(engineLabel(n.engine))}</b> <span class="dim">${t('econ.config.noTable')}</span></td></tr>`;
     const color = NODE_COLORS[n.node] || "#8891A2";
     const ext = n.externalModel
       ? `<span class="external-yes">${t('econ.yes')}</span>`
       : '<span class="external-no">—</span>';
     return `<tr>
+      <td class="mono-cell">${esc(engineLabel(n.engine))}</td>
       <td><span class="node-name" style="--node-color:${color}">${n.node}</span></td>
       <td class="mono-cell">${n.model || '—'}</td>
       <td class="mono-cell">${n.effort || '—'}</td>
@@ -71,7 +73,7 @@ function configHtml(nodeConfig){
   return `<section class="config-card">
     <h2>${t('econ.config.title')}</h2>
     <table class="config-table">
-      <thead><tr><th>${t('econ.th.node')}</th><th>${t('econ.config.model')}</th><th>${t('econ.config.effort')}</th><th>${t('econ.config.tools')}</th><th>${t('econ.config.external')}</th></tr></thead>
+      <thead><tr><th>${t('econ.speed.thEngine')}</th><th>${t('econ.th.node')}</th><th>${t('econ.config.model')}</th><th>${t('econ.config.effort')}</th><th>${t('econ.config.tools')}</th><th>${t('econ.config.external')}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </section>`;
@@ -312,10 +314,12 @@ function level2Html(view){
           </div>`;
       })()
     : `<div class="nodata">${t('econ.l2.noInstr')}</div>`;
-  const seOk = view.econEngine === 'claude-code' && view.sessionEconomy && !view.sessionEconomy.error;
+  const owner = sessionOwnerOf(view);
+  const mine = view.econEngine != null && view.econEngine === owner;
+  const seOk = mine && view.sessionEconomy && !view.sessionEconomy.error;
   const ratioCard = seOk
     ? `<div class="kpi-inline"><div class="lbl">${t('econ.l2.ratio')}</div><div class="num mono">${view.sessionEconomy.totals.ratio}</div><p class="hint">${weeksTrendText(view.sessionEconomy)}</p></div>`
-    : `<div class="kpi-inline"><div class="lbl">${t('econ.l2.ratio')}</div><div class="num mono dim">—</div><p class="hint">${view.econEngine === 'claude-code' ? t('econ.l2.noLedger') : t('econ.l2.onlyCC')}</p></div>`;
+    : `<div class="kpi-inline"><div class="lbl">${t('econ.l2.ratio')}</div><div class="num mono dim">—</div><p class="hint">${mine ? t('econ.l2.noLedger') : t('econ.l2.onlyCC', {engine: esc(owner || '—')})}</p></div>`;
   const workCard = `<div class="e-card">
     <h3>${t('econ.l2.workTitle')}</h3>
     ${stack}
@@ -646,6 +650,9 @@ function codexUsageHtml(dialog){
     <table class="etable"><thead><tr><th>${t('econ.codex.thItem')}</th><th class="n">${t('econ.codex.thCalls')}</th><th class="n">${t('econ.th.tokensLc')}</th><th class="n">${t('econ.codex.thCache')}</th><th class="n">${t('econ.codex.thR')}</th></tr></thead><tbody>${row(t('econ.dlg.name'), main)}${row(t('econ.subagents.short'), children)}</tbody></table>`;
 }
 
+/** Владелец ведомости сессий — движок, чей адаптер её объявил; нет такого — `null`. */
+function sessionOwnerOf(view){ return (view.dialog && view.dialog.sessionOwner) || null; }
+
 function notForEngineHtml(_title, owner, cur){
   return `<div class="nodata" data-not-for="${esc(owner)}">${t('econ.notFor', {engine: esc(engineLabel(cur || '—')), owner: esc(owner)})}</div>`;
 }
@@ -653,12 +660,15 @@ function notForEngineHtml(_title, owner, cur){
 /* --- Уровень 5: справка и аудит, всё свёрнуто по умолчанию -------------------- */
 function level5Html(view){
   const e = view.economy;
-  const sessionBody = view.econEngine === 'claude-code'
+  const owner = sessionOwnerOf(view);
+  const mine = view.econEngine != null && view.econEngine === owner;
+  const usageCaches = (view.dialog && view.dialog.usageCaches) || {};
+  const sessionBody = mine
     ? sessionTableBlockHtml(view.sessionEconomy)
-    : (view.econEngine === 'codex' ? codexUsageHtml(view.dialog) : notForEngineHtml('sessions', 'claude-code', view.econEngine));
-  const verifyBody = view.econEngine === 'claude-code' && view.sessionEconomy && !view.sessionEconomy.error
+    : ((usageCaches[view.econEngine] || []).includes('codex-usage.json') ? codexUsageHtml(view.dialog) : notForEngineHtml('sessions', owner || '—', view.econEngine));
+  const verifyBody = mine && view.sessionEconomy && !view.sessionEconomy.error
     ? sessionVerifyHtml(view.sessionEconomy.verification)
-    : notForEngineHtml('verify', 'claude-code', view.econEngine);
+    : notForEngineHtml('verify', owner || '—', view.econEngine);
   const blocks = [
     [t('econ.blindSpots'), blindSpotsHtml(e)],
     [t('econ.blocks.malformed'), malformedHtml(e)],
@@ -719,6 +729,61 @@ function engineTableHtml(b, bare){
     </table></div>`;
 }
 
+/* --- Скорость и эффективность по движкам + модель/усилие по узлам ------------- */
+let SPEED_KIND = 'all';
+const speedNum = (v, f) => v == null ? `<span class="dim">—</span>` : f(v);
+function speedHtml(e){
+  const sp = e.speed;
+  if (!sp || !sp.byKind) return '';
+  if (!sp.byKind[SPEED_KIND]) SPEED_KIND = 'all';
+  const rows = sp.byKind[SPEED_KIND].engines;
+  const tags = Object.keys(rows).sort((a, b) => a.localeCompare(b));
+  const dec = (v, n) => v.toFixed(n);
+  const body = tags.map(k => {
+    const r = rows[k];
+    const unk = r.outUnknown
+      ? `<br><small class="dim">${t('econ.speed.outUnknown', {n: fmt(r.outUnknown), a: fmt(r.attempts)})}</small>` : '';
+    return `<tr><td class="elbl"><b>${esc(engineLabel(k))}</b></td>
+      <td class="n">${speedNum(r.outPerSec, v => dec(v, 1))}${unk}</td>
+      <td class="n">${speedNum(r.secPerAttempt, v => secText(Math.round(v)))}</td>
+      <td class="n">${speedNum(r.attemptsPerClosed, v => dec(v, 1))}</td>
+      <td class="n">${speedNum(r.tokensPerClosed, v => fmt(Math.round(v)))}</td>
+      <td class="n">${speedNum(r.usdPerClosed, v => '$' + dec(v, 4))}</td>
+      <td class="n">${speedNum(r.cacheShare, v => Math.round(v * 100) + '%')}</td>
+      <td class="n">${fmt(r.closedCards)}</td></tr>`;
+  }).join('');
+  const mrows = sp.byKind[SPEED_KIND].models || [];
+  const mbody = mrows.map(r => {
+    const unk = r.outUnknown
+      ? `<br><small class="dim">${t('econ.speed.outUnknown', {n: fmt(r.outUnknown), a: fmt(r.attempts)})}</small>` : '';
+    const mdl = r.model === 'unknown' ? `<span class="dim">${t('econ.speed.modelUnknown')}</span>` : `<span class="mono">${esc(r.model)}</span>`;
+    return `<tr><td class="elbl"><b>${esc(engineLabel(r.engine))}</b></td><td>${mdl}</td>
+      <td class="n">${speedNum(r.outPerSec, v => dec(v, 1))}${unk}</td>
+      <td class="n">${fmt(r.out)}</td><td class="n">${secText(Math.round(r.outSeconds))}</td><td class="n">${fmt(r.attempts)}</td></tr>`;
+  }).join('');
+  const models = mrows.length
+    ? `<h3>${t('econ.speed.modelTitle')}</h3><div class="etable-scroll"><table class="etable"><thead><tr><th>${t('econ.speed.thEngine')}</th><th>${t('econ.config.model')}</th><th class="n">${t('econ.speed.thOut')}</th><th class="n">${t('econ.speed.thOutTok')}</th><th class="n">${t('econ.speed.thOutSec')}</th><th class="n">${t('econ.speed.thAttempts')}</th></tr></thead><tbody>${mbody}</tbody></table></div>`
+    : '';
+  const kinds = ['all', ...sp.kinds];
+  const filter = `<div class="e-seg" data-speed-kinds><span class="dim">${t('econ.speed.kind')}:</span> ${kinds.map(k =>
+    `<span class="${k === SPEED_KIND ? 'on' : ''}" data-speed-kind="${esc(k)}">${k === 'all' ? t('econ.speed.kindAll') : esc(k)}</span>`).join('')}</div>`;
+  const speed = tags.length
+    ? `<div class="etable-scroll"><table class="etable"><thead><tr><th>${t('econ.speed.thEngine')}</th><th class="n">${t('econ.speed.thOut')}</th><th class="n">${t('econ.speed.thSec')}</th><th class="n">${t('econ.speed.thAtt')}</th><th class="n">${t('econ.speed.thTok')}</th><th class="n">${t('econ.speed.thUsd')}</th><th class="n">${t('econ.speed.thCache')}</th><th class="n">${t('econ.speed.thClosed')}</th></tr></thead><tbody>${body}</tbody></table></div>`
+    : `<div class="nodata">${t('econ.speed.noData')}</div>`;
+  return `<div class="tier"><div class="tier-lab">${t('econ.speed.title')}</div>
+    ${hintFold(`<p class="hint">${t('econ.speed.hint')}</p>`)}
+    ${filter}${speed}${models}${nodeModelsHtml(e.nodeModels)}</div>`;
+}
+
+function nodeModelsHtml(tables){
+  const heading = `<h3>${t('econ.models.title')}</h3>`;
+  if (!tables || !tables.length) return `${heading}<div class="nodata">${t('econ.models.none')}</div>`;
+  const nodes = ['Intent', 'Spec', 'Kit', 'Run', 'Core'];
+  const cell = (n, node) => { const m = n[node]; return m ? `<span class="mono">${esc(m.model)}</span> <small class="dim">${esc(m.effort)}</small>` : '<span class="dim">—</span>'; };
+  return `${heading}<div class="etable-scroll"><table class="etable"><thead><tr><th>${t('econ.speed.thEngine')}</th>${nodes.map(n => `<th>${esc(n)}</th>`).join('')}</tr></thead><tbody>${tables.map(x =>
+    `<tr><td class="elbl"><b>${esc(engineLabel(x.tag))}</b></td>${nodes.map(n => `<td>${cell(x.nodes, n)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
 function renderEconomy(d){
   const e = d.economy || {};
   const engines = e.engines || {};
@@ -728,7 +793,7 @@ function renderEconomy(d){
   const view = v
     ? { ...d, econEngine: ECON_ENGINE, byNode: v.byNode, byRoute: v.byRoute, economy: { ...e, ...v } }
     : { ...d, econEngine: null, byNode: [], byRoute: null };
-  const dialog = ECON_ENGINE === 'claude-code' ? d.dialog : null;
+  const dialog = ECON_ENGINE && d.dialog && ECON_ENGINE === d.dialog.sessionOwner ? d.dialog : null;
   const header = `<div class="e-topbar">
     <div class="e-seg">${keys.map(k =>
       `<span class="${k === ECON_ENGINE ? 'on' : ''}" data-engine="${esc(k)}">${esc(engineLabel(k))}</span>`).join('')}</div>
@@ -741,6 +806,8 @@ function renderEconomy(d){
     + level2Html(view)
     + level3Html(view, dialog)
     + level4Html(d, view)
+    + speedHtml(e)
     + level5Html(view);
+  el.querySelectorAll('[data-speed-kind]').forEach(x => x.onclick = () => { SPEED_KIND = x.dataset.speedKind; renderEconomy(latestData); });
   el.querySelectorAll('[data-engine]').forEach(x => x.onclick = () => { ECON_ENGINE = x.dataset.engine; renderEconomy(latestData); });
 }

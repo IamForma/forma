@@ -10,6 +10,7 @@ module.exports = [
       '**/skill-creator/**',        // вендорный, из anthropics/skills
       'skills/forma/adapters/codex/**', // зона Codex
       'skills/forma/adapters/gemini/**', // зона Gemini
+      'skills/forma/adapters/minimax/**', // зона MiniMax
     ],
   },
   {

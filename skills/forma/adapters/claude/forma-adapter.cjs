@@ -29,6 +29,27 @@ function formaRoles(root) {
 
 module.exports = {
   engine: 'claude-code',
+  id: 'claude',
+  spendTag: 'claude-code',
+
+  // Контракт движка (ENGINE-CONTRACT.md): источники, возможности, таблица узел -> модель, зоны записи.
+  sources: {
+    rolesDir: '.claude/agents',
+    onDemandRolesDir: '.claude/agents/on-demand',
+    runRolesDir: '.claude/agents/run',
+    scriptsDir: '.claude/scripts',
+    skillsDir: '.claude/skills',
+    mcpConfigs: ['.mcp.json', '.claude/.mcp.json'],
+  },
+  capabilities: { subagents: true, sendMessage: true, hooks: true, mcp: true },
+  nodeModels: {
+    Intent: { model: 'claude-sonnet-5-5', effort: 'medium' },
+    Spec: { model: 'claude-sonnet-5-5', effort: 'medium' },
+    Kit: { model: 'claude-sonnet-5-5', effort: 'medium' },
+    Run: { model: 'claude-haiku-5-5', effort: 'medium' },
+    Core: { model: 'claude-sonnet-5-5', effort: 'medium' },
+  },
+  writeZones: ['.claude', '.devtool/features'],
 
   // Вес инструкций на шаг вызова и число шагов по кэш-чтению.
   instructionWeight: instruction.instructionWeight,

@@ -29,6 +29,7 @@ const ENGINES = [
   { id: 'claude', label: 'Claude Code' },
   { id: 'codex', label: 'Codex' },
   { id: 'gemini', label: 'Gemini (Antigravity)' },
+  { id: 'minimax', label: 'MiniMax Code' },
 ]
 // Dormant engines (core/engines.json): shipped as files, but not offered in the menu and not installed; wake up = remove from the list.
 const DORMANT = (() => { try { return JSON.parse(fs.readFileSync(path.join(CORE, 'engines.json'), 'utf8')).dormant || [] } catch { return [] } })()
@@ -47,7 +48,7 @@ const HELP = `forma ${VERSION} init — install/update the Forma protocol in the
 
   npx github:IamForma/forma init [flags]
 
-  --engines  claude[,gemini]         engines (gemini — beta; codex is dormant: core/engines.json)
+  --engines  claude[,gemini]         engines (gemini — beta; codex and minimax are dormant: core/engines.json)
   --template <name>|none             project template from templates/ (default: none)
   --board    auto|skip               Kanban Markdown: find editor CLIs and install (default: auto)
   --lang     <code>                  project document language (default: en). Catalogs shipped: en, ru; any other code (fr, de, ...)

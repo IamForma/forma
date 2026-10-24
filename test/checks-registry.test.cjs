@@ -119,6 +119,8 @@ test('паритет ролей: одинаковые тексты — synced, �
   const core = '.agents/plugins/forma/agents/core.md';
   const m = mutator(fx.root);
   try {
+    // the pair exists because the second engine has an adapter (engines.cjs): a stub that declares its role folder
+    m.write('.agents/forma-adapter.cjs', "module.exports = { id: 'gemini', engine: 'gemini', sources: { rolesDir: '.agents/plugins/forma/agents' } };\n");
     const pairOf = () => parity.compareRoles(fx.root).find((r) => r.pair.name === 'Agent: Core').res;
     assert.equal(pairOf().status, 'missing_gemini');
     m.write(core, m.read('.claude/agents/core.md'));

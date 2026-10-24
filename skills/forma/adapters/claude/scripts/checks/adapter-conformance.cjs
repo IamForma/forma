@@ -8,11 +8,34 @@ const path = require('path');
 const { runTestFile } = require('../../../.forma/dashboard/lib/checks.cjs');
 const { isDormant } = require('./support/dormant.cjs');
 
-const ADAPTERS = [
-  { name: 'Claude Code', eight: '.claude/rules/claude-8.md', test: '.claude/scripts/claude-economy.test.cjs' },
-  { id: 'codex', name: 'Codex', eight: '.codex/CODEX-8.md', test: '.codex/tests/test-codex-usage.cjs' },
-  { name: 'Gemini (Antigravity)', eight: '.agents/rules/gemini-8.md', test: '.agents/tests/test-gemini-adapter.cjs' },
-];
+// Codex не объявляет forma-adapter.cjs — его строка статична; остальные движки берутся из адаптеров проекта.
+const STATIC = [{ id: 'codex', name: 'Codex', eight: '.codex/CODEX-8.md', test: '.codex/tests/test-codex-usage.cjs' }];
+const TEST_RE = /^(test-.*(adapter|usage).*\.cjs|.*(economy|adapter)\.test\.cjs)$/;
+
+/** Тест соответствия адаптера: первый подходящий файл в его testsDir, затем в scriptsDir. */
+function findTest(root, src) {
+  for (const dir of [src.testsDir, src.scriptsDir]) {
+    if (!dir) continue;
+    const abs = path.join(root, ...dir.split('/'));
+    let names = [];
+    try { names = fs.readdirSync(abs).sort(); } catch { continue; }
+    const hit = names.find((n) => TEST_RE.test(n));
+    if (hit) return dir + '/' + hit;
+  }
+  return null;
+}
+
+/** Читаемое имя движка из его тега: `claude-code` -> `Claude Code` (отдельного поля имени в форме адаптера нет). */
+const humanName = (tag) => String(tag).split(/[-_]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
+
+/** Адаптеры проекта (папка с forma-adapter.cjs) и статичные: [{ id?, name, eight, test }]. */
+function listAdapters(root) {
+  const E = require('../../../.forma/dashboard/lib/engines.cjs');
+  const found = E.loadAdapters(root)
+    .filter((a) => typeof a.engineRulesFile === 'string')
+    .map((a) => ({ id: E.idOf(a), name: humanName(a.engine || E.idOf(a)), eight: a.engineRulesFile, test: findTest(root, E.sourcesOf(a)) }));
+  return [...found, ...STATIC];
+}
 
 /** Один адаптер: нарушения — в `problems`, сведения — в `info`. Файла §8 нет — адаптер не установлен, молчание. */
 function checkAdapter(root, a, problems, info) {
@@ -28,7 +51,7 @@ function checkAdapter(root, a, problems, info) {
 function run({ root, info }) {
   const problems = [];
   const notes = [];
-  for (const a of ADAPTERS) checkAdapter(root, a, problems, notes);
+  for (const a of listAdapters(root)) checkAdapter(root, a, problems, notes);
   if (!notes.length && !problems.length) problems.push('адаптеров движков нет: ни одного файла §8 не найдено');
   if (info) info.push(...notes.map((l) => '    ✓ ' + l));
   return problems;

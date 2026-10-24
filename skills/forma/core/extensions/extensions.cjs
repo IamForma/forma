@@ -2,7 +2,8 @@
 // Project extensions: roles, skills, scripts and hooks a project builds on top of the protocol live in
 // project/extensions/<engine>/ and survive `forma uninstall`. This module copies them into the engine
 // folders (the engines read only their own folders) and reports drift.
-//   project/extensions/claude/ -> .claude/    project/extensions/codex/ -> .codex/    project/extensions/agents/ -> .agents/
+//   project/extensions/<name>/ -> .<name>/   (the folder of every engine adapter, see engines.cjs `loadAdapters`, and of any other
+//   engine named by a folder under project/extensions/; no engine is named in this file)
 // Layers, later wins on the same relative path:
 //   project/extensions/<engine>/           (unsorted, the oldest layout)
 //   project/extensions/template/<engine>/  (what the project takes from a shared project template)
@@ -13,9 +14,31 @@ const fs = require('node:fs')
 const path = require('node:path')
 const crypto = require('node:crypto')
 
+// The contract between the core and the engine adapters; absent module — no adapters, the folders under project/extensions/ still work.
+let loadAdapters = () => []
+try { loadAdapters = require('../dashboard/lib/engines.cjs').loadAdapters } catch { /* no engines module */ }
+
 const ROOT_DIR = path.join('project', 'extensions')
 const LAYERS = ['', 'template', 'custom'] // '' = project/extensions/<engine>/ directly
-const ENGINE_DIRS = { claude: '.claude', codex: '.codex', agents: '.agents' }
+/**
+ * Engine folders by extension name: { <name>: '.<name>' }. The folders of the engine adapters (engines.cjs) plus every
+ * <name> that has a folder under project/extensions/ (any layer) — an engine without an adapter still gets its copies.
+ * Adding or removing an engine folder changes the answer, not this file.
+ */
+function engineDirs(root) {
+  const out = {}
+  for (const a of loadAdapters(root)) out[String(a.dir).replace(/^\./, '')] = a.dir
+  for (const layer of LAYERS) {
+    const layerDir = path.join(root, ROOT_DIR, ...(layer ? [layer] : []))
+    let entries = []
+    try { entries = fs.readdirSync(layerDir, { withFileTypes: true }) } catch { /* no layer */ }
+    for (const e of entries) {
+      if (!e.isDirectory() || LAYERS.includes(e.name) || e.name === SHARED) continue
+      if (!out[e.name]) out[e.name] = '.' + e.name
+    }
+  }
+  return out
+}
 // project/extensions/shared/<part>/ is one source copied into every engine of SHARED_TARGETS; only parts whose format is the same for them
 const SHARED = 'shared'
 const SHARED_TARGETS = ['claude', 'agents']
@@ -41,7 +64,7 @@ function walk(dir, base = dir, out = []) {
 /** Source files of the extensions: [{ engine, rel, layer, src, dst }] — `dst` is relative to the project root; on a clash the later layer wins. */
 function sources(root) {
   const byDst = new Map()
-  for (const [engine, dirName] of Object.entries(ENGINE_DIRS)) {
+  for (const [engine, dirName] of Object.entries(engineDirs(root))) {
     for (const layer of LAYERS) {
       const layerDir = path.join(root, ROOT_DIR, ...(layer ? [layer] : []))
       // shared/ goes to every engine in SHARED_TARGETS, under the engine's own file of the same name
@@ -171,18 +194,20 @@ function check(root) {
 /**
  * Files in the engine folders that are neither in the release's adapter set nor a generated copy:
  * the project's own work. `release` is a Set of posix paths relative to the project root the installer would write.
- * Returns [{ engine, rel, from }] — `from` relative to the root. Only `.claude` is scanned by default: the Codex and Gemini folders hold
- * roles and mirrors generated from it (sync-codex), which are not the project's own.
+ * Returns [{ engine, rel, from }] — `from` relative to the root. Only the `claude` extension name is scanned by default: the other engine folders hold
+ * roles and mirrors generated from it, which are not the project's own.
  */
 function foreign(root, release, engines = ['claude']) {
   const state = readState(root)
   const out = []
+  const runtime = runtimePatterns(Object.values(engineDirs(root)))
   for (const engine of engines) {
-    const dirName = ENGINE_DIRS[engine]
+    const dirName = engineDirs(root)[engine]
+    if (!dirName) continue
     const base = path.join(root, dirName)
     for (const rel of walk(base)) {
       const key = posix(path.join(dirName, rel))
-      if (release.has(key) || isRuntime(key)) continue
+      if (release.has(key) || isRuntime(key, runtime)) continue
       if (state[key]) { // a generated copy: only a hand edit is worth keeping, beside its source
         if (sha(path.join(base, rel)) !== state[key].copy) out.push({ engine, rel: posix(rel) + '.edited', from: key })
         continue
@@ -194,9 +219,13 @@ function foreign(root, release, engines = ['claude']) {
 }
 
 // settings and caches the engines write themselves: not the project's work, never moved
-const RUNTIME = [/^\.claude\/hooks\/\.[^/]+$/, /^\.claude\/settings(\.local)?\.json$/, /^\.claude\/permission-level\.state\.json$/, /^\.claude\/\.mcp\.json$/, /^\.claude\/projects\//,
-  /^\.codex\/config\.toml$/, /^\.codex\/(sessions|cache)\//, /^\.agents\/plugins\/forma\/mcp_config\.json$/]
-function isRuntime(key) { return RUNTIME.some((r) => r.test(key)) }
+// settings, hooks state and caches the engines write themselves: not the project's work, never moved. Names are generic;
+// the folder prefix is every engine folder of the project.
+const RUNTIME_TAILS = ['hooks/\\.[^/]+$', 'settings(\\.local)?\\.json$', 'permission-level\\.state\\.json$', '\\.mcp\\.json$', 'projects/',
+  'config\\.toml$', '(sessions|cache)/', 'plugins/forma/mcp_config\\.json$']
+const escapeRe = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+function runtimePatterns(dirs) { return dirs.flatMap((d) => RUNTIME_TAILS.map((t) => new RegExp('^' + escapeRe(d) + '/' + t))) }
+function isRuntime(key, patterns) { return patterns.some((r) => r.test(key)) }
 
 /** Moves foreign files into project/extensions/<engine>/<rel>; an existing target is kept and the move is skipped. */
 function moveForeign(root, list) {
@@ -230,6 +259,6 @@ function main(argv) {
   return r.drift.length ? 1 : 0
 }
 
-module.exports = { forgetOwned, ROOT_DIR, LAYERS, ENGINE_DIRS, STATE, sources, sync, check, foreign, moveForeign, stripIgnoreBlock, main }
+module.exports = { forgetOwned, ROOT_DIR, LAYERS, engineDirs, STATE, sources, sync, check, foreign, moveForeign, stripIgnoreBlock, main }
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2))

@@ -14,6 +14,7 @@ const os = require('os');
 
 const ROOT = path.resolve(__dirname, '../../../..');
 const gen = require('./gen-gemini-roles.cjs');
+const { ROLE_EQUIVALENCE } = require('./role-parity.cjs');
 
 let failures = 0;
 function assert(cond, label) {
@@ -34,12 +35,18 @@ assert(first.written.length === 0 && first.problems.length === 0, 'dry-run on re
 // 3) Drift detection + fix, on a disposable scratch copy (never touches the real mirror).
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gen-gemini-roles-selfcheck-'));
 try {
-  const claudeSrc = path.join(ROOT, '.claude', 'agents');
-  const geminiSrc = path.join(ROOT, '.agents', 'plugins', 'forma', 'agents');
-  const claudeDst = path.join(tmp, '.claude', 'agents');
-  const geminiDst = path.join(tmp, '.agents', 'plugins', 'forma', 'agents');
-  copyDir(claudeSrc, claudeDst);
-  copyDir(geminiSrc, geminiDst);
+  // Папки зеркала — из адаптеров реального проекта; во временной копии адаптеры — заглушки с теми же sources.
+  const ctx = gen.ctxOf(ROOT);
+  const claudeDst = path.join(tmp, ctx.from.src.rolesDir);
+  const geminiDst = path.join(tmp, ctx.to.src.rolesDir);
+  copyDir(path.join(ROOT, ctx.from.src.rolesDir), claudeDst);
+  copyDir(path.join(ROOT, ctx.to.src.rolesDir), geminiDst);
+  for (const e of [ctx.from, ctx.to]) {
+    const stub = `module.exports = ${JSON.stringify({ engine: e.id, id: e.id, sources: e.src })};
+`;
+    fs.mkdirSync(path.join(tmp, e.dir), { recursive: true });
+    fs.writeFileSync(path.join(tmp, e.dir, 'forma-adapter.cjs'), stub);
+  }
 
   const kitPath = path.join(geminiDst, 'kit.md');
   const before = fs.readFileSync(kitPath, 'utf8');
@@ -57,6 +64,18 @@ try {
 
   const secondApply = gen.applyAll(tmp, { dryRun: false });
   assert(secondApply.written.length === 0, 'second apply is a no-op (idempotent)');
+
+  // 4) Role-equivalence table: a table role with no pair is skipped; any other unpaired role is a problem.
+  const [[eqSrc]] = ROLE_EQUIVALENCE;
+  const eqFile = path.join(claudeDst, eqSrc + '.md');
+  assert(fs.existsSync(eqFile) && !fs.existsSync(path.join(geminiDst, eqSrc + '.md')), `fixture: table role ${eqSrc} present, no pair`);
+  const eqRun = gen.applyAll(tmp, { dryRun: false });
+  assert(eqRun.problems.length === 0 && !eqRun.written.some((w) => w.relFile === eqSrc + '.md'), 'role from the equivalence table is skipped, no problem');
+  const orphan = path.join(claudeDst, 'orphan-not-in-table.md');
+  fs.copyFileSync(eqFile, orphan);
+  const orphanRun = gen.applyAll(tmp, { dryRun: false });
+  assert(orphanRun.problems.some((p) => JSON.stringify(p).includes('orphan-not-in-table')), 'unpaired role outside the table is a problem');
+  fs.rmSync(orphan);
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }

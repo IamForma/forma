@@ -32,13 +32,13 @@ The engine tag after the dash is the grouping key. Tokens of different engine ta
 
 ## Who writes the line, and where
 
-- **Who:** the caller, right after the return — never the node itself, never after the fact. **Where:** the card's `## History`. A card handoff writes it itself: `card-move.cjs … --tokens N --duration-ms MS --agent-id <id> [--cache-read R] [--turns K]` appends the spend line before the stage line; without `--cache-read` it writes `(cache-read unknown)` with the reason.
+- **Who:** the caller, right after the return — never the node itself, never after the fact. **Where:** the card's `## History`. A card handoff writes it itself: `card-move.cjs … --agent-id <id> --duration-ms MS [--tokens N] [--cache-read R] [--turns K]` appends the spend line before the stage line; N, R and O are read from the call's transcript, `--tokens` is the fallback (written as is); no transcript and no `--tokens` gives `unknown` with the reason, never 0.
 - **Spend is counted by fact, not by impression.** A node doesn't know its own spend from inside — that knowledge is in the call's metadata, not in its context. **Field names:** which field of the engine's return fills which variable of the skeleton — §8 of the engine file; read, never estimated.
 
 ## The key part is English; the engine opens the description
 
 - **Language.** The key part — everything before the dash: `attempt`, `tokens`, `cache-read`, `s`, the markers, the external-model and external-service segments — is written **in English, in every project, whatever its language**; the description after the dash is in the card's language (`AGENTS.md` §6). The key part is what the counters parse: one encoding keeps them reading every project the same. Lines written earlier in another language stay as they are (prohibition 5) and are still read; a new one written so is reported by `sync-engines --check`.
-- **Engine.** The description after the dash **opens with the engine that did the work** — `claude-code:`, `codex:`, `gemini:` — so a card shows who executed it and who left its spend unrecorded.
+- **Engine.** The description after the dash **opens with the engine that did the work** — the `spendTag` of its adapter (`engine`, then `id`, are accepted as aliases) — so a card shows who executed it and who left its spend unrecorded. The set of valid tags is built from the loaded adapters, never hard-coded: a tag no adapter declares is a violation of the engine-tag check, and a new engine folder with an adapter becomes valid, and gets its own economy column and tab, with no change to the dashboard. The dashboard's «Speed and efficiency» section compares engines by their own tags: output tokens per second and seconds per attempt, attempts, tokens and price per closed card, cache share; rows with `out unknown` stay out of the speed denominator and are marked.
 
 ## T, R, K and the call id
 

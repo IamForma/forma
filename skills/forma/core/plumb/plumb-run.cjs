@@ -1,62 +1,72 @@
 #!/usr/bin/env node
 'use strict';
-// Общий Plumb-драйвер внешнего исполнителя (plumb: jev, OpenRouter Decisions API, typesafe/jev-1.13).
-// Движко-независимый модуль: работает с любым каталогом ролей (Claude, Gemini, Codex).
+// Plumb-драйвер внешнего исполнителя (plumb: jev, OpenRouter Decisions API, typesafe/jev-1.14).
+// Очищенная карточка + каталог ролей -> мост (external-model-bridge.cjs, Decisions API) ->
+// строгий JSON {choice, score, noul}. Сам не вызывает haiku (у скрипта нет инструмента Agent) —
+// при отсутствии ключа, ошибке моста или отказе очистки печатает {fallback:"haiku", reason:...}
+// и завершается с кодом 0: вызывающий (главная сессия) тогда сам вызывает plumb-haiku.
 //
 // Использование:
-//   node .forma/plumb/plumb-run.cjs <card.md> [--root DIR] [--roles-dir DIR] [--site host[,host]] [--out FILE]
+//   node .forma/plumb/plumb-run.cjs <card.md> [--root DIR] [--engine ID | --roles-dir PATH]
+//                                   [--site host[,host]] [--out FILE] [--write]
+//
+// --write: при ответе jev дописывает в конец «## История / ## History» карточки одну строку Отвеса
+// (роль, уверенность, зазор, ясность, noul, исполнитель, итог по порогам PROJECT.md, расход в
+// своей единице: токены, мс, USD) и печатает тот же JSON. При {fallback:haiku} строка не пишется.
+//
+// Каталог ролей: --roles-dir (путь как есть) либо runRolesDir адаптера движка --engine
+// (.forma/dashboard/lib/engines.cjs, sourcesOf; ID — id, engine, spendTag или имя папки адаптера).
+// Без аргументов — каталог Claude (.claude/agents/run).
+//
+// Контракт вывода — такой же, как у plumb-haiku.md: {choice, score, noul}, плюс meta (не часть
+// контракта, только для строки расхода): usage, cost_usd, duration_ms, id, model_served, roles_dir, roles.
 
 const fs = require('fs');
 const path = require('path');
 
-// Модули очистки и моста к внешним моделям
-let scrubMod, bridgeMod;
-try {
-  scrubMod = require('../../.forma/plumb/plumb-scrub.cjs');
-} catch {
-  scrubMod = require('../../.claude/scripts/plumb-scrub.cjs');
+// Очистка и мост лежат рядом с драйвером или в скриптах Claude.
+function requireSibling(name) {
+  for (const dir of [__dirname, path.join(__dirname, '..', '..', '.claude', 'scripts')]) {
+    const file = path.join(dir, name);
+    if (fs.existsSync(file)) return require(file);
+  }
+  throw new Error(`module not found: ${name}`);
 }
+const { extractTask, loadSecrets, scrub, residue } = requireSibling('plumb-scrub.cjs');
+const { loadEnvKeyOptional, callDecisions, estimateCostUsd } = requireSibling('external-model-bridge.cjs');
 
-try {
-  bridgeMod = require('../../.forma/plumb/external-model-bridge.cjs');
-} catch {
-  bridgeMod = require('../../.claude/scripts/external-model-bridge.cjs');
-}
-
-const { extractTask, loadSecrets, scrub, residue } = scrubMod;
-const { loadEnvKeyOptional, callDecisions, estimateCostUsd } = bridgeMod;
-
-const MODEL = 'typesafe/jev-1.13';
+const MODEL = 'typesafe/jev-1.14';
+const DEFAULT_ROLES_REL = '.claude/agents/run';
 
 function parseArgs(argv) {
-  const a = { card: null, root: process.cwd(), site: [], out: null, rolesDir: null };
+  const a = { card: null, root: process.cwd(), site: [], out: null, engine: null, rolesDir: null, write: false };
   for (let i = 0; i < argv.length; i++) {
     const v = argv[i];
     if (v === '--root') a.root = path.resolve(argv[++i]);
-    else if (v === '--roles-dir') a.rolesDir = path.resolve(argv[++i]);
+    else if (v === '--engine') a.engine = argv[++i];
+    else if (v === '--roles-dir') a.rolesDir = argv[++i];
     else if (v === '--site') a.site.push(...argv[++i].split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
     else if (v === '--out') a.out = argv[++i];
-    else if (!a.card && !v.startsWith('-')) a.card = v;
+    else if (v === '--write') a.write = true;
+    else if (!a.card) a.card = v;
   }
   return a;
 }
 
-function resolveRolesDir(root, customDir) {
-  if (customDir && fs.existsSync(customDir)) return customDir;
-  // Поиск по стандартным путям адаптеров
-  const candidates = [
-    path.join(root, '.agents', 'plugins', 'forma', 'agents', 'run'),
-    path.join(root, '.claude', 'agents', 'run'),
-    path.join(root, '.codex', 'roles', 'run'),
-  ];
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return c;
+// Каталог ролей: --roles-dir > runRolesDir адаптера --engine > каталог Claude.
+function resolveRolesDir(a) {
+  if (a.rolesDir) return path.resolve(a.root, a.rolesDir);
+  if (a.engine) {
+    const engines = require(path.join(a.root, '.forma', 'dashboard', 'lib', 'engines.cjs'));
+    const adapter = engines.loadAdapters(a.root).find((x) =>
+      [engines.idOf(x), x.engine, x.spendTag, x.dir && String(x.dir).replace(/^\./, '')].includes(a.engine));
+    if (!adapter) throw new Error(`unknown engine: ${a.engine}`);
+    return engines.resolveRel(a.root, engines.sourcesOf(adapter).runRolesDir);
   }
-  return path.join(root, '.claude', 'agents', 'run');
+  return path.join(a.root, ...DEFAULT_ROLES_REL.split('/'));
 }
 
 function buildCatalog(roleDir) {
-  if (!fs.existsSync(roleDir)) return [];
   const roles = [];
   for (const f of fs.readdirSync(roleDir).filter((n) => n.endsWith('.md')).sort()) {
     const md = fs.readFileSync(path.join(roleDir, f), 'utf8');
@@ -67,6 +77,66 @@ function buildCatalog(roleDir) {
     roles.push({ name, text: `${desc}\n${take.trim()}\n${tdn.trim()}`.trim() });
   }
   return roles;
+}
+
+// Пороги из PROJECT.md (строка таблицы «Отвес»): лидер ≥ N, зазор ≥ N, noul ≥ X, ясность ≥ N.
+function readThresholds(root) {
+  try {
+    const md = fs.readFileSync(path.join(root, 'project', 'config', 'PROJECT.md'), 'utf8');
+    const row = md.split(/\r?\n/).find((l) => /plumb/.test(l) && /≥/.test(l));
+    if (!row) return null;
+    const num = (re) => { const m = re.exec(row); return m ? Number(m[1].replace(',', '.')) : null; };
+    const t = {
+      leader: num(/(?:лидер|leader)\s*≥\s*([\d.,]+)/i),
+      gap: num(/(?:зазор|gap)[^≥]*≥\s*([\d.,]+)/i),
+      noul: num(/noul[^≥]*≥\s*([\d.,]+)/i),
+      clarity: num(/(?:ясность|clarity)\s*≥\s*([\d.,]+)/i),
+    };
+    return Object.values(t).some((v) => v === null) ? null : t;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Строка Отвеса для истории карточки.
+function plumbLine(result, root) {
+  const { choice, score, noul, meta } = result;
+  const probs = Object.entries(choice.probabilities).sort((x, y) => y[1] - x[1]);
+  const lead = probs[0] ? probs[0][1] : 0;
+  const second = probs[1] ? probs[1][1] : 0;
+  const gap = lead - second;
+  const leadNoul = noul[choice.role];
+  const t = readThresholds(root);
+  let outcome;
+  if (!t) outcome = 'пороги PROJECT.md не прочитаны';
+  else {
+    const miss = [];
+    if (lead < t.leader) miss.push(`лидер ${lead} < ${t.leader}`);
+    if (gap < t.gap) miss.push(`зазор ${gap} < ${t.gap}`);
+    if (typeof leadNoul !== 'number' || leadNoul < t.noul) miss.push(`noul ${leadNoul ?? 'нет'} < ${t.noul}`);
+    if (score.clarity < t.clarity) miss.push(`ясность ${score.clarity} < ${t.clarity}`);
+    outcome = miss.length ? `ниже порога (${miss.join('; ')})` : 'пороги пройдены';
+  }
+  const u = meta.usage || {};
+  const d = new Date();
+  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const spend = `${meta.model_requested}, ${meta.id || 'id unknown'}, ${u.prompt_tokens ?? 'unknown'} in / ${u.completion_tokens ?? 'unknown'} out, ${meta.duration_ms} мс, ${meta.cost_usd === null ? 'cost unknown' : '$' + meta.cost_usd}`;
+  return `- \`Plumb\`, ${date}: ${meta.executor} (${spend}) — роль ${choice.role}, уверенность ${lead}, зазор ${gap}, ясность ${score.clarity}/4, noul ${leadNoul ?? 'нет'}; ${outcome}. Строку записал драйвер (--write).`;
+}
+
+// Дописывает строку в конец зоны «## История / ## History»; нет зоны — ошибка.
+function appendHistory(cardFile, line) {
+  const md = fs.readFileSync(cardFile, 'utf8');
+  const nl = md.includes('\r\n') ? '\r\n' : '\n';
+  const lines = md.split(/\r?\n/);
+  const start = lines.findIndex((l) => /^##\s+(История|History)\s*$/.test(l));
+  if (start < 0) throw new Error('card has no ## History / ## История zone');
+  let end = lines.findIndex((l, i) => i > start && /^##\s/.test(l));
+  if (end < 0) end = lines.length;
+  let at = end;
+  while (at > start + 1 && lines[at - 1].trim() === '') at--;
+  lines.splice(at, 0, line);
+  fs.writeFileSync(cardFile, lines.join(nl));
 }
 
 function emit(obj, outFile) {
@@ -83,7 +153,7 @@ function fallback(reason, extra, outFile) {
 async function main() {
   const a = parseArgs(process.argv.slice(2));
   if (!a.card) {
-    console.error('usage: plumb-run.cjs <card.md> [--root DIR] [--roles-dir DIR] [--site host] [--out FILE]');
+    console.error('usage: plumb-run.cjs <card.md> [--root DIR] [--engine ID | --roles-dir PATH] [--site host] [--out FILE] [--write]');
     process.exit(1);
   }
 
@@ -103,6 +173,14 @@ async function main() {
     process.exit(1);
   }
 
+  let rolesDir;
+  try {
+    rolesDir = resolveRolesDir(a);
+  } catch (e) {
+    console.error(e.message);
+    process.exit(1);
+  }
+
   const siteHosts = new Set(a.site);
   const secrets = loadSecrets(a.root, siteHosts);
 
@@ -110,13 +188,20 @@ async function main() {
   const taskResidue = residue(scrubbedTask, secrets);
   if (taskResidue.length) return fallback('scrub-refused', { report: { refused: taskResidue } }, a.out);
 
-  const rolesDir = resolveRolesDir(a.root, a.rolesDir);
-  const roles = buildCatalog(rolesDir);
+  let roles;
+  try {
+    roles = buildCatalog(rolesDir);
+  } catch (e) {
+    console.error(`cannot read roles dir ${rolesDir}: ${e.message}`);
+    process.exit(1);
+  }
   const catalogText = roles.map((r) => `### ${r.name}\n${r.text}`).join('\n\n');
   const { text: scrubbedCatalog, counts: catalogCounts } = scrub(catalogText, secrets, siteHosts);
   const catalogResidue = residue(scrubbedCatalog, secrets);
   if (catalogResidue.length) return fallback('scrub-refused', { report: { refused: catalogResidue } }, a.out);
 
+  // Разбираем очищенный каталог обратно по ролям (порядок и границы те же, что при склейке) —
+  // так noul-критерии каждой роли видят её же текст, уже очищенный, не исходный.
   const scrubbedSections = scrubbedCatalog.split(/\n(?=### )/);
   const byRole = {};
   for (const sec of scrubbedSections) {
@@ -199,24 +284,33 @@ async function main() {
       ? usage.cost
       : estimateCostUsd('openrouter', MODEL, { prompt_tokens: usage.input_tokens, completion_tokens: usage.output_tokens });
 
-  emit(
-    {
-      choice,
-      score,
-      noul,
-      meta: {
-        executor: 'jev',
-        model_requested: MODEL,
-        model_served: res.model || null,
-        id: res.id || null,
-        usage: { prompt_tokens: usage.input_tokens ?? null, completion_tokens: usage.output_tokens ?? null },
-        cost_usd: costUsd === null ? null : Number(costUsd.toFixed(6)),
-        duration_ms: durationMs,
-        scrub_report: { task: taskCounts, catalog: catalogCounts },
-      },
+  const result = {
+    choice,
+    score,
+    noul,
+    meta: {
+      executor: 'jev',
+      model_requested: MODEL,
+      model_served: res.model || null,
+      id: res.id || null,
+      usage: { prompt_tokens: usage.input_tokens ?? null, completion_tokens: usage.output_tokens ?? null },
+      cost_usd: costUsd === null ? null : Number(costUsd.toFixed(6)),
+      duration_ms: durationMs,
+      scrub_report: { task: taskCounts, catalog: catalogCounts },
+      roles_dir: path.relative(a.root, rolesDir).split(path.sep).join('/'),
+      roles: roles.map((r) => r.name),
     },
-    a.out
-  );
+  };
+  if (a.write) {
+    try {
+      appendHistory(a.card, plumbLine(result, a.root));
+    } catch (e) {
+      console.error(`--write failed: ${e.message}`);
+      emit(result, a.out);
+      process.exit(1);
+    }
+  }
+  emit(result, a.out);
 }
 
 main().catch((e) => {

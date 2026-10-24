@@ -112,7 +112,7 @@ if (require.main === module) {
   const { readSubagentTranscript, NO_TRANSCRIPT } = require('../../.forma/dashboard/subagent-transcript.cjs');
   (async () => {
     const id = arg('agent-id');
-    const tr = id ? await readSubagentTranscript(id) : null;
+    const tr = id ? await readSubagentTranscript(id, undefined, 'claude-code') : null;
     let rec = fromAgentResult({ agent_id: id, tokens: arg('tokens'), duration_ms: arg('duration-ms'), tool_uses: arg('tool-uses') }, tr);
     const k = arg('split'), i = arg('share');
     let batchNote = '';

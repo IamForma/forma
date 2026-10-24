@@ -51,6 +51,28 @@ const list = (dir, test) => fs.existsSync(dir) ? fs.readdirSync(dir).filter(test
 
 const cardId = f => (path.basename(f).match(/^(card-\d+)/) || [])[1] || path.basename(f, '.md');
 
+// --- движки: источники приходят из адаптеров (engines.sourcesOf), каталоги здесь не зашиты ------
+// Адаптер = каталог корня с forma-adapter.cjs. Тег движка (в id роли) — поле engine, иначе id/имя каталога.
+
+const ENGINES = require('../../.forma/dashboard/lib/engines.cjs');
+const abs = p => path.join(ROOT, ...String(p).split('/'));
+const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+let ADAPTERS = null;
+function adapters() {
+  if (!ADAPTERS) ADAPTERS = ENGINES.loadAdapters(ROOT).map(a => ({ a, dir: a.dir, tag: a.engine || ENGINES.idOf(a), src: ENGINES.sourcesOf(a) }));
+  return ADAPTERS;
+}
+const uniq = xs => [...new Set(xs.filter(Boolean))];
+const srcDirs = key => uniq(adapters().map(e => e.src[key]));
+const dirOfRel = f => path.posix.dirname(rel(f));
+// Адаптер, чьим каталогом ролей (обычным или run) лежит файл; иначе null.
+const engineOfRole = f => adapters().find(e => [e.src.rolesDir, e.src.runRolesDir].includes(dirOfRel(f))) || null;
+const isRunRole = f => adapters().some(e => e.src.runRolesDir === dirOfRel(f));
+// Подпись всех источников всех адаптеров: объявленное в адаптере меняется — версии извлекателей меняются.
+const adaptersSig = () => hash(JSON.stringify(adapters().map(e => [e.dir, e.tag, e.src]))).slice(0, 8);
+const scriptsAlt = () => srcDirs('scriptsDir').map(esc).join('|') || '(?!)';
+const idsOfRole = (roles, name) => (roles && roles.get(name)) || [];
+
 // --- извлечение из одного файла: {nodes, edges} ------------------------------
 
 function cardForGoals(f, text) {
@@ -149,16 +171,18 @@ function bullet(text, names) {
   return m ? m[1].replace(/\s+/g, ' ').trim() : '';
 }
 
-// Роль: файл агента (.claude/agents/*.md и run/*.md). Рёбра: роль → инструмент, роль → скилл.
+// Роль: файл агента из rolesDir / runRolesDir адаптера. Узел role:<движок>:<имя>; связь роль → движок.
+// Рёбра: роль → инструмент, роль → скилл, роль → скрипт, роль → коннектор.
 function agentForArsenal(f, text) {
   const name = fm(text, 'name') || path.basename(f, '.md');
-  const id = 'role:' + name, tools = fm(text, 'tools') || '';
+  const eng = engineOfRole(f), tag = eng ? eng.tag : 'unknown';
+  const id = 'role:' + tag + ':' + name, tools = fm(text, 'tools') || '';
   const tl = tools.split(/,(?![^(]*\))/).map(s => s.trim()).filter(Boolean);
   const nodes = [{
-    id, label: name, type: 'role', name, model: fm(text, 'model') || '', tools: tl,
+    id, label: name, type: 'role', name, engine: tag, model: fm(text, 'model') || '', tools: tl,
     takes: bullet(text, ['Takes']), not_takes: bullet(text, ['Does not take']), file: rel(f),
-  }], edges = [];
-  if (!f.includes(path.sep + 'run' + path.sep)) {   // пять узлов протокола: роль ↔ узел журнала инструментов
+  }, { id: 'engine:' + tag, label: tag, type: 'engine' }], edges = [{ source: id, target: 'engine:' + tag, relation: 'of_engine' }];
+  if (!isRunRole(f)) {   // пять узлов протокола: роль ↔ узел журнала инструментов
     const node = 'node:' + name[0].toUpperCase() + name.slice(1);
     nodes.push({ id: node, label: node.slice(5), type: 'node' });
     edges.push({ source: id, target: node, relation: 'is_node' });
@@ -174,11 +198,13 @@ function agentForArsenal(f, text) {
   for (const sk of used) edges.push({ source: id, target: 'skill:' + sk, relation: 'uses_skill' });
   // Объявленный в frontmatter, но несуществующий скилл — висячая ссылка (проверяется при сборке).
   for (const sk of declared) if (!skills.has(sk)) edges.push({ source: id, target: 'skill:' + sk, relation: 'uses_skill' });
-  // Роль → скрипт: из разрешений Bash(node .claude/scripts/X …) и из путей .claude/scripts/X в тексте;
+  // Роль → скрипт: из разрешений Bash(node <scriptsDir>/X …) и из путей <scriptsDir>/X в тексте (scriptsDir всех адаптеров);
   // голое имя X.cjs в тексте считается, только если такой скрипт есть.
   const scripts = new Set(scriptNames()), runs = new Set();
-  for (const t of tl) { const m = t.match(/^Bash\(\s*node\s+\.claude\/scripts\/([\w.\-]+)/); if (m) runs.add(m[1]); }
-  for (const m of text.matchAll(/\.claude\/scripts\/([\w\-]+\.(?:cjs|js|sh))/g)) runs.add(m[1]);
+  const permRe = new RegExp('^Bash\\(\\s*node\\s+(?:' + scriptsAlt() + ')\\/([\\w.\\-]+)');
+  const pathRe = new RegExp('(?:' + scriptsAlt() + ')\\/([\\w\\-]+\\.(?:cjs|js|sh))', 'g');
+  for (const t of tl) { const m = t.match(permRe); if (m) runs.add(m[1]); }
+  for (const m of text.matchAll(pathRe)) runs.add(m[1]);
   for (const m of text.matchAll(/`([\w\-]+\.(?:cjs|js|sh))`/g)) if (scripts.has(m[1])) runs.add(m[1]);
   for (const s of runs) edges.push({ source: id, target: 'script:' + s, relation: 'runs_script' });
   // Роль → коннектор: mcp__<сервер>[__<инструмент>] в tools.
@@ -187,33 +213,30 @@ function agentForArsenal(f, text) {
   for (const c of conns) edges.push({ source: id, target: 'mcp:' + c, relation: 'uses_connector' });
   return { nodes, edges };
 }
-agentForArsenal.v = () => 4 + hash(skillNames().join(',') + '|' + scriptNames().join(',')).slice(0, 8);   // новый скилл или скрипт сбрасывает кэш ролей
+agentForArsenal.v = () => 5 + hash(skillNames().join(',') + '|' + scriptNames().join(',') + '|' + adaptersSig()).slice(0, 8);   // новый скилл, скрипт или правка адаптера сбрасывает кэш ролей
 
-function scriptNames() {
-  return list(path.join(ROOT, '.claude', 'scripts'), f => /\.(cjs|js|sh)$/.test(f)).map(f => path.basename(f));
-}
-
-function skillNames() {
-  return list(path.join(ROOT, '.claude', 'skills'), () => true)
-    .filter(d => fs.existsSync(path.join(d, 'SKILL.md'))).map(d => path.basename(d));
-}
+const SCRIPT_RE = /\.(cjs|js|sh)$/;
+const scriptFiles = () => srcDirs('scriptsDir').flatMap(d => list(abs(d), f => SCRIPT_RE.test(f)));
+const skillFiles = () => srcDirs('skillsDir').flatMap(d => list(abs(d), () => true)).map(d => path.join(d, 'SKILL.md')).filter(f => fs.existsSync(f));
+function scriptNames() { return uniq(scriptFiles().map(f => path.basename(f))); }
+function skillNames() { return uniq(skillFiles().map(f => path.basename(path.dirname(f)))); }
 
 function pluginForArsenal(f, text) {
   let p = {}; try { p = JSON.parse(text); } catch { /* неразборный — пусто */ }
   const name = p.name || path.basename(path.dirname(f));
   const id = 'plugin:' + name, edges = [];
   // Каталог плагина: роли — agents/*.md и agents/run/*.md рядом с plugin.json; скиллы — skills/ плагина,
-  // а если её нет, то общий каталог .agents/skills. Цели без узла отбрасываются при сборке.
-  const dir = path.dirname(f);
+  // а если её нет, то skillsDir адаптера-владельца. Цели без узла отбрасываются при сборке.
+  const dir = path.dirname(f), owner = pluginOwner(f), tag = owner ? owner.tag : 'unknown';
   const mdNames = d => list(d, x => x.endsWith('.md')).map(x => path.basename(x, '.md'));
   for (const r of [...mdNames(path.join(dir, 'agents')), ...mdNames(path.join(dir, 'agents', 'run'))])
-    edges.push({ source: id, target: 'role:' + r, relation: 'has_role' });
-  const own = path.join(dir, 'skills'), skDir = fs.existsSync(own) ? own : path.join(ROOT, '.agents', 'skills');
+    edges.push({ source: id, target: 'role:' + tag + ':' + r, relation: 'has_role' });
+  const own = path.join(dir, 'skills'), skDir = fs.existsSync(own) || !owner || !owner.src.skillsDir ? own : abs(owner.src.skillsDir);
   for (const d of list(skDir, () => true)) if (fs.existsSync(path.join(d, 'SKILL.md'))) edges.push({ source: id, target: 'skill:' + path.basename(d), relation: 'has_skill' });
   return { nodes: [{ id, label: name, type: 'plugin', version: p.version || '', description: (p.description || '').slice(0, 160), file: rel(f) }], edges };
 }
-pluginForArsenal.v = () => 2 + hash(skillNames().join(',') + '|' + list(path.join(ROOT, '.agents', 'plugins'), () => true)
-  .flatMap(d => [...list(path.join(d, 'agents'), () => true), ...list(path.join(d, 'agents', 'run'), () => true)].map(x => path.basename(x))).join(',')).slice(0, 8);
+pluginForArsenal.v = () => 3 + hash(skillNames().join(',') + '|' + adaptersSig() + '|' + pluginFiles()
+  .flatMap(m => [...list(path.join(path.dirname(m), 'agents'), () => true), ...list(path.join(path.dirname(m), 'agents', 'run'), () => true)].map(x => path.basename(x))).join(',')).slice(0, 8);
 
 function skillForArsenal(f, text) {
   const name = fm(text, 'name') || path.basename(path.dirname(f));
@@ -237,9 +260,17 @@ function mcpFromSettings(f, text) {
   return { nodes: [...names].map(s => ({ id: 'mcp:' + s, label: s, type: 'mcp' })), edges: [] };
 }
 
+// Скрипт: один узел script:<имя> на имя; одноимённые файлы разных движков сходятся в него (узлы сливаются по id),
+// а у узла — ребро implemented_by на каждый движок, в чьём scriptsDir лежит файл.
 function scriptForArsenal(f) {
-  return { nodes: [{ id: 'script:' + path.basename(f), label: path.basename(f), type: 'script' }], edges: [] };
+  const name = path.basename(f), id = 'script:' + name, nodes = [{ id, label: name, type: 'script' }], edges = [];
+  for (const e of adapters().filter(e => e.src.scriptsDir && e.src.scriptsDir === dirOfRel(f))) {
+    nodes.push({ id: 'engine:' + e.tag, label: e.tag, type: 'engine' });
+    edges.push({ source: id, target: 'engine:' + e.tag, relation: 'implemented_by' });
+  }
+  return { nodes, edges };
 }
+scriptForArsenal.v = () => 2 + adaptersSig();
 
 // Журнал инструментов дописывается строками — разбирается целиком, но без модели.
 function logForArsenal(f, text) {
@@ -284,7 +315,7 @@ function docForCorpus(f, text) {
   for (const l of links) if (l !== key) edges.push({ source: id, target: 'doc:' + l, relation: 'links_to' });
   return { nodes, edges };
 }
-docForCorpus.v = 1;
+docForCorpus.v = () => 1 + adaptersSig();
 
 function mdTree(dir, skip) {
   const out = [];
@@ -300,29 +331,31 @@ function mdTree(dir, skip) {
 
 // --- какие файлы питают какой граф -----------------------------------------------
 
-function pluginFiles() {
-  return [...list(path.join(ROOT, '.agents', 'plugins'), () => true).map(d => path.join(d, 'plugin.json')),
-          path.join(ROOT, '.claude-plugin', 'plugin.json')].filter(f => fs.existsSync(f));
+// Манифест плагина адаптера: packageManifest из sources; без него — plugin.json рядом с каталогом ролей (если лежит там).
+function manifestOf(e) {
+  const m = e.src.packageManifest ? abs(e.src.packageManifest) : path.join(path.dirname(abs(e.src.rolesDir)), 'plugin.json');
+  return fs.existsSync(m) ? m : null;
 }
+function pluginFiles() { return uniq(adapters().map(manifestOf)); }
+const pluginOwner = f => adapters().find(e => manifestOf(e) === f) || null;
 
 function sources() {
   const open = list(BOARD, f => f.endsWith('.md'));
   const done = list(path.join(BOARD, 'done'), f => f.endsWith('.md'));
-  const skillDirs = list(path.join(ROOT, '.claude', 'skills'), () => true)
-    .map(d => path.join(d, 'SKILL.md')).filter(f => fs.existsSync(f));
+  const mcpFiles = uniq(adapters().flatMap(e => (e.src.mcpConfigs || []).map(abs))).filter(f => fs.existsSync(f));
+  const settings = uniq(adapters().flatMap(e => ['settings.json', 'settings.local.json'].map(n => path.join(abs(e.dir), n)))).filter(f => fs.existsSync(f));
   return {
     manual: mdTree(path.join(ROOT, '.forma', 'manual')).map(f => [f, docForCorpus]),
     project: mdTree(path.join(ROOT, 'project'), n => n === 'cards' || n === 'work').map(f => [f, docForCorpus]),
     goals: [[[path.join(ROOT, 'project', 'ops', 'ROADMAP.md'), path.join(ROOT, 'project', 'ROADMAP.md')].find(f => fs.existsSync(f)) || path.join(ROOT, 'project', 'ops', 'ROADMAP.md'), roadmapForGoals],
             ...[...open, ...done].map(f => [f, cardForGoals])],
     board: [...open, ...done].map(f => [f, cardForBoard]),   // доска: открытые и закрытые (done/)
-    arsenal: [...list(path.join(ROOT, '.claude', 'agents'), f => f.endsWith('.md')).map(f => [f, agentForArsenal]),   // on-demand/ не входит
-              ...list(path.join(ROOT, '.claude', 'agents', 'run'), f => f.endsWith('.md')).map(f => [f, agentForArsenal]),
+    arsenal: [...uniq(adapters().flatMap(e => [e.src.rolesDir, e.src.runRolesDir])).flatMap(d => list(abs(d), f => f.endsWith('.md'))).map(f => [f, agentForArsenal]),   // on-demand/ не входит
               ...pluginFiles().map(f => [f, pluginForArsenal]),
-              ...skillDirs.map(f => [f, skillForArsenal]),
-              ...list(path.join(ROOT, '.claude', 'scripts'), f => /\.(cjs|js|sh)$/.test(f)).map(f => [f, scriptForArsenal]),
-              ...[path.join(ROOT, '.mcp.json'), path.join(ROOT, '.claude', '.mcp.json'), path.join(ROOT, '.agents', 'plugins', 'forma', 'mcp_config.json')].filter(f => fs.existsSync(f)).map(f => [f, mcpForArsenal]),
-              ...['settings.json', 'settings.local.json'].map(n => path.join(ROOT, '.claude', n)).filter(f => fs.existsSync(f)).map(f => [f, mcpFromSettings]),
+              ...skillFiles().map(f => [f, skillForArsenal]),
+              ...scriptFiles().map(f => [f, scriptForArsenal]),
+              ...mcpFiles.map(f => [f, mcpForArsenal]),
+              ...settings.map(f => [f, mcpFromSettings]),
               ...[path.join(ROOT, '.forma/dashboard', 'tool-usage.log')].filter(f => fs.existsSync(f)).map(f => [f, logForArsenal])],
   };
 }
@@ -344,9 +377,14 @@ function build(name, pairs, cache, roles) {
     else { part = { hash: h, extractor: tag, ...extract(file, text) }; slot[key] = part; miss++; }
     for (const n of part.nodes) nodes.set(n.id, { ...nodes.get(n.id), ...n, source_file: nodes.get(n.id)?.source_file || key });
     for (const e of part.edges) {
-      if (e.relation === 'uses_role' && roles) {            // ребро карточка → роль: только на существующий узел арсенала
-        if (!roles.has(e.target)) { orphan++; continue; }
-        nodes.set(e.target, { ...nodes.get(e.target), id: e.target, label: e.target.slice(5), type: 'role', source_file: nodes.get(e.target)?.source_file || key });
+      if (e.relation === 'uses_role' && roles) {            // ребро карточка → роль: на каждый существующий узел арсенала с этим именем
+        const ids = idsOfRole(roles, e.target.slice(5));
+        if (!ids.length) { orphan++; continue; }
+        for (const rid of ids) {
+          nodes.set(rid, { ...nodes.get(rid), id: rid, label: rid.split(':').slice(2).join(':'), type: 'role', source_file: nodes.get(rid)?.source_file || key });
+          edges.push({ ...e, target: rid, source_file: key });
+        }
+        continue;
       }
       edges.push({ ...e, source_file: key });
     }
@@ -398,7 +436,8 @@ function zoneTree() {
 }
 
 const normPath = p => p.replace(/[\/.]+$/, '').replace(/\/{2,}/g, '/');
-const PATH_RE = /(?<![\w\/.\-])(?:project|\.claude|\.forma)\/[\w.\-\/@]*[\w\-\/]/g;
+// Корни путей в тексте: project, .forma и каталоги адаптеров.
+const PATH_RE = new RegExp('(?<![\\w\\/.\\-])(?:project|\\.forma|' + uniq(adapters().map(e => e.dir)).map(esc).join('|') + ')\\/[\\w.\\-\\/@]*[\\w\\-\\/]', 'g');
 
 // Карточка: пути из ## Задача / Результат / История, метка цели, расход.
 function cardForStructure(f, text) {
@@ -408,7 +447,7 @@ function cardForStructure(f, text) {
   const sp = spendOf(text);
   return { nodes: [], edges: [], paths, goal, tokens: sp.tokens, seconds: sp.seconds };
 }
-cardForStructure.v = 1;
+cardForStructure.v = () => 1 + adaptersSig();
 
 // Файл зоны / README / GOAL: подпись (первая строка README, иначе заголовок GOAL) и ссылки на другие файлы.
 function docForStructure(f, text) {
@@ -422,7 +461,7 @@ function docForStructure(f, text) {
   const h1 = (text.match(/^# (.+)$/m) || [])[1] || '';
   return { nodes: [], edges: [], head: first, title: h1.slice(0, 160), links: [...links].filter(l => l !== rel(f)) };
 }
-docForStructure.v = 1;
+docForStructure.v = () => 1 + adaptersSig();
 
 function structureSources(zones) {
   const pairs = [...list(BOARD, f => f.endsWith('.md')), ...list(path.join(BOARD, 'done'), f => f.endsWith('.md'))].map(f => [f, cardForStructure]);
@@ -442,7 +481,7 @@ function buildStructure(cache, goalIds) {
   for (const [file, extract] of structureSources(zones)) {
     const key = rel(file), buf = fs.readFileSync(file), h = hash(buf);
     alive.add(key);
-    const tag = extract.name + (extract.v || '');
+    const tag = extract.name + (typeof extract.v === 'function' ? extract.v() : extract.v || '');
     let part = slot[key];
     if (part && part.hash === h && part.extractor === tag) hit++;
     else { part = { hash: h, extractor: tag, ...extract(file, buf.toString('utf8')) }; slot[key] = part; miss++; }
@@ -617,7 +656,7 @@ function printResources(r) {
 
 // --- central: объединение графов ---------------------------------------------------
 
-const CENTRAL_V = 3;
+const CENTRAL_V = 4;
 const LAYER = t => ({ card: 'board', file: 'board', goal: 'goals', epic: 'goals', zone: 'structure', asset: 'resources' }[t] || 'arsenal');
 const CENTRAL_PARTS = ['goals', 'arsenal', 'structure', 'resources', 'board'];   // structure до board: заглушки карточек не затирают подписи доски
 
@@ -649,12 +688,14 @@ function buildCentral(cache, graphs) {
     }
   }
   for (const n of nodes.values()) n.layer = LAYER(n.type);
+  const roleIds = name => [...nodes.values()].filter(n => n.type === 'role' && (n.name || n.id.split(':').slice(2).join(':')) === name).map(n => n.id);
   // Межслойные рёбра выводятся из карточек явно; цель, эпик или роль без узла — ребро не строится.
   for (const c of [...nodes.values()].filter(n => n.type === 'card' && n.file)) {
     for (const [target, relation] of [[c.goal && 'goal:' + c.goal, 'serves'], [c.epic && 'epic:' + c.epic, 'in_lane'], [c.role && 'role:' + c.role, 'uses_role']]) {
       if (!target) continue;
-      if (!nodes.has(target)) { dropped.push({ source: c.id, target, relation }); continue; }
-      edges.set(c.id + '|' + target + '|' + relation, { source: c.id, target, relation, source_file: c.file });
+      const hits = relation === 'uses_role' ? roleIds(c.role) : nodes.has(target) ? [target] : [];   // роль: узлы role:<движок>:<имя> всех движков
+      if (!hits.length) { dropped.push({ source: c.id, target, relation }); continue; }
+      for (const t of hits) edges.set(c.id + '|' + t + '|' + relation, { source: c.id, target: t, relation, source_file: c.file });
     }
   }
   // Рёбра на несуществующий узел не входят в граф.
@@ -722,7 +763,9 @@ function main() {
   let roles = null, arsenal = null;
   const roleSet = () => {
     const g = arsenal || readJson(path.join(OUT, 'arsenal', 'graph.json'), { nodes: [] });
-    return (roles = new Set(g.nodes.filter(n => n.type === 'role').map(n => n.id)));
+    roles = new Map();   // имя роли → id узлов role:<движок>:<имя>
+    for (const n of g.nodes.filter(n => n.type === 'role')) { const nm = n.name || n.id.split(':').slice(2).join(':'); roles.set(nm, [...(roles.get(nm) || []), n.id]); }
+    return roles;
   };
   for (const name of ['goals', 'arsenal', 'structure', 'resources', 'board', 'manual', 'project']) {
     if (only && only !== name) continue;
@@ -774,9 +817,10 @@ function main() {
     const cards = b.graph.nodes.filter(n => n.type === 'card');
     const used = new Set(b.graph.edges.filter(e => e.relation === 'uses_role').map(e => e.target));
     const noRole = cards.filter(n => !n.role).length;
-    const unlinked = cards.filter(n => n.role && !used.has('role:' + n.role)).length;
-    const idle = [...roles].filter(r => !used.has(r)).length;
-    console.log(`карточек без роли: ${noRole} (роль названа, узла нет: ${unlinked}) · ролей без карточек: ${idle} из ${roles.size}`);
+    const unlinked = cards.filter(n => n.role && !idsOfRole(roles, n.role).length).length;
+    const allIds = [...roles.values()].flat();
+    const idle = allIds.filter(r => !used.has(r)).length;
+    console.log(`карточек без роли: ${noRole} (роль названа, узла нет: ${unlinked}) · ролей без карточек: ${idle} из ${allIds.length}`);
   }
 }
 

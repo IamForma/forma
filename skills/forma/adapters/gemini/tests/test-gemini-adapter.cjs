@@ -57,7 +57,7 @@ it('.agents/rules/gemini-8.md существует и содержит регл�
 
 // 2. Паритет ролей
 it('роли Gemini находятся в полном паритете с эталоном', () => {
-  const results = parity.compareRoles(root);
+  const results = parity.compareRoles(root, { only: 'gemini' });
   const drifted = results.filter((r) => r.res.status !== 'synced');
   assert.equal(drifted.length, 0, `Обнаружен дрейф ролей: ${drifted.map((d) => d.pair.name + ' (' + d.res.status + ')').join(', ')}`);
 });

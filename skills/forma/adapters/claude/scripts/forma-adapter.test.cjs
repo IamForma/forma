@@ -98,4 +98,46 @@ it('структура: группа с ключом, названием, кор
   assert.equal(typeof s.notes, 'object');
 });
 
+it('контракт движка: объявленные sources отдаются как есть, без sources — по соглашению', () => {
+  const claude = engines.sourcesOf(adapter());
+  assert.equal(claude.rolesDir, '.claude/agents');
+  assert.equal(claude.runRolesDir, '.claude/agents/run');
+  // Установка по умолчанию ставит один движок: gemini и спящий minimax проверяются там, где их адаптер лежит.
+  const declared = (dir) => engines.loadAdapters(ROOT).find((a) => a.dir === dir);
+  if (declared('.agents')) {
+    const gemini = engines.sourcesOf(declared('.agents'));
+    assert.equal(gemini.rolesDir, '.agents/plugins/forma/agents'); // объявлено, не соглашение (.agents/agents)
+  }
+  if (declared('.minimax')) {
+    const minimax = engines.sourcesOf(declared('.minimax'));
+    assert.equal(minimax.rolesDir, '.minimax/agents');
+  }
+  const bare = engines.sourcesOf({ dir: '.demo' });
+  assert.deepEqual([bare.rolesDir, bare.skillsDir, bare.packageManifest, bare.mcpConfigs], ['.demo/agents', '.demo/skills', null, []]);
+  assert.equal(engines.idOf({ dir: '.demo' }), 'demo');
+  assert.equal(engines.idOf({ dir: '.demo', id: 'x' }), 'x');
+});
+
+it('контракт движка: без вызова субагентов режим «деградированный»', () => {
+  assert.equal(engines.modeOf(adapter()), 'полный');
+  assert.equal(engines.modeOf({ capabilities: { subagents: false } }), 'деградированный');
+  assert.equal(engines.modeOf({}), 'деградированный');
+});
+
+it('контракт движка: check печатает пункты и выходит с кодом 1 на непройденном', () => {
+  const { spawnSync } = require('child_process');
+  const lib = path.join(ROOT, '.forma', 'dashboard', 'lib', 'engines.cjs');
+  const ok = spawnSync(process.execPath, [lib, 'check', 'claude-code'], { cwd: ROOT, encoding: 'utf8' });
+  assert.equal(ok.status, 0);
+  const tmp = fs.mkdtempSync(path.join(require('os').tmpdir(), 'engine-check-'));
+  fs.mkdirSync(path.join(tmp, '.bad'));
+  fs.writeFileSync(path.join(tmp, '.bad', 'forma-adapter.cjs'),
+    "module.exports = { engine: 'bad', sources: { rolesDir: '.bad/agents' }, writeZones: ['.other'] };");
+  const bad = spawnSync(process.execPath, [lib, 'check', 'bad', '--root', tmp], { encoding: 'utf8' });
+  assert.equal(bad.status, 1);
+  assert.match(bad.stdout, /✗ sources\.rolesDir существует/);
+  assert.match(bad.stdout, /✗ writeZones/);
+  assert.equal(spawnSync(process.execPath, [lib, 'check', 'nope', '--root', tmp], { encoding: 'utf8' }).status, 2);
+});
+
 console.log(`\n${passed} проверок пройдено`);

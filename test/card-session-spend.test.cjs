@@ -80,7 +80,7 @@ const cardText = (num) => fs.readFileSync(cardPath(num), 'utf8');
 
 // N, R, T строк расхода этой сессии из текста (карточки или вывода).
 function spendOf(text, sid) {
-  const re = /attempt,\s*([\d ]+) tokens \(([\d ]+) cache-read\), (\d+) s, `([^`]+)` — [^\n]*/g;
+  const re = /attempt,\s*([\d ]+) tokens \(([\d ]+) cache-read\)(?:, [\d ]+ out)?, (\d+) s, `([^`]+)` — [^\n]*/g;
   const out = [];
   for (const m of text.matchAll(re)) {
     if (m[4] === sid) out.push({ N: Number(m[1].replace(/ /g, '')), R: Number(m[2].replace(/ /g, '')), T: Number(m[3]), line: m[0] });

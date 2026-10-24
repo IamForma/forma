@@ -1,6 +1,6 @@
 'use strict';
 
-// Генератор зеркала ролей Claude → Gemini (`.claude/agents/` → `.agents/plugins/forma/agents/`).
+// Генератор зеркала ролей эталонного движка в движок-приёмник (папки ролей — из adapters, engines.cjs).
 // Правила выведены байт-в-байт из текущего (уже синхронного) зеркала.
 // Фронтматтер (model/effort/tools/skills) не генерируется: он инженерный выбор под возможности
 // движка, role-parity.cjs сам исключает его из сверки (normalizeText режет `^---...---\n`).
@@ -8,31 +8,43 @@
 
 const fs = require('fs');
 const path = require('path');
+const roots = require('./engine-roots.cjs');
+const { ROLE_EQUIVALENCE } = require('./role-parity.cjs');
 
-const CLAUDE_AGENTS_DIR = '.claude/agents';
-const GEMINI_AGENTS_DIR = '.agents/plugins/forma/agents';
+// Источник — движок, в чьей папке лежит этот скрипт; приёмник — движок зеркала (по id адаптера).
+// Папки ролей и скиллов обоих берутся из `sources` их адаптеров (engines.cjs); нет адаптера — зеркала нет, план пуст.
+const TARGET_ID = 'gemini';
 
-// Роль (с фронтматтером `model:`) получает суффикс заголовка « (Gemini Engine)» и полный набор
-// подстановок путей. On-demand (без фронтматтера) получает только подстановку собственной папки.
-const ROLE_TRANSFORMS = [
-  [/\.claude\/agents\/on-demand\//g, 'agents/on-demand/'],
-  [/\.claude\/agents\/run\//g, 'agents/run/'],
-  [/\.claude\/agents\/\*\.md/g, 'agents/*.md'],
-  [/\.claude\/agents\/(?=[,`\s)]|$)/g, 'agents/'],
-  [/\.claude\/skills\//g, '.agents/skills/'],
-];
-const ON_DEMAND_TRANSFORMS = [
-  [/\.claude\/agents\/on-demand\//g, 'agents/on-demand/'],
-];
-
-// Строки-исключения: ссылка на конкретный файл (не на «мою папку ролей» вообще) или документация
-// самого устройства двух зеркал сразу — регекс не умеет отличить это от общей ссылки на папку,
-// поэтому исключение явное, по файлу и точной подстроке. Расширять только по найденному в diff.
-const PROTECTED_LITERALS = {
-  'core.md': ['`.claude/skills/*/SKILL.md`'],
-  'spec.md': ['agents in `.claude/agents/`, skills in `.claude/skills/`'],
-  [path.join('run', 'run-image-series.md')]: ["(`~/.claude/skills/`, not `.claude/skills/` of this project)"],
-};
+/** Контекст зеркала для проекта: { from, to, roleTransforms, onDemandTransforms, protectedLiterals } или null. */
+function ctxOf(root) {
+  const from = roots.own(root);
+  const to = roots.find(root, TARGET_ID);
+  if (!from || !to || !from.src.rolesDir || !to.src.rolesDir) return null;
+  const rel = path.posix.basename(to.src.rolesDir); // как зеркало называет свою папку ролей изнутри
+  const re = (s, tail = '') => new RegExp(roots.escapeRe(s) + tail, 'g');
+  const R = from.src.rolesDir;
+  const K = from.src.skillsDir;
+  const tick = '`';
+  // Роль (с фронтматтером `model:`) получает суффикс заголовка « (Gemini Engine)» и полный набор
+  // подстановок путей. On-demand (без фронтматтера) получает только подстановку собственной папки.
+  const onDemand = [[re(`${R}/on-demand/`), `${rel}/on-demand/`]];
+  const roleTransforms = [
+    ...onDemand,
+    [re(`${R}/run/`), `${rel}/run/`],
+    [re(`${R}/*.md`), `${rel}/*.md`],
+    [re(`${R}/`, '(?=[,`\s)]|$)'), `${rel}/`],
+    [re(`${K}/`), `${to.src.skillsDir}/`],
+  ];
+  // Строки-исключения: ссылка на конкретный файл (не на «мою папку ролей» вообще) или документация
+  // самого устройства двух зеркал сразу — регекс не умеет отличить это от общей ссылки на папку,
+  // поэтому исключение явное, по файлу и точной подстроке. Расширять только по найденному в diff.
+  const protectedLiterals = {
+    'core.md': [`${tick}${K}/*/SKILL.md${tick}`],
+    'spec.md': [`agents in ${tick}${R}/${tick}, skills in ${tick}${K}/${tick}`],
+    [path.join('run', 'run-image-series.md')]: [`(${tick}~/${from.dir}/skills/${tick}, not ${tick}${K}/${tick} of this project)`],
+  };
+  return { from, to, roleTransforms, onDemandTransforms: onDemand, protectedLiterals };
+}
 
 // on-demand файл, который сам документирует устройство зеркала (оба реальных пути названы рядом) —
 // копируется побайтово, без единой подстановки.
@@ -75,28 +87,31 @@ function transformBody(body, transforms, addTitleSuffix, literals) {
   return out;
 }
 
-/** Список файлов-ролей (относительно `.claude/agents/`): корневые шесть + `run/*.md`. */
-function listRoleFiles(root) {
-  const base = path.join(root, CLAUDE_AGENTS_DIR);
+/** Список файлов-ролей (относительно каталога ролей источника): корневые шесть + `run/*.md`. */
+function listRoleFiles(root, ctx) {
+  const base = path.join(root, ctx.from.src.rolesDir);
   const top = fs.readdirSync(base).filter((f) => f.endsWith('.md'));
   const runDir = path.join(base, 'run');
   const run = fs.existsSync(runDir) ? fs.readdirSync(runDir).filter((f) => f.endsWith('.md')).map((f) => path.join('run', f)) : [];
-  return [...top, ...run];
+  // A role the mirror carries under another name (equivalence table) has no pair by design: skipped.
+  const skip = new Set(ROLE_EQUIVALENCE.map(([src]) => src + '.md'));
+  const topPaired = top.filter((f) => !skip.has(f));
+  return [...topPaired, ...run];
 }
 
-/** Список on-demand файлов (относительно `.claude/agents/on-demand/`). */
-function listOnDemandFiles(root) {
-  const dir = path.join(root, CLAUDE_AGENTS_DIR, 'on-demand');
+/** Список on-demand файлов (относительно `on-demand/` каталога ролей источника). */
+function listOnDemandFiles(root, ctx) {
+  const dir = path.join(root, ctx.from.src.rolesDir, 'on-demand');
   return fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.md')) : [];
 }
 
 /** Сгенерированное тело для одной роли; фронтматтер берётся из текущего файла назначения (не создаётся). */
-function renderRole(root, relFile) {
-  const claudeAbs = path.join(root, CLAUDE_AGENTS_DIR, relFile);
-  const geminiAbs = path.join(root, GEMINI_AGENTS_DIR, relFile);
+function renderRole(root, relFile, ctx = ctxOf(root)) {
+  const claudeAbs = path.join(root, ctx.from.src.rolesDir, relFile);
+  const geminiAbs = path.join(root, ctx.to.src.rolesDir, relFile);
   const claudeRaw = fs.readFileSync(claudeAbs, 'utf8');
   const { body } = splitFrontmatter(claudeRaw);
-  const genBody = transformBody(body, ROLE_TRANSFORMS, true, PROTECTED_LITERALS[relFile]);
+  const genBody = transformBody(body, ctx.roleTransforms, true, ctx.protectedLiterals[relFile]);
   if (!fs.existsSync(geminiAbs)) {
     return { ok: false, reason: 'missing_dest_frontmatter', content: null };
   }
@@ -107,26 +122,28 @@ function renderRole(root, relFile) {
 }
 
 /** Сгенерированный on-demand файл: либо побайтовая копия (файл в исключениях), либо с подстановкой пути. */
-function renderOnDemand(root, file) {
-  const claudeAbs = path.join(root, CLAUDE_AGENTS_DIR, 'on-demand', file);
+function renderOnDemand(root, file, ctx = ctxOf(root)) {
+  const claudeAbs = path.join(root, ctx.from.src.rolesDir, 'on-demand', file);
   const claudeRaw = fs.readFileSync(claudeAbs, 'utf8').replace(/\r\n/g, '\n');
   if (ON_DEMAND_EXCLUDE.has(file)) return { ok: true, content: claudeRaw };
-  const content = transformBody(claudeRaw, ON_DEMAND_TRANSFORMS, false, PROTECTED_LITERALS[file]);
+  const content = transformBody(claudeRaw, ctx.onDemandTransforms, false, ctx.protectedLiterals[file]);
   return { ok: true, content };
 }
 
 /** Все пары с их генерируемым содержимым и состоянием относительно диска. `kind`: role|on-demand. */
 function planAll(root) {
+  const ctx = ctxOf(root);
+  if (!ctx) return []; // нет адаптера источника или приёмника — зеркала нет
   const plan = [];
-  for (const relFile of listRoleFiles(root)) {
-    const geminiRel = path.join(GEMINI_AGENTS_DIR, relFile);
-    const gen = renderRole(root, relFile);
-    plan.push({ kind: 'role', relFile, geminiRel, gen });
+  for (const relFile of listRoleFiles(root, ctx)) {
+    const destRel = path.join(ctx.to.src.rolesDir, relFile);
+    const gen = renderRole(root, relFile, ctx);
+    plan.push({ kind: 'role', relFile, destRel, gen });
   }
-  for (const file of listOnDemandFiles(root)) {
-    const geminiRel = path.join(GEMINI_AGENTS_DIR, 'on-demand', file);
-    const gen = renderOnDemand(root, file);
-    plan.push({ kind: 'on-demand', relFile: path.join('on-demand', file), geminiRel, gen });
+  for (const file of listOnDemandFiles(root, ctx)) {
+    const destRel = path.join(ctx.to.src.rolesDir, 'on-demand', file);
+    const gen = renderOnDemand(root, file, ctx);
+    plan.push({ kind: 'on-demand', relFile: path.join('on-demand', file), destRel, gen });
   }
   return plan;
 }
@@ -134,7 +151,7 @@ function planAll(root) {
 /** Статус одной записи плана против диска: synced|drift|would_create|problem. */
 function statusOf(root, entry) {
   if (!entry.gen.ok) return { status: 'problem', detail: entry.gen.reason };
-  const destAbs = path.join(root, entry.geminiRel);
+  const destAbs = path.join(root, entry.destRel);
   if (!fs.existsSync(destAbs)) return { status: 'would_create' };
   const destRaw = fs.readFileSync(destAbs, 'utf8').replace(/\r\n/g, '\n');
   return destRaw === entry.gen.content ? { status: 'synced' } : { status: 'drift' };
@@ -165,7 +182,7 @@ function applyAll(root, { dryRun = false } = {}) {
     const res = statusOf(root, entry);
     if (res.status === 'problem') { problems.push({ relFile: entry.relFile, reason: res.detail }); continue; }
     if (res.status === 'synced') { unchanged.push(entry.relFile); continue; }
-    const destAbs = path.join(root, entry.geminiRel);
+    const destAbs = path.join(root, entry.destRel);
     if (!dryRun) {
       fs.writeFileSync(destAbs, matchEol(entry.gen.content, destAbs), 'utf8');
     }
@@ -174,4 +191,4 @@ function applyAll(root, { dryRun = false } = {}) {
   return { written, unchanged, problems };
 }
 
-module.exports = { planAll, checkAll, applyAll, renderRole, renderOnDemand, CLAUDE_AGENTS_DIR, GEMINI_AGENTS_DIR };
+module.exports = { planAll, checkAll, applyAll, renderRole, renderOnDemand, ctxOf };
