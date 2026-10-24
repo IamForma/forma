@@ -28,7 +28,7 @@ const economy = require('./economy.cjs');
 const { walk } = require('./lib/fs.cjs');
 const { frontmatterBlock } = require('./lib/card.cjs');
 const engines = require('./lib/engines.cjs');
-const { toEnglish, SPEND_SOURCE, CLAIM_RE, CACHE_UNKNOWN_RE, TOKENS_UNKNOWN_RE, ID_UNKNOWN_RE, toInt, sessionWindowEnd, outTokens } = require('./spend-line.cjs');
+const { toEnglish, SPEND_SOURCE, CLAIM_RE, CACHE_UNKNOWN_RE, TOKENS_UNKNOWN_RE, ID_UNKNOWN_RE, toInt, outTokens, dedupKey } = require('./spend-line.cjs');
 
 // Три вещи, на которых этот разбор ломался или сломался бы:
 //   1. Разряды числа пишут через пробел («52 339 tokens») — простое \d+ такую строку не берёт.
@@ -44,8 +44,8 @@ const LINE_RE = new RegExp('^-\\s*' + SPEND_SOURCE + '—\\s*(.*)$', 'i');
 const SERVICE_RE = /(\d[\d\s  ]*)\s*([A-Za-zА-Яа-яЁё][A-Za-zА-Яа-яЁё.]*)\s*\(([^)\/]+)\/([^)]+)\)/g;
 
 // Строки, похожие на запись захода (есть «attempt,» и дата), но не подошедшие под LINE_RE —
-// повод проверить формат руками, а не молча потерять данные.
-const SUSPECT_RE = new RegExp('`[^`]+`,\\s*' + CLAIM_RE.source);
+// повод проверить формат руками, а не молча потерять данные. Форма «attempt N,» (номер захода вместо токенов) — тоже подозрительна.
+const SUSPECT_RE = new RegExp('`[^`]+`,\\s*' + CLAIM_RE.source.replace('attempt,', 'attempt\\s*\\d*,'));
 
 /** Карточка демонстрационного круга (метка `demo`): в расход и статистику доски не входит. */
 const isDemoCard = (file) => /^labels:\s*\[[^\]]*["']demo["']/m.test(fs.readFileSync(file, 'utf8'));
@@ -82,27 +82,6 @@ function serviceUnits(tail) {
 
 /** id вызова в конце хвоста строки; `id unknown` или его отсутствие — false/null. */
 const callIdMatch = (line, tail) => !ID_UNKNOWN_RE.test(line) && /`([^`\s]+)`\s*$/.exec(tail || '');
-
-// Строка основной сессии (card-session-spend) несёт id сессии — он общий для всех
-// карточек сессии, а доля у каждой своя: ключ дедупликации — карточка + id. Строки с меткой
-// границы окна — приращения одной сессии по одной карточке, каждая за свои ответы: метка в ключе.
-// Старые строки без метки (накопительные) по-прежнему схлопываются в первую.
-// Обычные строки: id вызова плюс числа захода. Один вызов, записанный в двух карточках теми же числами, —
-// дубль; общий id сессии с разными числами — разные окна, считаются все (раньше вторая и далее терялись).
-//
-// Пакетный вызов (Spec без потолка, Kit до 4 карточек за раз — kit.md, «Task kitting»):
-// расход делится между карточками (claude-economy.cjs `--split K --share I`), и доля на карточку
-// может случайно совпасть у двух карточек (чётное деление). Метка `batch I/K` в хвосте строки —
-// ключ дедупликации берёт файл карточки и саму долю, а не числа: иначе совпавшие по случайности
-// доли схлопнулись бы в одну и карточки лишились бы своего расхода, хотя дублем не были.
-const BATCH_SHARE_RE = /\(batch\s+(\d+)\/(\d+)\)/;
-
-function dedupKey(line, file, id, m) {
-  if (/card-session-spend/.test(line)) return path.basename(file) + "|" + id + "|" + (sessionWindowEnd(line) ?? "");
-  const batch = BATCH_SHARE_RE.exec(line);
-  if (batch) return path.basename(file) + "|" + id + "|batch|" + batch[1] + "/" + batch[2];
-  return [id, m[3], m[4] ?? "", m[5] ?? ""].join("|");
-}
 
 // Строка → канонические переменные (.forma/manual/en/03-protocol/ECONOMY.md); счёт — economy.cjs.
 // null — маркер `unknown` (отдельно), undefined — поле не записано.
@@ -151,7 +130,7 @@ function newTallyState() {
 
 function absorb(st, file, res) {
   const name = path.basename(file);
-  if (res.unparsed) { st.unparsed.push({ file: name, line: res.unparsed }); return; }
+  if (res.unparsed) { st.unparsed.push({ file: name, lineNo: res.lineNo, line: res.unparsed }); return; }
   if (res.dup) { st.filesWithAttempt.add(name); return; }
   const rec = res.rec;
   if (!rec) return;
@@ -226,7 +205,11 @@ function summarizeEngines(records, engineFiles) {
 function tallyFiles(files, seenIds, engine, canon) {
   const st = newTallyState();
   for (const file of files) {
-    for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) absorb(st, file, readLine(raw, file, engine, seenIds, canon));
+    fs.readFileSync(file, 'utf8').split(/\r?\n/).forEach((raw, i) => {
+      const res = readLine(raw, file, engine, seenIds, canon);
+      if (res.unparsed) res.lineNo = i + 1;
+      absorb(st, file, res);
+    });
   }
   const { nodesOut, total } = summarizeNodes(st.byNode);
   return {
@@ -480,7 +463,7 @@ function floorLines(weights) {
 function unparsedLines(unparsed) {
   if (!unparsed.length) return [];
   return ['', `Похожи на заход, но не разобрались — проверить руками: ${unparsed.length}.`,
-    ...unparsed.slice(0, 5).map((s) => `  ${s.file}: ${s.line}`)];
+    ...unparsed.slice(0, 5).map((s) => `  ${s.file}${s.lineNo ? ':' + s.lineNo : ''}: ${s.line}`)];
 }
 
 function report(targets) {

@@ -17,7 +17,7 @@
  * Канон ключевой части — английский; русские строки приводятся `toEnglish()` до разбора.
  */
 
-const { toEnglish, SPEND_SOURCE, ID_UNKNOWN_RE, CLAIM_RE, sessionWindowEnd, outTokens } = require('../spend-line.cjs');
+const { toEnglish, SPEND_SOURCE, ID_UNKNOWN_RE, CLAIM_RE, sessionWindowEnd, outTokens, dedupKey } = require('../spend-line.cjs');
 
 const ATTEMPT_RE = new RegExp(SPEND_SOURCE, 'g');
 
@@ -112,7 +112,7 @@ function parseClosedDate(raw) {
 const ATTEMPT_LINE_RE = new RegExp('^-\\s*' + ATTEMPT_RE.source);
 
 /** Запись захода из совпадения `m` и строки `line`; нечисло — `null` (его называет `parseMalformedAttempts`). */
-function attemptRecord(m, line) {
+function attemptRecord(m, line, file) {
   const n = attemptNumbers(m);
   if (n === null) return null;
   const english = toEnglish(line.trim());
@@ -125,6 +125,8 @@ function attemptRecord(m, line) {
   const idm = !ID_UNKNOWN_RE.test(english) && /`([^`\s]+)`\s*$/.exec(m[9] || '');
   const record = {
     callId: idm ? idm[1] : null,
+    // Ключ дедупликации — общий с tally.cjs (spend-line.cjs `dedupKey`); без id вызова дедупликации нет.
+    dedupKey: idm && file ? dedupKey(line, file, idm[1], m) : null,
     sessionSpend: /card-session-spend/.test(line),
     tokensUnknown: n.tokensUnknown,
     node: m[1],
@@ -154,13 +156,13 @@ function attemptRecord(m, line) {
 }
 
 /** Заходы узлов из строк расхода карточки. */
-function parseAttempts(raw) {
+function parseAttempts(raw, file) {
   const attempts = [];
   for (const line of raw.split(/\r?\n/)) {
     const m = ATTEMPT_LINE_RE.exec(toEnglish(line.trim()));
     if (m === null) continue;
     // Единственное место, где рождается запись расхода, — значит и единственные ворота для нечисла.
-    const record = attemptRecord(m, line);
+    const record = attemptRecord(m, line, file);
     if (record !== null) attempts.push(record);
   }
   return attempts;
