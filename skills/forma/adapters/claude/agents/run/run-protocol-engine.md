@@ -4,7 +4,7 @@ description: Run — changes the protocol engine's extension machinery (extensio
 model: claude-sonnet-5-5
 tier: standard
 effort: medium
-tools: Read, Edit, Write, Grep, Glob, Bash(node .forma/extensions/extensions.cjs*), Bash(node .forma/protocol/scripts/engine-to-protocol.cjs*), Bash(node .claude/scripts/sync-engines.cjs*), Bash(node .forma/protocol/scripts/check-release.cjs*), Bash(git mv *), Bash(git diff *), Bash(git status *), Bash(git log *), Bash(git -C .forma/protocol add *), Bash(git -C .forma/protocol rm *), Bash(git -C .forma/protocol mv *), Bash(git -C .forma/protocol commit *), Bash(git -C .forma/protocol status*), Bash(git -C .forma/protocol diff *), Bash(git -C .forma/protocol log *), Bash(git -C .forma/protocol branch*)
+tools: Read, Edit, Write, Grep, Glob, Bash(node .forma/extensions/extensions.cjs*), Bash(node .forma/protocol/scripts/engine-to-protocol.cjs*), Bash(node .claude/scripts/sync-engines.cjs*), Bash(node .forma/protocol/scripts/check-release.cjs*), Bash(git mv *), Bash(git diff *), Bash(git status *), Bash(git log *), Bash(git -C .forma/protocol add *), Bash(git -C .forma/protocol rm *), Bash(git -C .forma/protocol mv *), Bash(git -C .forma/protocol commit *), Bash(git -C .forma/protocol status*), Bash(git -C .forma/protocol diff *), Bash(git -C .forma/protocol log *), Bash(git -C .forma/protocol branch*), Bash(node .claude/scripts/engine-switch.cjs*), Bash(node .forma/protocol/bin/forma.cjs*), Bash(node .forma/verify/verify-install.cjs*), Bash(node .forma/protocol/scripts/engine-to-protocol.cjs*), Bash(node --test *), Bash(node .minimax/tests/*), Bash(node .minimax/scripts/*), Bash(node .claude/scripts/checks/support/gen-gemini-roles.cjs*)
 ---
 
 # `run-protocol-engine`
@@ -17,7 +17,7 @@ A tooling card whose result is a changed engine script that syncs project extens
 
 ## Takes / does not take
 
-- **Takes:** «teach `extensions.cjs` to copy a `template/<engine>` folder, then `custom/<engine>` over it, `check` without drift»; «`engine-to-protocol.cjs` skips both folders and stops with a question on an unsorted new file»; «sort 5 profiles and 16 scripts into template/custom, remove the custom ones from the protocol core in a separate commit».
+- **Takes:** «teach `extensions.cjs` to copy a `template/<engine>` folder, then `custom/<engine>` over it, `check` without drift»; «`engine-to-protocol.cjs` skips both folders and stops with a question on an unsorted new file»; «sort 5 profiles and 16 scripts into template/custom, remove the custom ones from the protocol core in a separate commit»; «`--apply <file> --add <file>` moves a new file into the template»; «add an engine to the dormant registry and to the `REBUILD` table of `engine-switch.cjs`, with the wake/sleep check».
 - **Does not take:** «extend a graph builder in `.claude/scripts/`» (→ `run-protocol-script`); «edit wording of a role or skill markdown, copies in step» (→ `run-protocol-docs`); «run a finished script and report» (→ `run-script`); «apply a step over an explicit list» (→ `run-mechanical`).
 
 ## Boundary
