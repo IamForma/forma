@@ -110,18 +110,23 @@ it('ручная строка с тем же id: хук не дублирует 
 
 it('продолжение: новая запись continuation:true, в карточку — дельта', () => {
   fs.appendFileSync(tr, [
-    step(3, 'r3', T('@DT10:05:00.000Z'), { input_tokens: 4, output_tokens: 6, cache_read_input_tokens: 90, cache_creation_input_tokens: 0 }),
+    // простой 29 минут между остановками, затем сообщение-продолжение и один новый шаг через 40 с
+    JSON.stringify({ type: 'user', timestamp: T('@DT10:30:00.000Z'), message: { role: 'user', content: 'продолжай' } }),
+    step(3, 'r3', T('@DT10:30:40.000Z'), { input_tokens: 4, output_tokens: 6, cache_read_input_tokens: 90, cache_creation_input_tokens: 0 }),
   ].join('\n') + '\n');
   const r = record(ev, { root, now: new Date(T('@DT10:06:00Z')) });
   assert.ok(r.recorded);
   const x = rows().filter((q) => q.conversationId === 'aaa111');
   assert.equal(x.length, 2); assert.equal(x[1].continuation, true);
-  assert.equal(x[1].duration_s, 300);
+  assert.equal(x[1].duration_s, 1840); // накопительное, с простоем
+  assert.equal(x[1].active_s, 40);     // только новые записи
+  assert.equal(x[0].until, x[0].until && T('@DT10:01:00.000Z'));
   // итог N = 341 + 100 = 441 → доли 147 каждой; было 114/114/113 → дельты 33/33/34; R 130→ 130-100... итог R 390 → 130 каждой
   const l = histLines(f901);
   assert.equal(l.length, 2);
-  assert.match(l[1], /attempt, 33 tokens \(30 cache-read\), 2 out, 80 s, `aaa111` — claude-code: продолжение вызова — автозапись хуком/);
+  assert.match(l[1], /attempt, 33 tokens \(30 cache-read\), 2 out, 14 s, `aaa111` — claude-code: продолжение вызова — автозапись хуком/);
   assert.equal(histLines(f903).length, 2);
+  assert.match(histLines(f903)[1], /34 tokens .* 13 s,/); // 40 с делятся 14/13/13, простой не входит
 });
 
 it('в промпте нет явной карточки: cards [] в журнале, карточки не пишутся', () => {

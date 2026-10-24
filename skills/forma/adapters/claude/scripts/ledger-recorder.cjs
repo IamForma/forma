@@ -10,7 +10,7 @@
  *    шаги дедуплицируются по requestId; N = in + write + read + out; T = от первой до последней записи, целые секунды.
  * 2. Дописывает запись в `.claude/.ledger/calls.jsonl`: { timestamp, conversationId: agent_id, engine: 'claude-code',
  *    node: agent_type, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, duration_s, cards }.
- *    Числа записи — нарастающие итоги стенограммы. Повторный SubagentStop того же agent_id (SendMessage-продолжение) —
+ *    Числа записи — нарастающие итоги стенограммы. Запись несёт `until` — метку последнего учтённого шага; T продолжения (`active_s`, в карточку) — время только записей после неё. Повторный SubagentStop того же agent_id (SendMessage-продолжение) —
  *    новая запись с continuation: true; тот же итог без прироста — не пишется.
  * 3. В `## История` каждой карточки из cards (номера `card-NNN` из первого сообщения пользователя стенограммы (правило — `cardsIn`)), найденной на
  *    доске или в done/, дописывает строку §3 через formatSpendLine. K>1 найденных карточек — N, R, O, T делятся
@@ -32,7 +32,7 @@ const economy = require('../../.forma/dashboard/economy.cjs');
 const { findTranscript } = require('../../.forma/dashboard/subagent-transcript.cjs');
 const { cardFiles } = require('../../.forma/dashboard/lib/card.cjs');
 const i18n = require('../../.forma/i18n/index.cjs');
-const { claudeUsage, splitForBatch } = require('./claude-economy.cjs');
+const { claudeUsage, splitForBatch, batchShare } = require('./claude-economy.cjs');
 
 const ENGINE_TAG = 'claude-code';
 const DEFAULT_ROOT = path.resolve(__dirname, '..', '..');
@@ -62,13 +62,14 @@ function logError(root, msg) {
 function readCall(file) {
   const seen = new Set();
   const t = economy.emptyUsage();
-  let first = null, last = null, prompt = null;
+  let first = null, last = null, prompt = null, lastStep = null;
+  const stamps = [];
   for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     if (!line.trim()) continue;
     let j;
     try { j = JSON.parse(line); } catch { continue; }
     const ts = j.timestamp ? Date.parse(j.timestamp) : NaN;
-    if (Number.isFinite(ts)) { if (first == null || ts < first) first = ts; if (last == null || ts > last) last = ts; }
+    if (Number.isFinite(ts)) { stamps.push(ts); if (first == null || ts < first) first = ts; if (last == null || ts > last) last = ts; }
     if (prompt == null && j.type === 'user' && j.message && j.message.role === 'user') {
       const c = j.message.content;
       const text = typeof c === 'string' ? c
@@ -81,12 +82,13 @@ function readCall(file) {
     if (seen.has(key)) continue;
     seen.add(key);
     economy.addUsage(t, claudeUsage(u));
+    if (Number.isFinite(ts) && (lastStep == null || ts > lastStep)) lastStep = ts;
   }
   if (!t.calls) return null;
   return {
     steps: t.calls, tokens_in: t.tokens_in, tokens_out: t.tokens_out, cache_read: t.cache_read, cache_write: t.cache_write,
     duration_s: first != null && last != null ? Math.round((last - first) / 1000) : null,
-    prompt: prompt || '',
+    prompt: prompt || '', stamps, until: lastStep,
   };
 }
 
@@ -169,10 +171,19 @@ function record(payload, opts = {}) {
     input_tokens: call ? call.tokens_in : null, output_tokens: call ? call.tokens_out : null,
     cache_read_tokens: call ? call.cache_read : null, cache_write_tokens: call ? call.cache_write : null,
     duration_s: call ? call.duration_s : null, cards,
+    until: call && call.until != null ? new Date(call.until).toISOString() : null,
   };
+  // T продолжения — время только новых записей стенограммы (после границы `until` прошлой записи), без простоя между остановками.
+  let activeNew = null;
   if (continuation) {
     rec.continuation = true;
     const p = prior[prior.length - 1];
+    const pu = p.until ? Date.parse(p.until) : NaN;
+    if (call && Number.isFinite(pu)) {
+      const fresh = call.stamps.filter((x) => x > pu);
+      activeNew = fresh.length ? Math.round((Math.max(...fresh) - Math.min(...fresh)) / 1000) : 0;
+      rec.active_s = activeNew;
+    }
     const same = ['input_tokens', 'output_tokens', 'cache_read_tokens', 'cache_write_tokens'].every((k) => p[k] === rec[k]);
     if (same && call) { result.skipped.push('нет прироста против последней записи журнала'); return result; }
   }
@@ -201,7 +212,8 @@ function record(payload, opts = {}) {
       if (!continuation) { result.skipped.push(`card-${c.num}: строка с этим call id уже есть`); return; }
       if (tokens == null || tokens - acc.tokens <= 0) { result.skipped.push(`card-${c.num}: нового расхода нет`); return; }
       const d = (v, a) => (v == null ? null : Math.max(0, v - a));
-      tokens = d(tokens, acc.tokens); r = d(r, acc.cache); o = d(o, acc.out); s = d(s, acc.seconds);
+      tokens = d(tokens, acc.tokens); r = d(r, acc.cache); o = d(o, acc.out);
+      s = activeNew != null ? (K > 1 ? batchShare(activeNew, K, idx + 1) : activeNew) : d(s, acc.seconds);
     }
     const what = (meta.description || '').replace(/\s+/g, ' ').trim();
     const desc = (acc.lines ? 'продолжение вызова — ' : '') + 'автозапись хуком SubagentStop'
