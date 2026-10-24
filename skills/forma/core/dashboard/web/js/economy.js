@@ -744,16 +744,24 @@ function summaryHtml(e){
     return `<div style="font-size:22px;font-weight:600;line-height:1.3">${cell(x, f, '—')}${rank}</div>`;
   };
   const dec = (v, n) => v.toFixed(n);
-  const cards = sm.tags.map(k => {
-    const r = sm.engines[k];
-    return `<div class="e-card" style="flex:1 1 220px"><h3>${esc(engineLabel(k))}</h3>
+  const nd = t('econ.speed.noData');
+  const usd = v => '$' + dec(v, 4);
+  const one = (title, r, extra) => `<div class="e-card" style="flex:1 1 220px"${extra || ''}><h3>${title}</h3>
       <div class="dim">${t('econ.sum.secPerClosed')}</div>${big(r.secPerClosed, v => secText(Math.round(v)))}
       <div class="dim">${t('econ.sum.tokPerClosed')}</div>${big(r.tokensPerClosed, v => fmt(Math.round(v)))}
-      <div class="dim" style="margin-top:6px">${t('econ.sum.firstResponse')}: ${cell(r.firstResponse, v => secText(Math.round(v)), t('econ.speed.noData'))}</div>
-      <div class="dim">${t('econ.sum.outPerActive')}: ${cell(r.outPerActiveSec, v => dec(v, 1), t('econ.speed.noData'))}</div>
+      <div class="dim" style="margin-top:6px"><b>${t('econ.sum.spend')}</b></div>
+      <div class="dim">${t('econ.sum.tokTotal')}: ${cell(r.tokensTotal, v => fmt(Math.round(v)), nd)}</div>
+      <div class="dim">${t('econ.sum.usdTotal')}: ${cell(r.usdTotal, usd, nd)}</div>
+      <div class="dim">${t('econ.sum.secTotal')}: ${cell(r.secTotal, v => secText(Math.round(v)), nd)}</div>
+      <div class="dim">${t('econ.sum.usdPerClosed')}: ${cell(r.usdPerClosed, usd, nd)}</div>
+      <div class="dim" style="margin-top:6px"><b>${t('econ.sum.perf')}</b></div>
+      <div class="dim">${t('econ.sum.outPerCall')}: ${cell(r.outPerCallSec, v => dec(v, 1), nd)}</div>
+      <div class="dim">${t('econ.sum.outPerActive')}: ${cell(r.outPerActiveSec, v => dec(v, 1), nd)}</div>
+      <div class="dim">${t('econ.sum.firstResponse')}: ${cell(r.firstResponse, v => secText(Math.round(v)), nd)}</div>
       <div class="dim">${t('econ.sum.retry')}: ${cell(r.retryShare, v => Math.round(v * 100) + '%', '—')}</div>
       <small class="dim">${t('econ.sum.closed', {n: fmt(r.closedCards)})}</small></div>`;
-  }).join('');
+  const cards = sm.tags.map(k => one(esc(engineLabel(k)), sm.engines[k])).join('')
+    + (sm.total ? one(t('econ.sum.total'), sm.total, ' data-summary-total') : '');
   return `<div class="tier"><div class="tier-lab">${t('econ.sum.title')}</div>
     ${hintFold(`<p class="hint">${t('econ.sum.hint')}</p>`)}
     <div style="display:flex;flex-wrap:wrap;gap:12px">${cards}</div></div>`;

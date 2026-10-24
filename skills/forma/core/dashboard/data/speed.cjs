@@ -157,47 +157,83 @@ function ledgerStats(records) {
   return { records: recs.length, first, out, sec, used, knownOut };
 }
 
-function buildSummary(cards, ledgers = {}, extraTags = []) {
-  const acc = {};
-  const at = (k) => acc[k] || (acc[k] = { closed: 0, closedAttempts: 0, secSum: 0, secCards: 0, tokSum: 0, tokCards: 0 });
+/**
+ * Расход и производительность по строкам `## История`. `engine` — тег или `null` («Итого» по всем движкам).
+ *   - расход всего: сумма по попыткам с известной величиной; n — такие попытки, m — все попытки;
+ *   - цена $: только попытки с записанной ценой (сегмент `$` или провайдер) — нет цены, это не ноль, а «нет данных»;
+ *   - на закрытую карточку: сумма по попыткам закрытых карточек / число закрытых карточек с известной величиной;
+ *   - токены out в секунду вызова: Σ out / Σ секунд по попыткам, где известны оба числа и секунды > 0.
+ */
+function spendOf(cards, engine) {
+  const s = { att: 0, tok: 0, tokN: 0, usd: 0, usdN: 0, sec: 0, secN: 0, out: 0, outSec: 0, outN: 0, outKnown: 0,
+    closed: 0, closedAttempts: 0, cTok: 0, cTokCards: 0, cUsd: 0, cUsdCards: 0, cSec: 0, cSecCards: 0 };
   for (const c of cards) {
-    if (c.status !== 'done') continue;
-    const mine = {};
-    for (const z of c.attempts) (mine[z.engine] || (mine[z.engine] = [])).push(z);
-    for (const [k, list] of Object.entries(mine)) {
-      const r = at(k);
-      r.closed += 1; r.closedAttempts += list.length;
-      const secs = list.map((z) => num(z.seconds)).filter((x) => x != null);
-      if (secs.length) { r.secSum += secs.reduce((s, x) => s + x, 0); r.secCards += 1; }
-      const toks = list.map((z) => num(z.tokens)).filter((x) => x != null);
-      if (toks.length) { r.tokSum += toks.reduce((s, x) => s + x, 0); r.tokCards += 1; }
+    const list = c.attempts.filter((z) => engine == null || z.engine === engine);
+    if (!list.length) continue;
+    for (const z of list) {
+      s.att += 1;
+      const tok = num(z.tokens), sec = num(z.seconds), out = num(z.tokensOut);
+      const priced = z.provider != null || (num(z.costUsd) || 0) > 0;
+      if (tok != null) { s.tok += tok; s.tokN += 1; }
+      if (priced) { s.usd += num(z.costUsd) || 0; s.usdN += 1; }
+      if (sec != null) { s.sec += sec; s.secN += 1; }
+      if (out != null) s.outKnown += 1;
+      if (out != null && sec != null && sec > 0) { s.out += out; s.outSec += sec; s.outN += 1; }
     }
+    if (c.status !== 'done') continue;
+    s.closed += 1; s.closedAttempts += list.length;
+    const sum = (f) => { const xs = list.map(f).filter((x) => x != null); return xs.length ? xs.reduce((a, b) => a + b, 0) : null; };
+    const t = sum((z) => num(z.tokens)), u = sum((z) => (z.provider != null || (num(z.costUsd) || 0) > 0 ? num(z.costUsd) || 0 : null)), q = sum((z) => num(z.seconds));
+    if (t != null) { s.cTok += t; s.cTokCards += 1; }
+    if (u != null) { s.cUsd += u; s.cUsdCards += 1; }
+    if (q != null) { s.cSec += q; s.cSecCards += 1; }
   }
+  const outLow = s.att > 0 && s.outKnown / s.att < 0.5;
+  return {
+    closedCards: s.closed,
+    secPerClosed: metric(s.cSec / (s.cSecCards || 1), s.cSecCards, s.closed),
+    tokensPerClosed: metric(s.cTok / (s.cTokCards || 1), s.cTokCards, s.closed),
+    usdPerClosed: metric(s.cUsd / (s.cUsdCards || 1), s.cUsdCards, s.closed),
+    retryShare: metric(s.closedAttempts ? (s.closedAttempts - s.closed) / s.closedAttempts : null, s.closed, s.closed),
+    tokensTotal: metric(s.tok, s.tokN, s.att),
+    usdTotal: metric(s.usd, s.usdN, s.att),
+    secTotal: metric(s.sec, s.secN, s.att),
+    outPerCallSec: metric(s.outSec > 0 ? s.out / s.outSec : null, s.outN, s.att, outLow),
+    outKnownShare: s.att ? s.outKnown / s.att : null,
+  };
+}
+
+function buildSummary(cards, ledgers = {}, extraTags = []) {
+  const cardTags = new Set();
+  for (const c of cards) for (const z of c.attempts) cardTags.add(z.engine);
   const rows = rowsOf(cards);
-  const tags = [...new Set([...Object.keys(acc), ...Object.keys(ledgers), ...extraTags])].sort((a, b) => a.localeCompare(b));
+  const tags = [...new Set([...cardTags, ...Object.keys(ledgers), ...extraTags])].sort((a, b) => a.localeCompare(b));
   const engines = {};
-  for (const k of tags) {
-    const a = acc[k] || { closed: 0, closedAttempts: 0, secSum: 0, secCards: 0, tokSum: 0, tokCards: 0 };
-    const l = ledgerStats(ledgers[k]);
-    const sp = rows[k];
+  const ledgerOf = (l, sp) => {
     const cardOutShare = sp && sp.attempts ? sp.outKnown / sp.attempts : null;
     const ledgerOutShare = l.records ? l.knownOut / l.records : null;
     const outLow = (cardOutShare != null && cardOutShare < 0.5) || (ledgerOutShare != null && ledgerOutShare < 0.5);
-    engines[k] = {
-      closedCards: a.closed,
-      secPerClosed: metric(a.secSum / (a.secCards || 1), a.secCards, a.closed),
-      tokensPerClosed: metric(a.tokSum / (a.tokCards || 1), a.tokCards, a.closed),
-      retryShare: metric(a.closedAttempts ? (a.closedAttempts - a.closed) / a.closedAttempts : null, a.closed, a.closed),
+    return {
       firstResponse: metric(median(l.first), l.first.length, l.records),
       outPerActiveSec: metric(l.sec > 0 ? l.out / l.sec : null, l.used, l.records, outLow),
     };
+  };
+  const pooled = { records: 0, first: [], out: 0, sec: 0, used: 0, knownOut: 0 };
+  for (const k of tags) {
+    const l = ledgerStats(ledgers[k]);
+    engines[k] = { ...spendOf(cards, k), ...ledgerOf(l, rows[k]) };
+    pooled.records += l.records; pooled.first.push(...l.first); pooled.out += l.out; pooled.sec += l.sec;
+    pooled.used += l.used; pooled.knownOut += l.knownOut;
   }
+  // Итого по всем движкам: карточка с попытками двух движков считается закрытой один раз.
+  const allRows = Object.values(rows);
+  const total = { ...spendOf(cards, null), ...ledgerOf(pooled, { attempts: allRows.reduce((s, r) => s + r.attempts, 0), outKnown: allRows.reduce((s, r) => s + r.outKnown, 0) }) };
   // Рейтинг: 1-е место — меньше; только среди движков со значением.
   for (const key of ['secPerClosed', 'tokensPerClosed']) {
     tags.filter((k) => engines[k][key].v != null).sort((x, y) => engines[x][key].v - engines[y][key].v)
       .forEach((k, i) => { engines[k][key].rank = i + 1; });
   }
-  return { minN: MIN_N, tags, engines };
+  return { minN: MIN_N, tags, engines, total };
 }
 
 module.exports = { buildSpeed, buildSummary, ALL, UNKNOWN_MODEL, MIN_N };
