@@ -12,7 +12,7 @@
  *    node: agent_type, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, duration_s, cards }.
  *    Числа записи — нарастающие итоги стенограммы. Повторный SubagentStop того же agent_id (SendMessage-продолжение) —
  *    новая запись с continuation: true; тот же итог без прироста — не пишется.
- * 3. В `## История` каждой карточки из cards (номера `card-NNN` из первого сообщения пользователя стенограммы), найденной на
+ * 3. В `## История` каждой карточки из cards (номера `card-NNN` из первого сообщения пользователя стенограммы (правило — `cardsIn`)), найденной на
  *    доске или в done/, дописывает строку §3 через formatSpendLine. K>1 найденных карточек — N, R, O, T делятся
  *    (splitForBatch, пометка `batch I/K`). В карточку идёт доля минус уже учтённое по этому call id (продолжение — дельта);
  *    у не-продолжения строка с этим call id уже в карточке (записана рукой) — не дублируется.
@@ -128,9 +128,19 @@ function insertIntoHistory(text, spendLine) {
   return lines.join('\n');
 }
 
+/**
+ * Обслуженная карточка — только та, чей номер стоит (а) в строке «Карточка: …» / «Card: …» или (б) в пути файла
+ * `.devtool/features/card-NNN-…` / `done/card-NNN-…` из промпта. Прочие упоминания (`after-card-NNN`, «см. card-NNN»,
+ * «после card-NNN») не считаются. Не нашлось ни одной — [].
+ */
 function cardsIn(prompt) {
   const set = new Set();
-  for (const m of String(prompt).matchAll(/card-(\d{3})(?!\d)/g)) set.add(m[1]);
+  const text = String(prompt);
+  for (const line of text.split(/\r?\n/)) {
+    if (!/^\s*(?:Карточк[аи]|Card)\s*:/i.test(line)) continue;
+    for (const m of line.matchAll(/(?<![\w-])card-(\d{3})(?!\d)/g)) set.add(m[1]);
+  }
+  for (const m of text.matchAll(/\.devtool[\/]features[\/](?:done[\/])?card-(\d{3})-/g)) set.add(m[1]);
   return [...set].sort();
 }
 
@@ -194,7 +204,7 @@ function record(payload, opts = {}) {
       tokens = d(tokens, acc.tokens); r = d(r, acc.cache); o = d(o, acc.out); s = d(s, acc.seconds);
     }
     const what = (meta.description || '').replace(/\s+/g, ' ').trim();
-    const desc = (acc.lines ? 'продолжение вызова, ' : '') + 'автозапись хуком SubagentStop'
+    const desc = (acc.lines ? 'продолжение вызова — ' : '') + 'автозапись хуком SubagentStop'
       + (what ? ` (${what.replace(/—/g, '-')})` : '') + (K > 1 ? ` (batch ${idx + 1}/${K})` : '') + '.'
       + (call ? '' : ' (стенограмма вызова не найдена: N, R, O, T неизвестны.)');
     const line = '- ' + formatSpendLine({

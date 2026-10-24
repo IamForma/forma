@@ -9,7 +9,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { record, nodeOf } = require('./ledger-recorder.cjs');
+const { record, nodeOf, cardsIn } = require('./ledger-recorder.cjs');
 const { tally } = require('../../.forma/dashboard/tally.cjs');
 const { PARSES_RE } = require('../../.forma/dashboard/spend-line.cjs');
 
@@ -29,11 +29,19 @@ const card = (n, dir = board) => {
   return f;
 };
 const f901 = card('901'), f902 = card('902'), f903 = card('903', path.join(board, 'done'));
+const f950 = card('950'), f951 = card('951'), f952 = card('952');
+const NL = String.fromCharCode(10);
+
+it('cardsIn: только «Карточка:»/«Card:» и пути карточек', () => {
+  assert.deepEqual(cardsIn(T(['Card: @c-901, @c-902', 'после @c-903', 'after-@c-904', 'см. @c-905'].join(NL))), ['901', '902']);
+  assert.deepEqual(cardsIn(T('Файл .devtool/features/@c-906-x.md и после @c-907')), ['906']);
+  assert.deepEqual(cardsIn(T('Только после @c-908, after-@c-909.')), []);
+});
 
 const tr = path.join(root, 'agent-aaa111.jsonl');
 const step = (i, rid, t, u) => JSON.stringify({ type: 'assistant', requestId: rid, timestamp: t, message: { model: 'm', usage: u } });
 const base = [
-  JSON.stringify({ type: 'user', timestamp: T('@DT10:00:00.000Z'), message: { role: 'user', content: T('Карточки: @c-901 и @c-902, ещё @c-903, @c-999; повтор @c-901.') } }),
+  JSON.stringify({ type: 'user', timestamp: T('@DT10:00:00.000Z'), message: { role: 'user', content: T(['Карточка: @c-901 и @c-902; повтор @c-901.', 'Файл .devtool/features/done/@c-903-test.md', 'после @c-950, after-@c-951, см. @c-952.'].join(NL)) } }),
   step(1, 'r1', T('@DT10:00:10.000Z'), { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 100, cache_creation_input_tokens: 5 }),
   step(1, 'r1', T('@DT10:00:10.000Z'), { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 100, cache_creation_input_tokens: 5 }), // дубль
   step(2, 'r2', T('@DT10:01:00.000Z'), { input_tokens: 1, output_tokens: 2, cache_read_input_tokens: 200, cache_creation_input_tokens: 3 }),
@@ -56,7 +64,9 @@ it('запись в журнал: итоги без дублей шагов, T �
   const [x] = rows();
   assert.deepEqual([x.conversationId, x.engine, x.node, x.input_tokens, x.output_tokens, x.cache_read_tokens, x.cache_write_tokens, x.duration_s],
     ['aaa111', 'claude-code', 'run-text', 11, 22, 300, 8, 60]);
-  assert.deepEqual(x.cards, ['901', '902', '903', '999']);
+  assert.deepEqual(x.cards, ['901', '902', '903']);
+  // упоминания «после», «after-», «см.» расход не размывают: карточки есть на доске, строк у них нет
+  for (const f of [f950, f951, f952]) assert.equal(histLines(f).length, 0);
   assert.equal(x.continuation, undefined);
 });
 
@@ -110,8 +120,20 @@ it('продолжение: новая запись continuation:true, в кар
   // итог N = 341 + 100 = 441 → доли 147 каждой; было 114/114/113 → дельты 33/33/34; R 130→ 130-100... итог R 390 → 130 каждой
   const l = histLines(f901);
   assert.equal(l.length, 2);
-  assert.match(l[1], /attempt, 33 tokens \(30 cache-read\), 2 out, 80 s, `aaa111` — claude-code: продолжение вызова, автозапись хуком/);
+  assert.match(l[1], /attempt, 33 tokens \(30 cache-read\), 2 out, 80 s, `aaa111` — claude-code: продолжение вызова — автозапись хуком/);
   assert.equal(histLines(f903).length, 2);
+});
+
+it('в промпте нет явной карточки: cards [] в журнале, карточки не пишутся', () => {
+  const t3 = path.join(root, 'agent-eee555.jsonl');
+  fs.writeFileSync(t3, [
+    JSON.stringify({ type: 'user', message: { role: 'user', content: T('Сделай то, что описано после @c-950.') }, timestamp: T('@DT10:00:00.000Z') }),
+    step(1, 'z1', T('@DT10:00:05.000Z'), { input_tokens: 1, output_tokens: 1, cache_read_input_tokens: 1, cache_creation_input_tokens: 1 }),
+  ].join(NL));
+  const r = record({ agent_id: 'eee555', agent_type: 'run-text', agent_transcript_path: t3 }, { root });
+  assert.ok(r.recorded); assert.equal(r.lines.length, 0);
+  assert.deepEqual(rows().find((q) => q.conversationId === 'eee555').cards, []);
+  assert.equal(fs.readFileSync(f950, 'utf8').includes('eee555'), false);
 });
 
 it('нет стенограммы: журнал с null, строка с unknown и причиной, не нули', () => {

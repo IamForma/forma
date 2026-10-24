@@ -13,6 +13,7 @@
 // N tokens = tokens_in + cache_write + cache_read + tokens_out (economy.usageTokens); R = cache_read (как у субагентов: work = N − R).
 // T — активное время: промежутки между соседними записями, каждый обрезан по --idle (сек, по умолчанию 300),
 //     чтобы ожидание человека не шло в счёт.
+// --auto — режим хука SessionEnd (ниже, `auto()`): без номера, все касания сессии, молчаливый отказ.
 // Без --write печатает; с --write дописывает в `## История` строку формата §3 (id вызова = id сессии).
 // --from/--to задают окно вручную (UTC ISO); --session ограничивает одним журналом.
 //
@@ -38,8 +39,9 @@ const { cardFiles, HISTORY_HEADING_RE } = require('../../.forma/dashboard/lib/ca
 
 const cli = makeCli();
 const arg = cli.value;
-const num = process.argv[2] && /^\d{1,4}$/.test(process.argv[2]) ? process.argv[2].padStart(3, '0') : null;
-if (!num) { console.error('card-session-spend: нужен номер карточки, напр. 074'); process.exit(2); }
+const AUTO = process.argv.includes('--auto');
+let num = process.argv[2] && /^\d{1,4}$/.test(process.argv[2]) ? process.argv[2].padStart(3, '0') : null;
+if (!num && !AUTO) { console.error('card-session-spend: нужен номер карточки, напр. 074'); process.exit(2); }
 const WRITE = cli.flag('write');
 const IDLE = Number(arg('idle', 300)) * 1000;
 const FROM = arg('from') ? Date.parse(arg('from')) : null;
@@ -47,10 +49,10 @@ const TO = arg('to') ? Date.parse(arg('to')) : null;
 const ONLY = arg('session');
 const MANUAL = FROM != null || TO != null;
 
-const root = path.resolve(__dirname, '..', '..');
+const root = process.env.CLAUDE_SPEND_ROOT || path.resolve(__dirname, '..', '..');
 const slug = root.replace(/[^A-Za-z0-9]/g, '-');
-const projDir = path.join(os.homedir(), '.claude', 'projects', slug);
-if (!fs.existsSync(projDir)) { console.error('нет каталога журналов: ' + projDir); process.exit(2); }
+const projDir = process.env.CLAUDE_SPEND_PROJECTS || path.join(os.homedir(), '.claude', 'projects', slug);
+if (!fs.existsSync(projDir)) { console.error('нет каталога журналов: ' + projDir); process.exit(AUTO ? 0 : 2); }
 
 const MANUAL_MARK = 'задано --from/--to';
 const LEGACY_WINDOW_RE = /окно \d{2}:\d{2}–(\d{2}):(\d{2}) UTC/;
@@ -215,7 +217,7 @@ function appendToHistory(card, text, lines) {
   const nl = text.includes('\r\n') ? '\r\n' : '\n';
   const rows = text.split(/\r?\n/);
   const h = rows.findIndex(r => HISTORY_HEADING_RE.test(r));
-  if (h < 0) { console.error('нет зоны «История»'); process.exit(1); }
+  if (h < 0) { console.error('нет зоны «История»'); if (AUTO) return; process.exit(1); }
   let end = rows.findIndex((r, i) => i > h && /^## /.test(r));
   if (end < 0) end = rows.length;
   while (end > h + 1 && !rows[end - 1].trim()) end--;
@@ -253,4 +255,33 @@ function main() {
   appendToHistory(card, text, lines);
 }
 
-main();
+/**
+ * `--auto` (хук SessionEnd): все карточки, которых Intent касался в журнале этой сессии, — по строке на карточку
+ * за непосчитанные ответы. Сессия — `session_id` из JSON хука на stdin, иначе `--session <id>`, иначе свежайший журнал.
+ * Дедуп с ручным `card-move --session-spend` и со вторым запуском — граница окна `граница <ISO>` в описании строки:
+ * берутся ответы строго после наибольшей границы строк этой сессии в карточке; нечего писать — не пишется.
+ * Любая ошибка — код выхода 0 (хук не блокирует), причина в stderr.
+ */
+function auto() {
+  let id = ONLY;
+  if (!id) { try { id = (JSON.parse(fs.readFileSync(0, 'utf8')) || {}).session_id || null; } catch {} }
+  const files = fs.readdirSync(projDir).filter((f) => f.endsWith('.jsonl'));
+  let file = files.find((f) => id && f.slice(0, -6) === id);
+  if (!file && !id) file = files.map((f) => ({ f, t: fs.statSync(path.join(projDir, f)).mtimeMs })).sort((a, b) => b.t - a.t)[0]?.f;
+  if (!file) { console.error('card-session-spend --auto: журнал сессии не найден'); return; }
+  const sid = file.slice(0, -6);
+  const rows = readRows(path.join(projDir, file));
+  const touched = [...new Set(rows.map(ownerOf).filter(Boolean))].sort();
+  for (const n of touched) {
+    num = n;
+    const card = cardFiles(root, (name) => name.startsWith(`card-${n}-`))[0];
+    if (!card) continue;
+    const text = fs.readFileSync(card, 'utf8');
+    const { spend } = scan(path.join(projDir, file), accountedUntil(text, sid));
+    if (!spend) continue;
+    appendToHistory(card, text, [spendLine({ id: sid, ...spend })]);
+  }
+}
+
+if (AUTO) { try { auto(); } catch (e) { console.error('card-session-spend --auto: ' + (e && e.message)); } process.exit(0); }
+else main();
