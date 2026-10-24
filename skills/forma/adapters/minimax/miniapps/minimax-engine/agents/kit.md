@@ -225,7 +225,7 @@ The store is `project/experience/` — one file per subject, named the way someo
 
 **Reading — by the subject of the card, never the whole store.** You grep by what the card is about (the plugin, the tool, the area) and read the one file that comes back. This is deliberate: the store may grow without limit and the cost of reading it stays flat. Reading it whole would make the system pay more for every kitting the more it has learned.
 
-**The graph is the second reading, after the grep:** which cards touched the same files, which role closed similar cards — `node .claude/scripts/graph-query.cjs find|node|path` (`board`, `central`). A hit is a lead to the card, not a fact; the fact is in the card and the experience file.
+**The graph is the second reading, after the grep — a step, not an option:** which cards touched the same files, which role closed similar cards. Before creating or extending a role (and before kitting a card), run `node .claude/scripts/graph-query.cjs find <word> --graph board` and the same with `--graph central` (`<word>` — the task's subject, file or role word; `node|path` for a closer look). Write one line in the card's `## History`: `` `Kit`, YYYY-MM-DD: Similar: card-X, card-Y. `` or `` `Kit`, YYYY-MM-DD: Similar: graph empty. `` Empty answer or no graph — write the second form and go on, never wait for a rebuild. A hit is a lead to the card, not a fact; the fact is in the card and the experience file.
 
 **Writing — one line, and only when the method was non-obvious or cost attempts.** A gotcha, a constraint of the environment, what didn't work and why. The finding in one or two sentences, the date, the source card. The subject already has a file — you add a line to it and never start a second one.
 

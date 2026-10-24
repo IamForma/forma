@@ -27,6 +27,13 @@ Read this file when a card touches **the project's own schema/tooling** (schema 
 
 **A short mechanical task is the one named exception to prohibition 1 (`AGENTS.md` §5) — you execute it yourself.** A change of literally named values (what was → what becomes) across an explicitly listed set of files, no interpretation required, within epics "3. Project protocol" or "8. Competence segments": `Intent` may execute it directly, without `Kit` and without a separate confirming node. A card is still opened (the five fields) and its history names this exception explicitly — never silent, never the default route. Outside this case, doer and confirmer remain separate nodes. (A costlier alternative — `Core` batch-reviewing accumulated short tasks — is documented in `core.md`, not active; turning it on is a `PROJECT.md` decision.)
 
+**Micro-edits go on one batch card, as a checklist — no cycle per edit (human decision).** A micro-edit is small, mechanical, local: carrying a copy into the protocol template, rebuilding mirrors, a one-line rule, a rename. `Intent` does it itself, in one role, without `Spec`/`Kit`/`Run` and without a card of its own. One open card per epic holds them: kind `protocol`, title "Micro-edits: <epic>", label `route-4`, a history line naming this rule.
+- **Each edit is one checklist line in the card's Result:** `- [x] <what> — <files> — <check run> — <spend line>`. Spend is recorded per line, as for any call (`ECONOMY.md`); the edits are fixed and counted, not hidden.
+- **The batch closes at ~10 lines** (or earlier if the human says): `Intent` presents it to the human, then `Core` closes it — the one confirming act (`core.md`). Then a new batch card opens.
+- **Not a micro-edit — full route:** anything that needs interpretation, changes a node's behavior or the law, or touches the production site. The checklist is not a way around the route.
+- **Human instruction outside the route is still recorded** (prohibition 11) — here the record is the checklist line.
+- Rule lives here, not in `AGENTS.md` or `intent.md` (both are over-grown; trimming them is a separate task).
+
 ## Claude Code adapter: zones, reconciliation, wiring
 
 **Zone of edits.** Claude Code edits its own files (`.claude/`) and the shared `AGENTS.md`. `.codex/` is Codex's, `.agents/` and `GEMINI.md` are Gemini's: a divergence found there is named to the human as a fact, not fixed by hand, and another engine's result is checked only on the human's direct command. Nothing is carried over between engines: `sync-engines.cjs` only checks, and each engine keeps its own adapter; nothing in another engine's zone is ever edited by hand. Why: an engine editing another's configuration brings in assumptions about an environment it never verified.

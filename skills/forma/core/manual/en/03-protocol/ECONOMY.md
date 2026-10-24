@@ -46,7 +46,7 @@ The engine tag after the dash is the grouping key. Tokens of different engine ta
 - **R:** the call's cache-read counter, read straight from the call's own result, no separate call. R is almost always fixed overhead (loading these rules and the role), not the work itself; it isn't split finer, because nothing inside one call separates card content from the work proper without adding another call.
 - **K:** the number of turns or round trips the call took — optional. Present only when the call or its transcript records this number. Cards without turns data are not counted in turn averages and display `—` (not 0).
 - **Call id:** the identifier of that one call, read straight from the call's own result like the numbers beside it — never composed, never guessed. Which field of the return carries it is named in §8 of the engine file, like every other spend field. It stands **last in the spend block, immediately before the dash**, after any external-model or external-service segment: the numbers stay where the eye already looks for them, and the opaque token sits where the eye passes over it into the prose. **No separate call — the session id**: work done inside the shared session takes its numbers and its id from the engine's transcript of that session (see "`Intent` in the shared session" below).
-- **A continuation of the same `Run` (`AGENTS.md` §2) reuses that call's id on purpose.** `Kit` sending a written correction to a live call is still one call, read and recorded the same way as any other — the line marks itself `attempt (continuation)` so two lines sharing one `call_id` on the same card read as one call extended, not as a duplicate or a mistake.
+- **A continuation of the same `Run` (`AGENTS.md` §2) reuses that call's id on purpose.** `Kit` sending a written correction to a live call is still one call, read and recorded the same way as any other — the line keeps the form `attempt,` (the counters parse it) and opens its description after the dash with the engine tag and `continuation of the call —`, so two lines sharing one `call_id` on the same card read as one call extended, not as a duplicate or a mistake.
 
 ## The `unknown` marker
 
@@ -82,3 +82,18 @@ Work `Intent` does inside the shared session — executing a card itself, checki
 ## Adapter duty
 
 Each engine's §8 — or the on-demand file it points to — names which of its return fields map to which variable and how R is read. Its line must pass the conformance test.
+
+## Automatic recording (adapter duty)
+
+The spend line is derived from a fact the engine records, not typed by hand.
+
+- **Journal:** `<adapter dir>/.ledger/calls.jsonl`, one JSON object per line, appended. Fields: `timestamp`, `conversationId` (the call id — the key `ledger-parity.cjs` reads), `engine`, `node`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, `duration_s`, `cards` (card numbers the call served); `continuation: true` on a repeat record of a call already in the journal. A number the engine did not return is `null`, never 0.
+- **Latency field:** an adapter that can writes `first_response_s` into the journal record — seconds from the call's first message (its prompt) to the first assistant entry, for a continuation from the continuation message to the first new assistant entry; `null` when it cannot be read. The dashboard summary takes the median over the engine's records; an engine whose records lack the field shows «no data», never zero.
+- **Trigger:** the return of a subagent call. An engine with a stop hook for it records from the hook; the numbers come from the call's transcript, as in "T, R, K and the call id".
+- **Card line:** derived from the journal record through `.forma/dashboard/spend-line.cjs` (`formatSpendLine`) into the `## History` of every card in `cards` found on the board or in `done/`; the description after the dash opens with the engine tag and names the automatic recording. A batch call is split as in "Splitting one call's spend across a batch". A continuation writes only the delta against what the card already holds for that call id.
+- **Dedup:** by call id — a card that already holds a line with the id of a first-time record gets no second line; a repeat event with no new spend writes nothing.
+- **Failure is silent:** a recorder error never blocks the engine; the reason goes to a log beside the journal. A card not found leaves the journal record alone — the parity check shows it as an orphan.
+- **Check:** `.forma/board/checks/ledger-parity.cjs` — every `conversationId` in an adapter's journal must stand as a call id on some card line.
+- **No hook in the engine:** the node (or caller) appends the record with the adapter's `sync-ledger --append` command right after the return. This is discipline, weaker than a hook: the journal then holds what the node read, not what the engine recorded.
+
+Reference implementation: Claude Code, `.claude/scripts/ledger-recorder.cjs` (hook `SubagentStop`).

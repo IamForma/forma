@@ -4,7 +4,7 @@ description: Run — generates a series or package of images in one consistent s
 model: gemini-3.8-flash
 tier: standard
 effort: low
-tools: Read, Write, mcp__claude_ai_Magnific, run_command(node .claude/scripts/resources.cjs register *)
+tools: Read, Write, mcp__claude_ai_Magnific, run_command(node .claude/scripts/resources.cjs register *), run_command(node .claude/scripts/graph-query.cjs *)
 skills: magnific-generate, magnific-spaces
 ---
 
@@ -32,6 +32,10 @@ Follow the chosen skill's chain step by step (model pick → cost check → conf
 `magnific-generate` and `magnific-spaces` are **global** skills (`~/.claude/skills/`, not `.claude/skills/` of this project) — read-only reference, not owned by this repo.
 
 Tool names are qualified as the live tool list shows them: `mcp__claude_ai_Magnific__<tool>` (the Magnific connector). The skills name the same tools without the prefix. If the server is wired in under another name, the prefix changes (`mcp__<server>__<tool>`) and the `tools` line here changes with it — a mismatch is reported, never worked around.
+
+## Resource lookup
+
+Before generating, look for ready assets: `node .claude/scripts/graph-query.cjs find <word> --graph resources` (`<word>` — the subject of the series). A fitting asset exists — reuse or reference it instead of regenerating that item. Write one line in the card's `## History`: `Resources: <keys>.` or `Resources: none.` An empty or missing graph never blocks the work — write `Resources: none.` and go on.
 
 ## Registry entry
 

@@ -19,7 +19,7 @@ const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
 function emptyRow() {
   return {
-    attempts: 0, closedCards: 0, closedAttempts: 0, closedTokens: 0, closedUsd: 0,
+    attempts: 0, outKnown: 0, closedCards: 0, closedAttempts: 0, closedTokens: 0, closedUsd: 0,
     out: 0, outSeconds: 0, outAttempts: 0, outUnknown: 0,
     seconds: 0, withSeconds: 0,
     cacheRead: 0, cacheTokens: 0,
@@ -30,6 +30,7 @@ function finish(r) {
   const div = (a, b) => (b > 0 ? a / b : null);
   return {
     attempts: r.attempts,
+    outKnown: r.outKnown,
     closedCards: r.closedCards,
     outPerSec: div(r.out, r.outSeconds),
     outAttempts: r.outAttempts,
@@ -78,6 +79,7 @@ function rowsOf(cards) {
       const sec = num(z.seconds);
       if (sec != null) { r.seconds += sec; r.withSeconds += 1; }
       const out = num(z.tokensOut);
+      if (out != null) r.outKnown += 1;
       if (out != null && sec != null && sec > 0) { r.out += out; r.outSeconds += sec; r.outAttempts += 1; }
       else if (out == null) r.outUnknown += 1;
       const tok = num(z.tokens), cr = num(z.cacheRead);
@@ -114,4 +116,88 @@ function buildSpeed(cards, extraTags = [], modelOf = null) {
   return { kinds, byKind };
 }
 
-module.exports = { buildSpeed, ALL, UNKNOWN_MODEL };
+/**
+ * Сводка по движкам для верха вкладки «Экономика»: чистая функция, карточки и записи журналов приходят снаружи.
+ * Метрика — `{ v, n, m, low, rank }`: значение (или null), наблюдений, возможных, пометка «мало данных (n из m)».
+ *   - секунд / токенов на закрытую карточку: сумма по попыткам закрытых карточек движка / число закрытых карточек;
+ *     n — закрытые карточки с известной величиной, m — закрытые карточки движка; rank — 1 у меньшего;
+ *   - доля повторных попыток: (попытки закрытых карточек − закрытые карточки) / попытки закрытых карточек;
+ *   - задержка до ответа: медиана `first_response_s` по записям журнала; нет поля — null (не ноль);
+ *   - токены на секунду активной работы: Σ output_tokens / Σ время, по записям журнала с обоими числами; у продолжения
+ *     выход — прирост против прошлой записи вызова, время — `active_s`; иначе `duration_s`. Без догадок.
+ * Малая выборка: n < MIN_N; для метрики по выходу — ещё и известный выход у меньше чем половины попыток (по карточкам)
+ * или записей журнала. Число остаётся, низкая выборка только помечается.
+ * `ledgers`: `{ тег движка: [записи журнала] }`; теги — основные метки (после canonicalTag).
+ */
+const MIN_N = 5;
+const metric = (v, n, m, extraLow = false) => ({ v: n > 0 ? v : null, n, m, low: n > 0 && (n < MIN_N || extraLow) });
+
+function median(xs) {
+  if (!xs.length) return null;
+  const s = [...xs].sort((a, b) => a - b), h = s.length >> 1;
+  return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2;
+}
+
+function ledgerStats(records) {
+  const recs = Array.isArray(records) ? records : [];
+  const first = recs.map((r) => num(r && r.first_response_s)).filter((x) => x != null && x >= 0);
+  const lastOut = new Map();
+  let out = 0, sec = 0, used = 0, knownOut = 0;
+  for (const r of [...recs].sort((a, b) => String(a && a.timestamp).localeCompare(String(b && b.timestamp)))) {
+    if (!r) continue;
+    const o = num(r.output_tokens);
+    if (o != null) knownOut += 1;
+    const id = r.conversationId;
+    const prev = lastOut.has(id) ? lastOut.get(id) : null;
+    let dOut = o, t = num(r.duration_s);
+    if (r.continuation) { t = num(r.active_s); dOut = o != null && prev != null ? o - prev : null; }
+    if (o != null) lastOut.set(id, o);
+    if (dOut != null && dOut >= 0 && t != null && t > 0) { out += dOut; sec += t; used += 1; }
+  }
+  return { records: recs.length, first, out, sec, used, knownOut };
+}
+
+function buildSummary(cards, ledgers = {}, extraTags = []) {
+  const acc = {};
+  const at = (k) => acc[k] || (acc[k] = { closed: 0, closedAttempts: 0, secSum: 0, secCards: 0, tokSum: 0, tokCards: 0 });
+  for (const c of cards) {
+    if (c.status !== 'done') continue;
+    const mine = {};
+    for (const z of c.attempts) (mine[z.engine] || (mine[z.engine] = [])).push(z);
+    for (const [k, list] of Object.entries(mine)) {
+      const r = at(k);
+      r.closed += 1; r.closedAttempts += list.length;
+      const secs = list.map((z) => num(z.seconds)).filter((x) => x != null);
+      if (secs.length) { r.secSum += secs.reduce((s, x) => s + x, 0); r.secCards += 1; }
+      const toks = list.map((z) => num(z.tokens)).filter((x) => x != null);
+      if (toks.length) { r.tokSum += toks.reduce((s, x) => s + x, 0); r.tokCards += 1; }
+    }
+  }
+  const rows = rowsOf(cards);
+  const tags = [...new Set([...Object.keys(acc), ...Object.keys(ledgers), ...extraTags])].sort((a, b) => a.localeCompare(b));
+  const engines = {};
+  for (const k of tags) {
+    const a = acc[k] || { closed: 0, closedAttempts: 0, secSum: 0, secCards: 0, tokSum: 0, tokCards: 0 };
+    const l = ledgerStats(ledgers[k]);
+    const sp = rows[k];
+    const cardOutShare = sp && sp.attempts ? sp.outKnown / sp.attempts : null;
+    const ledgerOutShare = l.records ? l.knownOut / l.records : null;
+    const outLow = (cardOutShare != null && cardOutShare < 0.5) || (ledgerOutShare != null && ledgerOutShare < 0.5);
+    engines[k] = {
+      closedCards: a.closed,
+      secPerClosed: metric(a.secSum / (a.secCards || 1), a.secCards, a.closed),
+      tokensPerClosed: metric(a.tokSum / (a.tokCards || 1), a.tokCards, a.closed),
+      retryShare: metric(a.closedAttempts ? (a.closedAttempts - a.closed) / a.closedAttempts : null, a.closed, a.closed),
+      firstResponse: metric(median(l.first), l.first.length, l.records),
+      outPerActiveSec: metric(l.sec > 0 ? l.out / l.sec : null, l.used, l.records, outLow),
+    };
+  }
+  // Рейтинг: 1-е место — меньше; только среди движков со значением.
+  for (const key of ['secPerClosed', 'tokensPerClosed']) {
+    tags.filter((k) => engines[k][key].v != null).sort((x, y) => engines[x][key].v - engines[y][key].v)
+      .forEach((k, i) => { engines[k][key].rank = i + 1; });
+  }
+  return { minN: MIN_N, tags, engines };
+}
+
+module.exports = { buildSpeed, buildSummary, ALL, UNKNOWN_MODEL, MIN_N };
