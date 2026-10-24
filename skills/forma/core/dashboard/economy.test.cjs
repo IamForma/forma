@@ -108,4 +108,20 @@ it('модуль не знает имён движков', () => {
   assert.equal(/claude|codex|gemini/i.test(src), false);
 });
 
+it('пакетный вызов: две строки с разными batch I/K — две попытки и в tally, и на вкладке', () => {
+  const id = 'fixture-call-id-2';
+  const lines = [1, 2].map((i) => '`Spec`, ' + D + ': attempt, 1 000 tokens (800 cache-read), 50 out, 10 s, `' + id + '` — claude-code: нарезка (batch ' + i + '/2)');
+  assert.equal(tallyLines(lines).byEngine['claude-code'].attempts, 2);
+  const { parseAttempts } = require('./data/attempts.cjs');
+  const keys = parseAttempts('## History\n' + lines.map((l) => '- ' + l).join('\n'), 'card-x.md').map((z) => z.dedupKey);
+  assert.equal(new Set(keys).size, 2);
+  assert.equal(tallyLines([lines[0], lines[0]]).byEngine['claude-code'].attempts, 1);
+});
+
+it('строка «attempt N,» без токенов называется в unparsed с номером строки', () => {
+  const r = tallyLines(['`Run`, ' + D + ': attempt ' + ['1'].join('') + ', 5 tokens, `fixture-call-id-1` — claude-code: x']);
+  assert.equal(r.unparsed.length, 1);
+  assert.equal(r.unparsed[0].lineNo, 4);
+});
+
 console.log(`\n${passed} проверок пройдено`);

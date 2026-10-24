@@ -144,8 +144,24 @@ const CALL_ID_UNKNOWN_RE = /^-\s*`([^`]+)`,\s*(\d{4}-\d{2}-\d{2}):\s*attempt,[^\
 const SESSION_WINDOW_END_RE = /граница (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/;
 const sessionWindowEnd = (line) => { const m = SESSION_WINDOW_END_RE.exec(line); return m ? Date.parse(m[1]) : null; };
 
+// Ключ дедупликации строки расхода — один для tally.cjs и вкладки (data/attempts.cjs): иначе итоги расходятся.
+// Строка основной сессии (card-session-spend) несёт id сессии, общий для всех карточек сессии, а доля у каждой своя:
+// ключ — карточка + id + граница окна (приращения одной сессии считаются все; без метки — накопительные схлопываются в первую).
+// Пакетный вызов (Spec/Kit, kit.md «Task kitting»): расход делится между карточками, и доли могут случайно совпасть;
+// метка `batch I/K` — ключ берёт файл карточки и саму долю, а не числа. Обычные строки: id плюс числа захода
+// (один вызов в двух карточках теми же числами — дубль; общий id с разными числами — разные окна).
+// `m` — совпадение SPEND_SOURCE: 3 токены, 4 кэш-чтение, 5 секунды.
+const BATCH_SHARE_RE = /\(batch\s+(\d+)\/(\d+)\)/;
+
+function dedupKey(line, file, id, m) {
+  if (/card-session-spend/.test(line)) return path.basename(file) + '|' + id + '|' + (sessionWindowEnd(line) ?? '');
+  const batch = BATCH_SHARE_RE.exec(line);
+  if (batch) return path.basename(file) + '|' + id + '|batch|' + batch[1] + '/' + batch[2];
+  return [id, m[3], m[4] ?? '', m[5] ?? ''].join('|');
+}
+
 module.exports = {
-  SESSION_WINDOW_END_RE, sessionWindowEnd,
+  SESSION_WINDOW_END_RE, sessionWindowEnd, BATCH_SHARE_RE, dedupKey,
   formatSpendLine, outTokens, toEnglish, isNonCanonical, SPEND_SOURCE, CLAIM_RE, CACHE_UNKNOWN_RE, TOKENS_UNKNOWN_RE, ID_UNKNOWN_RE, toInt,
   RU_CLAIM_LINE_RE, EN_CLAIM_LINE_RE, CLAIM_LINE_RE, PARSES_RE, SPEND_TOKENS_RE, SPEND_TOKENS_OR_UNKNOWN_RE,
   ATTEMPT_FORMAT_RE, HAS_CALL_ID_RE, ENGINE_TAG_RE, engineTagRe, CALL_ID_RE, CALL_ID_UNKNOWN_RE,
