@@ -10,6 +10,7 @@ skip (^|/)(\.cache|node_modules|graphify-out)(/|$)
 skip \.log$
 skip (^|/)data\.json$
 skip (^|/)\.tmp-
+skip (^|/).delete-unlock$
 skip -card-\d+\.sh$
 skip (^|/)\.plugin-check-stamp$
 skip (^|/)\.codex-verified\.json$

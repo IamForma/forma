@@ -58,3 +58,20 @@ test('--add для файла вне MAP, слоя 4 или не из списк
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }
 });
+
+test('профиль run-protocol-* из project/extensions/ — инструмент движка: попадает в «новые», прочие копии расширений нет', () => {
+  const dir = fixture();
+  try {
+    const put = (rel, text) => { const f = path.join(dir, ...rel.split('/')); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, text); };
+    put('.forma/protocol/skills/forma/adapters/claude/agents/run/existing.md', 'e\n');
+    put('.claude/agents/run/existing.md', 'e\n');
+    for (const n of ['run-protocol-x.md', 'run-other.md']) {
+      put('.claude/agents/run/' + n, 't\n');
+      put('project/extensions/template/claude/agents/run/' + n, 't\n');
+    }
+    const r = run(dir);
+    assert.equal(r.status, 3, r.stderr);   // неразложенный новый файл — стоп с вопросом, как для любого нового
+    assert.match(r.stderr, /run-protocol-x\.md/);
+    assert.doesNotMatch(r.stderr + r.stdout, /run-other\.md/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
