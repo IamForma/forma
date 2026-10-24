@@ -87,7 +87,10 @@ const forbidden = (rel) => isForbiddenTransfer(rel, OWN_LAYER);
 // а не движка: ни «новое», ни «изменён движок» (extensions.cjs sources). Источник правды — project/extensions/.
 const EXT_DST = new Set();
 try { for (const x of require('../skills/forma/core/extensions/extensions.cjs').sources(root)) EXT_DST.add(x.dst.split(path.sep).join('/')); } catch { /* нет модуля — копий нет */ }
-const isExtCopy = (rel) => EXT_DST.has(rel) || [...EXT_DST].some((d) => d.startsWith(rel + '/'));
+// Инструменты самого движка (профили run-protocol-*: правка доски, дашборда, ядра, адаптеров, проверок) — комплект протокола,
+// даже если проект доставляет их копией из project/extensions/: они идут в шаблон, чтобы любой проект мог чинить движок.
+const ENGINE_TOOLING = /(^|\/)agents\/run\/run-protocol-[^/]+\.md$/;
+const isExtCopy = (rel) => !ENGINE_TOOLING.test(rel) && (EXT_DST.has(rel) || [...EXT_DST].some((d) => d.startsWith(rel + '/')));
 const skipped = (rel) => forbidden(rel) || isExtCopy(rel) || SKIP.some((r) => r.test(rel));
 const MASKED = '\u0000masked\u0000';
 const norm = (s) => s.replace(/\r\n/g, '\n');
