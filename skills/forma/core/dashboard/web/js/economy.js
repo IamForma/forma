@@ -729,34 +729,119 @@ function engineTableHtml(b, bare){
     </table></div>`;
 }
 
-/* --- Сводка скорости движков: верх вкладки «Экономика» ------------------------- */
+/* --- Сводка скорости движков: верх вкладки «Экономика» -------------------------
+   Плитка на каждый движок: спидометр «токены out в секунду вызова», кольцо «доля повторов»,
+   три полоски (секунды / токены / $ на закрытую карточку). Место и шкала считаются чистыми
+   функциями ниже (тест: tiles.test.cjs); цвет — по месту среди движков с значением. */
+const TILE_MIN_FRAC = 0.04;
+
+/** Место значения среди значений движков: good / mid / bad, либо neutral (значение одно или все равны), null — нет значения. */
+function tilePlace(vals, v, higherBetter){
+  if (v == null) return null;
+  const xs = vals.filter(x => x != null);
+  if (xs.length < 2) return 'neutral';
+  const hi = Math.max(...xs), lo = Math.min(...xs);
+  if (hi === lo) return 'neutral';
+  const best = higherBetter ? hi : lo, worst = higherBetter ? lo : hi;
+  return v === best ? 'good' : v === worst ? 'bad' : 'mid';
+}
+
+/** Доля шкалы 0..1: самое большое значение среди движков — полная шкала; null — нет значения. */
+function tileFrac(vals, v){
+  if (v == null) return null;
+  const max = Math.max(0, ...vals.filter(x => x != null));
+  if (!(max > 0)) return 0;
+  return v > 0 ? Math.max(TILE_MIN_FRAC, v / max) : 0;
+}
+
+/** Модель плиток из `speed.summary`: по движку — спидометр, кольцо, три полоски; плюс «Итого». Метрика null — нет данных. */
+function tileModel(sm){
+  const val = x => (x && x.v != null ? x.v : null);
+  const tags = sm.tags || [];
+  const col = f => tags.map(k => val(sm.engines[k][f]));
+  const cols = { out: col('outPerCallSec'), sec: col('secPerClosed'), tok: col('tokensPerClosed'), usd: col('usdPerClosed') };
+  const tiles = tags.map((k, i) => {
+    const r = sm.engines[k];
+    const bar = (f, key) => ({ m: r[f], v: cols[key][i], frac: tileFrac(cols[key], cols[key][i]), place: tilePlace(cols[key], cols[key][i], false) });
+    const out = { m: r.outPerCallSec, v: cols.out[i], frac: tileFrac(cols.out, cols.out[i]), place: tilePlace(cols.out, cols.out[i], true) };
+    const retry = { m: r.retryShare, v: val(r.retryShare), frac: val(r.retryShare) };
+    const bars = { sec: bar('secPerClosed', 'sec'), tok: bar('tokensPerClosed', 'tok'), usd: bar('usdPerClosed', 'usd') };
+    const empty = out.v == null && retry.v == null && !r.closedCards && Object.values(bars).every(b => b.v == null)
+      && ['tokensTotal', 'secTotal', 'usdTotal'].every(f => val(r[f]) == null);
+    return { tag: k, closed: r.closedCards, out, retry, bars, empty };
+  });
+  return { tiles, total: sm.total || null };
+}
+
+const fmtTileDec = (v, n) => v.toFixed(n);
+const TILE_ARC = 'M12 62 A48 48 0 0 1 108 62';
+
+function gaugeHtml(o){
+  const aria = esc(t('econ.tile.speed'));
+  if (o.v == null) return `<div class="sg-box"><div class="sg-none">${t('econ.speed.noData')}</div></div>`;
+  const low = o.m.low;
+  return `<div class="sg-box${low ? ' low' : ''}"><svg viewBox="0 0 120 70" role="img" aria-label="${aria}: ${fmtTileDec(o.v, 1)}">
+      <path class="sg-track" d="${TILE_ARC}" pathLength="100"/>
+      <path class="sg-arc g-${o.place}" d="${TILE_ARC}" pathLength="100" stroke-dasharray="${(o.frac * 100).toFixed(1)} 100"/>
+    </svg><div class="sg-num mono">${fmtTileDec(o.v, 1)}</div></div>`;
+}
+
+function ringHtml(o){
+  const aria = esc(t('econ.tile.retry'));
+  if (o.v == null) return `<div class="sr-box"><div class="sg-none">${t('econ.speed.noData')}</div></div>`;
+  const p = Math.round(o.v * 100);
+  return `<div class="sr-box${o.m.low ? ' low' : ''}"><svg viewBox="0 0 60 60" role="img" aria-label="${aria}: ${p}%">
+      <circle class="sg-track" cx="30" cy="30" r="22" pathLength="100"/>
+      <circle class="sg-arc g-retry" cx="30" cy="30" r="22" pathLength="100" stroke-dasharray="${(o.frac * 100).toFixed(1)} 100" transform="rotate(-90 30 30)"/>
+    </svg><div class="sr-num mono">${p}%</div></div>`;
+}
+
+function stripeHtml(label, b, f){
+  if (b.v == null) return `<div class="sb-row"><span class="sb-lbl">${label}</span><span class="sb-track"></span><span class="sb-val dim">${t('econ.speed.noData')}</span></div>`;
+  return `<div class="sb-row${b.m.low ? ' low' : ''}"><span class="sb-lbl">${label}</span>
+    <span class="sb-track"><i class="g-${b.place}" style="width:${(b.frac * 100).toFixed(1)}%"></i></span>
+    <span class="sb-val mono">${f(b.v)}</span></div>`;
+}
+
+function engineTileHtml(x){
+  const lowM = [x.out.m, x.retry.m, x.bars.sec.m, x.bars.tok.m, x.bars.usd.m].filter(m => m && m.low)
+    .sort((p, q) => p.n - q.n)[0];
+  const note = lowM ? `<div class="st-note dim">${t('econ.sum.low', {n: fmt(lowM.n), m: fmt(lowM.m)})}</div>` : '';
+  if (x.empty) {
+    return `<div class="sum-tile empty" data-engine-tile="${esc(x.tag)}"><div class="st-name">${esc(engineLabel(x.tag))}</div>
+      <div class="sg-none">${t('econ.speed.noData')}</div></div>`;
+  }
+  return `<div class="sum-tile" data-engine-tile="${esc(x.tag)}">
+    <div class="st-name">${esc(engineLabel(x.tag))}</div>
+    <div class="st-top">
+      <div class="st-gauge">${gaugeHtml(x.out)}<div class="st-cap">${t('econ.tile.speed')}</div></div>
+      <div class="st-ring">${ringHtml(x.retry)}<div class="st-cap">${t('econ.tile.retry')}</div></div>
+    </div>
+    <div class="st-bars">
+      ${stripeHtml(t('econ.tile.sec'), x.bars.sec, v => secText(Math.round(v)))}
+      ${stripeHtml(t('econ.tile.tok'), x.bars.tok, v => fmt(Math.round(v)))}
+      ${stripeHtml(t('econ.tile.usd'), x.bars.usd, v => '$' + v.toFixed(4))}
+    </div>
+    ${note}
+    <div class="st-closed dim">${t('econ.sum.closed', {n: fmt(x.closed)})}</div>
+  </div>`;
+}
+
 function summaryHtml(e){
   const sm = e.speed && e.speed.summary;
   if (!sm || !sm.tags || !sm.tags.length) return '';
-  // число остаётся видимым; малая выборка — серым и пометкой «мало данных (N из M)»; нет значения — «—» или «нет данных»
-  const cell = (x, f, noDataText) => {
-    if (!x || x.v == null) return `<span class="dim">${noDataText}</span>`;
-    const note = x.low ? ` <small class="dim">${t('econ.sum.low', {n: fmt(x.n), m: fmt(x.m)})}</small>` : '';
-    return `<span class="${x.low ? 'dim' : ''}">${f(x.v)}</span>${note}`;
-  };
-  const big = (x, f) => {
-    const rank = x && x.rank ? ` <small class="dim">${t('econ.sum.rank', {n: x.rank})}</small>` : '';
-    return `<div style="font-size:22px;font-weight:600;line-height:1.3">${cell(x, f, '—')}${rank}</div>`;
-  };
-  const dec = (v, n) => v.toFixed(n);
-  const cards = sm.tags.map(k => {
-    const r = sm.engines[k];
-    return `<div class="e-card" style="flex:1 1 220px"><h3>${esc(engineLabel(k))}</h3>
-      <div class="dim">${t('econ.sum.secPerClosed')}</div>${big(r.secPerClosed, v => secText(Math.round(v)))}
-      <div class="dim">${t('econ.sum.tokPerClosed')}</div>${big(r.tokensPerClosed, v => fmt(Math.round(v)))}
-      <div class="dim" style="margin-top:6px">${t('econ.sum.firstResponse')}: ${cell(r.firstResponse, v => secText(Math.round(v)), t('econ.speed.noData'))}</div>
-      <div class="dim">${t('econ.sum.outPerActive')}: ${cell(r.outPerActiveSec, v => dec(v, 1), t('econ.speed.noData'))}</div>
-      <div class="dim">${t('econ.sum.retry')}: ${cell(r.retryShare, v => Math.round(v * 100) + '%', '—')}</div>
-      <small class="dim">${t('econ.sum.closed', {n: fmt(r.closedCards)})}</small></div>`;
-  }).join('');
+  const model = tileModel(sm);
+  const T = model.total || {};
+  const tot = (lbl, m, f) => `<span class="sum-tot"><span class="dim">${lbl}</span> <b class="mono${m && m.low ? ' dim' : ''}">${m && m.v != null ? f(m.v) : t('econ.speed.noData')}</b></span>`;
+  const strip = `<div class="sum-strip" data-summary-total><b>${t('econ.tile.total')}</b>
+      ${tot(t('econ.tile.totTok'), T.tokensTotal, v => fmt(Math.round(v)))}
+      ${tot(t('econ.tile.totSec'), T.secTotal, v => secText(Math.round(v)))}
+      ${tot(t('econ.tile.totUsd'), T.usdTotal, v => '$' + v.toFixed(4))}
+    </div>`;
   return `<div class="tier"><div class="tier-lab">${t('econ.sum.title')}</div>
     ${hintFold(`<p class="hint">${t('econ.sum.hint')}</p>`)}
-    <div style="display:flex;flex-wrap:wrap;gap:12px">${cards}</div></div>`;
+    ${strip}
+    <div class="sum-tiles">${model.tiles.map(engineTileHtml).join('')}</div></div>`;
 }
 
 /* --- Скорость и эффективность по движкам + модель/усилие по узлам ------------- */
@@ -842,3 +927,5 @@ function renderEconomy(d){
   el.querySelectorAll('[data-speed-kind]').forEach(x => x.onclick = () => { SPEED_KIND = x.dataset.speedKind; renderEconomy(latestData); });
   el.querySelectorAll('[data-engine]').forEach(x => x.onclick = () => { ECON_ENGINE = x.dataset.engine; renderEconomy(latestData); });
 }
+
+if (typeof module !== 'undefined' && module.exports) module.exports = { tilePlace, tileFrac, tileModel, TILE_MIN_FRAC };

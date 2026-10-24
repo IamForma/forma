@@ -180,6 +180,37 @@ it('сводка: секунды и токены на закрытую карт�
   assert.equal(lowOut.engines['eng-d'].outPerActiveSec.v, 1);
 });
 
+it('сводка: расход всего и на закрытую карточку, ток/с вызова, цена только записанная, «Итого»', () => {
+  const priced = (extra, tag) => line(extra + ', $0.5000 (ext-provider)', tag);
+  const cards = [
+    card('s1', 'build', 'done', [line(', 100 out, 10 s', 'eng-a'), line(', 300 out, 30 s', 'eng-a'), line(', out unknown, 60 s', 'eng-a')]),
+    card('s2', 'build', 'review', [line(', 50 out, 5 s', 'eng-a')]),
+    card('s3', 'build', 'done', [line(', 10 out, 2 s', 'eng-b')]),
+    card('s4', 'build', 'done', [line(', 20 out, 4 s', 'eng-a'), line(', 40 out, 8 s', 'eng-b')]),
+  ];
+  const sm = buildSummary(cards, {}, ['eng-z']);
+  const A = sm.engines['eng-a'], B = sm.engines['eng-b'], Z = sm.engines['eng-z'], T = sm.total;
+  assert.deepEqual([A.tokensTotal.v, A.tokensTotal.n, A.tokensTotal.m], [5000, 5, 5]);
+  assert.deepEqual([A.secTotal.v, A.secTotal.n], [10 + 30 + 60 + 5 + 4, 5]);
+  assert.equal(A.outPerCallSec.v, (100 + 300 + 50 + 20) / (10 + 30 + 5 + 4)); // строка out unknown в знаменатель не входит
+  assert.equal(A.outPerCallSec.n, 4); assert.equal(A.outPerCallSec.m, 5);
+  assert.equal(A.outPerCallSec.low, true); // 4 наблюдения < 5
+  assert.equal(A.usdTotal.v, null); assert.equal(A.usdPerClosed.v, null); // цена не записана — null, не ноль
+  assert.equal(A.secPerClosed.v, (100 + 4) / 2); // закрытые s1 (100 s) и s4 (4 s)
+  assert.equal(B.tokensPerClosed.v, 1000 * 2 / 2);
+  assert.equal(Z.tokensTotal.v, null); assert.equal(Z.secTotal.v, null); assert.equal(Z.outPerCallSec.v, null);
+  assert.equal(T.closedCards, 3); // s4 с двумя движками — одна карточка
+  assert.equal(T.tokensTotal.v, 7000);
+  assert.equal(T.secTotal.v, 10 + 30 + 60 + 5 + 4 + 2 + 8);
+  assert.equal(T.outPerCallSec.v, (100 + 300 + 50 + 20 + 10 + 40) / (10 + 30 + 5 + 4 + 2 + 8));
+  assert.equal(T.usdTotal.v, null);
+  // цена: сумма только по попыткам с записанной ценой, n — такие попытки
+  const p = buildSummary([card('p1', 'build', 'done', [priced(', 10 out, 5 s', 'eng-p'), line(', 10 out, 5 s', 'eng-p')])]);
+  assert.deepEqual([p.engines['eng-p'].usdTotal.v, p.engines['eng-p'].usdTotal.n, p.engines['eng-p'].usdTotal.m], [0.5, 1, 2]);
+  assert.equal(p.engines['eng-p'].usdPerClosed.v, 0.5);
+  assert.equal(p.total.usdTotal.v, 0.5);
+});
+
 it('сводка из каталога адаптера: журнал читается по списку адаптеров, нет файла — «нет данных», не ноль', () => {
   const root = fakeRoot({ '.a': adapter('eng-a', 'eng-a'), '.m': adapter('mini-code', 'mini', 'mini') });
   fs.mkdirSync(path.join(root, '.a', '.ledger'));

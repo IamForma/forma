@@ -161,6 +161,42 @@
     padding:16px 18px; box-shadow:var(--shadow);}
   .e-card h3{margin:0 0 10px; font-size:14px;}
 
+  /* Плитки движков в сводке: чистый SVG + CSS, цвета — токены дашборда. */
+  .sum-strip{display:flex; flex-wrap:wrap; gap:6px 22px; align-items:baseline; padding:8px 14px; font-size:13px;
+    background:var(--surface-soft); border:1px solid var(--border); border-radius:10px;}
+  .sum-tiles{display:grid; gap:14px; grid-template-columns:repeat(auto-fill, minmax(min(280px, 100%), 1fr));}
+  .sum-tile{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow);
+    display:flex; flex-direction:column; gap:10px; min-width:0;}
+  .sum-tile.empty{opacity:.55; background:var(--surface-soft); box-shadow:none; border-style:dashed;}
+  .st-name{font-weight:600; font-size:14px;}
+  .st-top{display:flex; gap:14px; align-items:flex-end; justify-content:space-around; flex-wrap:wrap;}
+  .st-gauge, .st-ring{display:flex; flex-direction:column; align-items:center; gap:2px;}
+  .st-cap{font-size:11px; color:var(--ink-soft); text-align:center;}
+  .sg-box{position:relative; width:132px;}
+  .sg-box svg{display:block; width:100%; height:auto;}
+  .sg-num{position:absolute; left:0; right:0; bottom:0; text-align:center; font-size:24px; font-weight:600; line-height:1;}
+  .sr-box{position:relative; width:72px; height:72px;}
+  .sr-box svg{display:block; width:100%; height:100%;}
+  .sr-num{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600;}
+  .sg-track{fill:none; stroke:var(--border-soft); stroke-width:10; stroke-linecap:round;}
+  .sg-arc{fill:none; stroke-width:10; stroke-linecap:round;}
+  .sr-box .sg-track, .sr-box .sg-arc{stroke-width:7; stroke-linecap:butt;}
+  .g-good{stroke:var(--st-done); background:var(--st-done);}
+  .g-mid{stroke:var(--st-progress); background:var(--st-progress);}
+  .g-bad{stroke:var(--st-bad); background:var(--st-bad);}
+  .g-neutral{stroke:var(--ink-faint); background:var(--ink-faint);}
+  .g-retry{stroke:var(--st-review);}
+  .sg-box.low, .sr-box.low, .sb-row.low{opacity:.6;}
+  .sg-none{display:flex; align-items:center; justify-content:center; min-height:48px; font-size:12px; color:var(--ink-faint);
+    font-style:italic; text-align:center;}
+  .st-bars{display:flex; flex-direction:column; gap:5px;}
+  .sb-row{display:grid; grid-template-columns:56px 1fr auto; gap:8px; align-items:center; font-size:12px;}
+  .sb-lbl{color:var(--ink-soft);}
+  .sb-track{height:8px; background:var(--border-soft); border-radius:4px; overflow:hidden; display:block;}
+  .sb-track i{display:block; height:100%; border-radius:4px;}
+  .sb-val{font-size:11px; color:var(--ink-soft); text-align:right; min-width:48px;}
+  .st-note, .st-closed{font-size:11.5px;}
+
   /* Плитка-герой и плитка-предупреждение — модификаторы существующей .tile, без новых токенов. */
   .tile.kpi .delta{font-size:12px; font-weight:500; display:inline-block; margin-top:2px;}
   .tile.kpi .delta.good{color:var(--st-done);}

@@ -1,6 +1,6 @@
 /* Оболочка и вкладки «Доска», «Закон»: шапка, тема, фильтры, колонки, окна. Внутри панелей .lx эти стили не действуют. */
-:root{--bg:#EEF1F6;--surface:#FFFFFF;--surface-soft:#F5F7FB;--border:#D9E0EA;--border-soft:#E6EBF2;--ink:#10151F;--ink-soft:#5B6478;--ink-faint:#8891A2;--accent:#B06B1E;--accent-soft:#F3E3CE;--st-backlog:#8A93A3;--st-todo:#3D6FD1;--st-progress:#B06B1E;--st-review:#7B5EC7;--st-done:#2E9E5B;--shadow:0 1px 2px rgba(16,21,31,.04),0 8px 24px -12px rgba(16,21,31,.10)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B0E14;--surface:#141A24;--surface-soft:#1A212D;--border:#2A3242;--border-soft:#212836;--ink:#E9ECF4;--ink-soft:#98A2B8;--ink-faint:#6C7690;--accent:#E3A24E;--accent-soft:#3A2C18;--st-backlog:#7C879C;--st-todo:#6E93F0;--st-progress:#E3A24E;--st-review:#A084E6;--st-done:#4CC27E}}
+:root{--bg:#EEF1F6;--surface:#FFFFFF;--surface-soft:#F5F7FB;--border:#D9E0EA;--border-soft:#E6EBF2;--ink:#10151F;--ink-soft:#5B6478;--ink-faint:#8891A2;--accent:#B06B1E;--accent-soft:#F3E3CE;--st-backlog:#8A93A3;--st-todo:#3D6FD1;--st-progress:#B06B1E;--st-review:#7B5EC7;--st-done:#2E9E5B;--st-bad:#C0392B;--shadow:0 1px 2px rgba(16,21,31,.04),0 8px 24px -12px rgba(16,21,31,.10)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B0E14;--surface:#141A24;--surface-soft:#1A212D;--border:#2A3242;--border-soft:#212836;--ink:#E9ECF4;--ink-soft:#98A2B8;--ink-faint:#6C7690;--accent:#E3A24E;--accent-soft:#3A2C18;--st-backlog:#7C879C;--st-todo:#6E93F0;--st-progress:#E3A24E;--st-review:#A084E6;--st-done:#4CC27E;--st-bad:#E5675A}}
 @scope (body) to (.lx) {
 *{box-sizing:border-box}
 :scope{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
