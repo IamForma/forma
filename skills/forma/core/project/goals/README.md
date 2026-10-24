@@ -6,7 +6,7 @@ The project's goal map lives in `project/ops/ROADMAP.md`; here is the segment of
 
 ```
 goals/
-  goal-<code>/       a kind's main goal — nine, one per epic (value, docs, forma, resources, core, incoming, goal, experience, results)
+  goal-<code>/       a kind's main goal — nine, one per epic (analytics, structure, protocol, resources, balance, discussion, channels, competencies, results)
     GOAL.md
   goal-NN-<name>/    a subgoal, continuous numbering across all kinds; the kind is set by the ROADMAP.md map
     GOAL.md    result image, criterion, circles, verdicts

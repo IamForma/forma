@@ -3,7 +3,7 @@
 // Для автора протокола, в любом проекте, где protocol/ — git-клон IamForma/forma. Запуск из корня проекта.
 //   node .forma/protocol/scripts/forma-commit.cjs "сообщение"          — синхронизировать, проверить, закоммитить
 //   ... --check                                                   — только проверить, ничего не пишет (для pre-commit)
-//   ... --release                                                 — выпуск сейчас: dev → main, версия +1, push main и dev
+//   ... --release [--to X.Y.Z]                                    — выпуск сейчас: dev → main, версия +1 (или названная), push main и dev
 //   ... --push                                                    — отправить dev (версия не меняется) и проект, если у него есть remote
 // Коммиты протокола идут в ветку dev без версии; набралось N (PROJECT.md, «Выпуск протокола») — выпуск сам.
 //   ... --sync-staged                                             — проверка ядра и адаптеров перед коммитом (его зовёт pre-commit); роли между движками не копируются
@@ -24,7 +24,9 @@ const root = process.cwd();
 const proto = path.join(root, '.forma/protocol');
 const args = process.argv.slice(2);
 const has = (f) => args.includes(f);
-const msg = args.find((a) => !a.startsWith('--'));
+const toAt = args.indexOf('--to'); // --release --to X.Y.Z: выпуск с названной версией вместо +1 к патчу
+const toVer = toAt >= 0 ? args[toAt + 1] : null;
+const msg = args.find((a, i) => !a.startsWith('--') && !(toAt >= 0 && i === toAt + 1));
 // В протокол уходит чистое сообщение: ведущая отметка карточки проекта («Карточка NNN: …») отбрасывается,
 // в коммите проекта она остаётся. Любой другой след в сообщении — стоп.
 const protoMsg = msg ? msg.replace(/^\s*(?:карточк\p{L}*|card)[\s-]*\d{2,3}\s*[:—-]\s*/iu, '') : '';
@@ -78,7 +80,8 @@ function release() {
   const j = fs.readFileSync(pj, 'utf8');
   const v = JSON.parse(j).version, m = v.match(/^(\d+)\.(\d+)\.(\d+)(-[\w.]+)?$/);
   if (!m) stop('выпуск: версия «' + v + '» не вида X.Y.Z[-метка].');
-  const nv = `${m[1]}.${m[2]}.${+m[3] + 1}${m[4] || ''}`; // метка стадии (-alpha) переносится как есть
+  const nv = toVer || `${m[1]}.${m[2]}.${+m[3] + 1}${m[4] || ''}`; // метка стадии (-alpha) переносится как есть
+  if (toVer && !/^\d+\.\d+\.\d+$/.test(toVer)) { pgit('merge', '--abort'); pgit('checkout', '-q', 'dev'); stop('выпуск: --to «' + toVer + '» не вида X.Y.Z.'); }
   fs.writeFileSync(pj, j.replace(`"version": "${v}"`, `"version": "${nv}"`));
   const pk = path.join(proto, 'package.json'); // package.json держит ту же версию, что plugin.json
   const pkj = fs.readFileSync(pk, 'utf8');

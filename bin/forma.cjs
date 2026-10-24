@@ -19,6 +19,9 @@ const { findBash } = require('../skills/forma/adapters/claude/verify-profile.cjs
 
 const PKG = path.resolve(__dirname, '..')
 const VERSION = require('../package.json').version
+// Protocol line: version numbering was once reset (0.4.x -> 0.0.x), so semver alone cannot tell newer from older.
+// The line is compared first (a missing one is line 1), semver only within one line.
+const LINE = Number(require('../package.json').line) || 1
 const SKILL = path.join(PKG, 'skills', 'forma')
 const CORE = path.join(SKILL, 'core')
 const ADAPTERS = path.join(SKILL, 'adapters')
@@ -37,7 +40,7 @@ const ACTIVE_ENGINES = ENGINES.filter((e) => !DORMANT.includes(e.id))
 
 // ---------- arguments ----------
 function parseArgs(argv) {
-  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version', 'dashboard', 'no-dashboard', 'adopt', 'no-adopt', 'check'])
+  const { opts, rest } = parseLong(argv, ['help', 'yes', 'version', 'dashboard', 'no-dashboard', 'adopt', 'no-adopt', 'check', 'allow-downgrade'])
   const o = { cmd: 'init', dir: process.cwd(), ...opts }
   if (rest[0]) o.cmd = rest[0]
   o.dir = path.resolve(o.dir)
@@ -59,6 +62,7 @@ const HELP = `forma ${VERSION} init — install/update the Forma protocol in the
   --adopt / --no-adopt               first install only: move the folders and files already in the project root into
                                      project/source/; only the protocol's files, Git's and .env* stay in the
                                      root. Without either flag: asked in a terminal, skipped otherwise
+  --allow-downgrade                  install even if this installer is older than the installed version or than the .forma/protocol clone
   --yes                              no questions, defaults for anything missing
   --dashboard / --no-dashboard       start the dashboard at the end (default: start it when run in a terminal); print the link either way
   --version                          print the installer version and exit
@@ -181,6 +185,7 @@ function installCore(root, protectedPaths) {
   copyTree(path.join(CORE, 'manual'), path.join(forma, 'manual'))
   copyTree(path.join(CORE, 'board'), path.join(forma, 'board'))
   copyTree(path.join(CORE, 'verify'), path.join(forma, 'verify'))
+  copyTree(path.join(CORE, 'plumb'), path.join(forma, 'plumb')) // the Plumb driver the roles call: node .forma/plumb/plumb-run.cjs
   copyTree(path.join(CORE, 'i18n'), path.join(forma, 'i18n'))
   copyTree(path.join(CORE, 'extensions'), path.join(forma, 'extensions'), { skip: (d) => path.basename(d) === 'PROJECT-README.md' })
   copyTree(path.join(CORE, 'skills'), path.join(forma, 'skills'), { skip })
@@ -584,10 +589,40 @@ function writeManifest(root, { engines, lang, template, projectCreated }) {
   const rows = engines.map((id) => (id === 'claude'
     ? { id, profile: '.claude/verify-profile.cjs', expect: claudeExpect() }
     : { id, note: 'beta — no verify profile yet' }))
-  const manifest = verifyInstall.buildManifest(root, { owned, projectCreated, previous, engines: rows, lang, version: VERSION, template })
+  const manifest = verifyInstall.buildManifest(root, { owned, projectCreated, previous, engines: rows, lang, version: VERSION, line: LINE, template })
   const f = path.join(root, verifyInstall.MANIFEST)
   fs.mkdirSync(path.dirname(f), { recursive: true })
   fs.writeFileSync(f, JSON.stringify(manifest, null, 2) + '\n')
+}
+
+// Downgrade guard: an installer older than what the project already has must not roll the protocol back.
+// Compared: protocol line first, then semver (a prerelease tag sorts before the release).
+function parseRelease(version, line) {
+  const m = /^(\d+)\.(\d+)\.(\d+)(-.+)?$/.exec(String(version || '').trim())
+  return { line: Number(line) || 1, nums: m ? [m[1], m[2], m[3]].map(Number) : [0, 0, 0], pre: m && m[4] ? 1 : 0, text: String(version || '?') }
+}
+function compareRelease(a, b) {
+  if (a.line !== b.line) return a.line < b.line ? -1 : 1
+  for (let i = 0; i < 3; i++) if (a.nums[i] !== b.nums[i]) return a.nums[i] < b.nums[i] ? -1 : 1
+  return a.pre === b.pre ? 0 : (a.pre ? -1 : 1)
+}
+function downgradeReason(root) {
+  const self = parseRelease(VERSION, LINE)
+  const label = (r) => `${r.text} (line ${r.line})`
+  let manifest = null
+  try { manifest = verifyInstall.readManifest(root) } catch { /* a broken manifest does not block */ }
+  if (manifest && manifest.version) {
+    const have = parseRelease(manifest.version, manifest.line)
+    if (compareRelease(self, have) < 0) return `the project has Forma ${label(have)} installed, this installer is ${label(self)} — older`
+  }
+  const cloneDir = path.join(root, '.forma', 'protocol')
+  let clone = null
+  try { clone = JSON.parse(fs.readFileSync(path.join(cloneDir, 'package.json'), 'utf8')) } catch { /* no clone */ }
+  if (clone && path.resolve(cloneDir) !== PKG) {
+    const have = parseRelease(clone.version, clone.line)
+    if (compareRelease(self, have) < 0) return `the protocol clone .forma/protocol is ${label(have)}, this installer is ${label(self)} — older. Run the installer from the clone: node .forma/protocol/bin/forma.cjs init …`
+  }
+  return null
 }
 
 // The version line at the end of an install: first install, update (from -> to) or a refresh of the same version.
@@ -689,6 +724,13 @@ async function main() {
   if (o.cmd === 'uninstall') { process.exitCode = require('../scripts/uninstall.cjs').run({ dir: o.dir, yes: !!o.yes }); return }
   if (o.cmd !== 'init') { console.error(`Unknown command: ${o.cmd}\n\n${HELP}`); process.exit(2) }
   const root = o.dir
+  const older = downgradeReason(root)
+  if (older && !o['allow-downgrade']) {
+    console.error(`Refusing to install: ${older}.
+A plugin cache or an old checkout is not a source of the version. Use the newer installer, or pass --allow-downgrade to roll back on purpose.`)
+    process.exit(3)
+  }
+  if (older) console.log(`! --allow-downgrade: ${older}`)
   if (!fs.existsSync(root)) fs.mkdirSync(root, { recursive: true })
   const templates = listTemplates()
   const interactive = !o.yes && process.stdin.isTTY !== false && !(o.engines && o.template && o.board && o.lang)

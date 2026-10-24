@@ -29,6 +29,21 @@
       }
     ]
   },
+  "forma-guard-subagent-card": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "invoke_subagent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node hooks/guard-subagent-card.cjs",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "forma-unlock-delete": {
     "enabled": true,
     "PreInvocation": [

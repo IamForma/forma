@@ -49,7 +49,7 @@ const isHumanZone = (r) => /^(project|\.devtool)\//.test(r) || r.startsWith('.fo
  * Non-`project/` files get a hash; `project/*.md` — a skeleton; the rest — presence only.
  * `previous` — the earlier manifest: the `project/` skeleton is not recomputed when the folder already existed.
  */
-function buildManifest(root, { owned, projectCreated, previous, engines, lang, version, template }) {
+function buildManifest(root, { owned, projectCreated, previous, engines, lang, version, line, template }) {
   const files = {};
   // config and service files moved from project/ to project/config/ and project/ops/ — the earlier manifest follows the files
   const moved = (k) => k.replace(/^project\/(PROJECT|CONFIG|SETUP|ROUTE|SITE)\.md$/, 'project/config/$1.md');
@@ -64,6 +64,7 @@ function buildManifest(root, { owned, projectCreated, previous, engines, lang, v
   return {
     manifestVersion: MANIFEST_VERSION,
     version,
+    ...(line ? { line } : {}),
     lang,
     template: template || 'none',
     engines,
