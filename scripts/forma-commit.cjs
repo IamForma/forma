@@ -7,6 +7,7 @@
 //   ... --push                                                    — отправить dev (версия не меняется) и проект, если у него есть remote
 // Коммиты протокола идут в ветку dev без версии; набралось N (PROJECT.md, «Выпуск протокола») — выпуск сам.
 //   ... --sync-staged                                             — проверка ядра и адаптеров перед коммитом (его зовёт pre-commit); роли между движками не копируются
+//   ... --sync-plugin                                             — обновить плагин Claude Code из GitHub (marketplace + plugin update) и сверить версии; после --release это идёт само, --no-plugin отключает
 //   ... --install-hook                                            — поставить .git/hooks/pre-commit (любой запуск ставит его сам)
 //
 // Порядок: sync-engines --check (ядро + адаптеры по тесту соответствия; роли между движками не копируются) →
@@ -58,6 +59,44 @@ function stopTraces(files, msgs) {
   const lines = files.slice(0, 40).map((b) => `  ${b.file}:${b.line} [${b.why}] ${b.text}`)
     .concat(msgs.map((b) => `  сообщение «${b.message}» [${b.why}]`));
   stop('в протоколе следы проекта (запрет 16) — в клон идёт только чистый код:\n' + lines.join('\n'));
+}
+// Плагин Claude Code ставится из этого же GitHub-репозитория (marketplace forma): отдельной публикации нет, нужно
+// обновить его копию. Сверяем пять мест: origin/main, тег, package.json, plugin.json и установленный плагин.
+function claudeCli(a) {
+  const r = require('child_process').spawnSync('claude', a, { encoding: 'utf8', shell: process.platform === 'win32' });
+  return { code: r.status, out: (r.stdout || '') + (r.stderr || '') };
+}
+function syncPlugin(expected) {
+  pgit('fetch', '-q', '--tags', 'origin');
+  const remote = (f) => { try { return JSON.parse(pgit('show', 'origin/main:' + f).out).version; } catch { return null; } };
+  const want = expected || remote('package.json');
+  const rows = [['origin/main package.json', remote('package.json')], ['origin/main plugin.json', remote('.claude-plugin/plugin.json')]];
+  const tag = pgit('ls-remote', '--tags', 'origin', 'refs/tags/v' + want).out.trim();
+  rows.push(['тег v' + want + ' на GitHub', tag ? want : null]);
+  const cli = claudeCli(['--version']);
+  if (cli.code !== 0) { console.log('! claude CLI недоступен — плагин не обновлён, версии сверены только на GitHub'); }
+  else {
+    const m = claudeCli(['plugin', 'marketplace', 'update', 'forma']);
+    if (m.code) console.log('! marketplace update не прошёл:\n' + m.out);
+    const u = claudeCli(['plugin', 'update', 'forma@forma']);
+    if (u.code) console.log('! plugin update не прошёл:\n' + u.out);
+    let installed = null;
+    try {
+      const all = JSON.parse(claudeCli(['plugin', 'list', '--json']).out).filter((x) => x.id === 'forma@forma');
+      installed = (all.find((x) => x.scope === 'user') || {}).version || null;
+      // установки с областью project обновляются только из своего проекта: называем их, не трогаем
+      for (const x of all.filter((y) => y.scope !== 'user' && y.version !== want)) {
+        console.log(`! плагин в проекте ${x.projectPath}: ${x.version} — обновить оттуда: claude plugin update forma@forma --scope ${x.scope}`);
+      }
+    } catch { /* список не разобран */ }
+    rows.push(['плагин Claude Code (user)', installed]);
+  }
+  let good = true;
+  for (const [what, v] of rows) {
+    if (v === want) ok(`${what}: ${v}`); else { good = false; console.log(`! ${what}: ${v || 'нет'} (ожидалось ${want})`); }
+  }
+  if (good) console.log('Перезапусти Claude Code, чтобы плагин подхватился.');
+  return good;
 }
 function release() {
   const list = pending();
@@ -113,6 +152,7 @@ function release() {
   } catch {
     console.log('! gh CLI недоступен — релиз будет создан через GitHub Actions');
   }
+  if (!has('--no-plugin')) syncPlugin(nv);
   git('add', '.forma/protocol');
   if (git('diff', '--cached', '--quiet').code) git('commit', '-q', '-m', `Protocol release v${nv}: ${list.length} commit(s)\n\n${CO}`);
 }
@@ -197,6 +237,8 @@ if (has('--sync-staged')) {
   if (tdiff.length) console.log('! шаблон protocol/skills/forma/ отстаёт от проекта: ' + tdiff.join(', ') + ' — коммит не держит');
   process.exit(0);
 }
+
+if (has('--sync-plugin')) process.exit(syncPlugin(null) ? 0 : 1);
 
 if (has('--check')) {
   const bad = parity(), s = e2p();
