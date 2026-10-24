@@ -88,6 +88,7 @@ function deriveSpendLineForCall(call, nodeName, description) {
     engine: 'gemini',
     tokens: tokens,
     cache_read: call.cache_read_tokens ?? null,
+    tokens_out: call.output_tokens ?? null,
     duration_s: call.duration_s ?? null,
     call_id: call.conversationId || 'id unknown',
     desc: description || 'выполнено.',

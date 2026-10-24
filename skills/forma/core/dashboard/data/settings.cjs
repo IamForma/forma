@@ -123,7 +123,8 @@ function activeAdapter(projectRoot) {
 function readEngineSettings(projectRoot) {
   const active = activeAdapter(projectRoot);
   const read = active ? active.engineSettings : null;
-  const tag = active ? (active.engine || null) : null;
+  // Адаптер без engineSettings тег движка всё равно объявил: тег — от активного, иначе от первого объявившего.
+  const tag = (active ? active.engine : engines.first(projectRoot, 'engine')) || null;
   const eng = read ? read(projectRoot) : NO_ENGINE_SETTINGS;
   // описание хука — из шапки его скрипта (как в «Структуре»); нет шапки — нет описания, не выдумка
   const { describe } = require('../structure.cjs');

@@ -102,10 +102,16 @@ it('контракт движка: объявленные sources отдаютс
   const claude = engines.sourcesOf(adapter());
   assert.equal(claude.rolesDir, '.claude/agents');
   assert.equal(claude.runRolesDir, '.claude/agents/run');
-  const gemini = engines.sourcesOf(engines.loadAdapters(ROOT).find((a) => a.dir === '.agents'));
-  assert.equal(gemini.rolesDir, '.agents/plugins/forma/agents'); // объявлено, не соглашение (.agents/agents)
-  const minimax = engines.sourcesOf(engines.loadAdapters(ROOT).find((a) => a.dir === '.minimax'));
-  assert.equal(minimax.rolesDir, '.minimax/agents');
+  // Установка по умолчанию ставит один движок: gemini и спящий minimax проверяются там, где их адаптер лежит.
+  const declared = (dir) => engines.loadAdapters(ROOT).find((a) => a.dir === dir);
+  if (declared('.agents')) {
+    const gemini = engines.sourcesOf(declared('.agents'));
+    assert.equal(gemini.rolesDir, '.agents/plugins/forma/agents'); // объявлено, не соглашение (.agents/agents)
+  }
+  if (declared('.minimax')) {
+    const minimax = engines.sourcesOf(declared('.minimax'));
+    assert.equal(minimax.rolesDir, '.minimax/agents');
+  }
   const bare = engines.sourcesOf({ dir: '.demo' });
   assert.deepEqual([bare.rolesDir, bare.skillsDir, bare.packageManifest, bare.mcpConfigs], ['.demo/agents', '.demo/skills', null, []]);
   assert.equal(engines.idOf({ dir: '.demo' }), 'demo');
