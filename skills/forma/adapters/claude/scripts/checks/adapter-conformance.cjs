@@ -30,7 +30,7 @@ function listAdapters(root) {
   const E = require('../../../.forma/dashboard/lib/engines.cjs');
   const found = E.loadAdapters(root)
     .filter((a) => typeof a.engineRulesFile === 'string')
-    .map((a) => ({ name: a.engine || E.idOf(a), eight: a.engineRulesFile, test: findTest(root, E.sourcesOf(a)) }));
+    .map((a) => ({ id: E.idOf(a), name: a.engine || E.idOf(a), eight: a.engineRulesFile, test: findTest(root, E.sourcesOf(a)) }));
   return [...found, ...STATIC];
 }
 

@@ -14,11 +14,17 @@ const { spawnSync } = require('child_process');
 
 const ROOT = process.cwd();
 const REGISTRY = path.join(ROOT, '.forma', 'engines.json');
-const ENGINES = ['claude', 'codex', 'gemini'];
+const ENGINES = ['claude', 'codex', 'gemini', 'minimax'];
 const REBUILD = {
   codex: [
     ['.codex/scripts/sync-codex.cjs', '--apply'],   // роли и зеркало навыков заново из .claude/
     ['.codex/tests/test-sync-codex.cjs'],
+  ],
+  minimax: [
+    ['.minimax/scripts/gen-roles.cjs'],           // роли .minimax/agents/ заново из .claude/agents/
+    ['.minimax/scripts/gen-plugin-agents.cjs'],   // субагенты пакета miniapps/minimax-engine/ из .minimax/agents/
+    ['.minimax/scripts/install-plugin.cjs'],      // пакет — в каталог данных MiniMax
+    ['.minimax/tests/test-minimax-adapter.cjs'],
   ],
 };
 

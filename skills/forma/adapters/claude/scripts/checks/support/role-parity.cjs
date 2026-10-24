@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 const roots = require('./engine-roots.cjs');
+const { isDormant } = require('./dormant.cjs');
 
 const CORE_ROLES = ['core', 'intent', 'kit', 'run', 'spec', 'extractor'];
 const RULE = '----------------------------------------------------------------------';
@@ -188,7 +189,7 @@ function compareRoles(root, { only } = {}) {
   const base = roots.own(root);
   if (!base || !base.src.rolesDir) return [];
   const pathRules = pathNormalizers(root);
-  return roots.peers(root).filter((p) => !only || [].concat(only).includes(p.id)).flatMap((peer) => {
+  return roots.peers(root).filter((p) => !isDormant(root, p.id) && (!only || [].concat(only).includes(p.id))).flatMap((peer) => {
     const own = ownRolesOf(root, peer);
     return pairsFor(root, base, peer).map((pair) => ({ pair, res: comparePair(root, pair, pathRules, own) }));
   });
