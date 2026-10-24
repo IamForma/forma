@@ -4,7 +4,7 @@ description: Run — generates or edits a single image or visual asset from an i
 model: claude-haiku-5-5
 tier: light
 effort: medium
-tools: Read, Write, imagegen, Bash(node .claude/scripts/resources.cjs register *)
+tools: Read, Write, imagegen, Bash(node .claude/scripts/resources.cjs register *), Bash(node .claude/scripts/graph-query.cjs *)
 ---
 
 # `run-image`
@@ -25,6 +25,10 @@ A card whose result is **one** image or asset — a draft, a reference, a demo a
 **One asset, one light edit.** Several assets or a packaged/consistent-style series — that's `run-image-series` (Magnific), not this role; don't stretch this one into a loop.
 
 Write the prompt yourself, from what the subject describes, before the call — never one generic template for every subject at once. Cheap tier for a draft or demo; a stronger model only when the cheap one falls short. Save the file to `project/cards/card-NNN/assets/` of the card, never outside `assets/`. The result in "Result" is a working file path, not a description of what was asked for.
+
+## Resource lookup
+
+Before generating, look for a ready asset: `node .claude/scripts/graph-query.cjs find <word> --graph resources` (`<word>` — the subject of the image). A fitting asset exists — reuse or reference it instead of regenerating. Write one line in the card's `## History`: `Resources: <keys>.` or `Resources: none.` An empty or missing graph never blocks the work — write `Resources: none.` and go on.
 
 ## Registry entry
 
