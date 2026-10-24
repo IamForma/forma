@@ -212,7 +212,7 @@ function cmdInventory() {
   for (const h of Object.keys(reg.entries)) {
     if (live.has(h)) continue;
     if (livePaths.has(reg.entries[h].path)) { delete reg.entries[h]; moved++; }        // файл на месте, хеш сменился: запись уже заведена под новым ключом (описание сброшено), старая уходит
-    else if (!reg.entries[h].description) delete reg.entries[h];                      // ушедшие из ресурсов и не описанные
+    else if (!reg.entries[h].description || !fs.existsSync(path.join(ROOT, reg.entries[h].path))) delete reg.entries[h];   // ушедшие из ресурсов и не описанные, либо без файла на диске
   }
   reg.generated = today();
   writeJson(REG, reg);
