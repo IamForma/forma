@@ -23,7 +23,7 @@ test('parseVolume: корректно извлекает volume из разли�
   const sample4 = '| Cycle volume | 30 |';
   assert.equal(parseVolume(sample4), 30);
 
-  const sample5 = '<!-- k:volume --> | 12 |';
+  const sample5 = '| Volume <!-- k:volume --> | 12 |';
   assert.equal(parseVolume(sample5), 12);
 
   const empty = '# Just header\nSome text';

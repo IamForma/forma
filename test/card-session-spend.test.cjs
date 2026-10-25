@@ -71,8 +71,8 @@ const FULL = { N: 18120, R: 16000, T: 400 };
 function writeCard(num, historyLines = []) {
   fs.writeFileSync(cardPath(num), [
     '---', `id: "card-${num}-test"`, 'status: "review"', 'assignee: "Intent"', 'labels: ["goal-protocol", "route-4"]', '---',
-    `# card-${num} · тест`, '', '## Задача', `${num} · оснастка | тест | критерий | 2 | человеку`, '',
-    '## Снаряжение', '', '## История', ...historyLines, '', '## Результат', ''].join('\n'));
+    `# card-${num} · тест`, '', '## Task', `${num} · tooling | тест | критерий | 2 | человеку`, '',
+    '## Kit', '', '## History', ...historyLines, '', '## Result', ''].join('\n'));
 }
 const putSession = (sid, rows) => fs.writeFileSync(path.join(projDir, `${sid}.jsonl`), jsonl(rows));
 const run = (num, sid, ...extra) => runNode(fx, [SCRIPT(), num, '--session', sid, ...extra]);
@@ -174,8 +174,8 @@ test('строка ручного окна помечена и границу «
   const manual = run(n, sid, '--from', '2021-09-29T10:00:00Z', '--to', '2021-09-29T10:10:30Z', '--write');
   assert.equal(manual.status, 0, manual.stderr);
   const [line] = spendOf(cardText(n), sid);
-  assert.match(line.line, /задано --from\/--to/);
-  assert.doesNotMatch(line.line, /граница/);
+  assert.match(line.line, /set by --from\/--to/);
+  assert.doesNotMatch(line.line, /window end/);
   // Автоматический запуск считает всё с начала: ручная строка границу не задала.
   assert.deepEqual(spendOf(run(n, sid).stdout, sid).map(nums), [FULL]);
 });

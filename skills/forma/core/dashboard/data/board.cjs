@@ -57,11 +57,12 @@ function readGoalInfo(projectRoot) {
     const f = path.join(dir, d, 'GOAL.md');
     if (!fs.existsSync(f)) continue;
     const t = fs.readFileSync(f, 'utf8');
-    const img = (t.match(/\*\*(?:Образ в этом проекте|Image in this project)\*\*:\s*(.+)/) || t.match(/\*\*(?:Образ по умолчанию|Default image)\*\*:\s*(.+)/) || [, ''])[1];
+    const bold = (key) => new RegExp('\\*\\*(?:' + i18n.alt(key) + ')\\*\\*:\\s*(.+)');
+  const img = (t.match(bold('project.image')) || t.match(bold('project.image_default')) || [, ''])[1];
     info[d] = {
       image: img.trim().slice(0, 600),
       draft: /^draft:\s*true/m.test(t),
-      closer: ((t.match(/\*\*(?:Кто закрывает|Closed by)\*\*:\s*(.+)/) || [, ''])[1]).trim(),
+      closer: ((t.match(bold('project.closer')) || [, ''])[1]).trim(),
     };
   }
   return info;
@@ -107,7 +108,7 @@ function linkCards(cards, { projectRoot, adrs, commits }) {
     c.mentions = cards.filter((o) => o !== c && re.test(o.text)).map((o) => o.code);
     c.adrs = adrs.filter((a) => re.test(a.t)).map((a) => a.f);
     c.commits = commits.filter(([, , s]) => re.test(s || '')).slice(0, 15);
-    c.humanFlag = /ожида\p{L}* решени|ждёт решени|awaiting (a )?decision/iu.test(c.text) && c.status !== 'done';
+    c.humanFlag = i18n.hasPhrase(c.text, 'awaiting_decision') && c.status !== 'done';
   });
 }
 

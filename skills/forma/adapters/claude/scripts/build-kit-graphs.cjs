@@ -37,6 +37,7 @@ const crypto = require('crypto');
 const { readJson } = require('../../.forma/dashboard/lib/fs.cjs');
 const { makeCli } = require('../../.forma/dashboard/lib/cli.cjs');
 const { field: fm, labelsOf: labels } = require('../../.forma/dashboard/lib/card.cjs');
+const i18n = require('../../.forma/i18n/index.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const OUT = path.join(ROOT, '.forma/living', 'graphs');
@@ -82,9 +83,9 @@ function cardForGoals(f, text) {
   return { nodes, edges };
 }
 
-// Раздел карточки по заголовку (рус./англ.) — до следующего «## ».
-function zone(text, names) {
-  const re = new RegExp('^## (?:' + names.join('|') + ')\\s*$', 'm'), m = re.exec(text);
+// Раздел карточки по ключу зоны (zone.kit, zone.history…; заголовок — по якорю или лейблу) — до следующего «## ».
+function zone(text, key) {
+  const m = i18n.headingRe(key).exec(text);
   if (!m) return '';
   const rest = text.slice(m.index + m[0].length), next = rest.search(/^## /m);
   return next < 0 ? rest : rest.slice(0, next);
@@ -92,14 +93,14 @@ function zone(text, names) {
 
 // Роль из ## Kit / ## Снаряжение: первое слово после «Роль:» / «Role:»; пусто, если роли нет.
 function roleOf(text) {
-  const m = zone(text, ['Kit', 'Снаряжение']).match(/^[-*\s]*\**(?:Роль|Role)\**\s*:\**\s*`?([A-Za-z][\w.\-]*)/m);
+  const m = zone(text, 'zone.kit').match(new RegExp('^[-*\\s]*\\**(?:' + i18n.alt('kit.role') + ')\\**\\s*:\\**\\s*`?([A-Za-z][\\w.\\-]*)', 'm'));
   return m ? m[1] : '';
 }
 
 // Расход: суммы по строкам расхода ## History / ## История («<N> tokens … <T> s» в ключевой части до тире).
 function spendOf(text) {
   let tokens = 0, seconds = 0, lines = 0;
-  for (const line of zone(text, ['History', 'История']).split('\n')) {
+  for (const line of zone(text, 'zone.history').split('\n')) {
     const key = line.split(' — ')[0];
     const t = key.match(/,\s*(\d+)\s+tokens\b/);
     if (!t) continue;
@@ -121,8 +122,8 @@ function cardForBoard(f, text) {
   const sp = spendOf(text);
   // Попытки исполнителя: строки расхода Run (на коротком маршруте route-4 исполняет Kit).
   const who = ls.includes('route-4') ? 'Kit' : 'Run';
-  const attempts = zone(text, ['History', 'История']).split('\n')
-    .filter(l => new RegExp('^[-*]\\s*`' + who + '`,[^:]*:\\s*(?:attempt|попытка)\\b', 'i').test(l)).length;
+  const attempts = zone(text, 'zone.history').split('\n')
+    .filter(l => new RegExp('^[-*]\\s*`' + who + '`,[^:]*:\\s*(?:' + i18n.alt('hist.attempt') + ')\\b', 'i').test(l)).length;
   const nodes = [{
     id, label: title, type: 'card', status, assignee, epic,
     goal: goal || '', route: one(/^route-\d+$/), over: ls.filter(l => /^over-\d+$/.test(l)),
@@ -278,8 +279,8 @@ function logForArsenal(f, text) {
   for (const line of text.split('\n')) {
     if (line.startsWith('#') || !line.trim()) continue;
     const [, who, , tool] = line.split(' · ').map(s => s && s.trim());
-    if (!who || !tool || who === '!ERROR' || who === '!ОШИБКА') continue;
-    const node = 'node:' + (who === 'session' || who === 'сессия' ? 'Session' : who[0].toUpperCase() + who.slice(1));  // журнал пишет «kit», роль — «Kit»
+    if (!who || !tool || i18n.labelsOf('hist.error').includes(who)) continue;
+    const node = 'node:' + (i18n.labelsOf('hist.session').includes(who) ? 'Session' : who[0].toUpperCase() + who.slice(1));  // журнал пишет «kit», роль — «Kit»
     const key = node + '|' + tool;
     counts.set(key, (counts.get(key) || 0) + 1);
   }

@@ -141,7 +141,7 @@ const CALL_ID_UNKNOWN_RE = /^-\s*`([^`]+)`,\s*(\d{4}-\d{2}-\d{2}):\s*attempt,[^\
 // Правая граница окна строки основной сессии (card-session-spend): точная метка в описании после тире.
 // Одна сессия по одной карточке пишется несколькими строками — каждая только за новые ответы; метка —
 // граница «уже учтено» для повторной записи и часть ключа дедупликации в счётчиках. Нет метки — null.
-const SESSION_WINDOW_END_RE = /граница (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)/;
+const SESSION_WINDOW_END_RE = new RegExp('(?:' + require('../i18n/index.cjs').alt('hist.window_end') + ') (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z)');
 const sessionWindowEnd = (line) => { const m = SESSION_WINDOW_END_RE.exec(line); return m ? Date.parse(m[1]) : null; };
 
 // Ключ дедупликации строки расхода — один для tally.cjs и вкладки (data/attempts.cjs): иначе итоги расходятся.

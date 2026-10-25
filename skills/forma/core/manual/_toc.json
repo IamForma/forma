@@ -18,7 +18,8 @@
         { "title": { "en": "Levers and leaks", "ru": "Рычаги и дыры" }, "page": "03-protocol/LEVERS.md" },
         { "title": { "en": "Project kitting", "ru": "Комплектация проекта" }, "page": "03-protocol/KITTING.md" },
         { "title": { "en": "Dashboard localization", "ru": "Локализация дашборда" }, "page": "03-protocol/LOCALIZATION.md" },
-        { "title": { "en": "Developing the protocol from a project", "ru": "Разработка протокола из проекта" }, "page": "03-protocol/PROTOCOL-DEVELOPMENT.md" }
+        { "title": { "en": "Developing the protocol from a project", "ru": "Разработка протокола из проекта" }, "page": "03-protocol/PROTOCOL-DEVELOPMENT.md" },
+        { "title": { "en": "Engine map", "ru": "Карта движка" }, "page": "03-protocol/ENGINE-MAP.md" }
       ]
     },
     { "title": { "en": "4. Project resources", "ru": "4. Ресурсы проекта" }, "page": "04-resources/README.md" },

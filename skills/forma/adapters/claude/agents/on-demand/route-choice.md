@@ -20,6 +20,8 @@ Seven questions, in order; the **first "yes"** is the route.
 
 No "yes" at all — `route-7`. Doubt between two — the longer one.
 
+**Name the route to the human.** A reply that mentions a route carries its movement name next to the code — `route-1 (intent-copy)`, `route-7 (spec-kit-run)`, `over-2 (external-model)` — never a bare number. Names: `.forma/manual/en/03-protocol/ROUTES.md` §3, keys `routeNames` in `.forma/i18n/keys.json`.
+
 **The label binds the executor.** A card labelled `route-2`, `5`, `6` or `7` is executed by `Run`, never by `Intent` in its own session: a label with no call behind it is a route on paper (prohibitions 1 and 7). `Intent` that wants to do the work itself changes the label first — `route route-N → route-0 (why: <code>)` — within the `route-0` limit, or hands the card on. The board check `route-executor` reports a card in `review`/`done` on such a route with no `Run` attempt in its history.
 
 **`route-2` with a role confirmed by the Plumb (`why: plumb`).** For a routine card, `Spec` calls the Plumb (`spec.md`, "Role routing — the Plumb"); when the reading clears the thresholds in `PROJECT.md`, `Spec` writes the profile into `## Kit` (Role, Skill, Tool, Access, Data; Model inherited) and `Intent` launches `Run` directly, without `Kit`. Below the thresholds the card goes to `Kit`, which creates the role (`route-5`). A card the human or `Intent` wrote complete with its kit already set keeps `why: ready`.

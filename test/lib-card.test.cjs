@@ -65,7 +65,7 @@ test('zone / zoneHeading / withoutHistory: два языка', () => {
   const en = '## Task\ndo\n\n## History\n- h\n\n## Result\nok\n';
   assert.equal(card.zone(en, 'task'), 'do');
   assert.equal(card.zone(en, 'history'), '- h');
-  assert.equal(card.zoneHeading('history', 'ru'), 'История');
+  assert.equal(card.zoneHeading('history', 'ru'), 'History');
   assert.equal(card.zoneHeading('history', 'en'), 'History');
   assert.equal(card.zoneHeading('history', 'de'), 'History');
   assert.ok(card.HISTORY_HEADING_RE.test('## История') && card.HISTORY_HEADING_RE.test('## History  '));

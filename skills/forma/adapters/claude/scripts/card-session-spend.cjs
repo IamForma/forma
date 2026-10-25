@@ -35,6 +35,7 @@ const economy = require('../../.forma/dashboard/economy.cjs');
 const { claudeUsage } = require('./claude-economy.cjs');
 const { formatSpendLine, sessionWindowEnd } = require('../../.forma/dashboard/spend-line.cjs');
 const { makeCli } = require('../../.forma/dashboard/lib/cli.cjs');
+const i18n = require('../../.forma/i18n/index.cjs');
 const { cardFiles, HISTORY_HEADING_RE } = require('../../.forma/dashboard/lib/card.cjs');
 
 const cli = makeCli();
@@ -54,7 +55,7 @@ const slug = root.replace(/[^A-Za-z0-9]/g, '-');
 const projDir = process.env.CLAUDE_SPEND_PROJECTS || path.join(os.homedir(), '.claude', 'projects', slug);
 if (!fs.existsSync(projDir)) { console.error('нет каталога журналов: ' + projDir); process.exit(AUTO ? 0 : 2); }
 
-const MANUAL_MARK = 'задано --from/--to';
+const MANUAL_MARK = i18n.phrases('manual_window')[0];
 const LEGACY_WINDOW_RE = /окно \d{2}:\d{2}–(\d{2}):(\d{2}) UTC/;
 const LINE_DAY_RE = /(\d{4}-\d{2}-\d{2}):\s*attempt,/;
 
@@ -98,7 +99,7 @@ function toolOwner(c) {
   let m = /[\\/]\.devtool[\\/]features[\\/](?:done[\\/])?card-(\d{3})-/.exec(String(inp.file_path || ''));
   if (m && /^(Write|Edit)$/.test(c.name)) return m[1];
   // Коммит: `git commit` напрямую или через `node .forma/protocol/scripts/forma-commit.cjs`; номер — в сообщении.
-  if ((m = /(?:git commit|forma-commit)[\s\S]*?[Кк]арточк[аи] (\d{3})/.exec(command))) return m[1];
+  if ((m = new RegExp('(?:git commit|forma-commit)[\\s\\S]*?(?:' + i18n.alt('hist.card') + ') (\\d{3})', 'i').exec(command))) return m[1];
   if (/^(Bash|PowerShell)$/.test(c.name)) return shellWriteTarget(command);
   // Вызов субагента по карточке — работа Intent по координации этой карточки.
   if ((c.name === 'Agent' || c.name === 'Task') && (m = /card-(\d{3})(?!\d)/.exec(String(inp.prompt || '')))) return m[1];
@@ -184,7 +185,7 @@ function lineBoundary(line) {
 function accountedUntil(cardText, id) {
   let until = null;
   for (const line of cardText.split(/\r?\n/)) {
-    if (!/^-\s/.test(line) || !line.includes('`' + id + '`') || !line.includes('card-session-spend') || line.includes(MANUAL_MARK)) continue;
+    if (!/^-\s/.test(line) || !line.includes('`' + id + '`') || !line.includes('card-session-spend') || i18n.hasPhrase(line, 'manual_window')) continue;
     const at = lineBoundary(line);
     if (at != null && (until == null || at > until)) until = at;
   }
@@ -196,8 +197,8 @@ const hm = ms => new Date(ms).toISOString().slice(11, 16);
 
 /** Строка расхода сессии за окно `r` (описание — на языке карточки, как прежде). */
 function spendLine(r) {
-  const window = MANUAL ? `окно ${hm(r.from)}–${hm(r.to)} UTC (${MANUAL_MARK})` : `окно ${hm(r.from)}–${hm(r.to)} UTC`;
-  const edge = MANUAL ? '' : `, граница ${new Date(r.to).toISOString()}`;
+  const window = MANUAL ? `window ${hm(r.from)}–${hm(r.to)} UTC (${MANUAL_MARK})` : `window ${hm(r.from)}–${hm(r.to)} UTC`;
+  const edge = MANUAL ? '' : `, ${i18n.labelsOf('hist.window_end')[0]} ${new Date(r.to).toISOString()}`;
   return '- ' + formatSpendLine({ node: 'Intent', date: new Date(r.to).toISOString().slice(0, 10), tokens: economy.usageTokens(r),
     cache_read: r.cache_read, tokens_out: r.tokens_out, duration_s: Math.round(r.active / 1000), call_id: r.id, engine: require('../forma-adapter.cjs').spendTag, desc: '' }) +
     `расход основной сессии по журналу (card-session-spend): ${r.calls} ответов, ${window}, ` +

@@ -15,7 +15,7 @@ const bdStatuses = () => STATUS_ORDER.map(s => [s, t('board.col.' + s), STATUS_V
 const BOARD_ACTIVE = new Set(['todo','in-progress','review']);
 const BOARD_DONE_LIMIT = 5;
 // Единицы снаряжения: ключ — как в карточке (язык проекта), показ — из словаря.
-const BOARD_UNITS = [['Роль', 'role'], ['Скилл', 'skill'], ['Инструмент', 'tool'], ['Доступ', 'access'], ['Данные', 'data'], ['Модель', 'model']]; // i18n-keep: имена полей из карточки
+const BOARD_UNITS = ['role', 'skill', 'tool', 'access', 'data', 'model']; // ключи единиц снаряжения (kit.*); подписи — board.unit.*
 const BOARD_NODE_C = { Intent: '--accent', Spec: '--st-backlog', Kit: '--st-todo', Run: '--st-progress', Core: '--st-review' };
 // Маршруты (.forma/manual/…/ROUTES.md): этапы с ключом, по которому статус карточки ставит флажок «вы здесь». Тексты — из словаря.
 const BOARD_ROUTE_DEF = {
@@ -42,7 +42,9 @@ function boardRoutes() {
 // Код карточки и цели в данных прежний (card-NNN, goal-<код>); на доске — подпись.
 const bdCl = code => String(code).replace(/^card-(\d+)$/, (_, n) => BOARD_T.card(n));
 const bdGl = (B, g) => g ? (B.DATA.goals[g] ? B.DATA.goals[g].split('·').pop().trim() : g) : BOARD_T.noGoal;
-const bdLbl = l => { if (!l) return '—'; const m = l.match(/^(route|over|seg|wave)-(\d+)$/); return m ? BOARD_T[m[1]](m[2]) : l === 'trial' ? BOARD_T.trial : l === 'demo' ? BOARD_T.demo : l; };
+// Имя-движение рядом с кодом маршрута или наложения (keys.json, routeNames): route 1 · intent-copy / маршрут 1 · копия Intent.
+const bdRn = l => /^(route|over)-d+$/.test(l) ? ' · ' + t('board.rn.' + l.replace('-', '')) : '';
+const bdLbl = l => { if (!l) return '—'; const m = l.match(/^(route|over|seg|wave)-(\d+)$/); return m ? BOARD_T[m[1]](m[2]) + bdRn(l) : l === 'trial' ? BOARD_T.trial : l === 'demo' ? BOARD_T.demo : l; };
 // Этап и причина — из строк истории (AGENTS.md §6): последняя «stage <ключ>», все «route … (why: <код>)».
 const bdStageLine = c => { let k = null; c.history.forEach(l => { const m = l.match(/:\s*stage\s+(\w+)/); if (m) k = m[1]; }); return k; };
 const bdWhyCodes = c => c.history.map(l => l.match(/:\s*route (route-\d[^(—]*)\(why:\s*(\w+)\)/)).filter(Boolean).map(m => [m[1].trim(), m[2]]);
@@ -162,10 +164,10 @@ function bdOpenDeps(B, code) {
 function bdOpenKit(B, code) {
   const c = B.byCode[code], d = document.getElementById('dlg');
   d.dataset.code = code; if (d.open) d.close();
-  const rows = BOARD_UNITS.map(([u, id]) => {
+  const rows = BOARD_UNITS.map((u) => { const id = u;
     const v = c.kitParts[u];
     let extra = '';
-    if (u === 'Скилл' /* i18n-keep */ && c.kitSkills.length) extra = '<ul class="rel">' + c.kitSkills.map(s =>
+    if (u === 'skill' && c.kitSkills.length) extra = '<ul class="rel">' + c.kitSkills.map(s =>
       `<li><b>${esc(s)}</b> — <small>${esc(B.DATA.skills[s] || '')}</small></li>`).join('') + '</ul>';
     return `<tr><th>${t('board.unit.' + id)}<br><small>${t('board.unit.' + id + '.hint')}</small></th><td>${v ? esc(v) : `<span class="miss">${t('board.notSet')}</span>`}${extra}</td></tr>`;
   }).join('');
@@ -202,7 +204,7 @@ function bdPips(B, c) {
   const r = c.ready, k = r.kitUnits.length, dependents = B.dependents;
   const p = (ok, txt, title) => `<span class="pip ${ok}" title="${esc(title)}">${txt}</span>`;
   return `<div class="pips">${p(r.goal?'ok':'no',t('board.pip.goal'),t('board.pip.goalTip'))}${p(r.task?'ok':'no',t('board.pip.task'),t('board.pip.taskTip'))}` +
-    `${p((k===6?'ok':k?'half':'no')+' kitp',t('board.pip.kit',{k}),t('board.pip.kitTip',{units: r.kitUnits.join(', ') || t('board.none')}))}${p(r.route?'ok':'no',t('board.pip.route'),t('board.pip.routeTip'))}` +
+    `${p((k===6?'ok':k?'half':'no')+' kitp',t('board.pip.kit',{k}),t('board.pip.kitTip',{units: r.kitUnits.map((u) => t('board.unit.' + u)).join(', ') || t('board.none')}))}${p(r.route?'ok':'no',t('board.pip.route'),t('board.pip.routeTip'))}` +
     (r.approval === null ? '' : p(r.approval?'ok':'no',t('board.pip.approval'),t('board.pip.approvalTip'))) +
     (r.access === null ? '' : p(r.access===true?'ok':r.access==='unknown'?'half':'no',r.access==='unknown'?t('board.pip.accessUnk'):t('board.pip.access'),
       r.access==='unknown'?t('board.pip.accessUnkTip'):t('board.pip.accessTip'))) +
@@ -355,14 +357,13 @@ const bdCardRow = o => `<li><a href="#" data-open="${o.code}" title="${o.code}">
 function bdRouteHtml(c) {
   const R = boardRoutes()[c.route]; if (!R) return `<p class="miss">${t('board.routeNone')}</p>`;
   const now = bdStageNow(c), exact = !!bdStageLine(c), idx = R[1].findIndex(s => s[0] === now), all = now === 'closed';
-  const hist = k => ({ approve: /одобрил|approved/i, check: /провер|review/i, accept: /принят|accepted/i })[k]; // i18n-keep: слова из истории карточки
-  const dateOf = k => { const re = hist(k); if (!re) return ''; const l = c.history.find(x => re.test(x)); const m = l && l.match(/\d{4}-\d{2}-\d{2}/); return m ? m[0] : ''; };
+  const dateOf = k => (c.routeDates && c.routeDates[k]) || '';
   return `<div class="route">${R[1].map((s, i) => `${i ? '<span class="arrow">→</span>' : ''}<div class="stage ${all || i < idx ? 'done' : i === idx ? 'now' : ''}"${i === idx && !all ? ` data-here="${esc(t('board.here'))}"` : ''}>${all || i < idx ? '✓ ' : ''}${esc(s[1])}<small>${esc(s[2])}${dateOf(s[0]) ? ' · ' + dateOf(s[0]) : ''}</small></div>`).join('')}</div>
     <p class="meta">${bdLbl(c.route)} <small>(${c.route})</small> — ${esc(R[0])}. ${t('board.now')} <b>${BOARD_T.stage[now] || now}</b> ${exact ? `<small>${t('board.nowRecorded')}</small>` : `<small class="miss">${t('board.nowGuess', { s: BOARD_T.status[c.status] || c.status })}</small>`}</p>`;
 }
 function bdOpenRoute(B, code) {
   const c = B.byCode[code]; if (!c) return;
-  const why = c.history.filter(l => /route-\d|маршрут/i.test(l)); // i18n-keep
+  const why = c.routeLines || [];
   const over = c.labels.filter(l => /^over-\d$/.test(l));
   const w = bdWaiting(B, c);
   bdDlgOpen(B, code, `<div class="code">${t('board.dlg.route')} · ${bdCl(code)}</div><h2>${esc(c.title)}</h2>${bdRouteHtml(c)}

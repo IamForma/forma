@@ -58,16 +58,22 @@ Spend in tokens and elapsed time are statistics, not thresholds: they are writte
 
 | Field | Value |
 |---|---|
-| Enabled routes | |
-| `Kit` batch ceiling | 4 cards per call (`kit.md`, "Task kitting") |
-| `route-0` small-task threshold | |
-| `over-2` (external cheap model) | |
-| `over-4` (batch acceptance) | |
-| `Run` parallelism in a wave | |
-| Dispatcher | |
-| Plumb `plumb` (AGENTS.md §2, "The Plumb") | `haiku` (default; `haiku` \| `jev`). Profile `.claude/agents/plumb-haiku.md`; scrubbing — `.claude/scripts/plumb-scrub.cjs`; `jev` — only after measurement (`plumb-measure.cjs`). Thresholds (starting, separate per executor, revised by `Core` only through a stop with a report): leader ≥ 80, gap to the second ≥ 40, leader's noul ≥ 0.75, clarity ≥ 3 of 4 (measured on `jev`) |
-| External model for the plumb | provider and model — ; key name in `.env` — ; the site's domain is masked; cycle call limit — number of calls, the human sets the value (never dollars) |
-| An epic's default route | marker `/Intent+Kit` in the epic name (table "Project epics"); a card's own `route-N` label overrides it |
+| Enabled routes <!-- k:routes.enabled --> | |
+| `Kit` batch ceiling <!-- k:routes.kit_cap --> | 4 cards per call (`kit.md`, "Task kitting") |
+| `route-0` small-task threshold <!-- k:routes.small_task --> | |
+| `over-2` (external cheap model) <!-- k:routes.over2 --> | |
+| `over-4` (batch acceptance) <!-- k:routes.over4 --> | |
+| `Run` parallelism in a wave <!-- k:routes.parallel --> | |
+| Dispatcher <!-- k:routes.dispatcher --> | |
+| Plumb `plumb` (AGENTS.md §2, "The Plumb") <!-- k:routes.plumb --> | `haiku` (default; `haiku` \| `jev`). Profile `.claude/agents/plumb-haiku.md`; scrubbing — `.claude/scripts/plumb-scrub.cjs`; `jev` — only after measurement (`plumb-measure.cjs`). (thresholds — the rows below; starting values, separate per executor, revised by `Core` only through a stop with a report) |
+| Plumb haiku: leader threshold, % <!-- k:plumb.haiku.leader --> | 80 |
+| Plumb haiku: gap to the second, points <!-- k:plumb.haiku.gap --> | 40 |
+| Plumb jev: leader threshold, % <!-- k:plumb.jev.leader --> | 80 |
+| Plumb jev: gap to the second, points <!-- k:plumb.jev.gap --> | 40 |
+| Plumb jev: leader noul threshold, % <!-- k:plumb.jev.noul --> | 75 |
+| Plumb jev: clarity threshold, of 4 <!-- k:plumb.jev.clarity --> | 3 |
+| External model for the plumb <!-- k:routes.plumb_model --> | provider and model — ; key name in `.env` — ; the site's domain is masked; cycle call limit — number of calls, the human sets the value (never dollars) |
+| An epic's default route <!-- k:routes.default_epic --> | marker `/Intent+Kit` in the epic name (table "Project epics"); a card's own `route-N` label overrides it |
 
 **Node qualification** — not a separate field, not filled in beforehand. Each node has its own source of level, read on the spot when the node actually looks at a task:
 
@@ -123,7 +129,7 @@ a cycle closed on the second version cannot be judged by the third.
 
 ---
 
-## What goes into the cycle cache
+## What goes into the cycle cache <!-- k:cycle_cache -->
 
 From this file the cache takes: node tooling, thresholds, access and data, project references — by link and version. The result image arrives separately — from the current goal's `GOAL.md`.
 

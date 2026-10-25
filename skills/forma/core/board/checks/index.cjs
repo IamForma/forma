@@ -13,6 +13,7 @@ module.exports = [
   require('./status-values.cjs'),
   require('./card-materials.cjs'),
   require('./spend-language.cjs'),
+  require('./key-language.cjs'),
   require('./core-closing.cjs'),
   require('./attempt-parses.cjs'),
   require('./attempt-format.cjs'),

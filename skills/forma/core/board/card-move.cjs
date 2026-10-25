@@ -40,7 +40,7 @@
 const fs = require('fs');
 const path = require('path');
 const { makeCli } = require('../dashboard/lib/cli.cjs');
-const { cardFiles, parseFrontmatter, frontmatterBlock, zoneHeading, labelsOf } = require('../dashboard/lib/card.cjs');
+const { cardFiles, parseFrontmatter, frontmatterBlock, zoneHeadingIn, labelsOf } = require('../dashboard/lib/card.cjs');
 const { normalize } = require('./run-in-card.cjs');
 const { checkBoard } = require('./check-board.cjs');
 const i18n = require('../i18n/index.cjs');
@@ -80,9 +80,6 @@ if (to === 'core-close') {
   if (!note || /[\n]/.test(note)) die('нужен --note "<основание>" в одну строку');
   if (['kit', 'result', 'session-spend', 'tokens', 'duration-ms', 'agent-id'].some((k) => process.argv.includes('--' + k))) die('core-close: другие флаги расхода и секций не принимаются');
   const day0 = new Date().toISOString().slice(0, 10);
-  const pj = fs.readFileSync(projectFile(ROOT, 'PROJECT.md'), 'utf8');
-  const w0 = (i18n.reader(pj).inline('language') || '').split(/\s+/)[0];
-  const anch0 = !!w0 && !(i18n.langCode(w0) in i18n.KEYS.languages);
   const plan = [];
   for (const cid of ids) {
     const fs0 = cardFiles(ROOT, (n) => n.startsWith(cid + '-') && n.endsWith('.md'));
@@ -93,14 +90,14 @@ if (to === 'core-close') {
     let tx = fs.readFileSync(f0, 'utf8');
     const fm0 = parseFrontmatter(tx);
     if (fm0.status !== 'done' || fm0.assignee !== 'Core') die(`${cid0}: нужны status "done" и assignee "Core" (сейчас ${fm0.status}/${fm0.assignee}) — ничего не записано`);
-    const hs = ['ru', 'en'].map((l) => ({ hist: zoneHeading('history', l, anch0), res: zoneHeading('result', l, anch0) }));
-    const z = hs.find((h) => tx.includes('\n## ' + h.hist));
-    if (!z) die(`${cid0}: нет зоны «История» — ничего не записано`);
-    const hAt = tx.indexOf('\n## ' + z.hist);
-    const rAt = tx.indexOf('\n## ' + z.res, hAt + 1);
+    const zh = zoneHeadingIn(tx, 'history');
+    if (!zh) die(`${cid0}: нет зоны «История» — ничего не записано`);
+    const hAt = tx.indexOf('\n## ' + zh);
+    const zr = zoneHeadingIn(tx, 'result');
+    const rAt = zr ? tx.indexOf('\n## ' + zr, hAt + 1) : -1;
     const hEnd = rAt === -1 ? tx.length : rAt;
     const hb = tx.slice(hAt, hEnd).replace(/\s*$/, '');
-    tx = tx.slice(0, hAt) + hb + '\n- `Core`, ' + day0 + ': закрыто — ' + note.replace(/\.?\s*$/, '.') + '\n' + (rAt === -1 ? '' : tx.slice(rAt));
+    tx = tx.slice(0, hAt) + hb + '\n- `Core`, ' + day0 + ': closed — ' + note.replace(/\.?\s*$/, '.') + '\n' + (rAt === -1 ? '' : tx.slice(rAt));
     if (!/^assignee:.*$/m.test(tx)) die(`${cid0}: в frontmatter нет поля assignee — ничего не записано`);
     tx = tx.replace(/^assignee:.*$/m, 'assignee: null');
     plan.push({ cid: cid0, file: f0, text: tx, before: fs.readFileSync(f0, 'utf8') });
@@ -281,15 +278,12 @@ if (resultBody != null) text = setZone(text, 'result', resultBody);
 
 // 5. Строка этапа — в конец зоны «История» (перед зоной результата)
 const projectMd = fs.readFileSync(projectFile(ROOT, 'PROJECT.md'), 'utf8');
-const word = (i18n.reader(projectMd).inline('language') || '').split(/\s+/)[0];
-const code = i18n.langCode(word);
-const anchored = !!word && !(code in i18n.KEYS.languages);
-const headings = ['ru', 'en'].map((l) => ({ hist: zoneHeading('history', l, anchored), res: zoneHeading('result', l, anchored) }));
-const zone = headings.find((h) => text.includes('\n## ' + h.hist));
-if (!zone) die('в карточке нет зоны «История»');
+const zoneHist = zoneHeadingIn(text, 'history');
+const zoneRes = zoneHeadingIn(text, 'result');
+if (!zoneHist) die('в карточке нет зоны «История»');
 const line = `- \`${node}\`, ${day}: stage ${t.stage} — ${note.replace(/\.?\s*$/, '.')}`;
-const histAt = text.indexOf('\n## ' + zone.hist);
-const resAt = text.indexOf('\n## ' + zone.res, histAt + 1);
+const histAt = text.indexOf('\n## ' + zoneHist);
+const resAt = zoneRes ? text.indexOf('\n## ' + zoneRes, histAt + 1) : -1;
 const histEnd = resAt === -1 ? text.length : resAt;
 const body = text.slice(histAt, histEnd).replace(/\s*$/, '');
 const n = note.replace(/\.?\s*$/, '.');
@@ -338,17 +332,15 @@ try {
   }
 } catch {}
 
-// 7. Проверка по этой карточке; счёт «принятых, но не закрытых Core» — сводка цикла, а не нарушение карточки
-const mine = checkBoard(ROOT).filter((p) => p.includes(cardId) && !p.includes('не закрыты `Core`'));
+// 7. Проверка по этой карточке
+const mine = checkBoard(ROOT).filter((p) => p.includes(cardId));
 if (mine.length) { console.error(mine.join('\n')); process.exit(1); }
 console.log(`ok: ${cardId} → ${t.status}/${assignee} · stage ${t.stage}`);
 
 if (to === 'close') {
   const epic = fm.epic;
   if (epic) {
-    const vm = projectMd.match(/<!--\s*k:volume\s*-->\s*\|\s*(\d+)/i) ||
-               projectMd.match(/^\|\s*(?:Объём\s*(?:круга|цикла)|Cycle volume)[^|]*\|\s*(\d+)/mi);
-    const cycleVol = vm ? +vm[1] : 25;
+    const cycleVol = i18n.rowNumber(projectMd, 'volume') ?? 25;
     const doneDir = path.join(BOARD, 'done');
     let count = 0;
     if (fs.existsSync(doneDir)) {

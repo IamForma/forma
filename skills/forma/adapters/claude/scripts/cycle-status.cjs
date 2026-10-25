@@ -25,20 +25,20 @@ function resolveLib(subpath) {
 }
 
 const { readIfExists, projectFile } = require(resolveLib('fs.cjs'));
+// Installed layout first (.claude/scripts → .forma/i18n); the protocol source keeps it in core/i18n (tests load this file in place).
+const i18n = require([path.resolve(__dirname, '../../.forma/i18n/index.cjs'), path.resolve(__dirname, '../../../core/i18n/index.cjs')].find((p) => fs.existsSync(p)));
 const { cardFiles, frontmatterBlock } = require(resolveLib('card.cjs'));
 
 function parseVolume(text) {
   if (!text) return null;
-  const vm = text.match(/<!--\s*k:volume\s*-->\s*\|\s*(\d+)/i) ||
-             text.match(/^\|\s*(?:Объём\s*(?:круга|цикла)|Cycle volume)[^|]*\|\s*(\d+)/mi);
-  return vm ? +vm[1] : null;
+  return i18n.rowNumber(text, 'volume');
 }
 
 function getCycleStatus(root = ROOT) {
   const pm = readIfExists(projectFile(root, 'PROJECT.md'));
   const volume = parseVolume(pm);
-  const rm = pm.match(/Выпуск протокола[^\n]*?(\d+)\s*$/m);
-  const release = rm ? +rm[1] : 10;
+  const rm = i18n.reader(pm).trailingNumber('release');
+  const release = rm ? +rm : 10;
 
   const perEpic = new Map();
   for (const file of cardFiles(root)) {

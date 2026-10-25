@@ -14,7 +14,7 @@ const CARD_3 = '.devtool/features/done/card-003-zakrytaya-osnastka.md';
 const ID = '`a1b2c3d4e5f60718`';
 
 // Дописать строку в конец зоны «История» карточки.
-const history = (line) => (text) => text.replace('\n\n## Результат', `\n${line}\n\n## Результат`);
+const history = (line) => (text) => text.replace('\n\n## Result', `\n${line}\n\n## Result`);
 
 const CASES = [
   // --- доска (ядро) ---
@@ -41,7 +41,7 @@ const CASES = [
     expect: /ключевая часть строки расхода не по-английски у 1 записей/ },
   { name: 'core-closing', registry: 'board', id: 'core-closing',
     apply: (m) => m.edit(CARD_3, (t) => t.replace('assignee: null', 'assignee: "Core"')),
-    expect: /1 карточек приняты человеком, но не закрыты `Core`/ },
+    expect: null, expectInfo: /очередь Core: 1 карточек ждут закрытия цикла — штатно, не нарушение/ },
   { name: 'attempt-parses', registry: 'board', id: 'attempt-parses',
     apply: (m) => m.edit(CARD_1, history('- `Kit`, 2031-01-05: attempt, много токенов.')),
     expect: /1 записей расхода не разбираются/ },

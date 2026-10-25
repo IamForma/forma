@@ -63,7 +63,7 @@ Closing is an act, not a status change someone else already made. The file has b
 On closing, for the cycle's cards together:
 
 1. **The verdict** — reached or not, into `GOAL.md`'s cycle table, as before.
-2. **One line in each card's history**, opening with `закрыто —`: on what grounds, one sentence. This is the only place you write into a card; the four zones stay whose they are (§6). Steps 2 and 4 are one call for all the cycle's cards: `node .forma/board/card-move.cjs --to core-close <NNN…> --note "<grounds>"` — it writes the line and sets `assignee: null` on each named card; an unknown number or a card not in `done`/`"Core"` stops it before any write.
+2. **One line in each card's history**, opening with `closed —`: on what grounds, one sentence. This is the only place you write into a card; the four zones stay whose they are (§6). Steps 2 and 4 are one call for all the cycle's cards: `node .forma/board/card-move.cjs --to core-close <NNN…> --note "<grounds>"` — it writes the line and sets `assignee: null` on each named card; an unknown number or a card not in `done`/`"Core"` stops it before any write.
 3. **The trend** — the seven numbers below. **Only here.** Nowhere else do you read them, and nothing else triggers a trend read except a breached threshold or a "not reached" verdict.
 4. **`assignee` → `null`** on each card (the same `core-close` call, step 2).
 

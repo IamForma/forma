@@ -27,6 +27,10 @@ The dashboard speaks two languages: English (default) and Russian. Only the inte
 - Label tables are functions or getters, never constants: the language changes without a reload.
 - Cyrillic in code that is data, not interface (a card field name matched against text, a language's own name), carries the mark `i18n-keep` on its line.
 
+## Keys of the protocol
+
+The core is English: zone headings, card kind, Kit unit keys, history verbs and `PROJECT.md` keys are English words of one dictionary, `.forma/i18n/keys.json` (a key → English and Russian labels). A language is only a localization — the labels of the dictionary and the texts after a key. Code reads fields by key, never by a Russian spelling (`.forma/i18n/key-language.test.cjs`); a card with a non-English key is reported by the board check `key-language` and fixed by `node .forma/board/migrate-keys.cjs --apply`.
+
 ## The check
 
 `locale-parity` runs with the engine check (`sync-engines --check`):

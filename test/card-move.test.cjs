@@ -26,7 +26,7 @@ test('card-move: полный круг — status, assignee, строка эта
     const text = fs.readFileSync(live(ID), 'utf8');
     assert.match(text, new RegExp(`^status: "${status}"$`, 'm'));
     assert.match(text, new RegExp(`^assignee: "${assignee}"$`, 'm'));
-    assert.match(text, new RegExp(`^- \`\\w+\`, \\d{4}-\\d{2}-\\d{2}: stage ${stage} — проба ${to}\\.$\\n\\n## Результат`, 'm'));
+    assert.match(text, new RegExp(`^- \`\\w+\`, \\d{4}-\\d{2}-\\d{2}: stage ${stage} — проба ${to}\\.$\\n\\n## Result`, 'm'));
   }
   assert.equal(run(fx, ['.forma/board/check-board.cjs']).status, 0);
 });
@@ -56,7 +56,7 @@ test('card-move: расход — строка attempt перед строкой
       '--agent-id', 'a1b2c3d4e5f60718', '--cache-read', '40100', '--turns', '7']);
     assert.equal(ok.status, 0, ok.out);
     const text = fs.readFileSync(p, 'utf8');
-    assert.match(text, /^- `Kit`, \d{4}-\d{2}-\d{2}: attempt, 52 339 tokens \(40 100 cache-read\), out unknown, 42 s, 7 turns, `a1b2c3d4e5f60718` — claude-code: комплект готов\.\n- `Kit`, \d{4}-\d{2}-\d{2}: stage exec — комплект готов\.\n\n## Результат/m);
+    assert.match(text, /^- `Kit`, \d{4}-\d{2}-\d{2}: attempt, 52 339 tokens \(40 100 cache-read\), out unknown, 42 s, 7 turns, `a1b2c3d4e5f60718` — claude-code: комплект готов\.\n- `Kit`, \d{4}-\d{2}-\d{2}: stage exec — комплект готов\.\n\n## Result/m);
     const noR = run(f, [MOVE, '001', '--to', 'intent', '--note', 'готово', '--tokens', '900', '--duration-ms', '3000', '--agent-id', 'c3d4e5f6a7b80912']);
     assert.equal(noR.status, 0, noR.out);
     assert.match(fs.readFileSync(p, 'utf8'), /attempt, 900 tokens \(cache-read unknown\), out unknown, 3 s, `c3d4e5f6a7b80912` — claude-code: готово\. cache-read движок не вернул\./);
@@ -78,12 +78,12 @@ test('card-move: --kit из stdin и --result строкой — зоны зап
   const r1 = move(f, ['001', '--to', 'run', '--note', 'комплект готов', '--kit', '-'], '- Role: run-text\n- Channel: internal\n');
   assert.equal(r1.status, 0, r1.stdout + r1.stderr);
   let text = cardText(f);
-  assert.match(zoneOf(text, 'Снаряжение'), /- Role: run-text\n- Channel: internal/);
+  assert.match(zoneOf(text, 'Kit'), /- Role: run-text\n- Channel: internal/);
   assert.match(text, /^status: "in-progress"$/m);
   const r2 = move(f, ['001', '--to', 'intent', '--note', 'готово', '--result', 'Создано: https://example.test/n/1']);
   assert.equal(r2.status, 0, r2.stdout + r2.stderr);
   text = cardText(f);
-  assert.match(zoneOf(text, 'Результат'), /Создано: https:\/\/example\.test\/n\/1/);
+  assert.match(zoneOf(text, 'Result'), /Создано: https:\/\/example\.test\/n\/1/);
   assert.match(text, /^status: "review"$/m);
   assert.equal(spawnSync(process.execPath, ['.forma/board/check-board.cjs'], { cwd: f.root, encoding: 'utf8', env: f.env }).status, 0);
 }));
@@ -92,7 +92,7 @@ test('card-move: --kit заменяет тело зоны, а не дописы�
   move(f, ['001', '--to', 'kit', '--note', 'a']);
   move(f, ['001', '--to', 'run', '--note', 'b', '--kit', 'ПЕРВЫЙ']);
   assert.equal(move(f, ['001', '--to', 'run', '--note', 'c', '--kit', 'ВТОРОЙ']).status, 0);
-  const kit = zoneOf(cardText(f), 'Снаряжение');
+  const kit = zoneOf(cardText(f), 'Kit');
   assert.match(kit, /ВТОРОЙ/);
   assert.doesNotMatch(kit, /ПЕРВЫЙ/);
 }));

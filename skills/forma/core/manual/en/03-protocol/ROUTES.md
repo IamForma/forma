@@ -69,6 +69,24 @@ Scale: ●●● good, ● poor.
 
 ---
 
+**Names.** Every code has a movement name — what moves where — so a reply to the human never carries a bare number. The names are English keys (`.forma/i18n/keys.json`, `routeNames`); the dashboard shows the name next to the code, in Russian as the label in the third column.
+
+| Code | Name | Russian label |
+|---|---|---|
+| `route-0` | `intent-self` | сам Intent |
+| `route-1` | `intent-copy` | копия Intent |
+| `route-2` | `intent-run` | Intent → Run |
+| `route-3` | `intent-kit-human` | вопрос человеку |
+| `route-4` | `intent-kit-intent` | Kit исполняет сам |
+| `route-5` | `intent-kit-run` | Intent → Kit → Run |
+| `route-6` | `spec-run` | Spec → Run по готовому набору |
+| `route-7` | `spec-kit-run` | полная цепь |
+| `route-8` | `segments-waves` | сегменты × волны |
+| `over-1` | `kit-library` | набор из библиотеки |
+| `over-2` | `external-model` | внешняя модель |
+| `over-3` | `series` | серия |
+| `over-4` | `batch-accept` | пакетная приёмка |
+
 ## 4. Routes in detail
 
 Each route is described the same way: chain, when to choose it, why it works, when not to, risk and guard, who approves.

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Создание карточки на доске .devtool/features/ — без ручного копирования имени эпика, номера и шаблона.
 //
-//   node .forma/board/new-card.cjs --kind <код> --title "<заголовок>" [--goal goal-NN] [--type дело|оснастка|решение]
+//   node .forma/board/new-card.cjs --kind <код> --title "<заголовок>" [--goal goal-NN] [--type work|tooling|decision]
 //                                     [--status backlog] [--assignee Intent] [--priority medium] [--lang ru|en] [--dry]
 //                                     [--route N] [--over N]… [--seg N] [--wave N] [--after NNN]… [--trial] [--demo]
 //                                     [--delivers "<что даёт>"] [--criterion "<критерий>"] [--budget "<попытки>"] [--next "<куда дальше>"]
@@ -76,16 +76,14 @@ for (const a of args('after')) { const n = (a || '').replace(/^card-/, ''); if (
 if (flag('trial')) routeLabels.push('trial');
 if (flag('demo')) routeLabels.push('demo');
 
-// 3. Language: --lang, else the project language field; a language without a card set (work/tooling/decision) is English
+// 3. Keys of a card are English whatever the project language is: zone headings (Task, Kit, History, Result) and the kind
+// (work, tooling, decision). The project language shows only in texts (placeholders, history lines); --lang picks the placeholder language.
 let lang = arg('lang');
-// language of the project documents: without a dictionary entry the zone headings carry anchors (a translation keeps the key)
-const word = (i18n.reader(projectMd).inline('language') || '').split(/\s+/)[0];
-const code = i18n.langCode(word);
-const anchored = !!word && !(code in i18n.KEYS.languages);
+const code = i18n.langCode((i18n.reader(projectMd).inline('language') || '').split(/\s+/)[0]);
 if (!lang) lang = code === 'ru' ? 'ru' : 'en';
 const Z = {
-  task: zoneHeading('task', lang, anchored), kit: zoneHeading('kit', lang, anchored), hist: zoneHeading('history', lang, anchored), res: zoneHeading('result', lang, anchored),
-  types: lang === 'ru' ? ['дело', 'оснастка', 'решение'] : ['work', 'tooling', 'decision'],
+  task: zoneHeading('task'), kit: zoneHeading('kit'), hist: zoneHeading('history'), res: zoneHeading('result'),
+  types: ['work', 'tooling', 'decision'],
 };
 const type = arg('type', Z.types[kind === 'channels' ? 0 : 1]);
 const fields = [['delivers', '<что даёт>'], ['criterion', '<критерий готовности>'], ['budget', '<бюджет попыток>'], ['next', '<куда дальше>']]

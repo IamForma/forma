@@ -9,6 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const i18n = require('../../.forma/i18n/index.cjs');
 
 function hasKey(root) {
   const envPath = path.join(root, '.env');
@@ -24,7 +25,7 @@ function switchProjectMd(root) {
   // нового проекта); пороги и остальной текст той же ячейки (они относятся к haiku) не трогаем —
   // запрет на самовольную установку порогов Jev.
   const after = before.replace(
-    /(\|\s*(?:Отвес|Plumb) `plumb`[^|]*\|\s*)`haiku`/,
+    new RegExp('(\\|\\s*(?:' + i18n.alt('routes.plumb') + ') `plumb`[^|]*\\|\\s*)`haiku`'),
     '$1`jev`'
   );
   if (after === before) {

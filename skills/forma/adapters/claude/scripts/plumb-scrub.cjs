@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const i18n = require('../../.forma/i18n/index.cjs');
 
 const MIN_SECRET_LEN = 4;
 const TRIVIAL = new Set(['true', 'false', 'null', 'none', 'yes', 'no', 'on', 'off']);
@@ -27,7 +28,7 @@ function parseArgs(argv) {
 // Whitelist: only the text of the `## Task` zone (five fields); nothing else of the card.
 function extractTask(md) {
   const lines = md.replace(/\r/g, '').split('\n');
-  const start = lines.findIndex(l => /^##\s+(Задача|Task)\s*$/.test(l));
+  const start = lines.findIndex(l => i18n.headingRe('zone.task', '').test(l));
   if (start < 0) return null;
   const body = [];
   for (let i = start + 1; i < lines.length; i++) {

@@ -72,6 +72,8 @@ Prohibition 16 names the clean zones this keeps clean; the release check (`check
 
 **Any reach to a subagent is tied to a card — no exceptions.** A production node (`Spec`/`Kit`/`Run`/`Core`) or a one-off helper call (checking a fact, a piece of documentation, whether something is alive): the card is opened before the call — the five fields, or for a light one-off check at minimum the task statement and the readiness criterion — and filled in after it returns, with the result and the spend (§3). Nothing invoked as a subagent goes unrecorded. **One call may serve several cards** — a batch (`Spec` slices several tasks per call, `Kit` kits up to 4 cards per call): every card of the batch is opened before the call and filled after it, each with its own spend line, the call's spend split between them and the split named. One agent per card remains for different subjects or dependent cards. **Not retroactive:** a one-off call made before this rule existed doesn't get a card invented afterwards — `.forma/living/CHANGELOG.md`.
 
+**Keys are English whatever the project language** (`AGENTS.md` §6): headings, kind, Kit units, history verbs; only the texts follow the project language. Dictionary — `.forma/i18n/keys.json`; check `key-language`; migration — `node .forma/board/migrate-keys.cjs --apply`.
+
 **A card is a file on the board, in four zones, each under its own heading, in this order:**
 
 ```
