@@ -106,6 +106,8 @@ function lawSetView(L, v, settingsTab, anchor) {
 }
 // Выбранная подвкладка Настроек переживает перерисовку среза (смена языка, живое обновление): lawInit зовётся заново.
 let SETTINGS_LAST = 'law';
+try { SETTINGS_LAST = sessionStorage.getItem('settingsTab') || 'law'; } catch { /* хранилище недоступно — по умолчанию «Закон» */ }
+function settingsRemember(t) { SETTINGS_LAST = t; try { sessionStorage.setItem('settingsTab', t); } catch { /* не критично */ } return t; }
 function lawInit({ DATA, esc, T, lbl, ROUTES }) {
   const L = { DATA, esc, T, lbl, ROUTES, tab: 'law', settingsTab: SETTINGS_LAST };
   document.getElementById('view-law').onclick = e => {
@@ -115,14 +117,14 @@ function lawInit({ DATA, esc, T, lbl, ROUTES }) {
   document.querySelector('.tabs').onclick = e => { const t = e.target.closest('.tab'); if (t) lawSetView(L, t.dataset.view); };
   document.getElementById('settings-nav').onclick = e => {
     const t = e.target.closest('.chip'); if (!t) return;
-    L.settingsTab = SETTINGS_LAST = t.dataset.stab; settingsRender(L, L.settingsTab);
+    L.settingsTab = settingsRemember(t.dataset.stab); settingsRender(L, L.settingsTab);
   };
   const linkLaw = html => html.replace(/§\s?([1-8])(?![^<]*>)/g, (m, n) => `<a href="#" class="lawlink" data-law="${n}">${m}</a>`);
   if (window.lawClick) document.removeEventListener('click', window.lawClick);
   document.addEventListener('click', window.lawClick = e => {
     const a = e.target.closest('.lawlink'); if (!a) return; e.preventDefault();
     document.getElementById('dlg').close?.();
-    L.settingsTab = SETTINGS_LAST = 'law';
+    L.settingsTab = settingsRemember('law');
     if (a.dataset.law === '8') { L.tab = 'engine'; lawSetView(L, 'settings', 'law'); } else lawSetView(L, 'settings', 'law', 's' + a.dataset.law);
   });
   { const h = location.hash.slice(1); if (['settings', 'dash', 'interview', 'nodes', 'docs', 'economy', 'graphs'].includes(h)) lawSetView(L, h); }
