@@ -88,7 +88,7 @@ Read at closing, and only there (see above). You look not only at this cycle but
 | 7 | how well the environment-limitation classification held up — local workaround vs unattainable value, classified in the moment by `Kit`/`Spec` (`kit-limits.md`, "Environment limitation"; `spec-unattainable-value.md`) | by epic/goal tags: how often that in-the-moment call is confirmed or overturned by what actually happened (the human's decision, or the cycle's outcome). A class of tasks stably misclassified is a signal to revise the .forma/protocol/route for that class (`PROJECT.md`), not to reopen one case |
 | 8 | agreement of the nodes as measured by the Plumb (below) | `Plumb` lines in the cycle's card histories, with the share accepted first time per row |
 
-**The Plumb, read at the same closing (number 8).** Cards carry a `Plumb` line (role, percent, gap, clarity, executor, outcome; `AGENTS.md` §6). You do not call the Plumb and it does not call you — you take its readings as a criterion, per row of the table below, with the share accepted first time in each row:
+**The Plumb, read at the same closing (number 8).** Cards carry a `Plumb` line (role, percent, gap, clarity, executor, outcome; `card-and-board.md`). You do not call the Plumb and it does not call you — you take its readings as a criterion, per row of the table below, with the share accepted first time in each row:
 
 | Reading vs. what followed | Diagnosis | Back to |
 |---|---|---|
