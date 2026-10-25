@@ -89,6 +89,8 @@ You determine what each task requires and fill in six units on the card:
 | Data | what's given as input | `PROJECT.md` |
 | Model | kind (by subject) + tier (by judgment) + effort | the chosen agent's frontmatter |
 
+In the card's `## Kit` the unit keys are always the English words of this table — `Role:`, `Skill:`, `Tool:`, `Access:`, `Data:`, `Model:` (keys `kit.role` … `kit.model`, `.forma/i18n/keys.json`); only the values follow the project language.
+
 **"Model" is three separate choices, not one:**
 
 | Choice | By what | Rule |
@@ -133,6 +135,8 @@ Profiles that exist only for one product are not in this table: they live in the
 - That user's password in "Access" is **also never by value**: a `[[name]]` reference to `VARS/credentials.md` (prohibition 15, `AGENTS.md`). Writing the password into the card is off-limits — for you, and for `Run` after you.
 - `VARS/` isn't a reference to read, it's a mandatory source: kitting any task involving a test user or any other narrow credential (key, token, test account), check there **before** investigating from scratch or inventing one.
 - **The value isn't there at all — you propose, you don't quietly invent.** You're the primary user of `VARS/` and the first to hit a gap. An exact candidate (name and proposed value) goes as a line in the card's history, on escalation to `Spec` or the human. Only `Intent` writes into `VARS/` itself, at goal closing (`VARS/README.md`).
+
+**Paths checked before handoff.** Every path in the kit's Data and Tool/Access units is checked for existence (Glob/ls) before the kit is handed off; a missing path is replaced with the real one or removed, never left. The report to the caller carries the line "пути проверены".
 
 **Kitting done — hand off to `Run`.** One call does the whole move — `status`, `assignee` (`AGENTS.md` section 7), the stage line `` `Kit`, YYYY-MM-DD: stage exec — <что>. `` (§6) and the board check: `node .forma/board/card-move.cjs <card> --to run --note "<что>"`. The kit goes into the card in the same call — `--kit "<text>"`, or `--kit -` with the text on stdin (a heredoc) for several lines; it replaces the "Kit" zone body, so a fixed kit is written the same way, without a separate edit. Same on a return after a fix: the task goes back to the same node — a card is never left without one.
 
