@@ -23,6 +23,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const i18n = require('../i18n/index.cjs');
 
 // Очистка и мост лежат рядом с драйвером или в скриптах Claude.
 function requireSibling(name) {
@@ -35,11 +36,23 @@ function requireSibling(name) {
 const { extractTask, loadSecrets, scrub, residue } = requireSibling('plumb-scrub.cjs');
 const { loadEnvKeyOptional, callDecisions, estimateCostUsd } = requireSibling('external-model-bridge.cjs');
 
-const MODEL = 'typesafe/jev-1.14';
+// Запасное имя модели: совпадает с PROJECT.md (ключ routes.plumb_model); источник — PROJECT.md.
+const FALLBACK_MODEL = 'typesafe/jev-1.14';
+
+// Модель jev из PROJECT.md: первое `провайдер/модель` в строке с ключом routes.plumb_model.
+function readModel(root) {
+  try {
+    const md = fs.readFileSync(path.join(root, 'project', 'config', 'PROJECT.md'), 'utf8');
+    const row = md.split(/\r?\n/).find((l) => l.includes('routes.plumb_model'));
+    const m = row && /`([\w.-]+\/[\w.:-]+)`/.exec(row.split('-->').slice(1).join('-->'));
+    if (m) return m[1];
+  } catch (e) { /* PROJECT.md нет или не читается — запасное имя */ }
+  return FALLBACK_MODEL;
+}
 const DEFAULT_ROLES_REL = '.claude/agents/run';
 
 function parseArgs(argv) {
-  const a = { card: null, root: process.cwd(), site: [], out: null, engine: null, rolesDir: null, write: false };
+  const a = { card: null, root: process.cwd(), site: [], out: null, engine: null, rolesDir: null, write: false, dry: false };
   for (let i = 0; i < argv.length; i++) {
     const v = argv[i];
     if (v === '--root') a.root = path.resolve(argv[++i]);
@@ -48,6 +61,7 @@ function parseArgs(argv) {
     else if (v === '--site') a.site.push(...argv[++i].split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
     else if (v === '--out') a.out = argv[++i];
     else if (v === '--write') a.write = true;
+    else if (v === '--dry') a.dry = true;
     else if (!a.card) a.card = v;
   }
   return a;
@@ -79,24 +93,41 @@ function buildCatalog(roleDir) {
   return roles;
 }
 
-// Пороги из PROJECT.md (строка таблицы «Отвес»): лидер ≥ N, зазор ≥ N, noul ≥ X, ясность ≥ N.
-function readThresholds(root) {
+// Пороги из PROJECT.md (строка таблицы «Отвес»), набор исполнителя: jev — текст после «jev:»,
+// haiku — до «jev:». Ключи английские (leader, gap, noul, clarity); локальные слова — алиасы.
+// Все значения — числа 0..100 (проценты). У haiku noul и clarity могут быть null.
+function readThresholds(root, executor) {
   try {
     const md = fs.readFileSync(path.join(root, 'project', 'config', 'PROJECT.md'), 'utf8');
-    const row = md.split(/\r?\n/).find((l) => /plumb/.test(l) && /≥/.test(l));
+    // Пороги отдельными строками таблицы по ключам plumb.<исполнитель>.<порог>.
+    const who = executor === 'haiku' ? 'haiku' : 'jev';
+    const byRow = { leader: null, gap: null, noul: null, clarity: null };
+    for (const f of Object.keys(byRow)) byRow[f] = i18n.rowNumber(md, `plumb.${who}.${f}`);
+    const needed = who === 'jev' ? Object.values(byRow) : [byRow.leader, byRow.gap];
+    if (needed.every((v) => v !== null)) return who === 'jev' ? byRow : { ...byRow, noul: null, clarity: null };
+    // Прежний вид: пороги внутри строки «Plumb» текстом «лидер ≥ 60 %».
+    let row = md.split(/\r?\n/).find((l) => /plumb/i.test(l) && /≥/.test(l));
     if (!row) return null;
+    const cut = row.search(/jev\s*:/i);
+    const isJev = (executor || 'jev') === 'jev';
+    if (cut >= 0) row = isJev ? row.slice(cut) : row.slice(0, cut);
     const num = (re) => { const m = re.exec(row); return m ? Number(m[1].replace(',', '.')) : null; };
+    const re = (key, between) => new RegExp(`(?:${i18n.alt(key)})${between}≥\\s*([\\d.,]+)`, 'i');
     const t = {
-      leader: num(/(?:лидер|leader)\s*≥\s*([\d.,]+)/i),
-      gap: num(/(?:зазор|gap)[^≥]*≥\s*([\d.,]+)/i),
-      noul: num(/noul[^≥]*≥\s*([\d.,]+)/i),
-      clarity: num(/(?:ясность|clarity)\s*≥\s*([\d.,]+)/i),
+      leader: num(re('plumb.leader', '\\s*')),
+      gap: num(re('plumb.gap', '[^≥]*')),
+      noul: num(re('plumb.noul', '[^≥]*')),
+      clarity: num(re('plumb.clarity', '[^≥]*')),
     };
-    return Object.values(t).some((v) => v === null) ? null : t;
+    const required = isJev ? Object.values(t) : [t.leader, t.gap];
+    return required.some((v) => v === null) ? null : t;
   } catch (e) {
     return null;
   }
 }
+
+// noul приходит долей 0..1; порог — в процентах. Значение ≤ 1 — доля.
+function toPercent(v) { return v <= 1 ? v * 100 : v; }
 
 // Строка Отвеса для истории карточки.
 function plumbLine(result, root) {
@@ -106,15 +137,18 @@ function plumbLine(result, root) {
   const second = probs[1] ? probs[1][1] : 0;
   const gap = lead - second;
   const leadNoul = noul[choice.role];
-  const t = readThresholds(root);
+  const t = readThresholds(root, meta.executor);
   let outcome;
   if (!t) outcome = 'пороги PROJECT.md не прочитаны';
   else {
     const miss = [];
     if (lead < t.leader) miss.push(`лидер ${lead} < ${t.leader}`);
     if (gap < t.gap) miss.push(`зазор ${gap} < ${t.gap}`);
-    if (typeof leadNoul !== 'number' || leadNoul < t.noul) miss.push(`noul ${leadNoul ?? 'нет'} < ${t.noul}`);
-    if (score.clarity < t.clarity) miss.push(`ясность ${score.clarity} < ${t.clarity}`);
+    if (t.noul !== null) {
+      if (typeof leadNoul !== 'number') miss.push(`noul нет < ${t.noul}`);
+      else if (toPercent(leadNoul) < t.noul) miss.push(`noul ${Math.round(toPercent(leadNoul))} < ${t.noul}`);
+    }
+    if (t.clarity !== null && score.clarity < t.clarity) miss.push(`ясность ${score.clarity} < ${t.clarity}`);
     outcome = miss.length ? `ниже порога (${miss.join('; ')})` : 'пороги пройдены';
   }
   const u = meta.usage || {};
@@ -129,7 +163,7 @@ function appendHistory(cardFile, line) {
   const md = fs.readFileSync(cardFile, 'utf8');
   const nl = md.includes('\r\n') ? '\r\n' : '\n';
   const lines = md.split(/\r?\n/);
-  const start = lines.findIndex((l) => /^##\s+(История|History)\s*$/.test(l));
+  const start = lines.findIndex((l) => i18n.headingRe('zone.history', '').test(l));
   if (start < 0) throw new Error('card has no ## History / ## История zone');
   let end = lines.findIndex((l, i) => i > start && /^##\s/.test(l));
   if (end < 0) end = lines.length;
@@ -153,8 +187,14 @@ function fallback(reason, extra, outFile) {
 async function main() {
   const a = parseArgs(process.argv.slice(2));
   if (!a.card) {
-    console.error('usage: plumb-run.cjs <card.md> [--root DIR] [--engine ID | --roles-dir PATH] [--site host] [--out FILE] [--write]');
+    console.error('usage: plumb-run.cjs <card.md> [--root DIR] [--engine ID | --roles-dir PATH] [--site host] [--out FILE] [--write] [--dry]');
     process.exit(1);
+  }
+
+  const model = readModel(a.root);
+  if (a.dry) {
+    emit({ dry: true, model }, a.out);
+    return;
   }
 
   const apiKey = loadEnvKeyOptional('OPENROUTER_API_KEY', a.root);
@@ -246,7 +286,7 @@ async function main() {
   const t0 = Date.now();
   let res;
   try {
-    res = await callDecisions({ apiKey, model: MODEL, questions, state });
+    res = await callDecisions({ apiKey, model, questions, state });
   } catch (e) {
     return fallback('bridge-error', { report: { message: e.message } }, a.out);
   }
@@ -282,7 +322,7 @@ async function main() {
   const costUsd =
     typeof usage.cost === 'number'
       ? usage.cost
-      : estimateCostUsd('openrouter', MODEL, { prompt_tokens: usage.input_tokens, completion_tokens: usage.output_tokens });
+      : estimateCostUsd('openrouter', model, { prompt_tokens: usage.input_tokens, completion_tokens: usage.output_tokens });
 
   const result = {
     choice,
@@ -290,7 +330,7 @@ async function main() {
     noul,
     meta: {
       executor: 'jev',
-      model_requested: MODEL,
+      model_requested: model,
       model_served: res.model || null,
       id: res.id || null,
       usage: { prompt_tokens: usage.input_tokens ?? null, completion_tokens: usage.output_tokens ?? null },
@@ -313,7 +353,11 @@ async function main() {
   emit(result, a.out);
 }
 
-main().catch((e) => {
-  console.error('plumb-run error:', e.message);
-  fallback('error', { report: { message: e.message } });
-});
+module.exports = { readThresholds, plumbLine, readModel };
+
+if (require.main === module) {
+  main().catch((e) => {
+    console.error('plumb-run error:', e.message);
+    fallback('error', { report: { message: e.message } });
+  });
+}

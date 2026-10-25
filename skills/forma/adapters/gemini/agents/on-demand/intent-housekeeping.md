@@ -38,3 +38,12 @@ Read this file when a card touches **the project's own schema/tooling** (schema 
 **Engine reconciliation.** The commit check (`forma-commit.cjs --sync-staged`) checks the core and this adapter only; Codex and Gemini findings neither print nor stop there. The full cross-engine check — `node .claude/scripts/sync-engines.cjs --check` — is run by hand before every release. It verifies the core's integrity and this adapter's conformance test (`claude-economy.test.cjs`); role parity with other engines is shown there as information, not as a breach.
 
 **Core ↔ adapter (`.forma/dashboard/lib/engines.cjs`).** The core names no `.claude/` path; it finds `.claude/forma-adapter.cjs` — instruction weight, tool journal, usage parser, transcripts dir, role/§8/skill paths, dashboard view (`.claude/scripts/dashboard-view.cjs`: settings, MCP names, transcripts). A field missing — `unknown`, never 0. Form checked by `.claude/scripts/forma-adapter.test.cjs`. The interview skills live in the core (`.forma/skills/`) and are delivered into `.claude/skills/` at installation.
+
+<!-- moved-from-law: clean-zones -->
+**Clean zones (prohibition 16).** Files that ship to other projects carry no trace of a project: the law and engine adapters, roles, skills, scripts, hooks, `.forma/manual/`, the dashboard, the protocol's README, `docs/` and `.forma/templates/`. No card or goal codes, calendar dates, commit hashes, project domains or names, "human decisions", personal data. The history lives in cards, `.forma/living/`, `JOURNAL.md` and the changelog. `sync-engines --check` and the write hook report a trace.
+
+<!-- moved-from-law: sensorics-delete -->
+**"Отключи сенсорику" (law §2) — the deletion permission.** The delete-guard hook blocks deleting the protocol's own files and directories via Bash/PowerShell (protected paths above). The phrase lifts it for one action; the second permission it carries (acting outside the route, once) is in `intent.md`. Prohibition 11 holds: the bypass is recorded as a change.
+
+<!-- moved-from-law: narrow-exception-p1 -->
+**Narrow exception to prohibition 1 (law §5) — a short mechanical task.** `Intent` may execute a change of literally named values across an explicitly listed set of files, within epics "3. Project protocol" or "8. Competence segments", without `Kit` and without a separate confirming node. A card is still opened and its history names the exception; outside this case, doer and confirmer remain separate nodes.

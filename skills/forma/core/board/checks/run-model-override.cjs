@@ -10,7 +10,8 @@ const path = require('path');
 const { cardFiles, createdDay, zone } = require('../../dashboard/lib/card.cjs');
 
 const STRONGER_MODEL_RE = /\b(sonnet|opus)\b/i;
-const OVERRIDE_LINE_RE = /\boverride\b|оверрайд|подъ[её]м/i;
+const i18n = require('../../i18n/index.cjs');
+const OVERRIDE_LINE_RE = new RegExp(i18n.alt('hist.override'), 'i');
 // Короткий маршрут (`route-0`, `route-4`): карточку исполняет `Intent`/`Kit` сам, `Run` не вызывается — модель в
 // `## Снаряжение` там модель самого узла (frontmatter), а не подъём модели `Run`.
 const NO_RUN_ROUTE_RE = /\broute-[04]\b/;

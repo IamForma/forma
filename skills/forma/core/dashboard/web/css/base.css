@@ -186,3 +186,41 @@ dialog button{float:right}
 .eng-help{margin-left:8px;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--ink-soft);font-size:11px;line-height:1;cursor:pointer;padding:0;vertical-align:middle}.eng-help:hover{border-color:var(--accent);color:var(--accent)}
 
 .lang{margin-left:auto;font:inherit;font-size:12px;color:var(--ink-soft);background:var(--surface-soft);border:1px solid var(--border);border-radius:6px;padding:3px 6px}
+.lx .sc-bar{margin:8px 0}.lx .sc-bar button{margin-right:6px}
+.lx .sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));gap:12px;align-items:start}
+.lx .sc-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow)}
+.lx .sc-block.sc-open{grid-column:1/-1}
+.lx .sc-head{all:unset;display:flex;align-items:center;gap:8px;width:100%;cursor:pointer;color:var(--ink);font-weight:600;font-size:15px}
+.lx .sc-head:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lx .sc-title{flex:1}.lx .sc-total{font-weight:400;font-size:12px;color:var(--ink-soft)}
+.lx .sc-desc{margin:6px 0;font-size:12.5px;color:var(--ink-soft)}
+.lx .sc-chips{display:flex;flex-wrap:wrap;gap:6px}
+.lx .sc-chip{padding:1px 8px;border-radius:10px;font-size:11.5px;border:1px solid var(--border);background:var(--surface-soft);color:var(--ink)}
+.lx .sc-chip b{margin-left:3px}.lx .sc-chip.sc-zero{opacity:.45}
+.lx .sc-list{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr));gap:8px}
+.lx .sc-list[hidden]{display:none}
+.lx .sc-file{border:1px solid var(--border-soft);border-radius:8px;padding:6px 8px;background:var(--surface-soft);min-width:0}
+.lx .sc-fh{display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+.lx .sc-fh code,.lx .sc-caller code{word-break:break-all;font-size:12px;color:var(--ink)}
+.lx .sc-type{font-size:10.5px;color:var(--ink-faint);white-space:nowrap}
+.lx .sc-does{font-size:12.5px;margin:3px 0;color:var(--ink)}.lx .sc-caller{font-size:12px;color:var(--ink-soft)}
+.lx .sc-unsorted{margin-top:12px}
+:root{--lk-reads:#2F6FD0;--lk-writes:#C0392B;--lk-calls:#1E8E5A;--lk-registers:#8A4FC8;--lk-spawns:#B06B1E}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lk-reads:#7BA6F5;--lk-writes:#F07A6C;--lk-calls:#5ED596;--lk-registers:#BC93EE;--lk-spawns:#EBB05A}}
+:root[data-theme="dark"]{--lk-reads:#7BA6F5;--lk-writes:#F07A6C;--lk-calls:#5ED596;--lk-registers:#BC93EE;--lk-spawns:#EBB05A}
+.lx .sc-wrap{position:relative}
+.lx .sc-svg{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:2}
+.lx .sc-l-reads{--lk:var(--lk-reads)}.lx .sc-l-writes{--lk:var(--lk-writes)}.lx .sc-l-calls{--lk:var(--lk-calls)}.lx .sc-l-registers{--lk:var(--lk-registers)}.lx .sc-l-spawns{--lk:var(--lk-spawns)}
+.lx .sc-svg .sc-link{pointer-events:stroke}
+.lx .sc-svg .sc-link line,.lx .sc-lt line{stroke:var(--lk)}.lx .sc-svg text{fill:var(--lk);font-size:10.5px;stroke:var(--surface);stroke-width:3px;paint-order:stroke}
+.lx .sc-mk{fill:var(--lk)}
+.lx .sc-svg .sc-link line{stroke-width:1.5;opacity:.65}.lx .sc-svg .sc-link.hot line{stroke-width:2.6;opacity:1}.lx .sc-svg .sc-link.dim line{opacity:.08}
+.lx .sc-l-writes line{stroke-dasharray:6 3}.lx .sc-l-registers line{stroke-dasharray:2 3}.lx .sc-l-spawns line{stroke-dasharray:9 3 2 3}
+.lx .sc-filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.lx .sc-lt{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:12px;border:1px solid var(--lk);background:var(--surface);color:var(--ink);font-size:12px;cursor:pointer}
+.lx .sc-lt line{stroke-width:2}.lx .sc-lt.off{opacity:.4;border-style:dashed}
+.lx .sc-block{position:relative}.lx .sc-head{padding-right:30px;box-sizing:border-box}
+.lx .sc-pick{position:absolute;right:8px;top:8px;width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:var(--surface-soft);color:var(--ink-soft);cursor:pointer;padding:0;line-height:1;z-index:1}
+.lx .sc-pick.on,.lx .sc-pick:hover{border-color:var(--accent);color:var(--accent)}
+.lx .sc-block.sc-sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft),var(--shadow)}
+.lx .sc-block{min-width:0}

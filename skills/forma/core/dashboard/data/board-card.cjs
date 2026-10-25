@@ -7,13 +7,15 @@
  */
 
 const { parseFrontmatterJson, zone } = require('../lib/card.cjs');
+const i18n = require('../../i18n/index.cjs');
+const APPROVAL_RE = new RegExp(i18n.alt('hist.approved'), 'i');
 
-const KIT_UNITS = [['Роль', /роль|role/i], ['Скилл', /скилл|умени|навык|skill/i], ['Инструмент', /инструмент|tool/i],
-  ['Доступ', /доступ|access/i], ['Данные', /данн|data/i], ['Модель', /модел|model/i]];
+// Единицы снаряжения — английские ключи (kit.role …); лейблы по языкам — в i18n/keys.json.
+const KIT_UNITS = ['role', 'skill', 'tool', 'access', 'data', 'model'];
 
-// Снаряжение пишут и списком «- **Роль:** …», и строкой «Роль: … · Скилл: …», и по-английски — режем текст
-// по словам-единицам с заглавной.
-const KIT_KEY = /(?:^|[\s.·(;])(Роль|Скилл\p{L}*|Навык\p{L}*|Умени\p{L}*|Инструмент\p{L}*|Доступ\p{L}*|Данные|Модель|Role|Skills?|Tools?|Access|Data|Model)(?![\p{L}])\s*[:—–·-]?\s*/gu;
+// Снаряжение пишут и списком «- **Role:** …», и строкой «Role: … · Skill: …» — режем текст по лейблам единиц
+// с заглавной (после лейбла допустимо до трёх букв окончания: Скиллы, Tools).
+const KIT_KEY = new RegExp('(?:^|[\\s.·(;])((?:' + i18n.alt(...KIT_UNITS.map((u) => 'kit.' + u)) + ')\\p{L}{0,3})(?![\\p{L}])\\s*[:—–·-]?\\s*', 'gu');
 
 const ATTEMPT_LINE = /: attempt,/;
 const TOKENS_RE = /attempt,\s*([\d\s\u00a0\u202f]+)\s*tokens/;
@@ -21,17 +23,17 @@ const CACHE_RE = /\(([\d\s\u00a0\u202f]+)\s*cache-read\)/;
 
 const spaceless = (s) => Number(String(s).replace(/[\s\u00a0\u202f]/g, ''));
 
-/** Снаряжение по единицам: `{ Роль: '…', Скилл: '…' }`; несколько записей одной единицы склеиваются через « · ». */
+/** Снаряжение по единицам: `{ role: '…', skill: '…' }`; несколько записей одной единицы склеиваются через « · ». */
 function kitPartsOf(kit) {
   const parts = {};
   const flat = kit.replace(/\*\*/g, '');
   const hits = [...flat.matchAll(KIT_KEY)];
   hits.forEach((m, i) => {
-    const u = KIT_UNITS.find(([, re]) => re.test(m[1]));
+    const u = KIT_UNITS.find((id) => i18n.isKey(m[1], 'kit.' + id));
     if (!u) return;
     const end = hits[i + 1] ? hits[i + 1].index : undefined;
     const val = flat.slice(m.index + m[0].length, end).replace(/^[\s·.:;-]+|[\s·.;-]+$/g, '').replace(/\s*\n\s*-?\s*/g, ' ');
-    if (val) parts[u[0]] = (parts[u[0]] ? parts[u[0]] + ' · ' : '') + val;
+    if (val) parts[u] = (parts[u] ? parts[u] + ' · ' : '') + val;
   });
   return parts;
 }
@@ -67,18 +69,30 @@ function spendOf(history) {
  * до следующей единицы. `null` — строки нет; `'unknown'` — назван, но статус (запрет 15) не записан.
  */
 function accessStatus(kit) {
-  const am = kit.match(/(?:доступ|access)\W*?:\**\s*([^·\n]*)/i);
+  const am = kit.match(new RegExp('(?:' + i18n.alt('kit.access') + ')\\W*?:\\**\\s*([^·\\n]*)', 'i'));
   const accessText = am ? am[1].trim() : null;
   if (accessText === null) return null;
-  if (/неподтвержд|unconfirmed/i.test(accessText)) return false;
-  if (/подтвержд|confirmed|не нужен|не требуется|not needed|none/i.test(accessText)) return true;
+  if (i18n.hasPhrase(accessText, 'access_unconfirmed')) return false;
+  if (i18n.hasPhrase(accessText, 'access_ok')) return true;
   return accessText ? 'unknown' : false;
 }
+
+// Даты этапов маршрута и строки о маршруте — по ключам истории (hist.approved / check / accepted / route); браузер слов не знает.
+const dateOfLine = (history, key) => {
+  const re = new RegExp(i18n.alt(key), 'i');
+  const l = history.find((x) => re.test(x));
+  const m = l && l.match(/\d{4}-\d{2}-\d{2}/);
+  return m ? m[0] : '';
+};
+const routeDatesOf = (history) => ({
+  approve: dateOfLine(history, 'hist.approved'), check: dateOfLine(history, 'hist.check'), accept: dateOfLine(history, 'hist.accepted'),
+});
+const routeLinesOf = (history) => history.filter((l) => /route-\d/i.test(l) || new RegExp(i18n.alt('hist.route'), 'i').test(l));
 
 /** Готовность к запуску: цель, пять полей, снаряжение, маршрут, одобрение, доступ, остаток бюджета, зависимости. */
 function readiness({ labels, fields, kit, history }, kitParts) {
   const route = labels.find((l) => /^route-\d$/.test(l)) || null;
-  const kitUnits = KIT_UNITS.map(([n]) => n).filter((n) => kitParts[n]);
+  const kitUnits = KIT_UNITS.filter((n) => kitParts[n]);
   const spent = history.filter((l) => ATTEMPT_LINE.test(l)).length;
   const budgetN = parseInt(fields[3], 10);
   return {
@@ -86,7 +100,7 @@ function readiness({ labels, fields, kit, history }, kitParts) {
     task: fields.length >= 5 && fields.slice(0, 5).every(Boolean),
     kitUnits,
     route: !!route,
-    approval: /^route-[0-5]$/.test(route || '') ? history.some((l) => /одобрил|approved/i.test(l)) : null,
+    approval: /^route-[0-5]$/.test(route || '') ? history.some((l) => APPROVAL_RE.test(l)) : null,
     kit: kitUnits.length === 6,
     access: accessStatus(kit),
     budgetLeft: Number.isFinite(budgetN) ? budgetN - spent : null,
@@ -105,11 +119,13 @@ function parseBoardCard(f, text, skills) {
   const labels = Array.isArray(fm.labels) ? fm.labels : [];
   const kit = zone(text, 'kit');
   const kitParts = kitPartsOf(kit);
-  const skillText = kitParts['Скилл'] || '';
+  const skillText = kitParts.skill || '';
   const spendLines = history.filter((l) => ATTEMPT_LINE.test(l));
   const ready = readiness({ labels, fields, kit, history }, kitParts);
   return {
     ready,
+    routeDates: routeDatesOf(history),
+    routeLines: routeLinesOf(history),
     kitParts,
     kitSkills: skills.filter((n) => new RegExp('(^|[^\\w-])' + n + '([^\\w-]|$)').test(skillText)),
     spend: spendOf(history),

@@ -81,7 +81,7 @@ function lawRender(L, anchor) {
   if (anchor) { const a = document.getElementById(anchor); if (a) { a.closest('details')?.setAttribute('open', ''); a.scrollIntoView({ block: 'start' }); } }
 }
 // Вкладка «Настройки» — контейнер, внутри подвкладки «Закон», «Движок», «Борт», «Структура» (переносятся как есть).
-const SETTINGS_TABS = ['law', 'project', 'engine', 'structure'];
+const SETTINGS_TABS = ['law', 'project', 'engine', 'structure', 'schema'];
 function settingsSetTab(tab) {
   SETTINGS_TABS.forEach(t => { const el = document.getElementById('view-' + t); if (el) el.hidden = t !== tab; });
   document.querySelectorAll('#settings-nav .chip').forEach(c => c.classList.toggle('on', c.dataset.stab === tab));
@@ -104,8 +104,12 @@ function lawSetView(L, v, settingsTab, anchor) {
   if (v === 'settings') settingsRender(L, settingsTab || L.settingsTab || 'law', anchor);
   try { history.replaceState(null, '', v === '.forma/board' ? '#' : '#' + v); } catch { /* адрес не меняется (file://, песочница) — вкладка всё равно переключена */ }
 }
+// Выбранная подвкладка Настроек переживает перерисовку среза (смена языка, живое обновление): lawInit зовётся заново.
+let SETTINGS_LAST = 'law';
+try { SETTINGS_LAST = sessionStorage.getItem('settingsTab') || 'law'; } catch { /* хранилище недоступно — по умолчанию «Закон» */ }
+function settingsRemember(t) { SETTINGS_LAST = t; try { sessionStorage.setItem('settingsTab', t); } catch { /* не критично */ } return t; }
 function lawInit({ DATA, esc, T, lbl, ROUTES }) {
-  const L = { DATA, esc, T, lbl, ROUTES, tab: 'law', settingsTab: 'law' };
+  const L = { DATA, esc, T, lbl, ROUTES, tab: 'law', settingsTab: SETTINGS_LAST };
   document.getElementById('view-law').onclick = e => {
     const t = e.target.closest('[data-lt]'); if (t) { L.tab = t.dataset.lt; lawRender(L); return; }
     const s = e.target.closest('[data-sec]'); if (s) { e.preventDefault(); lawRender(L, s.dataset.sec); }
@@ -113,14 +117,14 @@ function lawInit({ DATA, esc, T, lbl, ROUTES }) {
   document.querySelector('.tabs').onclick = e => { const t = e.target.closest('.tab'); if (t) lawSetView(L, t.dataset.view); };
   document.getElementById('settings-nav').onclick = e => {
     const t = e.target.closest('.chip'); if (!t) return;
-    L.settingsTab = t.dataset.stab; settingsRender(L, L.settingsTab);
+    L.settingsTab = settingsRemember(t.dataset.stab); settingsRender(L, L.settingsTab);
   };
   const linkLaw = html => html.replace(/§\s?([1-8])(?![^<]*>)/g, (m, n) => `<a href="#" class="lawlink" data-law="${n}">${m}</a>`);
   if (window.lawClick) document.removeEventListener('click', window.lawClick);
   document.addEventListener('click', window.lawClick = e => {
     const a = e.target.closest('.lawlink'); if (!a) return; e.preventDefault();
     document.getElementById('dlg').close?.();
-    L.settingsTab = 'law';
+    L.settingsTab = settingsRemember('law');
     if (a.dataset.law === '8') { L.tab = 'engine'; lawSetView(L, 'settings', 'law'); } else lawSetView(L, 'settings', 'law', 's' + a.dataset.law);
   });
   { const h = location.hash.slice(1); if (['settings', 'dash', 'interview', 'nodes', 'docs', 'economy', 'graphs'].includes(h)) lawSetView(L, h); }

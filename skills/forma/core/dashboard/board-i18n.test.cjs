@@ -56,7 +56,7 @@ const card = {
   labels: ['route-4', 'goal-x', 'over-1', 'trial'], criterion: 'c', delivers: 'd', budget: '2', attempts: 3, next: 'n', humanFlag: false,
   history: ['`Intent`, ' + D(3) + ': stage exec — go.'], historySpend: [], mentions: [], adrs: [], commits: [], materials: [],
   kitParts: {}, kitSkills: [], spend: { lines: 2, unknown: 0, sec: 4000, byEngine: { 'claude-code': { tokens: 1500000, cache: 1000, lines: 2, unknown: 0, mixed: false } } },
-  ready: { goal: true, task: true, kit: false, kitUnits: ['Role'], route: true, approval: false, access: 'unknown', budgetLeft: -1, deps: ['card-x0'], depsOpen: ['card-x0'] },
+  ready: { goal: true, task: true, kit: false, kitUnits: ['role'], route: true, approval: false, access: 'unknown', budgetLeft: -1, deps: ['card-x0'], depsOpen: ['card-x0'] },
 };
 const B = { DATA: { goals: {}, thresholds: { volume: 5 }, cards: [card] }, S: { q: '' }, byCode: { 'card-x1': card }, dependents: { 'card-x1': ['card-x2'] } };
 

@@ -58,12 +58,12 @@ You fix the named node's tooling. You write the outcome into `GOAL.md`, in the c
 
 ## Closing
 
-Closing is an act, not a status change someone else already made. The file has been moved into `done/` by the board extension the moment the human accepted; that move is nobody's gate. **Yours is `assignee`**: `"Core"` means accepted but not closed, `null` means closed by you. Until you set it, the card is unfinished business and `sync-engines --check` reports it.
+Closing is an act, not a status change someone else already made. The file has been moved into `done/` by the board extension the moment the human accepted; that move is nobody's gate. **Yours is `assignee`**: `"Core"` means accepted but not closed, `null` means closed by you. Until you set it, the card waits in the queue: a normal state, not a breach — `sync-engines --check` shows only an informational line (`очередь Core: N …`), never a violation, and nothing blocks on it.
 
 On closing, for the cycle's cards together:
 
 1. **The verdict** — reached or not, into `GOAL.md`'s cycle table, as before.
-2. **One line in each card's history**, opening with `закрыто —`: on what grounds, one sentence. This is the only place you write into a card; the four zones stay whose they are (§6). Steps 2 and 4 are one call for all the cycle's cards: `node .forma/board/card-move.cjs --to core-close <NNN…> --note "<grounds>"` — it writes the line and sets `assignee: null` on each named card; an unknown number or a card not in `done`/`"Core"` stops it before any write.
+2. **One line in each card's history**, opening with `closed —`: on what grounds, one sentence. This is the only place you write into a card; the four zones stay whose they are (§6). Steps 2 and 4 are one call for all the cycle's cards: `node .forma/board/card-move.cjs --to core-close <NNN…> --note "<grounds>"` — it writes the line and sets `assignee: null` on each named card; an unknown number or a card not in `done`/`"Core"` stops it before any write.
 3. **The trend** — the seven numbers below. **Only here.** Nowhere else do you read them, and nothing else triggers a trend read except a breached threshold or a "not reached" verdict.
 4. **`assignee` → `null`** on each card (the same `core-close` call, step 2).
 
@@ -88,7 +88,7 @@ Read at closing, and only there (see above). You look not only at this cycle but
 | 7 | how well the environment-limitation classification held up — local workaround vs unattainable value, classified in the moment by `Kit`/`Spec` (`kit-limits.md`, "Environment limitation"; `spec-unattainable-value.md`) | by epic/goal tags: how often that in-the-moment call is confirmed or overturned by what actually happened (the human's decision, or the cycle's outcome). A class of tasks stably misclassified is a signal to revise the .forma/protocol/route for that class (`PROJECT.md`), not to reopen one case |
 | 8 | agreement of the nodes as measured by the Plumb (below) | `Plumb` lines in the cycle's card histories, with the share accepted first time per row |
 
-**The Plumb, read at the same closing (number 8).** Cards carry a `Plumb` line (role, percent, gap, clarity, executor, outcome; `AGENTS.md` §6). You do not call the Plumb and it does not call you — you take its readings as a criterion, per row of the table below, with the share accepted first time in each row:
+**The Plumb, read at the same closing (number 8).** Cards carry a `Plumb` line (role, percent, gap, clarity, executor, outcome; `card-and-board.md`). You do not call the Plumb and it does not call you — you take its readings as a criterion, per row of the table below, with the share accepted first time in each row:
 
 | Reading vs. what followed | Diagnosis | Back to |
 |---|---|---|
@@ -164,3 +164,9 @@ A pointer, not a retelling: the verdict, what's recorded in `GOAL.md` (or what i
 Your subject is **how the work is structured**: thresholds, the schema's makeup, rules. `Intent` talks about the result, `Kit` about resources.
 
 **Quoting or paraphrasing the schema itself to the human — read `.claude/agents/on-demand/citing-schema-to-human.md` first, exactly then, not on every call.**
+
+<!-- moved-from-law: plumb-for-core -->
+**The Plumb, for `Core` (law §2).** Every reading leaves a line in the card's `## History` (`card-and-board.md`). Read the divergences «Plumb ↔ `Spec` ↔ `Kit` ↔ `Run`» per node: a confidently named role kitted differently points at `Kit`, a low reading on a clear task at the role catalog, a vague card at `Spec`.
+
+<!-- moved-from-law: degraded-mode-link -->
+**Engine without separate agents.** If the engine cannot invoke separate agents, the route runs degraded and the human is told first; stage markers apply to you too — `on-demand/degraded-mode.md`.

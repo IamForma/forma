@@ -89,6 +89,8 @@ You determine what each task requires and fill in six units on the card:
 | Data | what's given as input | `PROJECT.md` |
 | Model | kind (by subject) + tier (by judgment) + effort | the chosen agent's frontmatter |
 
+In the card's `## Kit` the unit keys are always the English words of this table — `Role:`, `Skill:`, `Tool:`, `Access:`, `Data:`, `Model:` (keys `kit.role` … `kit.model`, `.forma/i18n/keys.json`); only the values follow the project language.
+
 **"Model" is three separate choices, not one:**
 
 | Choice | By what | Rule |
@@ -133,6 +135,8 @@ Profiles that exist only for one product are not in this table: they live in the
 - That user's password in "Access" is **also never by value**: a `[[name]]` reference to `VARS/credentials.md` (prohibition 15, `AGENTS.md`). Writing the password into the card is off-limits — for you, and for `Run` after you.
 - `VARS/` isn't a reference to read, it's a mandatory source: kitting any task involving a test user or any other narrow credential (key, token, test account), check there **before** investigating from scratch or inventing one.
 - **The value isn't there at all — you propose, you don't quietly invent.** You're the primary user of `VARS/` and the first to hit a gap. An exact candidate (name and proposed value) goes as a line in the card's history, on escalation to `Spec` or the human. Only `Intent` writes into `VARS/` itself, at goal closing (`VARS/README.md`).
+
+**Paths checked before handoff.** Every path in the kit's Data and Tool/Access units is checked for existence (Glob/ls) before the kit is handed off; a missing path is replaced with the real one or removed, never left. The report to the caller carries the line "пути проверены".
 
 **Kitting done — hand off to `Run`.** One call does the whole move — `status`, `assignee` (`AGENTS.md` section 7), the stage line `` `Kit`, YYYY-MM-DD: stage exec — <что>. `` (§6) and the board check: `node .forma/board/card-move.cjs <card> --to run --note "<что>"`. The kit goes into the card in the same call — `--kit "<text>"`, or `--kit -` with the text on stdin (a heredoc) for several lines; it replaces the "Kit" zone body, so a fixed kit is written the same way, without a separate edit. Same on a return after a fix: the task goes back to the same node — a card is never left without one.
 
@@ -277,3 +281,22 @@ A pointer, not a retelling: what you confirmed by investigation, what you change
 Your subject is **what it's done with**: access, tools, data, skills. `Intent` talks about the result, `Core` about how the work is structured.
 
 **Quoting or paraphrasing the schema itself to the human — read `.claude/agents/on-demand/citing-schema-to-human.md` first, exactly then, not on every call.**
+
+<!-- moved-from-law: continuation-run -->
+**Continuation of the same `Run` (law §2, "no direct return to `Run`, exception").** On a check failure that is an execution slip — card, role and kit all correct, the discrepancy is local, named by address and expected value, first time on this criterion item, and the call is still alive — `Kit` may send that same `Run` a written correction instead of a fresh assembly (`SendMessage` to its call id, `claude-8.md`). This is not a return around `Kit`: `Kit` still produces the correction, it only addresses it to the live call. Any one of a card defect, a kit/approach/role defect, a second discrepancy on the same point, a closed or lost call, or a result fitted to the criterion rather than worked for — reassembly (B), no exception.
+
+**It counts as an attempt (law §3)**, exactly like a reassembly — it is not a cheaper way around the budget.
+
+**Prohibition 7, the exception's tail.** The continued `Run` keeps its own call, not a clean one — but it never receives the history either, only your written correction, framed as a constraint ("align left, shadow mandatory"), never as "you missed before."
+
+<!-- moved-from-law: scrub-mechanics -->
+**Scrubbing before an external call (prohibition 17).** Whatever goes to an external model or service — the Plumb external executor included — first passes a scrubbing script, not a model: an allow-list of fields, values from `VARS/` and `.env` replaced by their names, patterns (addresses, tokens, numbers, paths), the project domain masked, and a refusal to send if a secret-like residue remains. Personal data and secrets live only where prohibition 15 puts them, so they are never in a card to begin with. The refusal is fail-closed: the call falls back to the in-family executor, it is never sent unscrubbed.
+
+<!-- moved-from-law: degraded-mode-link -->
+**Engine without separate agents.** If the engine cannot invoke separate agents, the route runs degraded and the human is told first — `on-demand/degraded-mode.md`.
+
+<!-- moved-from-law: plumb-catalog -->
+**Every `Kit` call leaves or extends a role in the catalog**, dup-checked through the Plumb — this is how the share of cards needing `Kit` falls, the metric `Core` reads. A fitting role goes straight to `Run`; `Kit` is called only on a reading below the threshold or a return (`spec.md`, "Role routing — the Plumb").
+
+<!-- moved-from-law: clean-zones-link -->
+**Clean zones (prohibition 16).** Files you write that ship to other projects (law, roles, skills, scripts, hooks, manual, templates) carry no trace of the project — no card or goal codes, dates, hashes, domains, project names, human decisions, personal data. Full list and who checks — `on-demand/intent-housekeeping.md`.

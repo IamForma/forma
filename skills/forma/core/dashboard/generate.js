@@ -40,6 +40,12 @@ function readStructure(projectRoot) {
   return require('./structure.cjs').buildStructure(projectRoot);
 }
 
+/** Схема движка перечитывается каждый раз (как структура). */
+function readSchema(projectRoot) {
+  for (const m of ['./schema-manifest.cjs', './schema.cjs', './schema-view.cjs']) delete require.cache[require.resolve(m)];
+  return require('./schema-view.cjs').buildSchemaView(projectRoot);
+}
+
 function buildData(projectRoot) {
   const cards = readSpendCards(projectRoot);
   const epics = groupEpics(cards);
@@ -62,6 +68,7 @@ function buildData(projectRoot) {
     chain: buildChain(projectRoot),
     interview: readInterview(projectRoot),
     structure: readStructure(projectRoot),
+    schema: readSchema(projectRoot),
     settings: { project: readProjectSettings(projectRoot), engine: readEngineSettings(projectRoot) },
     board: buildBoard(projectRoot),
     docs: buildDocs(projectRoot),

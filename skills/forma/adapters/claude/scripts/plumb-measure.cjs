@@ -11,6 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const { extractTask, loadSecrets, scrub, residue } = require('./plumb-scrub.cjs');
+const i18n = require('../../.forma/i18n/index.cjs');
 
 const root = process.cwd();
 const roleDir = path.join(root, '.claude', 'agents', 'run');
@@ -36,7 +37,7 @@ function prepare(outDir, dirs) {
   for (const d of dirs) {
     for (const f of fs.readdirSync(d).filter(n => /^card-\d+.*\.md$/.test(n))) {
       const md = fs.readFileSync(path.join(d, f), 'utf8');
-      const role = (/(?:Роль|Role):\s*`([\w-]+)`/.exec(md) || [])[1];
+      const role = (new RegExp('(?:' + i18n.alt('kit.role') + '):\\s*`([\\w-]+)`').exec(md) || [])[1];
       const task = extractTask(md);
       if (!role || !task) continue;
       const id = f.slice(0, 8);

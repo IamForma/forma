@@ -7,6 +7,7 @@
 
 const path = require('path');
 const { readIfExists } = require('../lib/fs.cjs');
+const i18n = require('../../i18n/index.cjs');
 
 const ROUTES_REL = '.forma/manual/ru/03-protocol/ROUTES.md';
 const RISK = ['Нельзя, когда', 'Риск', 'Почему осторожно', 'Защита от главного риска', 'Защита от устаревания'];
@@ -35,7 +36,7 @@ function detailItems(d, keys) {
   const r = [];
   for (const k of keys) {
     if (d[k] == null) continue;
-    const parts = d[k].split(/\*\*Защита:\*\*/);
+    const parts = d[k].split(new RegExp('\\*\\*(?:' + i18n.alt('project.guard') + '):\\*\\*'));
     r.push({ label: SHORT[k] || k, text: clean(parts[0]) });
     if (parts[1] != null) r.push({ label: 'Защита', text: clean(parts[1]) });
   }

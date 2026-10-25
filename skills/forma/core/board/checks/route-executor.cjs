@@ -9,7 +9,8 @@ const path = require('path');
 const { cardFiles, createdDay } = require('../../dashboard/lib/card.cjs');
 
 const RUN_ROUTES = ['route-2', 'route-5', 'route-6', 'route-7'];
-const RUN_ATTEMPT = /^-\s*`Run`,\s*\d{4}-\d{2}-\d{2}:\s*(attempt|заход)/m;
+const i18n = require('../../i18n/index.cjs');
+const RUN_ATTEMPT = new RegExp('^-\\s*`Run`,\\s*\\d{4}-\\d{2}-\\d{2}:\\s*(' + i18n.alt('hist.attempt') + ')', 'm');
 
 function cardProblem(f, text) {
   const status = (text.match(/^status:\s*"?([\w-]+)/m) || [])[1];

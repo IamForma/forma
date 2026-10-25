@@ -23,6 +23,8 @@ const plain = (raw) => stripComments(raw).replace(/`/g, '').replace(/^[|\s*]+|[|
 const labelsOf = (key) => Object.entries((KEYS.labels[key] || {}))
   .filter(([lang]) => lang !== 'match').flatMap(([, v]) => v);
 const phrases = (name) => KEYS.phrases[name] || [];
+/** Does `text` contain any phrase (or stem) of the named list, in any language, ignoring case. */
+const hasPhrase = (text, name) => { const t = String(text).toLowerCase(); return phrases(name).some((p) => t.includes(p.toLowerCase())); };
 
 /** Does `raw` (a table cell or the start of a paragraph) name `key`: by anchor first, else by a known label. */
 function isKey(raw, key) {
@@ -31,6 +33,24 @@ function isKey(raw, key) {
   const text = plain(raw).replace(/\*\([^)]*\)\*.*$/, '').replace(/\*+$/, '').trim();
   const exact = (KEYS.labels[key] || {}).match === 'exact';
   return labelsOf(key).some((l) => (exact ? text === l : text.startsWith(l)));
+}
+
+/** Regex source: any label of the given keys (every language), longest first — for readers that build their own pattern. */
+const alt = (...keys) => [...new Set(keys.flatMap(labelsOf))]
+  .sort((a, b) => b.length - a.length).map((l) => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+
+/** Key of `group` (`kit` → `kit.role`, …) that `text` starts with by label; none — `null`. Longest label wins. */
+function keyOf(text, group) {
+  const t = plain(text);
+  let best = null;
+  for (const key of Object.keys(KEYS.labels).filter((k) => k.startsWith(group + '.'))) {
+    const exact = KEYS.labels[key].match === 'exact';
+    for (const l of labelsOf(key)) {
+      const hit = exact ? t.toLowerCase() === l.toLowerCase() : t.toLowerCase().startsWith(l.toLowerCase());
+      if (hit && (!best || l.length > best.len)) best = { key, len: l.length };
+    }
+  }
+  return best && best.key;
 }
 
 /** Language name or code → code (`en`, `ru`, …). Unknown language — `null`: no catalog, English is used. */
@@ -85,6 +105,18 @@ function rowValue(table, key) {
   return r ? r[1] : null;
 }
 
+/** Integer the second cell of the first table row naming `key` starts with (anchor, else label); no such row or number — `null`. */
+function rowNumber(raw, key) {
+  for (const l of String(raw || '').split(/\r?\n/)) {
+    if (!l.startsWith('|')) continue;
+    const cells = l.split('|');
+    if (!isKey(cells[1] || '', key)) continue;
+    const m = /^\s*(\d+(?:[.,]\d+)?)/.exec(stripComments(cells[2] || ''));
+    if (m) return Number(m[1].replace(',', '.'));
+  }
+  return null;
+}
+
 /** Rewrites the second cell of the first table row that names `key`; returns the new text, or the same text when no row matches. */
 function setRow(raw, key, value) {
   const lines = String(raw).split('\n');
@@ -97,8 +129,14 @@ function setRow(raw, key, value) {
 }
 
 // Which row keys live in which section's table: anchors are added only where a parser reads them.
-const SECTION_ROWS = { template: ['name', 'source', 'status'], thresholds: ['attempts', 'volume'] };
-const SECTIONS = ['language', 'template', 'thresholds', 'epics', 'services', 'tooling', 'references', 'release'];
+const SECTION_ROWS = {
+  template: ['name', 'source', 'status'],
+  thresholds: ['attempts', 'volume'],
+  routes: ['routes.enabled', 'routes.kit_cap', 'routes.small_task', 'routes.over2', 'routes.over4', 'routes.parallel', 'routes.dispatcher',
+    'plumb.haiku.leader', 'plumb.haiku.gap', 'plumb.jev.leader', 'plumb.jev.gap', 'plumb.jev.noul', 'plumb.jev.clarity', 'routes.plumb',
+    'routes.plumb_model', 'routes.default_epic'],
+};
+const SECTIONS = ['language', 'template', 'thresholds', 'epics', 'services', 'tooling', 'references', 'release', 'routes'];
 
 /** Adds the missing anchors to a document written without them (labels known to keys.json); idempotent. */
 function anchorise(raw) {
@@ -158,6 +196,6 @@ function message(code, params, lang) {
 }
 
 module.exports = {
-  KEYS, anchor, anchorOf, stripComments, plain, labelsOf, phrases, isKey, langCode,
-  reader, rowValue, setRow, anchorise, headingRe, projectMdPath, readProjectMd, projectLang, message,
+  KEYS, anchor, anchorOf, stripComments, plain, labelsOf, phrases, hasPhrase, isKey, langCode, alt, keyOf,
+  reader, rowValue, rowNumber, setRow, anchorise, headingRe, projectMdPath, readProjectMd, projectLang, message,
 };

@@ -126,11 +126,14 @@ function cardTitle(text) {
 /** Ключи четырёх зон карточки (AGENTS.md §6): заголовок ищется по якорю `<!-- k:zone.X -->`, иначе по словарю i18n. */
 const ZONES = ['task', 'kit', 'history', 'result'];
 
-/** Заголовок зоны на языке карточки (`ru` — русский, иначе английский); `anchored` — с якорем ключа: проекту на языке без словаря перевод заголовка ключ не стирает. */
-const zoneHeading = (key, lang, anchored = false) => {
-  const labels = i18n.labelsOf('zone.' + key);
-  const label = labels[lang === 'ru' ? labels.length - 1 : 0];
-  return anchored ? label + ' ' + i18n.anchor('zone.' + key) : label;
+/** Заголовок зоны для новой карточки — всегда английский (Task, Kit, History, Result): ключ ядра не зависит от языка проекта. Лишние аргументы (язык, якорь) приняты для совместимости и не влияют. */
+const zoneHeading = (key) => i18n.labelsOf('zone.' + key)[0];
+
+/** Заголовок зоны так, как он написан в этой карточке (английский, русский, с якорем): без крайних `## `; нет зоны — `null`. */
+const zoneHeadingIn = (text, key) => {
+  const re = i18n.headingRe('zone.' + key, '');
+  const l = String(text).split('\n').map((x) => x.replace(/\r$/, '')).find((x) => re.test(x));
+  return l ? l.replace(/^##[ \t]+/, '') : null;
 };
 
 /** Тело зоны, без крайних пробелов; зоны нет — пустая строка. */
@@ -161,5 +164,5 @@ module.exports = {
   boardDir, cardFiles,
   FRONTMATTER_RE, frontmatterBlock, splitFrontmatter, parseFrontmatter, parseFrontmatterJson, parseFlatFrontmatter,
   field, labelsOf, createdDay, cardTitle,
-  ZONES, zoneHeading, zone, HISTORY_HEADING_RE, withoutHistory,
+  ZONES, zoneHeading, zoneHeadingIn, zone, HISTORY_HEADING_RE, withoutHistory,
 };

@@ -20,6 +20,8 @@ Seven questions, in order; the **first "yes"** is the route.
 
 No "yes" at all — `route-7`. Doubt between two — the longer one.
 
+**Name the route to the human.** A reply that mentions a route carries its movement name next to the code — `route-1 (intent-copy)`, `route-7 (spec-kit-run)`, `over-2 (external-model)` — never a bare number. Names: `.forma/manual/en/03-protocol/ROUTES.md` §3, keys `routeNames` in `.forma/i18n/keys.json`.
+
 **The label binds the executor.** A card labelled `route-2`, `5`, `6` or `7` is executed by `Run`, never by `Intent` in its own session: a label with no call behind it is a route on paper (prohibitions 1 and 7). `Intent` that wants to do the work itself changes the label first — `route route-N → route-0 (why: <code>)` — within the `route-0` limit, or hands the card on. The board check `route-executor` reports a card in `review`/`done` on such a route with no `Run` attempt in its history.
 
 **`route-2` with a role confirmed by the Plumb (`why: plumb`).** For a routine card, `Spec` calls the Plumb (`spec.md`, "Role routing — the Plumb"); when the reading clears the thresholds in `PROJECT.md`, `Spec` writes the profile into `## Kit` (Role, Skill, Tool, Access, Data; Model inherited) and `Intent` launches `Run` directly, without `Kit`. Below the thresholds the card goes to `Kit`, which creates the role (`route-5`). A card the human or `Intent` wrote complete with its kit already set keeps `why: ready`.
@@ -81,3 +83,10 @@ Key part in English; the description after the dash in the card's language (`AGE
 The reason names which question answered "yes" and why — `Core` checks the choice by it.
 
 **Cross-cutting:** a work item whose result is read by an agent, not a human, names the consumer and the form in its criterion. A card changing protocol files carries the template clause (`spec.md`, "Protocol files in the criterion").
+
+<!-- moved-from-law: choosing-route-rules -->
+**Two rules of route choice that stay law (law §2).**
+- `route-0`…`route-5` open only on the human's approval of the five fields. On them the criterion is written by the one who will accept by it; the human's "yes" is the independent eye `Spec` would otherwise be. Without it the card stays in `backlog`. `route-6`…`route-8` need no such approval.
+- `Kit` may lengthen a route, never shorten it past what the human approved; the change is a history line with its reason.
+
+The codes (`route-0`…`route-8`, overlays `over-1`…`over-4`) and costs: `.forma/manual/en/03-protocol/ROUTES.md`.

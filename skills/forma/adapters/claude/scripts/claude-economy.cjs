@@ -14,7 +14,9 @@
  * CLI — строка расхода вызова субагента по его `<usage>`:
  *   node .claude/scripts/claude-economy.cjs line --node Run --agent-id <agent_id> \
  *     --tokens <subagent_tokens> --duration-ms <duration_ms> [--tool-uses <tool_uses>] \
- *     [--date YYYY-MM-DD] [--desc "<что сделано>"] [--split K --share I]
+ *     [--date YYYY-MM-DD] [--desc "<что сделано>"] [--split K --share I] [--write card-NNN]
+ *   --write card-NNN — дописать строку с префиксом «- » в конец `## History` карточки (как хук SubagentStop);
+ *   повтор с тем же agent_id по той же карточке строку не дублирует (печатается пометка, файл не меняется).
  *   N и R читаются из стенограммы захода (N = Σ in+write+read+out; `--tokens` — запасное значение);
  *   нет стенограммы — `(cache-read unknown)`, N из `--tokens` с пометкой «размер контекста» в описании.
  *
@@ -106,7 +108,7 @@ if (require.main === module) {
   const argv = process.argv.slice(2);
   const arg = makeCli(argv).value;
   if (argv[0] !== 'line' || !arg('node')) {
-    console.error('usage: node .claude/scripts/claude-economy.cjs line --node <Node> --agent-id <id> --tokens <N> --duration-ms <ms> [--tool-uses <n>] [--date YYYY-MM-DD] [--desc "..."] [--split K --share I]');
+    console.error('usage: node .claude/scripts/claude-economy.cjs line --node <Node> --agent-id <id> --tokens <N> --duration-ms <ms> [--tool-uses <n>] [--date YYYY-MM-DD] [--desc "..."] [--split K --share I] [--write card-NNN]');
     process.exit(2);
   }
   const { readSubagentTranscript, NO_TRANSCRIPT } = require('../../.forma/dashboard/subagent-transcript.cjs');
@@ -128,12 +130,29 @@ if (require.main === module) {
     if (rec.duration_s == null) why.push('T не передано');
     if (rec.call_id == null) why.push('id не передан');
     const desc = (arg('desc') || 'сделано.') + batchNote + (why.length ? ` (${why.join('; ')}.)` : '');
-    console.log(formatSpendLine({
+    const line = formatSpendLine({
       node: arg('node'),
       date: arg('date') || new Date().toISOString().slice(0, 10),
       engine: 'claude-code',
       desc,
       ...rec,
-    }));
+    });
+    const target = arg('write');
+    if (!target) { console.log(line); return; }
+    const fs = require('fs');
+    const path = require('path');
+    const { accountedInCard, insertIntoHistory } = require('./ledger-recorder.cjs');
+    const code = /card-\d{3}/.exec(String(target));
+    const features = path.join(__dirname, '..', '..', '.devtool', 'features');
+    const file = code && [features, path.join(features, 'done')].flatMap((d) => (fs.existsSync(d) ? fs.readdirSync(d).filter((f) => f.startsWith(code[0] + '-') && f.endsWith('.md')).map((f) => path.join(d, f)) : []))[0];
+    if (!file) { console.error('--write: card not found: ' + target); process.exit(2); }
+    const text = fs.readFileSync(file, 'utf8');
+    const bullet = '- ' + line;
+    const dup = id ? accountedInCard(text, id).lines > 0 : text.split(String.fromCharCode(10)).map((l) => l.trimEnd()).includes(bullet);
+    if (dup) { console.error('already recorded for ' + code[0] + (id ? ' (' + id + ')' : '') + ': not duplicated'); return; }
+    const next = insertIntoHistory(text, bullet);
+    if (next == null) { console.error('--write: no History zone in ' + path.basename(file)); process.exit(2); }
+    fs.writeFileSync(file, next, 'utf8');
+    console.log(bullet);
   })();
 }

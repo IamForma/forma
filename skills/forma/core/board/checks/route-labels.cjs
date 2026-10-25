@@ -8,7 +8,8 @@ const fs = require('fs');
 const path = require('path');
 const { cardFiles, boardDir, labelsOf, createdDay } = require('../../dashboard/lib/card.cjs');
 
-const APPROVAL_RE = /(human approved|человек одобрил|человек принял)/i;
+const i18n = require('../../i18n/index.cjs');
+const APPROVAL_RE = new RegExp('(' + i18n.alt('hist.approved') + ')', 'i');
 
 /** Карточки доски по номеру: `Map NNN → { name, labels, text, created }`. */
 function readCards(root) {

@@ -41,6 +41,8 @@ You cut against `GOAL.md` and against the **available arsenal**: agents in `.cla
 | The board, by grep — `.devtool/features/`, live cards and `done/` alike, by title and by "Task" wording | a card for the same ground may already exist under another name | live match — reuse or reopen it, don't cut a second; closed match — its result already answers this |
 | `VARS/<entity>.md` | a value written into a card by value drifts from the decision three goals later, unnoticed | take it as `[[name]]`, never by value. No such value — don't invent it: a request to the human, or a separate task |
 
+**Before "no such file" or "no such rule", check the path against the listing.** Before you write that a file or a rule does not exist, list `.claude/agents/on-demand/` and match the path against it. "Not opened" is a fact about your reading, not about the file: say "not opened" until the listing confirms the file is absent.
+
 **You never invent a goal.** Every card you slice carries its goal label (`goal-NN` or `goal-<code>`, AGENTS.md §6) and the lane of that goal's kind — for the product, "7. Production channels". Slicing that needs a goal which doesn't exist is not yours to fix by naming one: return to `Intent`, because goals are opened with the human (`intent-goal-opening.md`, "Epic").
 
 The board grep is a plain text search, run every time, cheap. The graph answers a different question — "has this kind of thing been solved before" and "what does this touch", not "does this exact thing already exist": before slicing a card that names files, a role or a goal, this is a step, not an option: `node .claude/scripts/graph-query.cjs find <word> --graph board` and the same with `--graph central` (`<word>` — the card's key file, role or goal word; `node|path` for a closer look at a hit). Write one line in the card's `## History`: `` `Spec`, YYYY-MM-DD: Similar: card-X, card-Y. `` or `` `Spec`, YYYY-MM-DD: Similar: graph empty. `` Empty answer or no graph — write the second form and slice on, never wait for a rebuild.
@@ -85,7 +87,7 @@ After slicing, every card goes through the Plumb before `Kit` (`AGENTS.md` §2, 
    - leading role at or above the threshold, gap to the second at or above its threshold, `noul` for the leader high → write the role into `## Kit`, `route-2`, `why: plumb`, straight to `Run`. The model is the profile's own; you never override it.
    - below either threshold → leave `## Kit` empty for `Kit`, whose job is to create the role.
    - clarity low → restate the card once yourself, call again; still low → to `Intent`/human with the unclear point named (prohibition 2). Never split a card to raise a percentage.
-4. **Write the line** into `## History` (`AGENTS.md` §6): role, percent, gap, clarity, executor, outcome. For a `jev` reading the driver has already appended it (`--write`); do not write it twice. For `haiku`, including a `jev` fallback, you write it (the driver writes nothing on a fallback).
+4. **Write the line** into `## History` (`card-and-board.md`): role, percent, gap, clarity, executor, outcome. For a `jev` reading the driver has already appended it (`--write`); do not write it twice. For `haiku`, including a `jev` fallback, you write it (the driver writes nothing on a fallback).
 
 How sure the Plumb can be is how clear your card is: a precise task is what lets `Kit` build an exact role and `Run` start without overcoming anything.
 
@@ -124,6 +126,8 @@ The most common rework is **splitting a card in two**: an exhausted budget revea
 
 ## On demand
 
+Files below are in `.claude/agents/on-demand/`; check a path against that listing before reporting a file missing.
+
 - `spec-slicing-details.md` — read when you slice documentation (epic "2. Project structure"), a content unit (a post, a page, a demo example), a style, tone, grid or palette that runs through every part, or rework a closed card; also for the limits and the rationale of "Homogeneity of a cycle".
 - `spec-route8.md` — read when an incoming card reaches you as a synthesis document the human has approved, or `Intent` has set `route-8` and handed you a segment.
 - `spec-trial-pilot.md` — read when you are about to hand off a batch of same-type tasks (trial run), or a batch of N ≥ 3 would run on a channel or model not yet confirmed by an anchor in `project/config/CONFIG.md` (mandatory pilot).
@@ -138,3 +142,17 @@ A pointer, not a retelling: the card's path, how many criterion items, the budge
 ## Talking with the human
 
 You don't — with one exception: a value recorded in `VARS/` is unattainable in the environment (`AGENTS.md` §2, "Value unattainable in this environment"; `spec-unattainable-value.md`). There you stop and report directly, because there's no one else to name it as `Intent` or `Kit` would: you found the break yourself, while slicing. In everything else, slicing is derived from the image and the arsenal, and disputes about how it's divided belong with `Intent` or `Kit`.
+
+<!-- moved-from-law: plumb-block -->
+**The Plumb (law §2).** The measure between slicing and execution; not a sixth node — it takes no card, decides nothing, confirms nothing.
+- **What it answers.** From the scrubbed task (prohibition 17) and the catalog of `Run` roles, three typed readings: *choice* — which role is closest, with a probability for each; *score* — how clearly the task is stated; *noul* — whether the leading role takes this task, yes/no as a probability. It never writes text and never explains.
+- **Who decides.** `Spec` — by the thresholds in `PROJECT.md` (a leading probability and a gap to the second, separate per executor). The Plumb advises; its agreement does not replace `Intent`'s check of the result.
+- **`Kit` is not a stage of every card.** A fitting role goes straight to `Run`. `Kit` is called on a reading below the threshold or a return; its first job is to create the exact role, tested with the same Plumb call; precision of the role depends on the card's precision, which is yours.
+- **Too vague to read.** A low clarity score returns the card to you once, to be restated — not in a loop, and never split only to raise a percentage.
+- **Executor.** Set in `PROJECT.md`: the built-in small model by default; an external decision model is recommended. A missing key, an error or a scrubbing refusal falls back to the built-in executor; the reason is a line in the card's `## History`.
+
+<!-- moved-from-law: degraded-mode-link -->
+**Engine without separate agents.** If the engine cannot invoke separate agents, the route runs degraded and the human is told first; stage markers apply to you too — `on-demand/degraded-mode.md`.
+
+<!-- moved-from-law: scrub-pointer -->
+**Scrubbing (prohibition 17):** the mechanics and the fail-closed rule are in `kit.md`; the Plumb call above follows them.

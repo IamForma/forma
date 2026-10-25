@@ -29,11 +29,11 @@ function projectSettingsHtml(p){
       ${setTile(ready.length + ' / ' + draft.length, t('eng.project.goals'), draft.length ? 'warn' : 'ok')}
     </div>
     <p class="set-line">${t('eng.project.template')}: <b>${p.template.name ? esc(p.template.name) : '—'}</b> ${p.template.status ? setPill(p.template.status, 'set-warn') : ''}</p>
-    ${setFold(t('eng.project.epics'), '«Эпики проекта»', epics /* i18n-keep: имя секции PROJECT.md */)}
+    ${setFold(t('eng.project.epics'), 'k:epics', epics)}
     ${setFold(t('eng.project.goalsFold'), 'project/goals/goal-*/GOAL.md', `<div class="set-pills">${ready.map(g => setPill(g.id, 'set-ok', t('eng.project.ready'))).join('')}${draft.map(g => setPill(g.id, 'set-warn', t('eng.project.draft'))).join('')}${p.goals.length ? '' : setEmpty()}</div>`)}
-    ${setFold(t('eng.project.services'), '«Внешние сервисы»' /* i18n-keep */, setTable(p.services) + (p.services && !p.services.rows.length ? `<span class="set-src">${t('eng.project.noThird')}</span>` : ''))}
-    ${setFold(t('eng.project.tooling'), '«Оснастка узлов»' /* i18n-keep */, setTable(p.tooling))}
-    ${setFold(t('eng.project.references'), '«Справочники проекта»' /* i18n-keep */, setTable(p.references))}
+    ${setFold(t('eng.project.services'), 'k:services', setTable(p.services) + (p.services && !p.services.rows.length ? `<span class="set-src">${t('eng.project.noThird')}</span>` : ''))}
+    ${setFold(t('eng.project.tooling'), 'k:tooling', setTable(p.tooling))}
+    ${setFold(t('eng.project.references'), 'k:references', setTable(p.references))}
     ${setFold(t('eng.project.skills', {n: p.skills ? p.skills.rows.length : 0}), t('eng.project.skillsSrc'), setTable(p.skills), false)}
   </section>`;
 }

@@ -219,7 +219,10 @@ const CLAUDE_HOOKS = {
   PreToolUse: [{ hooks: ['guard-delete.sh', 'tool-usage.sh'] }],
   UserPromptSubmit: [{ hooks: ['unlock-delete.sh'] }],
   SessionStart: [{ matcher: 'startup', hooks: ['check-ready.sh', ['check-plugin-update.sh', 15], 'check-dashboard.sh', 'intent-start.sh'] }],
-  PostToolUse: [{ matcher: 'Write|Edit', hooks: ['check-card.sh', 'sync-extensions.sh', 'auto-graphs.sh'] }],
+  PostToolUse: [{ matcher: 'Write|Edit', hooks: ['check-card.sh', 'check-clean-zone.sh', 'sync-extensions.sh', 'auto-graphs.sh'] }],
+  // Spend is recorded by hooks: a node command, not a bash script
+  SubagentStop: [{ hooks: [{ command: 'node .claude/scripts/ledger-recorder.cjs' }] }],
+  SessionEnd: [{ hooks: [{ command: 'node .claude/scripts/card-session-spend.cjs --auto' }] }],
 }
 // Auto-compact window. Forma proposes COMPACT_DEFAULT and asks first; the human's own value always wins:
 // found in the environment, ~/.claude/settings.json or .claude/settings.local.json, Forma writes nothing. A project
@@ -271,7 +274,7 @@ function mergeClaudeSettings(root, compact) {
       group.hooks = group.hooks || []
       for (const h of g.hooks) {
         const [name, timeout] = Array.isArray(h) ? h : [h]
-        const command = `bash .claude/hooks/${name}`
+        const command = typeof name === 'object' ? name.command : `bash .claude/hooks/${name}`
         if (group.hooks.some((x) => x.command === command)) continue
         const entry = { type: 'command', command }
         if (timeout) entry.timeout = timeout
@@ -578,6 +581,7 @@ function claudeExpect() {
   for (const [event, groups] of Object.entries(CLAUDE_HOOKS)) {
     for (const g of groups) for (const h of g.hooks) {
       const [name, timeout] = Array.isArray(h) ? h : [h]
+      if (typeof name === 'object') { hooks.push({ event, matcher: g.matcher || '', command: name.command }); continue }
       hooks.push({ event, matcher: g.matcher || '', name, ...(timeout ? { timeout } : {}) })
     }
   }

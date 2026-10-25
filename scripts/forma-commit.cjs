@@ -194,11 +194,7 @@ function parity(tpl = true) {
   const bad = [];
   if (fs.existsSync(ENG)) {
     const out = node(ENG, '--check').out.split(/\r?\n/);
-    let cards = false;
-    for (const l of out) {
-      if (/^\s{4}— /.test(l)) { cards = /не закрыты `Core`/.test(l); if (!cards && (tpl || !OTHER.test(l))) bad.push(l.trim()); }
-      if (cards && /не закрыты `Core`/.test(l)) console.log('! ' + l.trim().replace(/^— /, '') + ' — дело Core, коммит не держит');
-    }
+    for (const l of out) if (/^\s{4}— /.test(l) && (tpl || !OTHER.test(l))) bad.push(l.trim());
   }
   // Codex — адаптер «не готов»: его сверка — сведение, коммит не держит; спящий (`.forma/engines.json`) — не сверяется вовсе.
   if (tpl && fs.existsSync(CDX) && !codexDormant()) { const r = node(CDX, '--check'); if (r.code) console.log('! адаптер Codex (не готов) расходится со своей сверкой — сведение, коммит не держит'); }

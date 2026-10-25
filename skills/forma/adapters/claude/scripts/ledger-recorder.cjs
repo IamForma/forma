@@ -163,7 +163,7 @@ function cardsIn(prompt) {
   const set = new Set();
   const text = String(prompt);
   for (const line of text.split(/\r?\n/)) {
-    if (!/^\s*(?:Карточк[аи]|Card)\s*:/i.test(line)) continue;
+    if (!new RegExp('^\\s*(?:' + i18n.alt('hist.card') + ')\\s*:', 'i').test(line)) continue;
     for (const m of line.matchAll(/(?<![\w-])card-(\d{3})(?!\d)/g)) set.add(m[1]);
   }
   for (const m of text.matchAll(/\.devtool[\/]features[\/](?:done[\/])?card-(\d{3})-/g)) set.add(m[1]);

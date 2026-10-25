@@ -48,6 +48,13 @@ function checkHooks(ctx, expect, out) {
   try { settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8')); }
   catch (e) { out.push(finding('.claude/settings.json', 'valid JSON', e.message)); return; }
   for (const h of expect.hooks || []) {
+    if (h.command) { // a node-command hook (spend recording): only its place in settings.json is checked
+      const grp = ((settings.hooks && settings.hooks[h.event]) || []).find((g) => (g.matcher || '') === (h.matcher || ''));
+      if (!grp || !(grp.hooks || []).some((x) => x.command === h.command)) {
+        out.push(finding(`.claude/settings.json → hooks.${h.event}`, `command «${h.command}»`, grp ? 'command not in the group' : 'event group missing'));
+      }
+      continue;
+    }
     const file = `.claude/hooks/${h.name}`;
     if (!fs.existsSync(path.join(root, file))) out.push(finding(file, `hook ${h.event}${h.matcher ? ' [' + h.matcher + ']' : ''}`, 'file missing'));
     const groups = (settings.hooks && settings.hooks[h.event]) || [];

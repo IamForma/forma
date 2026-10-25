@@ -275,7 +275,7 @@ function assembleReport(src, links) {
       cardsTotal: cards.length,
       bonesTouched: manual.nodes.filter((n) => n.file_type !== 'document' && boneHits.has(n.id)).length,
       prohibitionsTotal: proh.size,
-      prohibitionsTouched: [...boneHits.keys()].filter((id) => /^запрет-/.test(id)).length,
+      prohibitionsTouched: [...boneHits.keys()].filter((id) => new RegExp('^(?:' + require('../../.forma/i18n/index.cjs').alt('id.prohibition') + ')').test(id)).length,
       bonesBare: bare.length,
       conceptsTotal: manual.nodes.filter((n) => n.file_type !== 'document').length,
     },

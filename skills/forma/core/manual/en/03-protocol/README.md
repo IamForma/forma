@@ -25,6 +25,7 @@ Complete reference documents of the engine live here — they are not divided in
 | [ROUTES.md](ROUTES.md) | route choice for a task: `route-0`…`route-8`, overlays `over-1`…`over-4`, the choice rule, waves at scale |
 | [LOCALIZATION.md](LOCALIZATION.md) | dashboard localization: two languages, dictionaries, the `locale-parity` check |
 | [PROTOCOL-DEVELOPMENT.md](PROTOCOL-DEVELOPMENT.md) | developing the protocol from a project: clone, engine alignment, transfer, trace check, push |
+| [ENGINE-MAP.md](ENGINE-MAP.md) | the engine map: three levels of rules with sizes, sources outside them, machinery, hooks, what the engine produces, gaps found |
 
 ## Demo cycle
 
