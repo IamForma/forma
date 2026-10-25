@@ -8,7 +8,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..', '..');
 const driver = process.env.PLUMB_RUN ? path.resolve(process.env.PLUMB_RUN) : path.join(root, '.forma', 'plumb', 'plumb-run.cjs');
-const { readThresholds, plumbLine } = require(driver);
+const { readThresholds, plumbLine, readModel } = require(driver);
 
 assert.strictEqual(typeof readThresholds, 'function', 'readThresholds exported');
 assert.strictEqual(typeof plumbLine, 'function', 'plumbLine exported');
@@ -53,5 +53,17 @@ const high = plumbLine(result(0.9), root);
 assert.ok(/ниже порога/.test(low) && /noul/.test(low), low);
 assert.ok(/пороги пройдены/.test(high), high);
 assert.ok(!/не прочитаны/.test(low) && !/не прочитаны/.test(high));
+
+// Model name comes from PROJECT.md (routes.plumb_model); a missing file falls back to the constant.
+assert.strictEqual(typeof readModel, 'function', 'readModel exported');
+const projectMd = fs.readFileSync(path.join(root, 'project', 'config', 'PROJECT.md'), 'utf8');
+const wantModel = /routes\.plumb_model -->[^|]*\|[^`]*`([\w.-]+\/[\w.:-]+)`/.exec(projectMd)[1];
+assert.strictEqual(readModel(root), wantModel);
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'plumb-model-'));
+fs.mkdirSync(path.join(tmp, 'project', 'config'), { recursive: true });
+fs.writeFileSync(path.join(tmp, 'project', 'config', 'PROJECT.md'), '| x <!-- k:routes.plumb_model --> | model `acme/test-9.9`; |\n');
+assert.strictEqual(readModel(tmp), 'acme/test-9.9');
+fs.rmSync(tmp, { recursive: true, force: true });
+assert.strictEqual(readModel(path.join(os.tmpdir(), 'no-such-root-xyz')), 'typesafe/jev-1.14');
 
 console.log('plumb-run.test: ok');

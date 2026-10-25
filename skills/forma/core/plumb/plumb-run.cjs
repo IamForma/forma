@@ -36,11 +36,23 @@ function requireSibling(name) {
 const { extractTask, loadSecrets, scrub, residue } = requireSibling('plumb-scrub.cjs');
 const { loadEnvKeyOptional, callDecisions, estimateCostUsd } = requireSibling('external-model-bridge.cjs');
 
-const MODEL = 'typesafe/jev-1.14';
+// Запасное имя модели: совпадает с PROJECT.md (ключ routes.plumb_model); источник — PROJECT.md.
+const FALLBACK_MODEL = 'typesafe/jev-1.14';
+
+// Модель jev из PROJECT.md: первое `провайдер/модель` в строке с ключом routes.plumb_model.
+function readModel(root) {
+  try {
+    const md = fs.readFileSync(path.join(root, 'project', 'config', 'PROJECT.md'), 'utf8');
+    const row = md.split(/\r?\n/).find((l) => l.includes('routes.plumb_model'));
+    const m = row && /`([\w.-]+\/[\w.:-]+)`/.exec(row.split('-->').slice(1).join('-->'));
+    if (m) return m[1];
+  } catch (e) { /* PROJECT.md нет или не читается — запасное имя */ }
+  return FALLBACK_MODEL;
+}
 const DEFAULT_ROLES_REL = '.claude/agents/run';
 
 function parseArgs(argv) {
-  const a = { card: null, root: process.cwd(), site: [], out: null, engine: null, rolesDir: null, write: false };
+  const a = { card: null, root: process.cwd(), site: [], out: null, engine: null, rolesDir: null, write: false, dry: false };
   for (let i = 0; i < argv.length; i++) {
     const v = argv[i];
     if (v === '--root') a.root = path.resolve(argv[++i]);
@@ -49,6 +61,7 @@ function parseArgs(argv) {
     else if (v === '--site') a.site.push(...argv[++i].split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
     else if (v === '--out') a.out = argv[++i];
     else if (v === '--write') a.write = true;
+    else if (v === '--dry') a.dry = true;
     else if (!a.card) a.card = v;
   }
   return a;
@@ -174,8 +187,14 @@ function fallback(reason, extra, outFile) {
 async function main() {
   const a = parseArgs(process.argv.slice(2));
   if (!a.card) {
-    console.error('usage: plumb-run.cjs <card.md> [--root DIR] [--engine ID | --roles-dir PATH] [--site host] [--out FILE] [--write]');
+    console.error('usage: plumb-run.cjs <card.md> [--root DIR] [--engine ID | --roles-dir PATH] [--site host] [--out FILE] [--write] [--dry]');
     process.exit(1);
+  }
+
+  const model = readModel(a.root);
+  if (a.dry) {
+    emit({ dry: true, model }, a.out);
+    return;
   }
 
   const apiKey = loadEnvKeyOptional('OPENROUTER_API_KEY', a.root);
@@ -267,7 +286,7 @@ async function main() {
   const t0 = Date.now();
   let res;
   try {
-    res = await callDecisions({ apiKey, model: MODEL, questions, state });
+    res = await callDecisions({ apiKey, model, questions, state });
   } catch (e) {
     return fallback('bridge-error', { report: { message: e.message } }, a.out);
   }
@@ -303,7 +322,7 @@ async function main() {
   const costUsd =
     typeof usage.cost === 'number'
       ? usage.cost
-      : estimateCostUsd('openrouter', MODEL, { prompt_tokens: usage.input_tokens, completion_tokens: usage.output_tokens });
+      : estimateCostUsd('openrouter', model, { prompt_tokens: usage.input_tokens, completion_tokens: usage.output_tokens });
 
   const result = {
     choice,
@@ -311,7 +330,7 @@ async function main() {
     noul,
     meta: {
       executor: 'jev',
-      model_requested: MODEL,
+      model_requested: model,
       model_served: res.model || null,
       id: res.id || null,
       usage: { prompt_tokens: usage.input_tokens ?? null, completion_tokens: usage.output_tokens ?? null },
@@ -334,7 +353,7 @@ async function main() {
   emit(result, a.out);
 }
 
-module.exports = { readThresholds, plumbLine };
+module.exports = { readThresholds, plumbLine, readModel };
 
 if (require.main === module) {
   main().catch((e) => {
