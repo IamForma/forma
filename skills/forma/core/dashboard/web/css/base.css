@@ -204,3 +204,21 @@ dialog button{float:right}
 .lx .sc-type{font-size:10.5px;color:var(--ink-faint);white-space:nowrap}
 .lx .sc-does{font-size:12.5px;margin:3px 0;color:var(--ink)}.lx .sc-caller{font-size:12px;color:var(--ink-soft)}
 .lx .sc-unsorted{margin-top:12px}
+:root{--lk-reads:#2F6FD0;--lk-writes:#C0392B;--lk-calls:#1E8E5A;--lk-registers:#8A4FC8;--lk-spawns:#B06B1E}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lk-reads:#7BA6F5;--lk-writes:#F07A6C;--lk-calls:#5ED596;--lk-registers:#BC93EE;--lk-spawns:#EBB05A}}
+:root[data-theme="dark"]{--lk-reads:#7BA6F5;--lk-writes:#F07A6C;--lk-calls:#5ED596;--lk-registers:#BC93EE;--lk-spawns:#EBB05A}
+.lx .sc-wrap{position:relative}
+.lx .sc-svg{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:2}
+.lx .sc-l-reads{--lk:var(--lk-reads)}.lx .sc-l-writes{--lk:var(--lk-writes)}.lx .sc-l-calls{--lk:var(--lk-calls)}.lx .sc-l-registers{--lk:var(--lk-registers)}.lx .sc-l-spawns{--lk:var(--lk-spawns)}
+.lx .sc-svg .sc-link{pointer-events:stroke}
+.lx .sc-svg .sc-link line,.lx .sc-lt line{stroke:var(--lk)}.lx .sc-svg text{fill:var(--lk);font-size:10.5px;stroke:var(--surface);stroke-width:3px;paint-order:stroke}
+.lx .sc-mk{fill:var(--lk)}
+.lx .sc-svg .sc-link line{stroke-width:1.5;opacity:.65}.lx .sc-svg .sc-link.hot line{stroke-width:2.6;opacity:1}.lx .sc-svg .sc-link.dim line{opacity:.08}
+.lx .sc-l-writes line{stroke-dasharray:6 3}.lx .sc-l-registers line{stroke-dasharray:2 3}.lx .sc-l-spawns line{stroke-dasharray:9 3 2 3}
+.lx .sc-filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.lx .sc-lt{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:12px;border:1px solid var(--lk);background:var(--surface);color:var(--ink);font-size:12px;cursor:pointer}
+.lx .sc-lt line{stroke-width:2}.lx .sc-lt.off{opacity:.4;border-style:dashed}
+.lx .sc-block{position:relative}.lx .sc-head{padding-right:30px;box-sizing:border-box}
+.lx .sc-pick{position:absolute;right:8px;top:8px;width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:var(--surface-soft);color:var(--ink-soft);cursor:pointer;padding:0;line-height:1;z-index:1}
+.lx .sc-pick.on,.lx .sc-pick:hover{border-color:var(--accent);color:var(--accent)}
+.lx .sc-block.sc-sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft),var(--shadow)}

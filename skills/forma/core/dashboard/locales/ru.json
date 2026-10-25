@@ -949,5 +949,9 @@
   "sc.type.hooks": "хуки",
   "sc.type.knowledge": "знания",
   "sc.type.graphs": "графы",
-  "sc.type.structural": "структурные"
+  "sc.type.structural": "структурные",
+  "sc.pick": "Подсветить связи блока",
+  "sc.linkTypes": "Типы связей",
+  "sc.blockFilter": "Блок",
+  "sc.blockAll": "все блоки"
 }

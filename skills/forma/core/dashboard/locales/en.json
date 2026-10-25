@@ -933,5 +933,9 @@
   "sc.type.hooks": "hooks",
   "sc.type.knowledge": "knowledge",
   "sc.type.graphs": "graphs",
-  "sc.type.structural": "structural"
+  "sc.type.structural": "structural",
+  "sc.pick": "Highlight links of this block",
+  "sc.linkTypes": "Link types",
+  "sc.blockFilter": "Block",
+  "sc.blockAll": "all blocks"
 }
