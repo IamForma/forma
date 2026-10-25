@@ -30,6 +30,15 @@ Any project can improve the protocol, not only receive it. An improvement made a
 
 `node .forma/protocol/scripts/forma-commit.cjs "<message>"` chains the checks, the transfer and the commits in one call and stops on a conflict; use it when the project is the author's main one.
 
+## Where the tests run
+
+Tests live in two layouts; each runs only in its own.
+
+- **Clone tests** (`test/**/*.test.cjs`): `npm test` in `.forma/protocol`. This is the release criterion for the clone.
+- **Layout tests** (next to the scripts they check: `.forma/board`, `.forma/dashboard`, `.forma/i18n`, `.forma/plumb`, `.claude/scripts`, `.agents/tests`): written for the installed layout, so they run in the project, never in the clone. Their template copies sit under `skills/forma/core` and `skills/forma/adapters`, where the relative paths do not exist — a bare `node --test` in the clone reports them red. That is the layout, not a defect.
+
+Before step 6, in the project: `node --test` over the layout tests above, plus `node .claude/scripts/checks/support/test-gen-gemini-roles.cjs` (a new or edited role without its Gemini copy shows as drift; `sync-engines.cjs --apply` regenerates it). Both must be green.
+
 ## Record
 
 Run the work as a card of the "3. Project protocol" epic: the transfer, the trace check and the push are written in its `## Result`. A change to a file the card did not name is a new card, not an addition to an accepted one.
