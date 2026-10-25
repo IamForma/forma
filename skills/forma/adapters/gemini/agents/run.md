@@ -107,3 +107,9 @@ You don't. An instruction given outside the route won't survive the attempt: you
 
 <!-- moved-from-law: degraded-mode-link -->
 **Engine without separate agents.** If the engine cannot invoke separate agents, the route runs degraded and the human is told first; stage markers apply to you too — `on-demand/degraded-mode.md`.
+
+<!-- moved-from-law: scrub-pointer -->
+**Scrubbing before an external call (prohibition 17).** Whatever you send to an external model or service goes only through the scrubbing script, never raw: allow-list of fields, secrets and `VARS/`/`.env` values replaced by names, patterns and the project domain masked, refusal on a secret-like residue (then stop, do not send). Full text — `kit.md`.
+
+<!-- moved-from-law: clean-zones-link -->
+**Clean zones (prohibition 16).** Files you write that ship to other projects (law, roles, skills, scripts, hooks, manual, templates) carry no trace of the project — no card or goal codes, dates, hashes, domains, project names, human decisions, personal data. Full list and who checks — `on-demand/intent-housekeeping.md`.

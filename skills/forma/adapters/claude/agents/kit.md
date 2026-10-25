@@ -280,7 +280,9 @@ Your subject is **what it's done with**: access, tools, data, skills. `Intent` t
 
 <!-- moved-from-law: continuation-run -->
 **Continuation of the same `Run` (law §2, "no direct return to `Run`, exception").** On a check failure that is an execution slip — card, role and kit all correct, the discrepancy is local, named by address and expected value, first time on this criterion item, and the call is still alive — `Kit` may send that same `Run` a written correction instead of a fresh assembly (`SendMessage` to its call id, `claude-8.md`). This is not a return around `Kit`: `Kit` still produces the correction, it only addresses it to the live call. Any one of a card defect, a kit/approach/role defect, a second discrepancy on the same point, a closed or lost call, or a result fitted to the criterion rather than worked for — reassembly (B), no exception.
+
 **It counts as an attempt (law §3)**, exactly like a reassembly — it is not a cheaper way around the budget.
+
 **Prohibition 7, the exception's tail.** The continued `Run` keeps its own call, not a clean one — but it never receives the history either, only your written correction, framed as a constraint ("align left, shadow mandatory"), never as "you missed before."
 
 <!-- moved-from-law: scrub-mechanics -->
@@ -291,3 +293,6 @@ Your subject is **what it's done with**: access, tools, data, skills. `Intent` t
 
 <!-- moved-from-law: plumb-catalog -->
 **Every `Kit` call leaves or extends a role in the catalog**, dup-checked through the Plumb — this is how the share of cards needing `Kit` falls, the metric `Core` reads. A fitting role goes straight to `Run`; `Kit` is called only on a reading below the threshold or a return (`spec.md`, "Role routing — the Plumb").
+
+<!-- moved-from-law: clean-zones-link -->
+**Clean zones (prohibition 16).** Files you write that ship to other projects (law, roles, skills, scripts, hooks, manual, templates) carry no trace of the project — no card or goal codes, dates, hashes, domains, project names, human decisions, personal data. Full list and who checks — `on-demand/intent-housekeeping.md`.

@@ -88,7 +88,7 @@ An environment limitation isn't a defect — it's a discovery: no one erred, the
 
 **Housekeeping — of the tooling itself and of resources and tools — is `Kit`'s to execute, `Intent`'s to confirm** (`kit.md`, `intent.md`).
 
-**The human's code phrase "Отключи сенсорику"** (literal, a password) lifts the delete-guard for one action and lets the addressed node act outside the route for one task, once; prohibition 11 holds — `intent.md`, `intent-housekeeping.md`.
+**The human's code phrase "Отключи сенсорику"** (literal, a password) lifts the delete-guard for one action and lets the addressed node act outside the route for one task, once — not a standing state, not an exemption beyond what was named; prohibition 11 holds — `intent.md`, `intent-housekeeping.md`.
 
 **An engine that cannot invoke separate agents runs the route degraded and says so to the human first** — `degraded-mode.md`.
 
@@ -151,7 +151,7 @@ Phrased affirmatively — what must hold, not what's forbidden. Numbering is fix
 
 18. Commit messages of the protocol repository are English only. The protocol is published, and its history reads in one language for everyone; the project repository keeps its own language. A message with Cyrillic is a stop in `forma-commit.cjs` and in the pre-push check, never a warning.
 
-**Narrow exception to prohibition 1 — a short mechanical task:** `Intent` may execute a change of literally named values across a listed set of files within epics "3. Project protocol" or "8. Competence segments"; a card is still opened and names the exception — `intent-housekeeping.md`.
+**Narrow exception to prohibition 1 — a short mechanical task:** `Intent` may execute a change of literally named values across an explicitly listed set of files within epics "3. Project protocol" or "8. Competence segments", without `Kit` and without a separate confirming node; a card is still opened and names the exception — `intent-housekeeping.md`.
 
 ---
 

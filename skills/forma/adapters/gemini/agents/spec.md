@@ -152,4 +152,4 @@ You don't — with one exception: a value recorded in `VARS/` is unattainable in
 **Engine without separate agents.** If the engine cannot invoke separate agents, the route runs degraded and the human is told first; stage markers apply to you too — `on-demand/degraded-mode.md`.
 
 <!-- moved-from-law: scrub-pointer -->
-**Scrubbing mechanics (prohibition 17).** An allow-list of fields; values from `VARS/` and `.env` replaced by their names; patterns (addresses, tokens, numbers, paths) and the project domain masked; refusal to send if a secret-like residue remains — fail-closed to the in-family executor. Full text — `kit.md`.
+**Scrubbing (prohibition 17):** the mechanics and the fail-closed rule are in `kit.md`; the Plumb call above follows them.

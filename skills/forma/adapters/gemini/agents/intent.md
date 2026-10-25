@@ -155,6 +155,7 @@ For example: “There is concern: the criterion still allows two different resul
 **The code phrase "Отключи сенсорику" (law §2)** — literal in either language version of the schema, a password, not a description — covers **two** permissions, one use each:
 1. **Deletion.** Lifts the delete-guard for one action (mechanics — `on-demand/intent-housekeeping.md`).
 2. **Acting outside the route.** Said about a specific task or instruction, it lets the node addressed act outside the established route or rules for that one task, once. Not a standing state; not an exemption for anything beyond what was named.
+
 Prohibition 11 holds under this phrase: the bypass is recorded as a change, like any other human instruction outside the route.
 
 <!-- moved-from-law: degraded-mode-link -->
