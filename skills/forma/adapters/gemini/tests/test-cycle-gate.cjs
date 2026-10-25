@@ -10,10 +10,31 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const root = path.resolve(__dirname, '../../../../../..');
+function resolveRoot() {
+  const candidates = [
+    path.resolve(__dirname, '../..'),                   // in project: .agents/tests -> project root
+    path.resolve(__dirname, '../../../../../../..'),     // in protocol clone inside project
+    path.resolve(__dirname, '../../../../..'),           // in standalone protocol repo
+  ];
+  for (const c of candidates) {
+    if (
+      fs.existsSync(path.join(c, 'project', 'config', 'PROJECT.md')) ||
+      fs.existsSync(path.join(c, '.claude', 'scripts', 'cycle-status.cjs'))
+    ) {
+      return c;
+    }
+  }
+  for (const c of candidates) {
+    if (fs.existsSync(path.join(c, 'skills', 'forma'))) return c;
+  }
+  return candidates[0];
+}
+
+const root = resolveRoot();
 function resolveCycleStatus() {
   const candidates = [
     path.join(root, '.claude', 'scripts', 'cycle-status.cjs'),
+    path.resolve(__dirname, '../../.claude/scripts/cycle-status.cjs'),
     path.resolve(__dirname, '../../../adapters/claude/scripts/cycle-status.cjs'),
   ];
   for (const c of candidates) if (fs.existsSync(c)) return c;
@@ -23,6 +44,7 @@ function resolveCycleStatus() {
 function resolveGuardCoreCycle() {
   const candidates = [
     path.join(root, '.forma', 'rules', 'guard-core-cycle.cjs'),
+    path.resolve(__dirname, '../../.forma/rules/guard-core-cycle.cjs'),
     path.resolve(__dirname, '../../../core/rules/guard-core-cycle.cjs'),
   ];
   for (const c of candidates) if (fs.existsSync(c)) return c;
