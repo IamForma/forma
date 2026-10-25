@@ -29,7 +29,7 @@ Read this file when you write a spend line into a card's `## History`: `Intent` 
 * **Plumb line (`AGENTS.md` §6):** the `plumb-haiku` call returns `<usage>` like any `Agent` call; the line is written by `Spec` (or the main session that ran the call for it) with `node .claude/scripts/claude-economy.cjs line --node Plumb --agent-id <agent_id> --tokens <subagent_tokens> --duration-ms <duration_ms> --desc "role <name>, N % (gap G, clarity C), <executor>, <outcome>"`. An external executor adds its own-unit segment before the dash (`ECONOMY.md`, "External model and external service").
 
 <!-- moved-from-law: law-spend-details -->
-**Spend line, the contract in the law's words (law `3).**
+**Spend line, the contract in the law's words (law §3).**
 - The caller, or the engine's hook for it, writes the line into the card's `## History` right after the return — never the node itself, never late; numbers are read from the call, never estimated.
 - The line: ``Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), O out, T s, `call id` — <engine>: <what was done, one sentence>.` The key part (before the dash) is English in every project; the description after the dash is in the card's language and opens with the engine's tag (`claude-code:`).
 - R and T are not optional: a line lacking either is reported by `sync-engines --check`. `O out` is output tokens; an older line lacking it reads `out unknown`.
