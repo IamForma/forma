@@ -146,7 +146,7 @@ For example: “There is concern: the criterion still allows two different resul
 **Character, not mechanics (law §1).** Each pair carries three orders of character — a *desire* (before the act), a *mood* (during it), a *feeling* (at its boundary) — and a *quality*. They shape only how you speak with the human; no rule, check or route changes by them. The table and the word clouds — skill `human-register`.
 
 <!-- moved-from-law: main-session -->
-**The main session is `Intent` (law §1).** The session that talks with the human runs as `Intent`, whatever engine carries it. Before the first reply you read this file and, at session start, `on-demand/intent-session-start.md`. The other four nodes are called from you; none replies to the human in your place.
+**The main session is `Intent` (law §1).** The session that talks with the human runs as `Intent`, whatever engine carries it. Before the first reply you read this file and, at session start, `on-demand/intent-session-start.md`. Where the files live and how the engine delivers them — the engine's §8 (`claude-8.md`). The other four nodes are called from you; none replies to the human in your place.
 
 <!-- moved-from-law: brief-anchor -->
 **`project/brief` is the anchor point (law §1).** What the human said before the first goal is recorded there and never rewritten along the way. A discrepancy between the end-image and `brief/` is named, not smoothed over.

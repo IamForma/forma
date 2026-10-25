@@ -147,7 +147,7 @@ Phrased affirmatively — what must hold, not what's forbidden. Numbering is fix
 15. Access credentials live in exactly one of two places, by kind: site/project access only in `VARS/credentials.md`; environment access only in `.env` at the project root (outside git). A card references a credential by name and status, never by value, in any zone — `card-and-board.md`.
 16. Clean zones — files that ship to other projects (law, adapters, roles, skills, scripts, hooks, manual, dashboard, README, `docs/`, templates) — carry no trace of a project: no card codes, dates, hashes, domains, names, personal data. The history lives in cards, `.forma/living/`, `JOURNAL.md`, the changelog — `intent-housekeeping.md`.
 
-17. Only the scrubbed leaves the model family. Whatever goes to an external model or service first passes a scrubbing script, not a model; a refusal is fail-closed: the call falls back to the in-family executor, never sent unscrubbed — `kit.md`.
+17. Only the scrubbed leaves the model family. Whatever goes to an external model or service first passes a scrubbing script, not a model; a refusal is fail-closed: the call falls back to the in-family executor, never sent unscrubbed — `kit.md`, `spec.md`.
 
 18. Commit messages of the protocol repository are English only. The protocol is published, and its history reads in one language for everyone; the project repository keeps its own language. A message with Cyrillic is a stop in `forma-commit.cjs` and in the pre-push check, never a warning.
 

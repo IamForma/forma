@@ -104,3 +104,6 @@ A pointer, not a retelling: the card's path, what came out (whether it reached t
 ## Talking with the human
 
 You don't. An instruction given outside the route won't survive the attempt: you have no memory between attempts.
+
+<!-- moved-from-law: degraded-mode-link -->
+**Engine without separate agents.** If the engine cannot invoke separate agents, the route runs degraded and the human is told first; stage markers apply to you too — `on-demand/degraded-mode.md`.

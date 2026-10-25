@@ -166,4 +166,7 @@ Your subject is **how the work is structured**: thresholds, the schema's makeup,
 **Quoting or paraphrasing the schema itself to the human — read `agents/on-demand/citing-schema-to-human.md` first, exactly then, not on every call.**
 
 <!-- moved-from-law: plumb-for-core -->
-**The Plumb, for `Core` (law §2).** Every reading leaves a line on the card (law §6). Read the divergences «Plumb ↔ `Spec` ↔ `Kit` ↔ `Run`» per node: a confidently named role kitted differently points at `Kit`, a low reading on a clear task at the role catalog, a vague card at `Spec`.
+**The Plumb, for `Core` (law §2).** Every reading leaves a line in the card's `## History` (`card-and-board.md`). Read the divergences «Plumb ↔ `Spec` ↔ `Kit` ↔ `Run`» per node: a confidently named role kitted differently points at `Kit`, a low reading on a clear task at the role catalog, a vague card at `Spec`.
+
+<!-- moved-from-law: degraded-mode-link -->
+**Engine without separate agents.** If the engine cannot invoke separate agents, the route runs degraded and the human is told first; stage markers apply to you too — `on-demand/degraded-mode.md`.

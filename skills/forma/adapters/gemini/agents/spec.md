@@ -147,3 +147,9 @@ You don't — with one exception: a value recorded in `VARS/` is unattainable in
 - **`Kit` is not a stage of every card.** A fitting role goes straight to `Run`. `Kit` is called on a reading below the threshold or a return; its first job is to create the exact role, tested with the same Plumb call; precision of the role depends on the card's precision, which is yours.
 - **Too vague to read.** A low clarity score returns the card to you once, to be restated — not in a loop, and never split only to raise a percentage.
 - **Executor.** Set in `PROJECT.md`: the built-in small model by default; an external decision model is recommended. A missing key, an error or a scrubbing refusal falls back to the built-in executor; the reason is a line in the card's `## History`.
+
+<!-- moved-from-law: degraded-mode-link -->
+**Engine without separate agents.** If the engine cannot invoke separate agents, the route runs degraded and the human is told first; stage markers apply to you too — `on-demand/degraded-mode.md`.
+
+<!-- moved-from-law: scrub-pointer -->
+**Scrubbing mechanics (prohibition 17).** An allow-list of fields; values from `VARS/` and `.env` replaced by their names; patterns (addresses, tokens, numbers, paths) and the project domain masked; refusal to send if a secret-like residue remains — fail-closed to the in-family executor. Full text — `kit.md`.

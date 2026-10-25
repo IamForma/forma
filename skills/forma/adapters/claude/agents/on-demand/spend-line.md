@@ -31,7 +31,7 @@ Read this file when you write a spend line into a card's `## History`: `Intent` 
 <!-- moved-from-law: law-spend-details -->
 **Spend line, the contract in the law's words (law §3).**
 - The caller, or the engine's hook for it, writes the line into the card's `## History` right after the return — never the node itself, never late; numbers are read from the call, never estimated.
-- The line: ``Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), O out, T s, `call id` — <engine>: <what was done, one sentence>.` The key part (before the dash) is English in every project; the description after the dash is in the card's language and opens with the engine's tag (`claude-code:`).
+- The line: `` `Node`, YYYY-MM-DD: attempt, N tokens (R cache-read), O out, T s, `<call id>` — <engine>: <what was done, one sentence>. `` The key part (before the dash) is English in every project; the description after the dash is in the card's language and opens with the engine's tag (`claude-code:`).
 - R and T are not optional: a line lacking either is reported by `sync-engines --check`. `O out` is output tokens; an older line lacking it reads `out unknown`.
 - What the engine never returned is written with the `unknown` marker — `(cache-read unknown)`, `id unknown` — only after an attempt to read the number from the call's own transcript, with the reason after the dash; never instead of a number the call did return, never as zero.
 - The call id stands last in the spend block, immediately before the dash, after any external-model or external-service segment.
