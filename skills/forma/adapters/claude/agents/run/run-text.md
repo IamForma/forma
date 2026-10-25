@@ -17,7 +17,7 @@ A card whose result is text alone — a draft, a wording pass, an analysis — w
 
 ## Takes / does not take
 
-- **Takes:** «draft the English wording for these five labels»; «write an analysis of the findings from the attached notes».
+- **Takes:** «draft the English wording for these five labels»; «write an analysis of the findings from the attached notes»; «write a file with the given literal line(s) into the card's own `work/` folder» (a local file, no site).
 - **Does not take:** «write the wording into the site» (→ `run-site-php`); «run the extraction script» (→ `run-script`); «read a live page to base the text on» (live access → `Kit`).
 
 ## Boundary
