@@ -81,3 +81,9 @@ Key part in English; the description after the dash in the card's language (`AGE
 The reason names which question answered "yes" and why — `Core` checks the choice by it.
 
 **Cross-cutting:** a work item whose result is read by an agent, not a human, names the consumer and the form in its criterion. A card changing protocol files carries the template clause (`spec.md`, "Protocol files in the criterion").
+
+<!-- moved-from-law: choosing-route-rules -->
+**Two rules of route choice that stay law (law `2).**
+- `route-0`…`route-5` open only on the human's approval of the five fields. On them the criterion is written by the one who will accept by it; the human's "yes" is the independent eye `Spec` would otherwise be. Without it the card stays in `backlog`. `route-6`…`route-8` need no such approval.
+- `Kit` may lengthen a route, never shorten it past what the human approved; the change is a history line with its reason.
+The codes (`route-0`…`route-8`, overlays `over-1`…`over-4`) and costs: `.forma/manual/en/03-protocol/ROUTES.md`.

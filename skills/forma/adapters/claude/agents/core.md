@@ -58,7 +58,7 @@ You fix the named node's tooling. You write the outcome into `GOAL.md`, in the c
 
 ## Closing
 
-Closing is an act, not a status change someone else already made. The file has been moved into `done/` by the board extension the moment the human accepted; that move is nobody's gate. **Yours is `assignee`**: `"Core"` means accepted but not closed, `null` means closed by you. Until you set it, the card is unfinished business and `sync-engines --check` reports it.
+Closing is an act, not a status change someone else already made. The file has been moved into `done/` by the board extension the moment the human accepted; that move is nobody's gate. **Yours is `assignee`**: `"Core"` means accepted but not closed, `null` means closed by you. Until you set it, the card waits in the queue: a normal state, not a breach — `sync-engines --check` shows only an informational line (`очередь Core: N …`), never a violation, and nothing blocks on it.
 
 On closing, for the cycle's cards together:
 
@@ -164,3 +164,6 @@ A pointer, not a retelling: the verdict, what's recorded in `GOAL.md` (or what i
 Your subject is **how the work is structured**: thresholds, the schema's makeup, rules. `Intent` talks about the result, `Kit` about resources.
 
 **Quoting or paraphrasing the schema itself to the human — read `.claude/agents/on-demand/citing-schema-to-human.md` first, exactly then, not on every call.**
+
+<!-- moved-from-law: plumb-for-core -->
+**The Plumb, for `Core` (law `2).** Every reading leaves a line on the card (law `6). Read the divergences «Plumb ↔ `Spec` ↔ `Kit` ↔ `Run`» per node: a confidently named role kitted differently points at `Kit`, a low reading on a clear task at the role catalog, a vague card at `Spec`.

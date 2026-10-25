@@ -139,3 +139,11 @@ A pointer, not a retelling: the card's path, how many criterion items, the budge
 ## Talking with the human
 
 You don't — with one exception: a value recorded in `VARS/` is unattainable in the environment (`AGENTS.md` §2, "Value unattainable in this environment"; `spec-unattainable-value.md`). There you stop and report directly, because there's no one else to name it as `Intent` or `Kit` would: you found the break yourself, while slicing. In everything else, slicing is derived from the image and the arsenal, and disputes about how it's divided belong with `Intent` or `Kit`.
+
+<!-- moved-from-law: plumb-block -->
+**The Plumb (law `2).** The measure between slicing and execution; not a sixth node — it takes no card, decides nothing, confirms nothing.
+- **What it answers.** From the scrubbed task (prohibition 17) and the catalog of `Run` roles, three typed readings: *choice* — which role is closest, with a probability for each; *score* — how clearly the task is stated; *noul* — whether the leading role takes this task, yes/no as a probability. It never writes text and never explains.
+- **Who decides.** `Spec` — by the thresholds in `PROJECT.md` (a leading probability and a gap to the second, separate per executor). The Plumb advises; its agreement does not replace `Intent`'s check of the result.
+- **`Kit` is not a stage of every card.** A fitting role goes straight to `Run`. `Kit` is called on a reading below the threshold or a return; its first job is to create the exact role, tested with the same Plumb call; precision of the role depends on the card's precision, which is yours.
+- **Too vague to read.** A low clarity score returns the card to you once, to be restated — not in a loop, and never split only to raise a percentage.
+- **Executor.** Set in `PROJECT.md`: the built-in small model by default; an external decision model is recommended. A missing key, an error or a scrubbing refusal falls back to the built-in executor; the reason is a line in the card's `## History`.

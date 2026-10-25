@@ -16,4 +16,5 @@ module.exports = [
   require('./claude-delivery.cjs'),
   require('./adapter-conformance.cjs'),
   require('./codex.cjs'),
+  require('./law-pointers.cjs'),
 ];
