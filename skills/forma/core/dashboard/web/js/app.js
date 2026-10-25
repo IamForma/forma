@@ -12,6 +12,7 @@ function renderPanels(d) {
   docsBind();
   document.getElementById('chain').innerHTML = chainHtml(d.chain);
   document.getElementById('structure').innerHTML = structureHtml(d.structure);
+  document.getElementById('schema').innerHTML = schemaHtml(d.schema);
   document.getElementById('project').innerHTML = projectSettingsHtml(d.settings && d.settings.project);
   document.getElementById('engine').innerHTML = engineSettingsHtml(d.settings && d.settings.engine);
   // Экономика: сверху — прежняя главная (плитки, статусы, оснастка и расход узлов…), ниже — прежняя «Экономика»

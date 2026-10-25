@@ -913,5 +913,25 @@
   "econ.models.none": "No engine declares a node table.",
   "nodes.th.engine": "Engine",
   "nodes.noTable": "no node table in the engine contract",
-  "econ.config.noTable": "no node table in the engine contract"
+  "econ.config.noTable": "no node table in the engine contract",
+  "set.tab.schema": "Schema",
+  "sc.title": "Engine schema",
+  "sc.none": "No schema data.",
+  "sc.lede": "Blocks of the engine, built from real files: purpose, composition by type; click a block to see its files.",
+  "sc.openAll": "Expand all",
+  "sc.closeAll": "Collapse all",
+  "sc.files": {
+    "one": "{n} file",
+    "other": "{n} files"
+  },
+  "sc.caller": "Called by",
+  "sc.callerNone": "no caller found",
+  "sc.noDoes": "no description",
+  "sc.unsorted": "Unsorted files",
+  "sc.type.scripts": "scripts",
+  "sc.type.rules": "rules",
+  "sc.type.hooks": "hooks",
+  "sc.type.knowledge": "knowledge",
+  "sc.type.graphs": "graphs",
+  "sc.type.structural": "structural"
 }

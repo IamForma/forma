@@ -927,5 +927,27 @@
   "econ.models.none": "Ни один движок не объявил таблицу узлов.",
   "nodes.th.engine": "Движок",
   "nodes.noTable": "движок не объявил таблицу узлов",
-  "econ.config.noTable": "движок не объявил таблицу узлов"
+  "econ.config.noTable": "движок не объявил таблицу узлов",
+  "set.tab.schema": "Схема",
+  "sc.title": "Схема движка",
+  "sc.none": "Нет данных схемы.",
+  "sc.lede": "Блоки движка по реальным файлам: задача, состав по типам; клик по блоку раскрывает файлы.",
+  "sc.openAll": "Раскрыть все",
+  "sc.closeAll": "Свернуть все",
+  "sc.files": {
+    "one": "{n} файл",
+    "few": "{n} файла",
+    "many": "{n} файлов",
+    "other": "{n} файла"
+  },
+  "sc.caller": "Кто вызывает",
+  "sc.callerNone": "вызывающий не найден",
+  "sc.noDoes": "нет описания",
+  "sc.unsorted": "Неразобранные файлы",
+  "sc.type.scripts": "скрипты",
+  "sc.type.rules": "правила",
+  "sc.type.hooks": "хуки",
+  "sc.type.knowledge": "знания",
+  "sc.type.graphs": "графы",
+  "sc.type.structural": "структурные"
 }

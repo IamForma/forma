@@ -81,7 +81,7 @@ function lawRender(L, anchor) {
   if (anchor) { const a = document.getElementById(anchor); if (a) { a.closest('details')?.setAttribute('open', ''); a.scrollIntoView({ block: 'start' }); } }
 }
 // Вкладка «Настройки» — контейнер, внутри подвкладки «Закон», «Движок», «Борт», «Структура» (переносятся как есть).
-const SETTINGS_TABS = ['law', 'project', 'engine', 'structure'];
+const SETTINGS_TABS = ['law', 'project', 'engine', 'structure', 'schema'];
 function settingsSetTab(tab) {
   SETTINGS_TABS.forEach(t => { const el = document.getElementById('view-' + t); if (el) el.hidden = t !== tab; });
   document.querySelectorAll('#settings-nav .chip').forEach(c => c.classList.toggle('on', c.dataset.stab === tab));

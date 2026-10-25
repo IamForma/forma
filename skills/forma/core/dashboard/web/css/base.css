@@ -186,3 +186,21 @@ dialog button{float:right}
 .eng-help{margin-left:8px;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--ink-soft);font-size:11px;line-height:1;cursor:pointer;padding:0;vertical-align:middle}.eng-help:hover{border-color:var(--accent);color:var(--accent)}
 
 .lang{margin-left:auto;font:inherit;font-size:12px;color:var(--ink-soft);background:var(--surface-soft);border:1px solid var(--border);border-radius:6px;padding:3px 6px}
+.lx .sc-bar{margin:8px 0}.lx .sc-bar button{margin-right:6px}
+.lx .sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:start}
+.lx .sc-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow)}
+.lx .sc-block.sc-open{grid-column:1/-1}
+.lx .sc-head{all:unset;display:flex;align-items:center;gap:8px;width:100%;cursor:pointer;color:var(--ink);font-weight:600;font-size:15px}
+.lx .sc-head:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lx .sc-title{flex:1}.lx .sc-total{font-weight:400;font-size:12px;color:var(--ink-soft)}
+.lx .sc-desc{margin:6px 0;font-size:12.5px;color:var(--ink-soft)}
+.lx .sc-chips{display:flex;flex-wrap:wrap;gap:6px}
+.lx .sc-chip{padding:1px 8px;border-radius:10px;font-size:11.5px;border:1px solid var(--border);background:var(--surface-soft);color:var(--ink)}
+.lx .sc-chip b{margin-left:3px}.lx .sc-chip.sc-zero{opacity:.45}
+.lx .sc-list{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:8px}
+.lx .sc-file{border:1px solid var(--border-soft);border-radius:8px;padding:6px 8px;background:var(--surface-soft);min-width:0}
+.lx .sc-fh{display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+.lx .sc-fh code,.lx .sc-caller code{word-break:break-all;font-size:12px;color:var(--ink)}
+.lx .sc-type{font-size:10.5px;color:var(--ink-faint);white-space:nowrap}
+.lx .sc-does{font-size:12.5px;margin:3px 0;color:var(--ink)}.lx .sc-caller{font-size:12px;color:var(--ink-soft)}
+.lx .sc-unsorted{margin-top:12px}
